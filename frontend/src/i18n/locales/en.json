@@ -1,0 +1,48 @@
+{
+  "translation": {
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How It Works",
+      "complaints": "Complaints",
+      "adminLogin": "Admin Login"
+    },
+    "hero": {
+      "badge": "Zila Panchayat Smart Clean",
+      "title": "Smart Waste Collection Tracking",
+      "subtitle": "Track garbage collection vehicles in real-time and register complaints easily for a cleaner and healthier district.",
+      "liveTracking": "Live Tracking",
+      "registerComplaint": "Register Complaint",
+      "stats": {
+        "tracked": "Vehicles Tracked",
+        "citizens": "Citizens Served",
+        "resolved": "Complaints Resolved"
+      }
+    },
+    "complaint": {
+      "badge": "Citizen Services",
+      "title": "Register a Complaint",
+      "subtitle": "Help us keep the district clean. Report missed collections or other waste management issues.",
+      "form": {
+        "name": "Full Name",
+        "namePlaceholder": "Enter your full name",
+        "mobile": "Mobile Number",
+        "mobilePlaceholder": "10-digit mobile number",
+        "area": "Ward / Village Area",
+        "areaPlaceholder": "e.g., Ward 5, Main Street",
+        "type": "Complaint Type",
+        "typePlaceholder": "Select the issue type",
+        "types": {
+          "vehicle_not_arrived": "Vehicle Did Not Arrive",
+          "garbage_not_collected": "Garbage Not Collected",
+          "other": "Other Issue"
+        },
+        "description": "Description (Optional)",
+        "descriptionPlaceholder": "Provide any additional details about the issue...",
+        "submit": "Submit Complaint",
+        "submitting": "Submitting...",
+        "success": "Complaint Submitted",
+        "successMsg": "Your complaint has been registered successfully. Complaint Number: "
+      }
+    }
+  }
+}
