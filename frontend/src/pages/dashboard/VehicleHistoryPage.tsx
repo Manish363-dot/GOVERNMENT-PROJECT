@@ -71,9 +71,22 @@ export function VehicleHistoryPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="font-poppins text-2xl font-bold text-navy-900">Vehicle History</h1>
-        <p className="text-sm text-secondary-text mt-1">View daily GPS route history for any vehicle</p>
+      {/* Official Government Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+              <History className="w-3 h-3 text-emerald-600" />
+              वाहन यात्रा इतिहास • Playback & Route Audit
+            </span>
+          </div>
+          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
+            Vehicle Route History & Audit Log
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Analyze historical route playback, stoppage times, and daily distance covered by garbage trucks
+          </p>
+        </div>
       </div>
 
       {/* Filters */}
@@ -171,6 +184,7 @@ export function VehicleHistoryPage() {
                 center={routeCoords[0]}
                 zoom={14}
                 className="h-full w-full"
+                scrollWheelZoom={false}
               >
                 <TileLayer
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

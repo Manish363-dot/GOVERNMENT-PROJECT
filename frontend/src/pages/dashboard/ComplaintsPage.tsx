@@ -94,23 +94,35 @@ export function ComplaintsPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+      {/* Official Government Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="font-poppins text-2xl font-bold text-navy-900">Complaints</h1>
-          <p className="text-sm text-secondary-text mt-1">Manage citizen complaints</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+              <MessageSquareWarning className="w-3 h-3 text-emerald-600" />
+              लोक शिकायत कक्ष • Uttarakhand Portal
+            </span>
+          </div>
+          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
+            Grievance & Complaints Desk
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Monitor and resolve citizen waste collection grievances across all Zila Panchayat wards
+          </p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex gap-2 mb-6 flex-wrap">
+      <div className="flex gap-2 my-5 flex-wrap">
         {['all', 'new', 'in_progress', 'resolved'].map((status) => (
           <Button
             key={status}
             variant={filter === status ? 'default' : 'outline'}
             size="sm"
             onClick={() => setFilter(status)}
+            className={filter === status ? 'bg-navy-900 hover:bg-navy-800 text-white font-semibold' : 'text-slate-700 hover:bg-slate-100'}
           >
-            {status === 'all' ? 'All' : statusLabels[status]}
+            {status === 'all' ? 'All Grievances' : statusLabels[status]}
           </Button>
         ))}
       </div>
@@ -135,11 +147,10 @@ export function ComplaintsPage() {
               <button
                 key={complaint.id}
                 onClick={() => viewComplaint(complaint)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${
-                  selectedComplaint?.id === complaint.id
+                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${selectedComplaint?.id === complaint.id
                     ? 'border-primary bg-primary-50'
                     : 'border-border bg-white hover:border-primary/30 hover:shadow-sm'
-                }`}
+                  }`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>

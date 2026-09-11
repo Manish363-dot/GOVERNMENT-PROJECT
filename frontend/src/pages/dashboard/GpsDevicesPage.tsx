@@ -73,14 +73,25 @@ export function GpsDevicesPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+      {/* Official Government Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
         <div>
-          <h1 className="font-poppins text-2xl font-bold text-navy-900">GPS Devices</h1>
-          <p className="text-sm text-secondary-text mt-1">Manage Traccar and hardware trackers</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+              <Radio className="w-3 h-3 text-emerald-600" />
+              जीपीएस हार्डवेयर प्रबंधन • Telematics Hardware Registry
+            </span>
+          </div>
+          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
+            GPS Devices & Hardware Registry
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Configure Traccar telematics client IDs, hardwired GPS units, and OBD-II trackers
+          </p>
         </div>
-        <Button onClick={openAddForm}>
-          <Plus className="w-4 h-4" />
-          Add Device
+        <Button onClick={openAddForm} className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm">
+          <Plus className="w-4 h-4 mr-1" />
+          Add GPS Device
         </Button>
       </div>
 

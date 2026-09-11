@@ -127,14 +127,25 @@ export function VehiclesPage() {
 
   return (
     <div className="animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+      {/* Official Government Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
         <div>
-          <h1 className="font-poppins text-2xl font-bold text-navy-900">Vehicles</h1>
-          <p className="text-sm text-secondary-text mt-1">Manage garbage collection vehicles</p>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+              <Truck className="w-3 h-3 text-emerald-600" />
+              वाहन बेड़ा प्रबंधन • District Fleet Registry
+            </span>
+          </div>
+          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
+            Sanitation Vehicles Directory
+          </h1>
+          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+            Register, manage, and link GPS devices to municipal waste collection trucks
+          </p>
         </div>
-        <Button onClick={openAddForm}>
-          <Plus className="w-4 h-4" />
-          Add Vehicle
+        <Button onClick={openAddForm} className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm">
+          <Plus className="w-4 h-4 mr-1" />
+          Add New Vehicle
         </Button>
       </div>
 
