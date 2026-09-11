@@ -1,6 +1,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { Menu, Bell, User, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { TopBarLogos } from '@/components/TopBarLogos';
 
 interface TopHeaderProps {
   onMenuClick: () => void;
@@ -11,6 +12,9 @@ export function TopHeader({ onMenuClick }: TopHeaderProps) {
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
+      {/* Top 4 Logos Strip: 2 Left, 2 Right */}
+      <TopBarLogos variant="dashboard" className="border-b border-slate-100 bg-white" />
+
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <Button
