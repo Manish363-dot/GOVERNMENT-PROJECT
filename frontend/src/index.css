@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ============================================================ */
-/* Global Styles — Zila Panchayat Safai                        */
+/* Global Styles — Uttarakhand Zila Panchayat Safai Portal      */
 /* ============================================================ */
 
 * {
@@ -18,8 +18,8 @@ html {
 
 body {
   font-family: 'Inter', sans-serif;
-  color: #0F172A;
-  background-color: #F8FAFC;
+  color: #0b1b36;
+  background-color: #f8fafc;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -35,7 +35,7 @@ h1, h2, h3, h4, h5, h6 {
 .leaflet-container {
   width: 100%;
   height: 100%;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   z-index: 1;
 }
 
@@ -49,16 +49,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #CBD5E1;
+  background: #cbd5e1;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94A3B8;
+  background: #94a3b8;
 }
 
 /* ============================================================ */
@@ -66,52 +66,36 @@ h1, h2, h3, h4, h5, h6 {
 /* ============================================================ */
 
 ::selection {
-  background: #2563EB;
+  background: #1d4ed8;
   color: white;
 }
 
 *:focus-visible {
-  outline: 2px solid #2563EB;
+  outline: 2px solid #1d4ed8;
   outline-offset: 2px;
 }
 
 /* ============================================================ */
-/* Animations                                                   */
+/* Uttarakhand Official Accent Styles                           */
 /* ============================================================ */
 
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+.uk-gov-strip {
+  background-color: #0b1b36;
+  color: #f8fafc;
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.uk-tricolor-line {
+  height: 3px;
+  background: linear-gradient(90deg, #15803d 0%, #d97706 50%, #1d4ed8 100%);
 }
 
-.animate-float {
-  animation: float 3s ease-in-out infinite;
+.aipan-border-top {
+  border-top: 2px solid #d97706;
 }
 
-.animate-shimmer {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* ============================================================ */
-/* Utility Classes                                              */
-/* ============================================================ */
-
+/* Utility Classes */
 .glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.text-gradient {
-  background: linear-gradient(135deg, #2563EB, #1D4ED8);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }

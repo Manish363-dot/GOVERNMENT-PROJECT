@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { KPICard } from '@/components/KPICard';
-import { Truck, MapPin, Radio, MessageSquareWarning } from 'lucide-react';
+import { Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck } from 'lucide-react';
 import { vehicleService } from '@/services/vehicle.service';
 import { trackingService } from '@/services/tracking.service';
 import { complaintService } from '@/services/complaint.service';
@@ -41,14 +41,27 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="font-poppins text-2xl font-bold text-navy-900">Dashboard Overview</h1>
-        <p className="text-sm text-secondary-text mt-1">Real-time system status and key metrics</p>
+    <div className="animate-fade-in space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900">
+              Dashboard Overview
+            </h1>
+            <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
+              <ShieldCheck className="w-3 h-3 text-emerald-600" />
+              उत्तराखंड प्रशासन
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Real-time District Fleet Status & Key Grievance Metrics
+          </p>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Key Metrics Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Total Vehicles"
           value={stats.totalVehicles}
@@ -79,67 +92,75 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Quick info */}
+      {/* System Operational Status & Administrative Quick Actions */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border border-border p-6">
-          <h3 className="font-poppins font-semibold text-navy-900 mb-3">System Status</h3>
+        <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+            <h3 className="font-poppins font-bold text-navy-900 text-sm">System Operational Status</h3>
+            <span className="text-[10px] font-mono font-medium text-slate-500">Government Portal Services</span>
+          </div>
           <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-border/50">
-              <span className="text-sm text-secondary-text">Backend API</span>
-              <span className="text-xs font-medium text-success bg-green-50 px-2.5 py-1 rounded-full">Online</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-xs font-medium text-slate-700">Backend API Gateway</span>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Operational</span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-border/50">
-              <span className="text-sm text-secondary-text">Supabase Database</span>
-              <span className="text-xs font-medium text-success bg-green-50 px-2.5 py-1 rounded-full">Connected</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-xs font-medium text-slate-700">Supabase Database Cluster</span>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Connected</span>
             </div>
-            <div className="flex items-center justify-between py-2 border-b border-border/50">
-              <span className="text-sm text-secondary-text">Realtime</span>
-              <span className="text-xs font-medium text-success bg-green-50 px-2.5 py-1 rounded-full">Active</span>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-xs font-medium text-slate-700">Realtime Event Stream</span>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">Active</span>
             </div>
             <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-secondary-text">GPS / Traccar</span>
-              <span className="text-xs font-medium text-navy-500 bg-navy-50 px-2.5 py-1 rounded-full">Awaiting Setup</span>
+              <span className="text-xs font-medium text-slate-700">Traccar GPS Tracking Engine</span>
+              <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded border border-slate-200">Awaiting GPS Setup</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-border p-6">
-          <h3 className="font-poppins font-semibold text-navy-900 mb-3">Quick Actions</h3>
+        <div className="bg-white rounded-lg border border-slate-200 p-5 shadow-xs">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+            <h3 className="font-poppins font-bold text-navy-900 text-sm">Administrative Quick Operations</h3>
+            <span className="text-[10px] font-mono font-medium text-slate-500">Zila Panchayat Desk</span>
+          </div>
           <div className="space-y-2">
             <a
               href="/dashboard/vehicles"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-navy-50 transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-md border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-colors"
             >
-              <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Truck className="w-4 h-4 text-primary" />
+              <div className="w-8 h-8 rounded bg-navy-900 text-amber-400 flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <Truck className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-medium text-navy-900">Add Vehicle</p>
-                <p className="text-xs text-secondary-text">Register a new garbage collection vehicle</p>
+                <p className="text-xs font-bold text-navy-900">Manage Garbage Fleet Vehicles</p>
+                <p className="text-[11px] text-slate-500">Register new collection trucks and assign drivers</p>
               </div>
             </a>
+
             <a
               href="/dashboard/tracking"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-navy-50 transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-md border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-colors"
             >
-              <div className="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <MapPin className="w-4 h-4 text-success" />
+              <div className="w-8 h-8 rounded bg-emerald-800 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <MapPin className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-medium text-navy-900">Live Tracking</p>
-                <p className="text-xs text-secondary-text">View vehicles on the real-time map</p>
+                <p className="text-xs font-bold text-navy-900">Live District GPS Map</p>
+                <p className="text-[11px] text-slate-500">Monitor vehicle routes and current live coordinates</p>
               </div>
             </a>
+
             <a
               href="/dashboard/complaints"
-              className="flex items-center gap-3 p-3 rounded-lg hover:bg-navy-50 transition-colors group"
+              className="flex items-center gap-3 p-3 rounded-md border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-colors"
             >
-              <div className="w-9 h-9 rounded-lg bg-orange-50 flex items-center justify-center group-hover:scale-105 transition-transform">
-                <MessageSquareWarning className="w-4 h-4 text-accent" />
+              <div className="w-8 h-8 rounded bg-amber-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">
+                <MessageSquareWarning className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-sm font-medium text-navy-900">Manage Complaints</p>
-                <p className="text-xs text-secondary-text">View and resolve citizen complaints</p>
+                <p className="text-xs font-bold text-navy-900">Public Grievance Redressal</p>
+                <p className="text-[11px] text-slate-500">Review citizen complaints and update resolution status</p>
               </div>
             </a>
           </div>

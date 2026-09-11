@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { complaintService } from '@/services/complaint.service';
-import { MessageSquareWarning, CheckCircle2, AlertCircle } from 'lucide-react';
+import { MessageSquareWarning, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export function ComplaintForm() {
@@ -58,125 +58,136 @@ export function ComplaintForm() {
   };
 
   return (
-    <section id="complaint" className="py-20 bg-background">
+    <section id="complaint" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-12 items-start">
-          {/* Left: Info */}
+          {/* Left: Information */}
           <div>
-            <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-navy-900 mb-4">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-amber-100 text-amber-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-amber-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+              Public Grievance Redressal
+            </div>
+
+            <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
               {t('complaint.title')}
             </h2>
-            <p className="text-secondary-text mb-8 leading-relaxed">
+            <p className="text-slate-600 mb-8 leading-relaxed text-sm sm:text-base">
               {t('complaint.subtitle')}
             </p>
 
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border">
-                <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">1️</span>
+            <div className="space-y-3.5">
+              <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-xs">
+                <div className="w-8 h-8 rounded bg-navy-900 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                  1
                 </div>
                 <div>
-                  <p className="font-medium text-navy-900 text-sm">Fill the form</p>
-                  <p className="text-xs text-secondary-text">Provide your details and complaint information</p>
+                  <p className="font-semibold text-navy-900 text-sm">Submit Grievance Form</p>
+                  <p className="text-xs text-slate-500">Provide your contact details and description of the issue.</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border">
-                <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">2️</span>
+
+              <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-xs">
+                <div className="w-8 h-8 rounded bg-emerald-700 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                  2
                 </div>
                 <div>
-                  <p className="font-medium text-navy-900 text-sm">Get your complaint ID</p>
-                  <p className="text-xs text-secondary-text">A unique tracking number will be generated</p>
+                  <p className="font-semibold text-navy-900 text-sm">Receive Official Complaint Reference</p>
+                  <p className="text-xs text-slate-500">A unique ZP reference number (e.g. ZP-2026-00001) will be generated.</p>
                 </div>
               </div>
-              <div className="flex items-start gap-3 p-4 bg-white rounded-xl border border-border">
-                <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
-                  <span className="text-lg">3️</span>
+
+              <div className="flex items-start gap-3 p-4 bg-white rounded-lg border border-slate-200 shadow-xs">
+                <div className="w-8 h-8 rounded bg-amber-600 text-white font-bold text-sm flex items-center justify-center flex-shrink-0">
+                  3
                 </div>
                 <div>
-                  <p className="font-medium text-navy-900 text-sm">Admin resolves it</p>
-                  <p className="text-xs text-secondary-text">Our team will take action and update the status</p>
+                  <p className="font-semibold text-navy-900 text-sm">Action by Administration</p>
+                  <p className="text-xs text-slate-500">Zila Panchayat administration will inspect and resolve the issue.</p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right: Form */}
-          <Card className="shadow-lg border-border/50">
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                  <MessageSquareWarning className="w-5 h-5 text-primary" />
+          {/* Right: Form Card */}
+          <Card className="shadow-md border border-slate-200 bg-white rounded-lg">
+            <CardHeader className="bg-navy-900 text-white rounded-t-lg p-5 border-b border-navy-800">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+                  <MessageSquareWarning className="w-5 h-5" />
                 </div>
                 <div>
-                  <CardTitle className="text-lg">{t('complaint.title')}</CardTitle>
+                  <CardTitle className="text-base font-bold text-white">{t('complaint.title')}</CardTitle>
+                  <CardDescription className="text-xs text-slate-300">Uttarakhand Public Service Portal</CardDescription>
                 </div>
               </div>
             </CardHeader>
-            <CardContent>
-              {/* Success message */}
+            <CardContent className="p-6">
+              {/* Success Alert */}
               {success && (
-                <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-start gap-3">
-                  <CheckCircle2 className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+                <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-md flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="font-semibold text-green-800 text-sm">{t('complaint.form.success')}</p>
-                    <p className="text-green-700 text-sm mt-1">
-                      {t('complaint.form.successMsg')} <span className="font-mono font-bold">{success}</span>
+                    <p className="font-semibold text-emerald-900 text-sm">{t('complaint.form.success')}</p>
+                    <p className="text-emerald-800 text-xs mt-1">
+                      {t('complaint.form.successMsg')} <span className="font-mono font-bold text-emerald-900">{success}</span>
                     </p>
                   </div>
                 </div>
               )}
 
-              {/* Error message */}
+              {/* Error Alert */}
               {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-danger flex-shrink-0 mt-0.5" />
-                  <p className="text-red-700 text-sm">{error}</p>
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-red-800 text-xs font-medium">{error}</p>
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('complaint.form.name')} *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="name" className="text-xs font-semibold text-navy-900">{t('complaint.form.name')} *</Label>
                   <Input
                     id="name"
                     placeholder={t('complaint.form.namePlaceholder')}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    className="border-slate-300 focus:border-navy-900 text-sm"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="mobile">{t('complaint.form.mobile')} *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="mobile" className="text-xs font-semibold text-navy-900">{t('complaint.form.mobile')} *</Label>
                   <Input
                     id="mobile"
                     placeholder={t('complaint.form.mobilePlaceholder')}
                     value={form.mobile}
                     onChange={(e) => setForm({ ...form, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
+                    className="border-slate-300 focus:border-navy-900 text-sm"
                     required
                     maxLength={10}
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="area">{t('complaint.form.area')} *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="area" className="text-xs font-semibold text-navy-900">{t('complaint.form.area')} *</Label>
                   <Input
                     id="area"
                     placeholder={t('complaint.form.areaPlaceholder')}
                     value={form.area}
                     onChange={(e) => setForm({ ...form, area: e.target.value })}
+                    className="border-slate-300 focus:border-navy-900 text-sm"
                     required
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="complaint_type">{t('complaint.form.type')} *</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="complaint_type" className="text-xs font-semibold text-navy-900">{t('complaint.form.type')} *</Label>
                   <select
                     id="complaint_type"
                     value={form.complaint_type}
                     onChange={(e) => setForm({ ...form, complaint_type: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-inter text-navy-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors duration-200"
+                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                     required
                   >
                     {complaintTypes.map((type) => (
@@ -187,18 +198,19 @@ export function ComplaintForm() {
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description">{t('complaint.form.description')}</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="description" className="text-xs font-semibold text-navy-900">{t('complaint.form.description')}</Label>
                   <Textarea
                     id="description"
                     placeholder={t('complaint.form.descriptionPlaceholder')}
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="border-slate-300 focus:border-navy-900 text-sm"
                     rows={3}
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                <Button type="submit" className="w-full bg-navy-900 hover:bg-navy-800 text-white font-medium shadow-xs" size="lg" disabled={loading}>
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

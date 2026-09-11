@@ -1,58 +1,66 @@
-import { MapPin, Calendar, MessageSquareWarning } from 'lucide-react';
+import { MapPin, Calendar, MessageSquareWarning, ShieldCheck } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const features = [
   {
     icon: MapPin,
-    title: 'Real-Time Tracking',
-    description: 'Track garbage collection vehicles and monitor their current location on a live map.',
-    color: 'bg-blue-50 text-primary',
-    border: 'hover:border-primary/30',
+    title: 'Real-Time Fleet Tracking',
+    description: 'Track garbage collection vehicles live on an interactive map across district Panchayats.',
+    badge: 'Live Operations',
+    iconBg: 'bg-navy-900 text-amber-400',
   },
   {
     icon: Calendar,
-    title: 'Daily History',
-    description: 'View daily vehicle routes and location history to monitor collection coverage.',
-    color: 'bg-green-50 text-success',
-    border: 'hover:border-success/30',
+    title: 'Daily Route History',
+    description: 'Access complete historical route logs and coverage data for audit and performance analysis.',
+    badge: 'Audit & Records',
+    iconBg: 'bg-emerald-900 text-emerald-300',
   },
   {
     icon: MessageSquareWarning,
-    title: 'Complaint Management',
-    description: 'Citizens can register complaints and admins can track and resolve them efficiently.',
-    color: 'bg-orange-50 text-accent',
-    border: 'hover:border-accent/30',
+    title: 'Grievance Management',
+    description: 'Citizens can easily submit complaints regarding missed waste collections and track resolution.',
+    badge: 'Citizen Services',
+    iconBg: 'bg-amber-900 text-amber-300',
   },
 ];
 
 export function FeaturesSection() {
   return (
-    <section id="tracking-info" className="py-20 bg-background">
+    <section id="tracking-info" className="py-16 sm:py-20 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-14">
-          <h2 className="font-poppins text-3xl sm:text-4xl font-bold text-navy-900 mb-4">
-            Key Features
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-100 text-navy-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            Key Portal Services
+          </div>
+          <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
+            Core System Capabilities
           </h2>
-          <p className="text-secondary-text max-w-2xl mx-auto">
-            A simple yet powerful platform to manage waste collection operations efficiently.
+          <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
+            Essential digital features for district waste management oversight and citizen grievance redressal.
           </p>
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {features.map((feature, index) => (
+          {features.map((feature) => (
             <Card
               key={feature.title}
-              className={`group cursor-default transition-all duration-300 hover:-translate-y-1 ${feature.border}`}
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="border border-slate-200 shadow-xs hover:border-slate-300 transition-all rounded-lg bg-slate-50/50"
             >
-              <CardContent className="p-8">
-                <div className={`w-14 h-14 rounded-2xl ${feature.color} flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300`}>
-                  <feature.icon className="w-7 h-7" />
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-12 h-12 rounded-md ${feature.iconBg} flex items-center justify-center shadow-xs`}>
+                    <feature.icon className="w-6 h-6" />
+                  </div>
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-white px-2 py-0.5 rounded border border-slate-200">
+                    {feature.badge}
+                  </span>
                 </div>
-                <h3 className="font-poppins text-xl font-semibold text-navy-900 mb-3">
+                <h3 className="font-poppins text-lg font-bold text-navy-900 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-secondary-text leading-relaxed">
+                <p className="text-slate-600 text-sm leading-relaxed">
                   {feature.description}
                 </p>
               </CardContent>

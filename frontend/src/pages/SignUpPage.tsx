@@ -140,14 +140,23 @@ export function SignUpPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={form.confirmPassword}
-                  onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Confirm your password"
+                    value={form.confirmPassword}
+                    onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -155,14 +164,23 @@ export function SignUpPage() {
                   <KeyRound className="w-3.5 h-3.5" />
                   Admin Passkey
                 </Label>
-                <Input
-                  id="passkey"
-                  type="password"
-                  placeholder="Enter admin passkey"
-                  value={form.passkey}
-                  onChange={(e) => setForm({ ...form, passkey: e.target.value })}
-                  required
-                />
+                <div className="relative">
+                  <Input
+                    id="passkey"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Enter admin passkey"
+                    value={form.passkey}
+                    onChange={(e) => setForm({ ...form, passkey: e.target.value })}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-600"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
                 <p className="text-xs text-secondary-text">
                   This passkey is provided by your Zila Panchayat administrator.
                 </p>
