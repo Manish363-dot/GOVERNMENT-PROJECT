@@ -4,16 +4,18 @@ import { Button } from '@/components/ui/button';
 import { Truck, Menu, X, ShieldCheck, PhoneCall } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { TopBarLogos } from '@/components/TopBarLogos';
-
-const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'About', href: '/#about' },
-  { name: 'Complaint', href: '/#complaint' },
-  { name: 'Contact', href: '/#contact' },
-];
+import { useTranslation } from 'react-i18next';
 
 export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t } = useTranslation();
+
+  const navLinks = [
+    { name: t('nav.home'), href: '/' },
+    { name: t('nav.about'), href: '/#about' },
+    { name: t('nav.complaint'), href: '/#complaint' },
+    { name: t('nav.contact'), href: '/#contact' },
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-xs">
@@ -26,17 +28,17 @@ export function Navbar() {
           <div className="flex items-center gap-2 font-medium">
             <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-ukgreen-900/60 text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              उत्तराखंड शासन
+              {t('nav.govBadgeHi')}
             </span>
             <span className="hidden md:inline text-slate-300">|</span>
             <span className="hidden sm:inline text-slate-300">
-              Government of Uttarakhand • Zila Panchayat Digital Services
+              {t('nav.govSubtitle')}
             </span>
           </div>
           <div className="flex items-center gap-4 text-slate-300">
             <div className="hidden lg:flex items-center gap-1.5 text-[11px]">
               <PhoneCall className="w-3 h-3 text-amber-400" />
-              <span>Helpline: <strong className="text-white">1800-185-1850</strong></span>
+              <span>{t('nav.helpline')}: <strong className="text-white">1800-185-1850</strong></span>
             </div>
             <LanguageSwitcher />
           </div>
@@ -57,11 +59,11 @@ export function Navbar() {
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-poppins font-bold text-navy-900 text-lg sm:text-xl tracking-tight leading-none">
-                  Zila Panchayat Safai
+                  {t('nav.brandName')}
                 </span>
               </div>
-              <span className="text-[11px] font-medium text-ukgreen-800 tracking-wide uppercase block mt-0.5">
-                Smart Waste Collection Tracking System
+              <span className="text-[11px] font-bold text-ukgreen-800 tracking-wide uppercase block mt-0.5">
+                {t('nav.brandTagline')}
               </span>
             </div>
           </Link>
@@ -70,9 +72,9 @@ export function Navbar() {
           <nav className="hidden md:flex items-center gap-1">
             {navLinks.map((link) => (
               <a
-                key={link.name}
+                key={link.href}
                 href={link.href}
-                className="px-3.5 py-2 text-sm font-medium text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors"
+                className="px-3.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors"
               >
                 {link.name}
               </a>
@@ -81,11 +83,11 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" size="sm" className="border-slate-300 text-navy-900 hover:bg-slate-50" asChild>
-              <Link to="/signup">Admin Sign Up</Link>
+            <Button variant="outline" size="sm" className="border-slate-300 text-navy-900 hover:bg-slate-50 font-bold" asChild>
+              <Link to="/signup">{t('nav.adminSignUp')}</Link>
             </Button>
-            <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs" asChild>
-              <Link to="/signin">Sign In</Link>
+            <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold" asChild>
+              <Link to="/signin">{t('nav.signIn')}</Link>
             </Button>
           </div>
 
@@ -108,20 +110,20 @@ export function Navbar() {
         <div className="px-4 pb-4 pt-2 space-y-1">
           {navLinks.map((link) => (
             <a
-              key={link.name}
+              key={link.href}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 text-sm font-medium text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
+              className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
               {link.name}
             </a>
           ))}
           <div className="flex flex-col gap-2 pt-3 border-t border-slate-200 mt-2">
             <Button variant="outline" size="sm" className="w-full justify-center" asChild>
-              <Link to="/signup" onClick={() => setMobileOpen(false)}>Admin Sign Up</Link>
+              <Link to="/signup" onClick={() => setMobileOpen(false)}>{t('nav.adminSignUp')}</Link>
             </Button>
             <Button size="sm" className="w-full justify-center bg-navy-900 text-white" asChild>
-              <Link to="/signin" onClick={() => setMobileOpen(false)}>Sign In</Link>
+              <Link to="/signin" onClick={() => setMobileOpen(false)}>{t('nav.signIn')}</Link>
             </Button>
           </div>
         </div>

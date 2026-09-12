@@ -27,7 +27,7 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="tracking-info" className="py-16 sm:py-20 bg-white border-b border-slate-200">
+    <section id="tracking-info" className="pt-20 sm:pt-28 pb-16 sm:pb-20 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-100 text-navy-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-200">

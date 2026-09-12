@@ -1,17 +1,33 @@
 {
   "translation": {
     "nav": {
+      "home": "Home",
+      "about": "About",
+      "complaint": "Complaint",
+      "contact": "Contact",
       "features": "Features",
       "howItWorks": "How It Works",
       "complaints": "Complaints",
-      "adminLogin": "Admin Login"
+      "adminLogin": "Admin Login",
+      "adminSignUp": "Admin Sign Up",
+      "signIn": "Sign In",
+      "brandName": "Zila Panchayat Safai",
+      "brandTagline": "Smart Waste Collection Tracking System",
+      "govBadge": "Government of Uttarakhand",
+      "govBadgeHi": "उत्तराखंड शासन",
+      "govSubtitle": "Government of Uttarakhand • Zila Panchayat Digital Services",
+      "helpline": "Helpline"
     },
     "hero": {
       "badge": "Zila Panchayat Smart Clean",
-      "title": "Smart Waste Collection Tracking",
+      "title": "District Panchayat Almora Solid Waste Management Grievance Redressal Portal",
+      "titleLine1": "District Panchayat Almora",
+      "titleLine2": "Solid Waste Management",
+      "titleLine3": "Grievance Redressal Portal",
       "subtitle": "Track garbage collection vehicles in real-time and register complaints easily for a cleaner and healthier district.",
       "liveTracking": "Live Tracking",
       "registerComplaint": "Register Complaint",
+      "ourBlogs": "Our Blogs",
       "stats": {
         "tracked": "Vehicles Tracked",
         "citizens": "Citizens Served",
@@ -43,6 +59,25 @@
         "success": "Complaint Submitted",
         "successMsg": "Your complaint has been registered successfully. Complaint Number: "
       }
+    },
+    "about": {
+      "badge": "About",
+      "title": "Zila Panchayat Initiative",
+      "para1": "The Swachh Bharat Mission (Grameen) is a key initiative of the Government of India aimed at promoting cleanliness, environmental protection, and scientific waste management in rural areas. In line with this, the District Panchayat Almora has set up a comprehensive solid and plastic waste management system across various rural, tourist, and religious places in the district.",
+      "para2": "To properly dispose of the plastic and solid waste generated daily in Almora's rural markets and semi-urban areas, several measures are in place:",
+      "point1Label": "Sanitation Workers (Paryavaran Mitras):",
+      "point1Text": "Appointed for regular waste collection and management.",
+      "point2Label": "Collection Vehicles:",
+      "point2Text": "Deployed to transport waste efficiently.",
+      "point3Label": "Material Recovery Facilities (MRF):",
+      "point3Text": "Set up to sort and process recyclable materials.",
+      "point4Label": "Plastic Compactors & Recycling Systems:",
+      "point4Text": "Operated to compress and recycle plastic waste.",
+      "goal": "The primary goal of this initiative is to turn cleanliness into a people's movement while ensuring environmental conservation and sustainable development.",
+      "cap1": "Track garbage vehicles in real time across district wards",
+      "cap2": "Monitor collection operations across Uttarakhand panchayats",
+      "cap3": "Store and view daily vehicle route history records",
+      "cap4": "Receive and manage citizen public complaints efficiently"
     }
   }
 }

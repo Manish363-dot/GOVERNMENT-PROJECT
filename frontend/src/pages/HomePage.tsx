@@ -1,6 +1,4 @@
 import { HeroSection } from '@/components/HeroSection';
-import { FeaturesSection } from '@/components/FeaturesSection';
-import { HowItWorksSection } from '@/components/HowItWorksSection';
 import { ComplaintForm } from '@/components/ComplaintForm';
 import { TollFreeSection } from '@/components/TollFreeSection';
 import { AboutSection } from '@/components/AboutSection';
@@ -10,11 +8,9 @@ export function HomePage() {
   return (
     <>
       <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
+      <AboutSection />
       <ComplaintForm />
       <TollFreeSection />
-      <AboutSection />
       <ContactSection />
     </>
   );

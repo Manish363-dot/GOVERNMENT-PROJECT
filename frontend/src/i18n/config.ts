@@ -20,4 +20,11 @@ i18n
     },
   });
 
+// Set lang attribute on <html> for global CSS targeting (e.g., bold Hindi text)
+document.documentElement.lang = storedLang;
+i18n.on('languageChanged', (lng) => {
+  document.documentElement.lang = lng;
+});
+
 export default i18n;
+
