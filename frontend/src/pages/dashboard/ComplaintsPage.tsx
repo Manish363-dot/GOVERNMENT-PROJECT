@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquareWarning, Search, X, Clock, User, MapPin, Phone } from 'lucide-react';
+import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
 
@@ -92,45 +92,54 @@ export function ComplaintsPage() {
     }
   }
 
+  const filterTabs = [
+    { key: 'all', label: 'All Grievances' },
+    { key: 'new', label: 'New' },
+    { key: 'in_progress', label: 'In Progress' },
+    { key: 'resolved', label: 'Resolved' },
+  ];
+
   return (
-    <div className="animate-fade-in">
-      {/* Official Government Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
-              <MessageSquareWarning className="w-3 h-3 text-emerald-600" />
-              लोक शिकायत कक्ष • Uttarakhand Portal
-            </span>
+    <div className="animate-fade-in space-y-4">
+
+      {/* ── Page Header ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
+          <MessageSquareWarning className="w-4 h-4 text-amber-400 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-white uppercase tracking-wide">Grievance &amp; Complaints Desk</p>
+            <p className="text-[10px] text-slate-400 font-mono">लोक शिकायत कक्ष | उत्तराखंड पोर्टल | Zila Panchayat Safai</p>
           </div>
-          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Grievance & Complaints Desk
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+        </div>
+        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+          <p className="text-[10px] font-mono text-slate-600">
             Monitor and resolve citizen waste collection grievances across all Zila Panchayat wards
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-2 my-5 flex-wrap">
-        {['all', 'new', 'in_progress', 'resolved'].map((status) => (
-          <Button
-            key={status}
-            variant={filter === status ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setFilter(status)}
-            className={filter === status ? 'bg-navy-900 hover:bg-navy-800 text-white font-semibold' : 'text-slate-700 hover:bg-slate-100'}
-          >
-            {status === 'all' ? 'All Grievances' : statusLabels[status]}
-          </Button>
-        ))}
+      {/* ── Filter Tabs ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="flex divide-x divide-slate-300 overflow-x-auto">
+          {filterTabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setFilter(tab.key)}
+              className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${filter === tab.key
+                  ? 'bg-[#0a1628] text-white'
+                  : 'text-slate-600 hover:bg-[#f0f4f9] hover:text-[#0a1628]'
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-20 w-full" />
+            <Skeleton key={i} className="h-16 w-full rounded" />
           ))}
         </div>
       ) : complaints.length === 0 ? (
@@ -140,155 +149,153 @@ export function ComplaintsPage() {
           description="There are no complaints to display. When citizens submit complaints through the website, they will appear here."
         />
       ) : (
-        <div className="grid lg:grid-cols-5 gap-6">
+        <div className="grid lg:grid-cols-5 gap-4">
           {/* Complaints list */}
-          <div className="lg:col-span-3 space-y-3 max-h-[700px] overflow-y-auto">
-            {complaints.map((complaint) => (
-              <button
-                key={complaint.id}
-                onClick={() => viewComplaint(complaint)}
-                className={`w-full text-left p-4 rounded-xl border transition-all duration-200 ${selectedComplaint?.id === complaint.id
-                    ? 'border-primary bg-primary-50'
-                    : 'border-border bg-white hover:border-primary/30 hover:shadow-sm'
-                  }`}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <span className="font-mono text-xs font-semibold text-primary">
-                      {complaint.complaint_number}
-                    </span>
-                    <p className="font-semibold text-sm text-navy-900 mt-0.5">{complaint.name}</p>
+          <div className="lg:col-span-3 bg-white border border-slate-300 rounded overflow-hidden">
+            <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
+              <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+                Grievance Register — {complaints.length} Record(s)
+              </p>
+            </div>
+            <div className="divide-y divide-slate-200 max-h-[600px] overflow-y-auto">
+              {complaints.map((complaint) => (
+                <button
+                  key={complaint.id}
+                  onClick={() => viewComplaint(complaint)}
+                  className={`w-full text-left px-4 py-3 transition-colors ${selectedComplaint?.id === complaint.id
+                      ? 'bg-[#e6edf7] border-l-2 border-l-[#1a3a6b]'
+                      : 'hover:bg-[#f7f9fc] border-l-2 border-l-transparent'
+                    }`}
+                >
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[11px] font-bold text-[#1a3a6b]">
+                        {complaint.complaint_number}
+                      </span>
+                      <span className="text-[11px] font-semibold text-[#0a1628]">{complaint.name}</span>
+                    </div>
+                    <Badge variant={complaint.status as any}>
+                      {statusLabels[complaint.status]}
+                    </Badge>
                   </div>
-                  <Badge variant={complaint.status as any}>
-                    {statusLabels[complaint.status]}
-                  </Badge>
-                </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-secondary-text">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    {complaint.area}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {format(new Date(complaint.created_at), 'dd MMM yyyy, HH:mm')}
-                  </span>
-                </div>
-                <p className="text-xs text-navy-500 mt-1.5 bg-navy-50 rounded px-2 py-1 inline-block">
-                  {complaintTypeLabels[complaint.complaint_type]}
-                </p>
-              </button>
-            ))}
+                  <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[10px] text-slate-500 font-mono">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-2.5 h-2.5" />
+                      {complaint.area}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-2.5 h-2.5" />
+                      {format(new Date(complaint.created_at), 'dd MMM yyyy, HH:mm')}
+                    </span>
+                    <span className="text-slate-400">{complaintTypeLabels[complaint.complaint_type]}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Detail panel */}
           <div className="lg:col-span-2">
             {selectedComplaint ? (
-              <div className="bg-white rounded-xl border border-border p-5 sticky top-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-poppins font-semibold text-navy-900">Complaint Details</h3>
-                  <button onClick={() => setSelectedComplaint(null)}>
-                    <X className="w-4 h-4 text-navy-400" />
+              <div className="bg-white border border-slate-300 rounded overflow-hidden sticky top-4">
+                <div className="bg-[#0a1628] px-4 py-2 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-3.5 h-3.5 text-amber-400" />
+                    <p className="text-[11px] font-bold text-white uppercase tracking-wider">Complaint Details</p>
+                  </div>
+                  <button onClick={() => setSelectedComplaint(null)} className="text-slate-400 hover:text-white transition-colors">
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                <div className="space-y-3 mb-6">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-sm font-bold text-primary">
-                      {selectedComplaint.complaint_number}
-                    </span>
-                    <Badge variant={selectedComplaint.status as any}>
-                      {statusLabels[selectedComplaint.status]}
-                    </Badge>
+                <div className="divide-y divide-slate-200">
+                  {/* ID + Status */}
+                  <div className="px-4 py-2.5 flex items-center justify-between bg-[#f0f4f9]">
+                    <span className="font-mono text-xs font-bold text-[#1a3a6b]">{selectedComplaint.complaint_number}</span>
+                    <Badge variant={selectedComplaint.status as any}>{statusLabels[selectedComplaint.status]}</Badge>
                   </div>
 
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-navy-400" />
-                      <span>{selectedComplaint.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-navy-400" />
-                      <span>{selectedComplaint.mobile}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-navy-400" />
-                      <span>{selectedComplaint.area}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-navy-400" />
-                      <span>{format(new Date(selectedComplaint.created_at), 'dd MMM yyyy, HH:mm')}</span>
-                    </div>
+                  {/* Details rows */}
+                  <div className="px-4 py-3 space-y-2">
+                    {[
+                      { icon: User, label: 'Complainant', value: selectedComplaint.name },
+                      { icon: Phone, label: 'Mobile', value: selectedComplaint.mobile },
+                      { icon: MapPin, label: 'Area/Ward', value: selectedComplaint.area },
+                      { icon: Clock, label: 'Filed On', value: format(new Date(selectedComplaint.created_at), 'dd MMM yyyy, HH:mm') },
+                    ].map(({ icon: Icon, label, value }) => (
+                      <div key={label} className="flex items-center gap-2 text-[11px]">
+                        <Icon className="w-3 h-3 text-slate-400 shrink-0" />
+                        <span className="text-slate-500 font-mono w-20 shrink-0">{label}:</span>
+                        <span className="font-semibold text-[#0a1628]">{value}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="bg-navy-50 rounded-lg p-3">
-                    <p className="text-xs font-medium text-navy-500 mb-1">Type</p>
-                    <p className="text-sm">{complaintTypeLabels[selectedComplaint.complaint_type]}</p>
+                  {/* Type + Description */}
+                  <div className="px-4 py-3 bg-[#f7f9fc]">
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">Complaint Type</p>
+                    <p className="text-[11px] font-semibold text-[#0a1628]">{complaintTypeLabels[selectedComplaint.complaint_type]}</p>
                     {selectedComplaint.description && (
                       <>
-                        <p className="text-xs font-medium text-navy-500 mb-1 mt-2">Description</p>
-                        <p className="text-sm">{selectedComplaint.description}</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1 mt-2">Description</p>
+                        <p className="text-[11px] text-slate-700">{selectedComplaint.description}</p>
                       </>
                     )}
                   </div>
-                </div>
 
-                {/* Update status */}
-                <div className="border-t border-border pt-4 space-y-3">
-                  <h4 className="font-semibold text-sm text-navy-900">Update Status</h4>
-                  <div className="space-y-2">
-                    <Label>Status</Label>
+                  {/* Update Status */}
+                  <div className="px-4 py-3 space-y-2">
+                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Update Status</p>
                     <select
                       value={statusForm.status}
                       onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
-                      className="flex h-10 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-inter text-navy-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                      className="w-full h-8 border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                     >
                       <option value="new">New</option>
                       <option value="in_progress">In Progress</option>
                       <option value="resolved">Resolved</option>
                     </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Remark</Label>
                     <Textarea
-                      placeholder="Add a remark..."
+                      placeholder="Add official remark..."
                       value={statusForm.remark}
                       onChange={(e) => setStatusForm({ ...statusForm, remark: e.target.value })}
                       rows={2}
+                      className="text-[11px] font-mono resize-none"
                     />
+                    <button
+                      onClick={handleUpdateStatus}
+                      disabled={updating}
+                      className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
+                    >
+                      <Save className="w-3 h-3" />
+                      {updating ? 'Updating...' : 'Update Status'}
+                    </button>
                   </div>
-                  <Button onClick={handleUpdateStatus} disabled={updating} className="w-full">
-                    {updating ? 'Updating...' : 'Update Status'}
-                  </Button>
-                </div>
 
-                {/* Update history */}
-                {updates.length > 0 && (
-                  <div className="border-t border-border pt-4 mt-4">
-                    <h4 className="font-semibold text-sm text-navy-900 mb-3">Update History</h4>
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {updates.map((update) => (
-                        <div key={update.id} className="text-xs p-2 bg-navy-50 rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <Badge variant={update.status as any} className="text-[10px]">
+                  {/* Update history */}
+                  {updates.length > 0 && (
+                    <div className="px-4 py-3">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-2">Update History</p>
+                      <div className="space-y-1 max-h-36 overflow-y-auto">
+                        {updates.map((update) => (
+                          <div key={update.id} className="flex items-center justify-between text-[10px] px-2 py-1.5 bg-[#f0f4f9] border border-slate-200 rounded-sm">
+                            <Badge variant={update.status as any} className="text-[9px]">
                               {statusLabels[update.status]}
                             </Badge>
-                            <span className="text-navy-400">
+                            <span className="text-slate-500 font-mono">
                               {format(new Date(update.updated_at), 'dd MMM, HH:mm')}
                             </span>
                           </div>
-                          {update.remark && (
-                            <p className="mt-1 text-navy-600">{update.remark}</p>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ) : (
-              <div className="bg-white rounded-xl border border-border p-8 text-center">
-                <MessageSquareWarning className="w-8 h-8 text-navy-300 mx-auto mb-3" />
-                <p className="text-sm text-secondary-text">Select a complaint to view details</p>
+              <div className="bg-white border border-slate-300 rounded p-8 text-center">
+                <MessageSquareWarning className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                <p className="text-[11px] font-mono text-slate-500">Select a complaint from the register to view details</p>
               </div>
             )}
           </div>

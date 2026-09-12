@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Radio, Plus, Trash2, X, Smartphone, Cpu } from 'lucide-react';
+import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save } from 'lucide-react';
 import { format } from 'date-fns';
 
 export function GpsDevicesPage() {
@@ -42,7 +42,6 @@ export function GpsDevicesPage() {
     e.preventDefault();
     setError('');
     setSaving(true);
-
     try {
       await gpsDeviceService.create(form);
       setShowForm(false);
@@ -72,62 +71,69 @@ export function GpsDevicesPage() {
   };
 
   return (
-    <div className="animate-fade-in">
-      {/* Official Government Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
-              <Radio className="w-3 h-3 text-emerald-600" />
-              जीपीएस हार्डवेयर प्रबंधन • Telematics Hardware Registry
-            </span>
+    <div className="animate-fade-in space-y-4">
+
+      {/* ── Page Header ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="bg-[#0a1628] px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Radio className="w-4 h-4 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-white uppercase tracking-wide">GPS Devices &amp; Hardware Registry</p>
+              <p className="text-[10px] text-slate-400 font-mono">जीपीएस हार्डवेयर प्रबंधन | Telematics Hardware Registry</p>
+            </div>
           </div>
-          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            GPS Devices & Hardware Registry
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+          <button
+            onClick={openAddForm}
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-sm transition-colors shrink-0"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            Add GPS Device
+          </button>
+        </div>
+        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+          <p className="text-[10px] font-mono text-slate-600">
             Configure Traccar telematics client IDs, hardwired GPS units, and OBD-II trackers
           </p>
         </div>
-        <Button onClick={openAddForm} className="bg-emerald-700 hover:bg-emerald-800 text-white font-semibold shadow-sm">
-          <Plus className="w-4 h-4 mr-1" />
-          Add GPS Device
-        </Button>
       </div>
 
-      {/* Add Form */}
+      {/* ── Add Form ── */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-border p-6 mb-6 animate-scale-in">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-poppins font-semibold text-navy-900">Add New GPS Device</h3>
-            <button onClick={() => setShowForm(false)}>
-              <X className="w-4 h-4 text-navy-400" />
+        <div className="bg-white border border-slate-300 rounded overflow-hidden">
+          <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
+            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Register New GPS Device</p>
+            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mx-4 mt-3 p-2.5 bg-red-50 border border-red-200 rounded-sm">
+              <p className="text-[11px] text-red-700 font-mono">{error}</p>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Device Identifier (Traccar ID) *</Label>
+          <form onSubmit={handleSubmit} className="p-4 grid sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
+                Device Identifier (Traccar ID) *
+              </Label>
               <Input
                 placeholder="e.g. 123456"
                 value={form.device_identifier}
                 onChange={(e) => setForm({ ...form, device_identifier: e.target.value })}
                 required
+                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
               />
-              <p className="text-xs text-secondary-text">Must match the identifier set in your Traccar app.</p>
+              <p className="text-[10px] text-slate-500 font-mono">Must match the identifier set in your Traccar app.</p>
             </div>
-            <div className="space-y-2">
-              <Label>Device Type</Label>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Device Type</Label>
               <select
                 value={form.device_type}
                 onChange={(e) => setForm({ ...form, device_type: e.target.value })}
-                className="flex h-10 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-inter text-navy-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
               >
                 <option value="mobile_app">Mobile App (Traccar Client)</option>
                 <option value="hardwired">Hardwired GPS Device</option>
@@ -135,23 +141,32 @@ export function GpsDevicesPage() {
                 <option value="other">Other</option>
               </select>
             </div>
-            <div className="sm:col-span-2 flex gap-2 mt-2">
-              <Button type="submit" disabled={saving}>
-                {saving ? 'Adding...' : 'Add Device'}
-              </Button>
-              <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
+            <div className="sm:col-span-2 flex gap-2 pt-1 border-t border-slate-200">
+              <button
+                type="submit"
+                disabled={saving}
+                className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
+              >
+                <Save className="w-3 h-3" />
+                {saving ? 'Registering...' : 'Register Device'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="border border-slate-300 text-slate-600 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
+              >
                 Cancel
-              </Button>
+              </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Devices Table */}
+      {/* ── Devices Table ── */}
       {loading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-12 w-full rounded" />
           ))}
         </div>
       ) : devices.length === 0 ? (
@@ -166,47 +181,58 @@ export function GpsDevicesPage() {
           </Button>
         </EmptyState>
       ) : (
-        <div className="bg-white rounded-xl border border-border overflow-hidden">
+        <div className="bg-white border border-slate-300 rounded overflow-hidden">
+          <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
+            <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+              GPS Hardware Register — {devices.length} Device(s)
+            </p>
+          </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full">
               <thead>
-                <tr className="bg-navy-50 border-b border-border">
-                  <th className="text-left px-4 py-3 font-semibold text-navy-700">Device</th>
-                  <th className="text-left px-4 py-3 font-semibold text-navy-700">Type</th>
-                  <th className="text-left px-4 py-3 font-semibold text-navy-700">Status</th>
-                  <th className="text-left px-4 py-3 font-semibold text-navy-700">Last Seen</th>
-                  <th className="text-right px-4 py-3 font-semibold text-navy-700">Actions</th>
+                <tr className="border-b border-slate-300 bg-[#f7f9fc]">
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Device ID</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Type</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Status</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Last Seen</th>
+                  <th className="text-right px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-200">
                 {devices.map((device) => (
-                  <tr key={device.id} className="border-b border-border/50 hover:bg-navy-50/50 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-navy-900 font-mono">
+                  <tr key={device.id} className="hover:bg-[#f7f9fc] transition-colors">
+                    <td className="px-4 py-2.5 font-mono text-[11px] font-bold text-[#1a3a6b]">
                       {device.device_identifier}
                     </td>
-                    <td className="px-4 py-3 text-secondary-text">
+                    <td className="px-4 py-2.5 text-[11px] text-slate-600 font-mono">
                       <div className="flex items-center gap-1.5">
-                        {device.device_type === 'mobile_app' ? <Smartphone className="w-3.5 h-3.5" /> : <Cpu className="w-3.5 h-3.5" />}
+                        {device.device_type === 'mobile_app' ? <Smartphone className="w-3 h-3" /> : <Cpu className="w-3 h-3" />}
                         {deviceTypeLabels[device.device_type]}
                       </div>
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2.5">
                       <Badge variant={device.status === 'active' ? 'success' : 'secondary'}>
                         {device.status}
                       </Badge>
                     </td>
-                    <td className="px-4 py-3 text-secondary-text text-xs">
+                    <td className="px-4 py-2.5 text-[11px] text-slate-500 font-mono">
                       {device.last_seen_at ? format(new Date(device.last_seen_at), 'dd MMM yyyy HH:mm') : 'Never'}
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(device.id)}>
-                        <Trash2 className="w-4 h-4 text-danger" />
-                      </Button>
+                    <td className="px-4 py-2.5 text-right">
+                      <button
+                        onClick={() => handleDelete(device.id)}
+                        className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+            <p className="text-[10px] font-mono text-slate-500">Traccar Telematics Registry | Zila Panchayat Safai | Uttarakhand</p>
           </div>
         </div>
       )}

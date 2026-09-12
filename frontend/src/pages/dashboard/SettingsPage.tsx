@@ -27,7 +27,6 @@ export function SettingsPage() {
     setSuccess('');
     setError('');
     setLoading(true);
-
     try {
       const token = localStorage.getItem('access_token');
       const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/profile`, {
@@ -38,7 +37,6 @@ export function SettingsPage() {
         },
         body: JSON.stringify({ full_name: fullName }),
       });
-
       if (!res.ok) throw new Error('Failed to update profile details');
       setSuccess('Official profile updated successfully!');
     } catch (err: any) {
@@ -57,9 +55,7 @@ export function SettingsPage() {
       return;
     }
     setPassLoading(true);
-
     try {
-      // Password update endpoint mock / integration
       setTimeout(() => {
         setPassSuccess('Security credentials updated successfully!');
         setCurrentPassword('');
@@ -73,205 +69,204 @@ export function SettingsPage() {
   };
 
   return (
-    <div className="animate-fade-in space-y-6">
-      {/* Official Government Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              प्रशासनिक प्रोफाइल • Official Settings
-            </span>
+    <div className="animate-fade-in space-y-4">
+
+      {/* ── Page Header ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="bg-[#0a1628] px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-white uppercase tracking-wide">Administrator Profile &amp; System Settings</p>
+              <p className="text-[10px] text-slate-400 font-mono">प्रशासनिक प्रोफाइल | Official Settings</p>
+            </div>
           </div>
-          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Administrator Profile & System Settings
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+          <div className="flex items-center gap-1.5 bg-[#0c1829] border border-[#1e3a5f] px-2.5 py-1 rounded-sm shrink-0">
+            <Building2 className="w-3 h-3 text-slate-400" />
+            <span className="text-[10px] font-mono font-bold text-slate-300 uppercase tracking-wide">UTTARAKHAND ZILA PANCHAYAT</span>
+          </div>
+        </div>
+        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+          <p className="text-[10px] font-mono text-slate-600">
             Manage officer credential parameters, security authorization, and departmental telematics configuration
           </p>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-slate-700 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-            <Building2 className="w-3.5 h-3.5 text-slate-500" />
-            UTTARAKHAND ZILA PANCHAYAT
-          </span>
-        </div>
       </div>
 
-      {/* Main 2-Column Administrative Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Left Column: Officer Profile Settings */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-emerald-700 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
-                  <User className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-poppins font-bold text-navy-900 text-sm">Officer Credentials</h3>
-                  <p className="text-[11px] text-slate-500 font-mono">{profile?.email}</p>
-                </div>
-              </div>
+      {/* ── Main 2-Column Grid ── */}
+      <div className="grid lg:grid-cols-2 gap-4">
 
-              <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 uppercase">
-                AUTHORIZED ADMIN
-              </span>
+        {/* ── Officer Profile ── */}
+        <div className="bg-white border border-slate-300 rounded overflow-hidden">
+          <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <User className="w-3.5 h-3.5 text-[#1a3a6b]" />
+              <h3 className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Officer Credentials</h3>
+            </div>
+            <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-sm uppercase">
+              AUTHORIZED ADMIN
+            </span>
+          </div>
+
+          <div className="p-4">
+            {/* Email info row */}
+            <div className="flex items-center justify-between py-2 border-b border-slate-100 mb-4">
+              <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">Enrolled Email</span>
+              <span className="text-[11px] font-mono font-bold text-[#0a1628]">{profile?.email}</span>
             </div>
 
             {success && (
-              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-800">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{success}</span>
+              <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="text-[11px] text-emerald-800 font-mono">{success}</span>
               </div>
             )}
 
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs text-red-800">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                <span>{error}</span>
+              <div className="mb-3 p-2.5 bg-red-50 border border-red-200 rounded-sm flex items-center gap-2">
+                <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                <span className="text-[11px] text-red-800 font-mono">{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleProfileSubmit} className="space-y-4">
+            <form onSubmit={handleProfileSubmit} className="space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">Officer Full Name</Label>
+                <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Officer Full Name</Label>
                 <Input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="Enter officer full name"
-                  className="text-xs"
+                  className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">Official Departmental Email</Label>
-                <Input value={profile?.email || ''} disabled className="bg-slate-50 text-xs font-mono text-slate-600 cursor-not-allowed" />
-                <p className="text-[11px] text-slate-400">Email address is verified by NIC / Department Auth</p>
+                <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Official Departmental Email</Label>
+                <Input
+                  value={profile?.email || ''}
+                  disabled
+                  className="h-8 bg-slate-50 text-[11px] font-mono text-slate-600 cursor-not-allowed border-slate-200 rounded-sm"
+                />
+                <p className="text-[10px] text-slate-400 font-mono">Email is verified by NIC / Department Auth</p>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">Administrative Role / Access Level</Label>
-                <Input value={profile?.role || 'Zila Panchayat Admin'} disabled className="bg-slate-50 text-xs font-bold text-navy-900 capitalize cursor-not-allowed" />
+                <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Administrative Role</Label>
+                <Input
+                  value={profile?.role || 'Zila Panchayat Admin'}
+                  disabled
+                  className="h-8 bg-slate-50 text-[11px] font-mono font-bold text-[#0a1628] capitalize cursor-not-allowed border-slate-200 rounded-sm"
+                />
               </div>
 
-              <div className="pt-2">
-                <Button
+              <div className="pt-1 border-t border-slate-200">
+                <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs py-2 h-9 rounded-lg shadow-xs flex items-center justify-center gap-2"
+                  className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
                 >
-                  <Save className="w-3.5 h-3.5" />
+                  <Save className="w-3 h-3" />
                   {loading ? 'Saving Changes...' : 'Save Profile Changes'}
-                </Button>
+                </button>
               </div>
             </form>
           </div>
         </div>
 
-        {/* Right Column: Security Credentials & Telematics Config */}
-        <div className="space-y-6">
-          {/* Password Security Card */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
+        {/* ── Right Column ── */}
+        <div className="space-y-4">
+
+          {/* Security Credentials */}
+          <div className="bg-white border border-slate-300 rounded overflow-hidden">
+            <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-emerald-700" />
-                <h3 className="font-poppins font-bold text-navy-900 text-sm">Security Credentials</h3>
+                <KeyRound className="w-3.5 h-3.5 text-[#1a3a6b]" />
+                <h3 className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Security Credentials</h3>
               </div>
-              <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              <span className="text-[9px] font-mono font-bold text-slate-500 bg-white border border-slate-300 px-2 py-0.5 rounded-sm">
                 256-BIT ENCRYPTED
               </span>
             </div>
 
-            {passSuccess && (
-              <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center gap-2 text-xs text-emerald-800">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span>{passSuccess}</span>
-              </div>
-            )}
+            <div className="p-4 space-y-3">
+              {passSuccess && (
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span className="text-[11px] text-emerald-800 font-mono">{passSuccess}</span>
+                </div>
+              )}
 
-            {passError && (
-              <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-xs text-red-800">
-                <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
-                <span>{passError}</span>
-              </div>
-            )}
+              {passError && (
+                <div className="p-2.5 bg-red-50 border border-red-200 rounded-sm flex items-center gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-600 shrink-0" />
+                  <span className="text-[11px] text-red-800 font-mono">{passError}</span>
+                </div>
+              )}
 
-            <form onSubmit={handlePasswordSubmit} className="space-y-3">
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-slate-700">Current Password</Label>
-                <Input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="text-xs"
-                />
-              </div>
+              <form onSubmit={handlePasswordSubmit} className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Current Password</Label>
+                  <Input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+                  />
+                </div>
 
-              <div className="space-y-1">
-                <Label className="text-xs font-bold text-slate-700">New Password</Label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="text-xs"
-                />
-              </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">New Password</Label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+                  />
+                </div>
 
-              <Button
-                type="submit"
-                disabled={passLoading || !newPassword}
-                variant="outline"
-                className="w-full border-slate-300 hover:bg-slate-50 text-navy-900 font-semibold text-xs py-2 h-9 rounded-lg flex items-center justify-center gap-2"
-              >
-                <Lock className="w-3.5 h-3.5 text-slate-600" />
-                {passLoading ? 'Updating Credentials...' : 'Update Password Credentials'}
-              </Button>
-            </form>
+                <div className="pt-1 border-t border-slate-200">
+                  <button
+                    type="submit"
+                    disabled={passLoading || !newPassword}
+                    className="w-full flex items-center justify-center gap-1.5 border border-slate-300 hover:bg-slate-50 disabled:opacity-60 text-[#0a1628] text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
+                  >
+                    <Lock className="w-3 h-3" />
+                    {passLoading ? 'Updating Credentials...' : 'Update Password'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
 
-          {/* Telematics & API Diagnostics Card */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-            <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+          {/* Telematics Config */}
+          <div className="bg-white border border-slate-300 rounded overflow-hidden">
+            <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Server className="w-4 h-4 text-emerald-700" />
-                <h3 className="font-poppins font-bold text-navy-900 text-sm">System Telematics Config</h3>
+                <Server className="w-3.5 h-3.5 text-[#1a3a6b]" />
+                <h3 className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">System Telematics Config</h3>
               </div>
-              <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <span className="text-[9px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-sm">
                 ACTIVE PIPELINE
               </span>
             </div>
 
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2">
-                  <Radio className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="font-bold text-navy-900">API Gateway Endpoint</span>
+            <div className="divide-y divide-slate-200">
+              {[
+                { icon: Radio, label: 'API Gateway Endpoint', value: import.meta.env.VITE_API_URL || 'http://localhost:5000/api' },
+                { icon: Radio, label: 'Traccar Telematics Listener', value: 'Port 5055 (HTTP Client Stream)' },
+                { icon: ShieldCheck, label: 'Database Engine', value: 'Supabase PostgreSQL (RLS)' },
+              ].map(({ icon: Icon, label, value }) => (
+                <div key={label} className="px-4 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span className="text-[11px] font-bold text-[#0a1628] font-mono">{label}</span>
+                  </div>
+                  <span className="text-[10px] font-mono text-slate-500">{value}</span>
                 </div>
-                <span className="font-mono text-[11px] text-slate-600">
-                  {import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2">
-                  <Radio className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="font-bold text-navy-900">Traccar Telematics Listener</span>
-                </div>
-                <span className="font-mono text-[11px] text-slate-600">Port 5055 (HTTP Client Stream)</span>
-              </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span className="font-bold text-navy-900">Database Engine</span>
-                </div>
-                <span className="font-mono text-[11px] text-slate-600">Supabase PostgreSQL (RLS)</span>
-              </div>
+              ))}
             </div>
           </div>
         </div>

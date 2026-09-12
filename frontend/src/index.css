@@ -19,12 +19,17 @@ html {
 body {
   font-family: 'Inter', sans-serif;
   color: #0b1b36;
-  background-color: #f8fafc;
+  background-color: #eef1f6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Poppins', sans-serif;
 }
 
@@ -98,4 +103,26 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+}
+
+/* Government Portal Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Dashboard main area padding */
+.dashboard-main {
+  background-color: #eef1f6;
 }

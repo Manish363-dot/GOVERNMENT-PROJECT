@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { KPICard } from '@/components/KPICard';
 import {
   Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck,
-  CheckCircle2, Clock, Activity, ArrowRight, Layers, Building2, UserCheck
+  CheckCircle2, Activity, ArrowRight, Layers, Building2, AlertCircle
 } from 'lucide-react';
 import { vehicleService } from '@/services/vehicle.service';
 import { trackingService } from '@/services/tracking.service';
@@ -19,6 +19,7 @@ export function DashboardPage() {
   });
   const [loading, setLoading] = useState(true);
   const currentDateStr = format(new Date(), 'dd MMMM yyyy');
+  const currentTimeStr = format(new Date(), 'HH:mm');
 
   useEffect(() => {
     fetchStats();
@@ -47,46 +48,47 @@ export function DashboardPage() {
 
   return (
     <div className="animate-fade-in space-y-6">
-      {/* Official Government Header Banner */}
-      <div className="bg-white text-navy-900 rounded-xl p-5 sm:p-6 shadow-xs relative overflow-hidden border border-slate-200">
-        {/* Top Tricolor Accent Bar */}
-        <div className="uk-tricolor-line h-1 absolute top-0 left-0 right-0" />
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10 pt-1">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 uppercase tracking-wider bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                उत्तराखंड शासन • Zila Panchayat Safai Portal
-              </span>
-              <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                <Building2 className="w-3 h-3 text-amber-600" />
-                Department Control Desk
-              </span>
+      {/* ── Page Header Banner ── */}
+      <div className="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">
+        {/* Top navy strip */}
+        <div className="bg-navy-900 border-b border-navy-800 px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
+            <div>
+              <p className="text-sm font-bold text-white uppercase tracking-wide">
+                District Sanitation &amp; Telematics Command Panel
+              </p>
+              <p className="text-[11px] text-slate-300 font-mono mt-0.5">
+                उत्तराखंड शासन | जिला पंचायत सफाई पोर्टल | Zila Panchayat Safai Portal
+              </p>
             </div>
-
-            <h1 className="font-poppins text-xl sm:text-2xl font-bold tracking-tight text-navy-900">
-              District Sanitation & Telematics Command Panel
-            </h1>
-            <p className="text-xs text-slate-500 max-w-2xl font-medium">
-              Official monitoring system for real-time garbage vehicle tracking, grievance redressal operations, and telematics audit across all rural and urban panchayat wards.
-            </p>
           </div>
-
-          <div className="flex flex-col sm:flex-row md:flex-col items-start md:items-end justify-between gap-2 shrink-0 border-t md:border-t-0 border-slate-200 pt-3 md:pt-0">
-            <div className="text-left md:text-right">
-              <p className="text-[10px] font-mono uppercase tracking-wider text-slate-400">Date & System Time</p>
-              <p className="text-xs font-mono font-bold text-emerald-700">{currentDateStr}</p>
-            </div>
-            <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-800 text-xs font-mono font-bold px-3 py-1.5 rounded-lg border border-emerald-200">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              PORTAL LIVE & ACTIVE
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1.5 bg-emerald-900/40 border border-emerald-700/50 px-2.5 py-1 rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] font-mono font-bold text-emerald-300 uppercase">PORTAL LIVE</span>
             </div>
           </div>
         </div>
+
+        {/* Info bar */}
+        <div className="bg-slate-50 border-t border-slate-200 px-5 py-2 flex flex-wrap gap-x-6 gap-y-2 text-[11px] font-mono text-slate-600">
+          <span><span className="font-bold text-slate-800">Date:</span> {currentDateStr}</span>
+          <span><span className="font-bold text-slate-800">Time:</span> {currentTimeStr} IST</span>
+          <span><span className="font-bold text-slate-800">Department:</span> Zila Panchayat, Sanitation Wing</span>
+          <span className="flex items-center gap-1"><Building2 className="w-3.5 h-3.5" /><span className="font-bold text-slate-800">State:</span> Uttarakhand</span>
+        </div>
       </div>
 
-      {/* Key Operational Metrics (KPI Cards) */}
+      {/* ── Section Label ── */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="w-1.5 h-5 bg-navy-800 rounded-full" />
+        <p className="text-xs font-bold text-navy-900 uppercase tracking-widest font-mono">Key Operational Metrics</p>
+        <div className="flex-1 h-px bg-slate-200" />
+      </div>
+
+      {/* ── KPI Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title="Total Registered Fleet"
@@ -118,135 +120,145 @@ export function DashboardPage() {
         />
       </div>
 
-      {/* Main Administrative Operations Grid */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* System Operational Status Panel */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
-              <div className="flex items-center gap-2">
-                <Activity className="w-4 h-4 text-emerald-700" />
-                <h3 className="font-poppins font-bold text-navy-900 text-sm">System Operational Health</h3>
+      {/* ── Section Label ── */}
+      <div className="flex items-center gap-3 pt-4">
+        <div className="w-1.5 h-5 bg-navy-800 rounded-full" />
+        <p className="text-xs font-bold text-navy-900 uppercase tracking-widest font-mono">Administrative Operations</p>
+        <div className="flex-1 h-px bg-slate-200" />
+      </div>
+
+      {/* ── Admin Grid ── */}
+      <div className="grid lg:grid-cols-2 gap-5 pb-4">
+
+        {/* System Operational Status */}
+        <div className="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">
+          <div className="bg-slate-50 border-b border-slate-200 px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Activity className="w-4 h-4 text-navy-800" />
+              <h3 className="text-xs font-bold text-navy-900 uppercase tracking-wider">System Operational Health</h3>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-slate-500 bg-white border border-slate-300 px-2 py-0.5 rounded-sm">
+              GOVERNMENT CLOUD API
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {/* Row 1 */}
+            <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-navy-900">Backend Express API Gateway</p>
+                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">Port 5000 • Operational</p>
+                </div>
               </div>
-              <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
-                GOVERNMENT CLOUD API
+              <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-sm">
+                ONLINE
               </span>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-navy-900">Backend Express API Gateway</p>
-                    <p className="text-[10px] text-slate-500 font-mono">Port 5000 • Operational</p>
-                  </div>
+            {/* Row 2 */}
+            <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-navy-900">Supabase Database &amp; Auth Cluster</p>
+                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">PostgreSQL RLS Active</p>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  ONLINE
-                </span>
               </div>
+              <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-sm">
+                CONNECTED
+              </span>
+            </div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-navy-900">Supabase Database & Auth Cluster</p>
-                    <p className="text-[10px] text-slate-500 font-mono">PostgreSQL RLS Active</p>
-                  </div>
+            {/* Row 3 */}
+            <div className="px-5 py-3.5 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Radio className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
+                <div>
+                  <p className="text-xs font-bold text-navy-900">Traccar GPS Telematics Engine</p>
+                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">Port 5055 • Device Receiver</p>
                 </div>
-                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  CONNECTED
-                </span>
               </div>
-
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2.5">
-                  <Radio className="w-4 h-4 text-emerald-600 animate-pulse shrink-0" />
-                  <div>
-                    <p className="text-xs font-bold text-navy-900">Traccar GPS Telematics Engine</p>
-                    <p className="text-[10px] text-slate-500 font-mono">Port 5055 • Device Receiver</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200">
-                  TELEMETRY READY
-                </span>
-              </div>
+              <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-sm">
+                TELEMETRY READY
+              </span>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-            <span className="font-mono text-[11px]">Security Status: 256-Bit SSL Encrypted</span>
-            <span className="font-semibold text-emerald-700 text-[11px]">Gov Cloud v1.0</span>
+          <div className="bg-slate-50 border-t border-slate-200 px-5 py-2.5 flex items-center justify-between">
+            <span className="text-[11px] font-mono text-slate-500">Security: 256-Bit SSL Encrypted</span>
+            <span className="text-[11px] font-mono font-bold text-navy-900">Gov Cloud v1.0</span>
           </div>
         </div>
 
-        {/* Administrative Quick Operations Hub */}
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-200">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-700" />
-              <h3 className="font-poppins font-bold text-navy-900 text-sm">Departmental Operations Desk</h3>
+        {/* Departmental Quick Access */}
+        <div className="bg-white border border-slate-200 shadow-sm rounded-md overflow-hidden">
+          <div className="bg-slate-50 border-b border-slate-200 px-5 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <Layers className="w-4 h-4 text-navy-800" />
+              <h3 className="text-xs font-bold text-navy-900 uppercase tracking-wider">Departmental Operations Desk</h3>
             </div>
-            <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+            <span className="text-[10px] font-mono font-bold text-slate-500 bg-white border border-slate-300 px-2 py-0.5 rounded-sm">
               DIRECT MODULES
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="divide-y divide-slate-100">
             <a
               href="/dashboard/tracking"
-              className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group shadow-2xs"
+              className="px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 group-hover:border-emerald-200 transition-colors">
-                  <MapPin className="w-4.5 h-4.5" />
+              <div className="flex items-center gap-3.5">
+                <div className="w-8 h-8 rounded-sm bg-navy-50 border border-navy-100 flex items-center justify-center shrink-0 group-hover:bg-navy-800 group-hover:border-navy-900 transition-colors">
+                  <MapPin className="w-4 h-4 text-navy-800 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-navy-900 group-hover:text-emerald-800">
-                    Live GIS Vehicle Tracking Console
-                  </p>
-                  <p className="text-[11px] text-slate-500">View real-time district map and live speeds</p>
+                  <p className="text-xs font-bold text-navy-900 group-hover:text-navy-700 transition-colors">Live GIS Vehicle Tracking Console</p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">View real-time district map and live speeds</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-1 shrink-0" />
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-navy-800 transition-transform group-hover:translate-x-1 shrink-0" />
             </a>
 
             <a
               href="/dashboard/complaints"
-              className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group shadow-2xs"
+              className="px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 group-hover:border-emerald-200 transition-colors">
-                  <MessageSquareWarning className="w-4.5 h-4.5" />
+              <div className="flex items-center gap-3.5">
+                <div className="w-8 h-8 rounded-sm bg-navy-50 border border-navy-100 flex items-center justify-center shrink-0 group-hover:bg-navy-800 group-hover:border-navy-900 transition-colors">
+                  <MessageSquareWarning className="w-4 h-4 text-navy-800 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-navy-900 group-hover:text-emerald-800">
-                    Public Grievance Redressal Desk
-                  </p>
-                  <p className="text-[11px] text-slate-500">Manage citizen complaints and resolution remarks</p>
+                  <p className="text-xs font-bold text-navy-900 group-hover:text-navy-700 transition-colors">Public Grievance Redressal Desk</p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">Manage citizen complaints and resolution remarks</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-1 shrink-0" />
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-navy-800 transition-transform group-hover:translate-x-1 shrink-0" />
             </a>
 
             <a
               href="/dashboard/vehicles"
-              className="flex items-center justify-between p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/30 transition-all group shadow-2xs"
+              className="px-5 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors group"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center shrink-0 border border-slate-200 group-hover:bg-emerald-50 group-hover:text-emerald-700 group-hover:border-emerald-200 transition-colors">
-                  <Truck className="w-4.5 h-4.5" />
+              <div className="flex items-center gap-3.5">
+                <div className="w-8 h-8 rounded-sm bg-navy-50 border border-navy-100 flex items-center justify-center shrink-0 group-hover:bg-navy-800 group-hover:border-navy-900 transition-colors">
+                  <Truck className="w-4 h-4 text-navy-800 group-hover:text-white transition-colors" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-navy-900 group-hover:text-emerald-800">
-                    Sanitation Vehicle Directory
-                  </p>
-                  <p className="text-[11px] text-slate-500">Register new collection trucks and link GPS hardware</p>
+                  <p className="text-xs font-bold text-navy-900 group-hover:text-navy-700 transition-colors">Sanitation Vehicle Directory</p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">Register collection trucks and link GPS hardware</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-700 transition-transform group-hover:translate-x-1 shrink-0" />
+              <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-navy-800 transition-transform group-hover:translate-x-1 shrink-0" />
             </a>
+          </div>
+
+          <div className="bg-slate-50 border-t border-slate-200 px-5 py-2.5">
+            <span className="text-[11px] font-mono text-slate-500 flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Authorized access only — Zila Panchayat Admin Panel
+            </span>
           </div>
         </div>
       </div>

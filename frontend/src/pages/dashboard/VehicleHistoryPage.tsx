@@ -8,24 +8,23 @@ import { EmptyState } from '@/components/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { History, MapPin, Clock, Route, Truck } from 'lucide-react';
+import { History, MapPin, Clock, Route, Truck, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Vehicle, HistoryResult } from '@/types';
 
 const startIcon = L.divIcon({
   className: 'custom-marker',
-  html: '<div style="width:24px;height:24px;border-radius:50%;background:#22C55E;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
+  html: '<div style="width:20px;height:20px;border-radius:50%;background:#16a34a;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
 });
 
 const endIcon = L.divIcon({
   className: 'custom-marker',
-  html: '<div style="width:24px;height:24px;border-radius:50%;background:#EF4444;border:3px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
+  html: '<div style="width:20px;height:20px;border-radius:50%;background:#dc2626;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);"></div>',
+  iconSize: [20, 20],
+  iconAnchor: [10, 10],
 });
 
 export function VehicleHistoryPage() {
@@ -55,7 +54,6 @@ export function VehicleHistoryPage() {
     if (!selectedVehicle || !selectedDate) return;
     setLoading(true);
     setResult(null);
-
     try {
       const data = await historyService.getHistory(selectedVehicle, selectedDate);
       setResult(data);
@@ -70,38 +68,40 @@ export function VehicleHistoryPage() {
   const selectedVehicleData = vehicles.find((v) => v.id === selectedVehicle);
 
   return (
-    <div className="animate-fade-in">
-      {/* Official Government Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
-              <History className="w-3 h-3 text-emerald-600" />
-              वाहन यात्रा इतिहास • Playback & Route Audit
-            </span>
+    <div className="animate-fade-in space-y-4">
+
+      {/* ── Page Header ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
+          <History className="w-4 h-4 text-amber-400 shrink-0" />
+          <div>
+            <p className="text-xs font-bold text-white uppercase tracking-wide">Vehicle Route History &amp; Audit Log</p>
+            <p className="text-[10px] text-slate-400 font-mono">वाहन यात्रा इतिहास | Playback &amp; Route Audit</p>
           </div>
-          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Vehicle Route History & Audit Log
-          </h1>
-          <p className="text-xs text-slate-500 mt-0.5 font-medium">
+        </div>
+        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+          <p className="text-[10px] font-mono text-slate-600">
             Analyze historical route playback, stoppage times, and daily distance covered by garbage trucks
           </p>
         </div>
       </div>
 
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardContent className="p-4 sm:p-6">
+      {/* ── Filter Panel ── */}
+      <div className="bg-white border border-slate-300 rounded overflow-hidden">
+        <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
+          <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">Search Route History</p>
+        </div>
+        <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
-            <div className="flex-1 space-y-2">
-              <Label>Select Vehicle</Label>
+            <div className="flex-1 space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Select Vehicle</Label>
               {vehiclesLoading ? (
-                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-8 w-full rounded-sm" />
               ) : (
                 <select
                   value={selectedVehicle}
                   onChange={(e) => setSelectedVehicle(e.target.value)}
-                  className="flex h-10 w-full rounded-lg border border-border bg-white px-3 py-2 text-sm font-inter text-navy-900 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
+                  className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                 >
                   <option value="">-- Select Vehicle --</option>
                   {vehicles.map((v) => (
@@ -112,63 +112,52 @@ export function VehicleHistoryPage() {
                 </select>
               )}
             </div>
-            <div className="flex-1 space-y-2">
-              <Label>Select Date</Label>
+            <div className="flex-1 space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Select Date</Label>
               <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 max={format(new Date(), 'yyyy-MM-dd')}
+                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
               />
             </div>
-            <Button
+            <button
               onClick={handleViewHistory}
               disabled={!selectedVehicle || !selectedDate || loading}
-              size="lg"
+              className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-sm transition-colors whitespace-nowrap"
             >
+              <Search className="w-3.5 h-3.5" />
               {loading ? 'Loading...' : 'View History'}
-            </Button>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Results */}
+      {/* ── Summary Cards ── */}
       {result && (
         <>
-          {/* Summary */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl border border-border p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Truck className="w-4 h-4 text-primary" />
-                <p className="text-xs text-secondary-text">Vehicle</p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {[
+              { icon: Truck, label: 'Vehicle', value: selectedVehicleData?.vehicle_number || '—' },
+              {
+                icon: Clock, label: 'Start — End', value: result.summary.startTime
+                  ? `${format(new Date(result.summary.startTime), 'HH:mm')} – ${format(new Date(result.summary.endTime!), 'HH:mm')}`
+                  : 'N/A'
+              },
+              { icon: Route, label: 'Total Distance', value: `${result.summary.totalDistance} km` },
+              { icon: MapPin, label: 'GPS Points', value: String(result.summary.totalPoints) },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="bg-white border border-slate-300 rounded overflow-hidden">
+                <div className="bg-[#f0f4f9] border-b border-slate-200 px-3 py-1.5 flex items-center gap-1.5">
+                  <Icon className="w-3 h-3 text-[#1a3a6b]" />
+                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{label}</p>
+                </div>
+                <div className="px-3 py-2.5">
+                  <p className="font-mono text-sm font-bold text-[#0a1628]">{value}</p>
+                </div>
               </div>
-              <p className="font-semibold text-navy-900">{selectedVehicleData?.vehicle_number}</p>
-            </div>
-            <div className="bg-white rounded-xl border border-border p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Clock className="w-4 h-4 text-success" />
-                <p className="text-xs text-secondary-text">Start - End</p>
-              </div>
-              <p className="font-semibold text-navy-900 text-sm">
-                {result.summary.startTime
-                  ? `${format(new Date(result.summary.startTime), 'HH:mm')} - ${format(new Date(result.summary.endTime!), 'HH:mm')}`
-                  : 'N/A'}
-              </p>
-            </div>
-            <div className="bg-white rounded-xl border border-border p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Route className="w-4 h-4 text-accent" />
-                <p className="text-xs text-secondary-text">Total Distance</p>
-              </div>
-              <p className="font-semibold text-navy-900">{result.summary.totalDistance} km</p>
-            </div>
-            <div className="bg-white rounded-xl border border-border p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <MapPin className="w-4 h-4 text-danger" />
-                <p className="text-xs text-secondary-text">GPS Points</p>
-              </div>
-              <p className="font-semibold text-navy-900">{result.summary.totalPoints}</p>
-            </div>
+            ))}
           </div>
 
           {/* Map */}
@@ -179,42 +168,50 @@ export function VehicleHistoryPage() {
               description={`No GPS data found for ${selectedVehicleData?.vehicle_number} on ${selectedDate}. GPS history is only available when a real GPS device is transmitting data.`}
             />
           ) : (
-            <div className="bg-white rounded-xl border border-border overflow-hidden shadow-sm h-[500px]">
-              <MapContainer
-                center={routeCoords[0]}
-                zoom={14}
-                className="h-full w-full"
-                scrollWheelZoom={false}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <Polyline
-                  positions={routeCoords}
-                  pathOptions={{ color: '#2563EB', weight: 4, opacity: 0.8 }}
-                />
-                <Marker position={routeCoords[0]} icon={startIcon}>
-                  <Popup>
-                    <div className="font-inter text-sm">
-                      <p className="font-semibold text-green-700">🟢 Start Point</p>
-                      <p className="text-xs text-secondary-text">
-                        {result.summary.startTime && format(new Date(result.summary.startTime), 'HH:mm:ss')}
-                      </p>
-                    </div>
-                  </Popup>
-                </Marker>
-                <Marker position={routeCoords[routeCoords.length - 1]} icon={endIcon}>
-                  <Popup>
-                    <div className="font-inter text-sm">
-                      <p className="font-semibold text-red-700">🔴 End Point</p>
-                      <p className="text-xs text-secondary-text">
-                        {result.summary.endTime && format(new Date(result.summary.endTime), 'HH:mm:ss')}
-                      </p>
-                    </div>
-                  </Popup>
-                </Marker>
-              </MapContainer>
+            <div className="bg-white border border-slate-300 rounded overflow-hidden">
+              <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
+                <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">Route Map — {selectedVehicleData?.vehicle_number}</p>
+                <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />Start</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" />End</span>
+                </div>
+              </div>
+              <div className="h-[480px]">
+                <MapContainer
+                  center={routeCoords[0]}
+                  zoom={14}
+                  className="h-full w-full"
+                  scrollWheelZoom={false}
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  <Polyline
+                    positions={routeCoords}
+                    pathOptions={{ color: '#1a3a6b', weight: 3, opacity: 0.8 }}
+                  />
+                  <Marker position={routeCoords[0]} icon={startIcon}>
+                    <Popup>
+                      <div className="font-mono text-xs">
+                        <p className="font-bold text-emerald-700">Start Point</p>
+                        <p className="text-slate-500">{result.summary.startTime && format(new Date(result.summary.startTime), 'HH:mm:ss')}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                  <Marker position={routeCoords[routeCoords.length - 1]} icon={endIcon}>
+                    <Popup>
+                      <div className="font-mono text-xs">
+                        <p className="font-bold text-red-700">End Point</p>
+                        <p className="text-slate-500">{result.summary.endTime && format(new Date(result.summary.endTime), 'HH:mm:ss')}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                </MapContainer>
+              </div>
+              <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
+                <p className="text-[10px] font-mono text-slate-500">Route Audit Log | Zila Panchayat Safai | Uttarakhand</p>
+              </div>
             </div>
           )}
         </>
@@ -222,11 +219,11 @@ export function VehicleHistoryPage() {
 
       {/* Initial empty state */}
       {!result && !loading && (
-        <EmptyState
-          icon={History}
-          title="Select a Vehicle and Date"
-          description="Choose a vehicle and a date above, then click 'View History' to see the GPS route for that day."
-        />
+        <div className="bg-white border border-slate-300 rounded p-10 text-center">
+          <History className="w-8 h-8 text-slate-300 mx-auto mb-3" />
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">Select a Vehicle and Date</p>
+          <p className="text-[11px] text-slate-400 font-mono mt-1">Choose a vehicle and date above, then click 'View History'</p>
+        </div>
       )}
     </div>
   );
