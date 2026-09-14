@@ -3,6 +3,38 @@
 @tailwind utilities;
 
 /* ============================================================ */
+/* Design Tokens — Uttarakhand Zila Panchayat Safai Portal      */
+/* Shared across Home Page AND Admin Portal                     */
+/* ============================================================ */
+
+:root {
+  /* Color Palette */
+  --color-bg: #eef1f6;
+  /* page background (home + admin) */
+  --color-navy: #0b1b36;
+  /* primary dark / text */
+  --color-navy-mid: #0f2942;
+  /* cards, hover states */
+  --color-green: #15803d;
+  /* Uttarakhand green accent */
+  --color-saffron: #ea580c;
+  /* Uttarakhand saffron accent */
+  --color-amber: #d97706;
+  /* highlight / star accent */
+  --color-surface: #ffffff;
+  /* card surfaces */
+  --color-border: #e2e8f0;
+  /* subtle borders */
+  --color-muted: #64748b;
+  /* secondary text */
+
+  /* Typography */
+  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Poppins', sans-serif;
+  --font-mono: 'Courier New', monospace;
+}
+
+/* ============================================================ */
 /* Global Styles — Uttarakhand Zila Panchayat Safai Portal      */
 /* ============================================================ */
 
@@ -17,9 +49,9 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
-  color: #0b1b36;
-  background-color: #eef1f6;
+  font-family: var(--font-body);
+  color: var(--color-navy);
+  background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,7 +62,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-heading);
 }
 
 /* ============================================================ */
@@ -124,5 +156,5 @@ h6 {
 
 /* Dashboard main area padding */
 .dashboard-main {
-  background-color: #eef1f6;
+  background-color: var(--color-bg);
 }

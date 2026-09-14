@@ -43,10 +43,6 @@ export async function getVehicleLive(req: Request, res: Response): Promise<void>
  */
 export async function receiveWebhook(req: Request, res: Response): Promise<void> {
   try {
-    console.log('[Webhook] ===== INCOMING GPS DATA =====');
-    console.log('[Webhook] Method:', req.method);
-    console.log('[Webhook] Query:', JSON.stringify(req.query));
-    console.log('[Webhook] Body:', JSON.stringify(req.body));
 
     let device_identifier: string | undefined;
     let latitude: number | undefined;
@@ -61,7 +57,6 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     // FORMAT 1: Query parameters (Traccar default forwarding)
     // URL: ?id=DEVICE_ID&lat=29.6&lon=79.6&speed=0&bearing=0&timestamp=1234567890
     if (q.id && (q.lat || q.latitude)) {
-      console.log('[Webhook] Detected: Traccar query-param format');
       device_identifier = String(q.id);
       latitude = parseFloat(String(q.lat || q.latitude));
       longitude = parseFloat(String(q.lon || q.longitude));
@@ -71,7 +66,6 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     }
     // FORMAT 2: Nested event JSON { device: { uniqueId }, position: { latitude, longitude } }
     else if (body?.device && body?.position) {
-      console.log('[Webhook] Detected: Traccar nested event format');
       device_identifier = body.device.uniqueId || body.device.name;
       latitude = body.position.latitude;
       longitude = body.position.longitude;
@@ -81,7 +75,6 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     }
     // FORMAT 3: Flat JSON { id: "DEVICE_ID", latitude, longitude }
     else if (body?.id && body?.latitude !== undefined && body?.longitude !== undefined) {
-      console.log('[Webhook] Detected: Traccar flat JSON format');
       device_identifier = String(body.id);
       latitude = body.latitude;
       longitude = body.longitude;
@@ -91,7 +84,6 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     }
     // FORMAT 4: Our direct GPS API format
     else if (body?.device_identifier && body?.latitude && body?.longitude) {
-      console.log('[Webhook] Detected: Direct GPS API format');
       device_identifier = body.device_identifier;
       latitude = body.latitude;
       longitude = body.longitude;
@@ -101,12 +93,9 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     }
 
     if (!device_identifier || latitude === undefined || longitude === undefined) {
-      console.warn('[Webhook] Could not extract GPS data from request');
       res.status(400).json({ error: 'Invalid GPS data format. Could not extract device_identifier, latitude, longitude.' });
       return;
     }
-
-    console.log(`[Webhook] Parsed: device=${device_identifier} lat=${latitude} lon=${longitude} speed=${speed}`);
 
     const result = await gpsService.processGpsPosition({
       device_identifier,
@@ -116,8 +105,6 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
       heading,
       timestamp,
     });
-
-    console.log(`[Webhook] Result:`, JSON.stringify(result));
 
     if (result.success) {
       res.json(result);

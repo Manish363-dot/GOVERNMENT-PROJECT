@@ -93,8 +93,6 @@ export async function processGpsPosition(payload: GpsPositionPayload): Promise<{
     .update({ status })
     .eq('id', vehicleId);
 
-  console.log(`[GPS] Position saved for vehicle ${vehicleId}: [${latitude}, ${longitude}] speed=${speed} status=${status}`);
-
   return { success: true, vehicleId, message: 'Position saved successfully' };
 }
 
