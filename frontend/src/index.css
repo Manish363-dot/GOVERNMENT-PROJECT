@@ -29,8 +29,8 @@
   /* secondary text */
 
   /* Typography */
-  --font-body: 'Inter', sans-serif;
-  --font-heading: 'Poppins', sans-serif;
+  --font-body: 'Inter', 'Hind', 'Noto Sans Devanagari', sans-serif;
+  --font-heading: 'Poppins', 'Hind', 'Noto Sans Devanagari', sans-serif;
   --font-mono: 'Courier New', monospace;
 }
 

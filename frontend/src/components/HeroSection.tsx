@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ShieldCheck, MessageSquareWarning, BookOpen, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/lib/supabase';
+import { BlogGalleryModal } from './BlogGalleryModal';
 
 const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg'];
 
@@ -20,6 +21,7 @@ export function HeroSection() {
   const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
+  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
 
   // Preload background images and dignitary image
   useEffect(() => {
@@ -45,9 +47,8 @@ export function HeroSection() {
         {HERO_IMAGES.map((imageUrl, idx) => (
           <div
             key={imageUrl}
-            className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out transform ${
-              idx === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
-            }`}
+            className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out transform ${idx === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
+              }`}
             style={{ backgroundImage: `url(${imageUrl})` }}
           />
         ))}
@@ -91,11 +92,9 @@ export function HeroSection() {
                 {t('hero.registerComplaint', 'Register Complaint')}
               </a>
             </Button>
-            <Button size="lg" className="bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6" asChild>
-              <a href="#blogs">
-                <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
-                {t('hero.ourBlogs', 'Our Blogs')}
-              </a>
+            <Button size="lg" className="bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6" onClick={() => setIsBlogModalOpen(true)}>
+              <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
+              {t('hero.ourBlogs', 'Our Blogs')}
             </Button>
           </div>
 
@@ -105,9 +104,8 @@ export function HeroSection() {
               <button
                 key={idx}
                 onClick={() => setCurrentImageIndex(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === currentImageIndex ? 'w-6 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImageIndex ? 'w-6 bg-amber-400' : 'w-1.5 bg-white/40 hover:bg-white/70'
+                  }`}
                 aria-label={`Slide ${idx + 1}`}
               />
             ))}
@@ -159,6 +157,7 @@ export function HeroSection() {
 
         </div>
       </div>
+      <BlogGalleryModal isOpen={isBlogModalOpen} onClose={() => setIsBlogModalOpen(false)} />
     </section>
   );
 }

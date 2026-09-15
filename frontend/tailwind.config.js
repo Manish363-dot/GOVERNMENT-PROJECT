@@ -59,8 +59,9 @@ export default {
         'secondary-text': '#64748b',
       },
       fontFamily: {
-        poppins: ['Poppins', 'sans-serif'],
-        inter: ['Inter', 'sans-serif'],
+        poppins: ['Poppins', 'Hind', 'Noto Sans Devanagari', 'sans-serif'],
+        inter: ['Inter', 'Hind', 'Noto Sans Devanagari', 'sans-serif'],
+        hind: ['Hind', 'Noto Sans Devanagari', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
