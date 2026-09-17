@@ -62,7 +62,10 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
       longitude = parseFloat(String(q.lon || q.longitude));
       speed = parseFloat(String(q.speed || 0));
       heading = parseFloat(String(q.bearing || q.course || 0));
-      timestamp = q.timestamp ? String(q.timestamp) : undefined;
+      if (q.timestamp) {
+        const ts = Number(q.timestamp);
+        timestamp = !isNaN(ts) ? new Date(ts).toISOString() : String(q.timestamp);
+      }
     }
     // FORMAT 2: Nested event JSON { device: { uniqueId }, position: { latitude, longitude } }
     else if (body?.device && body?.position) {
