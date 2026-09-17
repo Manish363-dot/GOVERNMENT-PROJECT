@@ -30,6 +30,7 @@ export async function authMiddleware(
 
     req.userId = data.user.id;
     req.userEmail = data.user.email;
+    req.user = data.user;
 
     next();
   } catch (err) {

@@ -5,8 +5,10 @@ import { Truck, Menu, X, ShieldCheck, PhoneCall } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { TopBarLogos } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/contexts/AuthContext';
 
 export function Navbar() {
+  const { user, profile } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -83,12 +85,23 @@ export function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="outline" size="sm" className="border-slate-300 text-navy-900 hover:bg-slate-50 font-bold" asChild>
-              <Link to="/signup">{t('nav.adminSignUp')}</Link>
-            </Button>
-            <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold" asChild>
-              <Link to="/signin">{t('nav.signIn')}</Link>
-            </Button>
+            {user && profile ? (
+              <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center gap-2" asChild>
+                <Link to="/dashboard">
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  Admin Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="border-slate-300 text-navy-900 hover:bg-slate-50 font-bold" asChild>
+                  <Link to="/signup">{t('nav.adminSignUp')}</Link>
+                </Button>
+                <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold" asChild>
+                  <Link to="/signin">{t('nav.signIn')}</Link>
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -119,12 +132,23 @@ export function Navbar() {
             </a>
           ))}
           <div className="flex flex-col gap-2 pt-3 border-t border-slate-200 mt-2">
-            <Button variant="outline" size="sm" className="w-full justify-center" asChild>
-              <Link to="/signup" onClick={() => setMobileOpen(false)}>{t('nav.adminSignUp')}</Link>
-            </Button>
-            <Button size="sm" className="w-full justify-center bg-navy-900 text-white" asChild>
-              <Link to="/signin" onClick={() => setMobileOpen(false)}>{t('nav.signIn')}</Link>
-            </Button>
+            {user && profile ? (
+              <Button size="sm" className="w-full justify-center bg-navy-900 text-white font-bold flex items-center gap-2" asChild>
+                <Link to="/dashboard" onClick={() => setMobileOpen(false)}>
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  Admin Dashboard
+                </Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="outline" size="sm" className="w-full justify-center" asChild>
+                  <Link to="/signup" onClick={() => setMobileOpen(false)}>{t('nav.adminSignUp')}</Link>
+                </Button>
+                <Button size="sm" className="w-full justify-center bg-navy-900 text-white" asChild>
+                  <Link to="/signin" onClick={() => setMobileOpen(false)}>{t('nav.signIn')}</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>

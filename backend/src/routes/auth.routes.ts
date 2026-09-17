@@ -14,15 +14,29 @@ const signupSchema = z.object({
   passkey: z.string().min(1, 'Admin passkey is required'),
 });
 
+const verifyOtpSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  otp: z.string().min(4, 'Verification code is required'),
+});
+
+const resendOtpSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
 const updateProfileSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
 });
 
-// Public: Admin signup with passkey
+// Public: Admin signup with passkey & OTP verification
 router.post('/signup', validate(signupSchema), authController.signup);
+router.post('/verify-otp', validate(verifyOtpSchema), authController.verifyOtp);
+router.post('/resend-otp', validate(resendOtpSchema), authController.resendOtp);
 
 // Authenticated: Profile operations
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, validate(updateProfileSchema), authController.updateProfile);
+
+// Authenticated: Finish Google OAuth signup (create profile with passkey)
+router.post('/google-callback', authMiddleware, authController.googleSignupComplete);
 
 export default router;

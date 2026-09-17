@@ -20,10 +20,15 @@ import { VehiclesPage } from '@/pages/dashboard/VehiclesPage';
 import { SettingsPage } from '@/pages/dashboard/SettingsPage';
 import { GpsDevicesPage } from '@/pages/dashboard/GpsDevicesPage';
 
+import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
+import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
+
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <AuthRedirectHandler />
+        <GooglePasskeyModal />
         <Routes>
           {/* Public routes */}
           <Route element={<PublicLayout />}>

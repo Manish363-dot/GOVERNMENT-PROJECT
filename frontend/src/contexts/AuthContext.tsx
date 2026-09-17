@@ -9,8 +9,13 @@ interface AuthContextType {
   profile: Profile | null;
   session: Session | null;
   loading: boolean;
+  isNewGoogleUser: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (data: { full_name: string; email: string; password: string; passkey: string }) => Promise<string>;
+  signInWithGoogle: () => Promise<void>;
+  signUp: (data: { full_name: string; email: string; password: string; passkey: string }) => Promise<{ message: string; email: string; requiresOtp: boolean }>;
+  verifyOtp: (email: string, otp: string) => Promise<string>;
+  resendOtp: (email: string) => Promise<string>;
+  completeGoogleSignup: (passkey: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
@@ -22,6 +27,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isNewGoogleUser, setIsNewGoogleUser] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -57,8 +63,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { profile } = await api.get<{ profile: Profile }>('/auth/profile');
       setProfile(profile);
-    } catch (err) {
-      console.error('Failed to fetch profile:', err);
+      setIsNewGoogleUser(false); // They have a profile, not new
+    } catch (err: any) {
+      if (err.message?.includes('404') || err.message?.includes('Profile not found')) {
+        // Only happens for new Google OAuth users who haven't entered passkey yet
+        setIsNewGoogleUser(true);
+      } else {
+        console.error('Failed to fetch profile:', err);
+      }
     }
   }
 
@@ -67,10 +79,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw new Error(error.message);
   }
 
-  async function signUp(data: { full_name: string; email: string; password: string; passkey: string }): Promise<string> {
-    // Signup goes through our backend (which verifies the passkey)
-    const result = await api.post<{ message: string }>('/auth/signup', data);
+  async function signInWithGoogle() {
+    sessionStorage.setItem('oauth_in_progress', 'true');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/dashboard`,
+      },
+    });
+    if (error) {
+      sessionStorage.removeItem('oauth_in_progress');
+      throw new Error(error.message);
+    }
+  }
+
+  async function signUp(data: { full_name: string; email: string; password: string; passkey: string }) {
+    // Signup goes through our backend (which verifies passkey & initiates OTP)
+    const result = await api.post<{ message: string; email: string; requiresOtp: boolean }>('/auth/signup', data);
+    return result;
+  }
+
+  async function verifyOtp(email: string, otp: string): Promise<string> {
+    const result = await api.post<{ message: string; verified: boolean }>('/auth/verify-otp', { email, otp });
     return result.message;
+  }
+
+  async function resendOtp(email: string): Promise<string> {
+    const result = await api.post<{ message: string; sent: boolean }>('/auth/resend-otp', { email });
+    return result.message;
+  }
+
+  async function completeGoogleSignup(passkey: string) {
+    await api.post('/auth/google-callback', { passkey });
+    sessionStorage.removeItem('oauth_in_progress');
+    // After success, fetch profile again to clear the 'new user' state
+    await fetchProfile();
   }
 
   async function signOut() {
@@ -90,7 +133,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, session, loading, signIn, signUp, signOut, resetPassword }}
+      value={{
+        user,
+        profile,
+        session,
+        loading,
+        isNewGoogleUser,
+        signIn,
+        signInWithGoogle,
+        signUp,
+        verifyOtp,
+        resendOtp,
+        completeGoogleSignup,
+        signOut,
+        resetPassword,
+      }}
     >
       {children}
     </AuthContext.Provider>
