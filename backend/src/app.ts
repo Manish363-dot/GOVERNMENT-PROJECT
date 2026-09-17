@@ -15,6 +15,9 @@ import complaintRoutes from './routes/complaint.routes';
 
 const app = express();
 
+// Trust Vercel proxy for rate limiting
+app.set('trust proxy', 1);
+
 // Security
 app.use(helmet());
 
