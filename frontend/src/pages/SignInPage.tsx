@@ -24,6 +24,7 @@ export function SignInPage() {
   }, [user, profile, isNewGoogleUser, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setError('');
     setLoading(true);
 
