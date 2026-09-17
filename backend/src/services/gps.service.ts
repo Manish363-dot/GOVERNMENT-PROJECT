@@ -20,7 +20,7 @@ export async function processGpsPosition(payload: GpsPositionPayload): Promise<{
     .single();
 
   if (deviceError || !device) {
-    console.warn(`[GPS] Unknown device identifier: ${device_identifier}`);
+    console.warn(`[GPS] Unknown device identifier: "${device_identifier}". Error:`, deviceError);
     return { success: false, message: 'GPS device not found' };
   }
 
