@@ -115,6 +115,12 @@ export function SettingsPage() {
               <span className="text-[11px] font-mono font-bold text-[#0a1628]">{profile?.email}</span>
             </div>
 
+            {success && (
+              <div className="mb-3 p-2.5 bg-emerald-50 border border-emerald-200 rounded-sm flex items-center gap-2">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span className="text-[11px] text-emerald-800 font-mono">{success}</span>
+              </div>
+            )}
 
 
             {error && (
