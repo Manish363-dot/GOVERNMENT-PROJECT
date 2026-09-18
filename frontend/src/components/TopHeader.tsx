@@ -15,9 +15,7 @@ const navItems = [
   { icon: MapPin, label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
   { icon: History, label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
   { icon: MessageSquareWarning, label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
-  { icon: Truck, label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' },
-  { icon: Radio, label: 'GPS Devices', labelHi: 'डिवाइस', to: '/dashboard/gps-devices' },
-  { icon: Settings, label: 'Settings', labelHi: 'सेटिंग', to: '/dashboard/settings' },
+  { icon: Truck, label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' }
 ];
 
 export function TopHeader() {
@@ -52,15 +50,20 @@ export function TopHeader() {
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
+<<<<<<< Updated upstream
           <div className="flex items-center gap-2.5">
             <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
+=======
+          <div className="flex items-center gap-2">
+>>>>>>> Stashed changes
             <div>
-              <p className="text-[12px] sm:text-[14px] font-bold text-white leading-none uppercase tracking-wide">
+              <p className="text-[16px] sm:text-[16px] font-bold text-white leading-none uppercase tracking-wide">
                 Admin Control Panel
               </p>
-              <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[9px] sm:text-[10px] text-slate-300 font-mono">
-                <span>Zila Panchayat Safai • Operations</span>
-                <span className="text-slate-500">|</span>
+              <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
+                <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
+              Zila Panchayat Safai Portal |
+              </p></span>
                 <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
               </div>
             </div>
@@ -69,15 +72,6 @@ export function TopHeader() {
 
         {/* Right: Status + User */}
         <div className="flex items-center gap-4">
-          {/* Live Status */}
-          <div className="hidden md:flex items-center gap-1.5 bg-navy-950 border border-navy-800 px-2.5 py-1 rounded">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">System Active</span>
-          </div>
-
-          <button className="relative p-1.5 text-slate-400 hover:text-white hover:bg-navy-800 rounded transition-colors hidden sm:block">
-            <Bell className="w-4 h-4" />
-          </button>
 
           <div className="w-px h-6 bg-navy-700 hidden sm:block" />
 
@@ -85,7 +79,6 @@ export function TopHeader() {
           <div className="flex items-center gap-3">
             <div className="hidden sm:block text-right">
               <p className="text-[11px] font-bold text-white leading-none">{profile?.full_name || 'Admin Officer'}</p>
-              <p className="text-[9px] text-slate-300 font-mono capitalize mt-0.5">{profile?.role || 'administrator'}</p>
             </div>
             <div className="w-8 h-8 rounded bg-navy-800 border border-navy-700 text-amber-400 flex items-center justify-center shrink-0">
               <User className="w-4 h-4" />

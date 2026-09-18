@@ -79,8 +79,7 @@ export function GpsDevicesPage() {
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <p className="text-xs font-bold text-white uppercase tracking-wide">GPS Devices &amp; Hardware Registry</p>
-              <p className="text-[10px] text-slate-400 font-mono">जीपीएस हार्डवेयर प्रबंधन | Telematics Hardware Registry</p>
+              <p className="text-[16px] font-bold text-white uppercase tracking-wide">GPS Devices &amp; Hardware Registry</p>
             </div>
           </div>
           <button
@@ -90,11 +89,6 @@ export function GpsDevicesPage() {
             <Plus className="w-3.5 h-3.5" />
             Add GPS Device
           </button>
-        </div>
-        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-          <p className="text-[10px] font-mono text-slate-600">
-            Configure Traccar telematics client IDs, hardwired GPS units, and OBD-II trackers
-          </p>
         </div>
       </div>
 
@@ -230,9 +224,6 @@ export function GpsDevicesPage() {
                 ))}
               </tbody>
             </table>
-          </div>
-          <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-            <p className="text-[10px] font-mono text-slate-500">Traccar Telematics Registry | Zila Panchayat Safai | Uttarakhand</p>
           </div>
         </div>
       )}

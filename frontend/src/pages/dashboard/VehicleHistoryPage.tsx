@@ -75,33 +75,27 @@ export function VehicleHistoryPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <History className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-xs font-bold text-white uppercase tracking-wide">Vehicle Route History &amp; Audit Log</p>
-            <p className="text-[10px] text-slate-400 font-mono">वाहन यात्रा इतिहास | Playback &amp; Route Audit</p>
+            <p className="text-[16px] font-bold text-white uppercase tracking-wide">Vehicle Route History &amp; Audit Log</p>
           </div>
-        </div>
-        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-          <p className="text-[10px] font-mono text-slate-600">
-            Analyze historical route playback, stoppage times, and daily distance covered by garbage trucks
-          </p>
         </div>
       </div>
 
       {/* ── Filter Panel ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-          <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">Search Route History</p>
+          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">Search Route History</p>
         </div>
         <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Select Vehicle</Label>
+              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Vehicle</Label>
               {vehiclesLoading ? (
                 <Skeleton className="h-8 w-full rounded-sm" />
               ) : (
                 <select
                   value={selectedVehicle}
                   onChange={(e) => setSelectedVehicle(e.target.value)}
-                  className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
+                  className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                 >
                   <option value="">-- Select Vehicle --</option>
                   {vehicles.map((v) => (
@@ -113,13 +107,13 @@ export function VehicleHistoryPage() {
               )}
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Select Date</Label>
+              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Date</Label>
               <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 max={format(new Date(), 'yyyy-MM-dd')}
-                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+                className="h-8 text-[11px] font-bold border-slate-300 rounded-sm"
               />
             </div>
             <button

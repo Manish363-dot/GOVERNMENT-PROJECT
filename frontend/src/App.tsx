@@ -17,7 +17,6 @@ import { LiveTrackingPage } from '@/pages/dashboard/LiveTrackingPage';
 import { VehicleHistoryPage } from '@/pages/dashboard/VehicleHistoryPage';
 import { ComplaintsPage } from '@/pages/dashboard/ComplaintsPage';
 import { VehiclesPage } from '@/pages/dashboard/VehiclesPage';
-import { SettingsPage } from '@/pages/dashboard/SettingsPage';
 import { GpsDevicesPage } from '@/pages/dashboard/GpsDevicesPage';
 
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
@@ -54,8 +53,6 @@ function App() {
             <Route path="history" element={<VehicleHistoryPage />} />
             <Route path="complaints" element={<ComplaintsPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
-            <Route path="gps-devices" element={<GpsDevicesPage />} />
-            <Route path="settings" element={<SettingsPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
