@@ -33,9 +33,7 @@ export function ForgotPasswordPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-navy-900 via-navy-800 to-primary-900 px-4 py-12">
       <div className="w-full max-w-md animate-scale-in">
         <div className="flex items-center justify-center gap-2.5 mb-8">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Truck className="w-5 h-5 text-white" />
-          </div>
+          <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-lg shadow-md" />
           <span className="font-poppins font-bold text-white text-xl">Zila Panchayat Safai</span>
         </div>
 

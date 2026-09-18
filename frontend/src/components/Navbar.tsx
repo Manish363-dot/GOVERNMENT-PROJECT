@@ -55,9 +55,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo & Identity */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-navy-900 text-white flex items-center justify-center border border-navy-700 shadow-xs">
-              <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
-            </div>
+            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs" />
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="font-poppins font-bold text-navy-900 text-lg sm:text-xl tracking-tight leading-none">

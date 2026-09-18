@@ -11,8 +11,8 @@ export function Footer() {
           {/* Brand & State Identity */}
           <div className="md:col-span-1">
             <div className="flex items-center gap-2.5 mb-3">
-              <div className="w-8 h-8 rounded bg-navy-900 text-amber-400 flex items-center justify-center border border-navy-800">
-                <Truck className="w-4 h-4" />
+              <div className="w-8 h-8 rounded bg-white flex items-center justify-center border border-slate-200 overflow-hidden p-0.5 shadow-xs">
+                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <span className="font-poppins font-bold text-white text-base block leading-none">

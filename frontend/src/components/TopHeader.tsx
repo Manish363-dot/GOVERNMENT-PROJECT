@@ -52,8 +52,8 @@ export function TopHeader() {
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
+          <div className="flex items-center gap-2.5">
+            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
             <div>
               <p className="text-[12px] sm:text-[14px] font-bold text-white leading-none uppercase tracking-wide">
                 Admin Control Panel

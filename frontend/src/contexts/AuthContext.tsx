@@ -59,24 +59,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
+  let activeFetchPromise: Promise<void> | null = null;
+
   async function fetchProfile() {
-    try {
-      const { profile } = await api.get<{ profile: Profile }>('/auth/profile');
-      setProfile(profile);
-      setIsNewGoogleUser(false); // They have a profile, not new
-    } catch (err: any) {
-      if (err.message?.includes('404') || err.message?.includes('Profile not found')) {
-        // Only happens for new Google OAuth users who haven't entered passkey yet
-        setIsNewGoogleUser(true);
-      } else {
-        console.error('Failed to fetch profile:', err);
+    if (activeFetchPromise) return activeFetchPromise;
+
+    activeFetchPromise = (async () => {
+      try {
+        const { profile } = await api.get<{ profile: Profile }>('/auth/profile');
+        setProfile(profile);
+        setIsNewGoogleUser(false); // They have a profile, not new
+      } catch (err: any) {
+        if (err.message?.includes('404') || err.message?.includes('Profile not found')) {
+          // Only happens for new Google OAuth users who haven't entered passkey yet
+          setIsNewGoogleUser(true);
+        } else {
+          console.error('Failed to fetch profile:', err);
+        }
+      } finally {
+        activeFetchPromise = null;
       }
-    }
+    })();
+
+    return activeFetchPromise;
   }
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw new Error(error.message);
+
+    if (data.session?.access_token) {
+      localStorage.setItem('access_token', data.session.access_token);
+      setSession(data.session);
+      setUser(data.user);
+      await fetchProfile();
+    }
   }
 
   async function signInWithGoogle() {

@@ -163,8 +163,8 @@ export function SignUpPage() {
 
             {/* Top brand block */}
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500">
-                <Truck className="w-8 h-8 text-navy-900" />
+              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
+                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold font-poppins leading-tight mb-1">
                 Zila Panchayat Safai
@@ -206,8 +206,8 @@ export function SignUpPage() {
           <div className="p-8 sm:p-10 lg:p-14 col-span-3 flex flex-col justify-center relative">
 
             {/* Back Button */}
-            <Link 
-              to="/" 
+            <Link
+              to="/"
               className="absolute top-6 right-6 lg:left-6 lg:right-auto text-slate-400 hover:text-navy-900 flex items-center gap-1.5 text-sm font-medium transition-colors z-10 bg-white/80 p-2 rounded-md lg:bg-transparent lg:p-0"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -216,8 +216,8 @@ export function SignUpPage() {
 
             {/* Mobile header */}
             <div className="lg:hidden flex items-center gap-3 mb-8 pb-6 border-b border-slate-200">
-              <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center shadow-md">
-                <Truck className="w-5 h-5 text-amber-400" />
+              <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
+                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">Zila Panchayat</h1>
