@@ -6,7 +6,14 @@ import * as gpsService from '../services/gps.service';
  * GET /api/tracking/live
  * Authenticated — returns all live vehicle locations.
  */
-
+export async function getLive(req: Request, res: Response): Promise<void> {
+  try {
+    const locations = await trackingService.getLiveLocations();
+    res.json({ locations });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch live locations' });
+  }
+}
 
 /**
  * GET /api/tracking/live/:vehicleId
