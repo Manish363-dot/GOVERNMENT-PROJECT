@@ -36,13 +36,13 @@ app.use(express.urlencoded({ extended: true }));
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // max 100 requests per window
+  max: 1000, // max 1000 requests per window
   message: { error: 'Too many requests, please try again later.' },
 });
 
 const complaintLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // max 10 complaints per hour per IP
+  max: 100, // max 100 complaints per hour per IP
   message: { error: 'Too many complaints submitted. Please try again later.' },
 });
 
