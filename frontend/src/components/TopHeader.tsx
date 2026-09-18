@@ -50,12 +50,8 @@ export function TopHeader() {
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-<<<<<<< Updated upstream
           <div className="flex items-center gap-2.5">
             <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
-=======
-          <div className="flex items-center gap-2">
->>>>>>> Stashed changes
             <div>
               <p className="text-[16px] sm:text-[16px] font-bold text-white leading-none uppercase tracking-wide">
                 Admin Control Panel
