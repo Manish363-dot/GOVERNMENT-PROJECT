@@ -132,8 +132,7 @@ export function VehiclesPage() {
           <div className="flex items-center gap-2">
             <Truck className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <p className="text-xs font-bold text-white uppercase tracking-wide">Sanitation Vehicles Directory</p>
-              <p className="text-[10px] text-slate-400 font-mono">वाहन बेड़ा प्रबंधन | District Fleet Registry</p>
+              <p className="text-[16px] font-bold text-white uppercase tracking-wide">Sanitation Vehicles Directory</p>
             </div>
           </div>
           <button
@@ -143,11 +142,6 @@ export function VehiclesPage() {
             <Plus className="w-3.5 h-3.5" />
             Add New Vehicle
           </button>
-        </div>
-        <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-          <p className="text-[10px] font-mono text-slate-600">
-            Register, manage, and link GPS devices to municipal waste collection trucks
-          </p>
         </div>
       </div>
 
@@ -295,7 +289,7 @@ export function VehiclesPage() {
       ) : (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-            <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+            <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">
               Vehicle Register — {vehicles.length} Record(s)
             </p>
           </div>
@@ -303,24 +297,24 @@ export function VehiclesPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fc]">
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Vehicle No.</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Name</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Type</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Status</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Registered On</th>
-                  <th className="text-right px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Actions</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Vehicle No.</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Name</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Type</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Status</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Registered On</th>
+                  <th className="text-right px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {vehicles.map((vehicle) => (
                   <tr key={vehicle.id} className="hover:bg-[#f7f9fc] transition-colors">
-                    <td className="px-4 py-2.5 font-mono text-[11px] font-bold text-[#1a3a6b]">{vehicle.vehicle_number}</td>
-                    <td className="px-4 py-2.5 text-[11px] text-slate-700">{vehicle.vehicle_name || '—'}</td>
-                    <td className="px-4 py-2.5 text-[11px] text-slate-600 font-mono">{vehicleTypeLabels[vehicle.vehicle_type]}</td>
+                    <td className="px-4 py-2.5 font-bold text-[12px] font-bold text-[#1a3a6b]">{vehicle.vehicle_number}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-slate-700">{vehicle.vehicle_name || '—'}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-slate-600 font-bold">{vehicleTypeLabels[vehicle.vehicle_type]}</td>
                     <td className="px-4 py-2.5">
                       <Badge variant={vehicle.status as any}>{vehicle.status}</Badge>
                     </td>
-                    <td className="px-4 py-2.5 text-[11px] text-slate-500 font-mono">
+                    <td className="px-4 py-2.5 text-[12px] text-slate-500 font-bold">
                       {format(new Date(vehicle.created_at), 'dd MMM yyyy')}
                     </td>
                     <td className="px-4 py-2.5 text-right">
@@ -352,7 +346,7 @@ export function VehiclesPage() {
             </table>
           </div>
           <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-            <p className="text-[10px] font-mono text-slate-500">District Fleet Registry | Zila Panchayat Safai | Uttarakhand</p>
+            
           </div>
         </div>
       )}
