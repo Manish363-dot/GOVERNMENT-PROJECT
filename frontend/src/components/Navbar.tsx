@@ -108,7 +108,13 @@ export function Navbar() {
             className="md:hidden p-2 rounded-md text-navy-900 hover:bg-slate-100 transition-colors"
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileOpen ? <X className="w-6 h-6" /> : (
+              <div className="flex flex-col gap-[4px] w-6 h-6 justify-center items-center">
+                <span className="w-6 h-[2.5px] bg-[#FF9933] rounded-full" />
+                <span className="w-6 h-[2.5px] bg-slate-300 rounded-full" />
+                <span className="w-6 h-[2.5px] bg-[#138808] rounded-full" />
+              </div>
+            )}
           </button>
         </div>
       </div>
