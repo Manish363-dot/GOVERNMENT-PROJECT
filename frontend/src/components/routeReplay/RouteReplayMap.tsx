@@ -115,6 +115,8 @@ export function RouteReplayMap({
     isFullscreen,
     onToggleFullscreen,
 }: RouteReplayMapProps) {
+    const { i18n } = useTranslation();
+    const isHi = i18n.language === 'hi';
     const currentPoint = dataset.points[currentPointIndex] || dataset.points[0];
     const routeCoords = dataset.points.map((p) => [p.latitude, p.longitude] as [number, number]);
 
@@ -135,7 +137,7 @@ export function RouteReplayMap({
                 <div className="flex items-center gap-2">
                     <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
                     <span className="font-poppins text-xs font-bold uppercase tracking-wider text-slate-100 truncate">
-                        Route Replay Console — {dataset.vehicleNumber} ({dataset.date})
+                        {isHi ? 'रूट रीप्ले कंसोल' : 'Route Replay Console'} — {dataset.vehicleNumber} ({dataset.date})
                     </span>
                 </div>
 
@@ -147,20 +149,20 @@ export function RouteReplayMap({
                             'px-2.5 py-1 text-[11px] font-bold rounded flex items-center gap-1.5 transition-colors',
                             followTruck ? 'bg-emerald-600 text-white shadow-xs' : 'bg-navy-800 text-slate-300 hover:text-white'
                         )}
-                        title="Keep map camera centered on truck"
+                        title={isHi ? 'कैमरा वाहन पर केंद्रित रखें' : 'Keep map camera centered on truck'}
                     >
                         <Navigation className={cn('w-3.5 h-3.5', followTruck && 'animate-spin')} />
-                        <span className="hidden sm:inline">{followTruck ? 'Camera Locked' : 'Free Camera'}</span>
+                        <span className="hidden sm:inline">{followTruck ? (isHi ? 'कैमरा लॉक' : 'Camera Locked') : (isHi ? 'स्वतंत्र कैमरा' : 'Free Camera')}</span>
                     </button>
 
                     {/* Fullscreen Toggle */}
                     <button
                         onClick={onToggleFullscreen}
                         className="px-2.5 py-1 text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1 shadow-xs transition-colors"
-                        title={isFullscreen ? 'Exit Fullscreen' : 'Fullscreen Map'}
+                        title={isFullscreen ? (isHi ? 'फुलस्क्रीन से बाहर निकलें' : 'Exit Fullscreen') : (isHi ? 'फुलस्क्रीन मानचित्र' : 'Fullscreen Map')}
                     >
                         {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
-                        <span className="hidden sm:inline">{isFullscreen ? 'Exit' : 'Fullscreen'}</span>
+                        <span className="hidden sm:inline">{isFullscreen ? (isHi ? 'निकास' : 'Exit') : (isHi ? 'फुलस्क्रीन' : 'Fullscreen')}</span>
                     </button>
                 </div>
             </div>
@@ -329,7 +331,7 @@ export function RouteReplayMap({
                         >
                             <Tooltip permanent direction="top" offset={[0, -22]}>
                                 <div className="text-[11px] font-bold font-mono text-navy-900 px-1 py-0.5 bg-white/95 rounded shadow-xs">
-                                    🚛 {dataset.vehicleNumber} • {currentPoint.speed} km/h
+                                    🚛 {dataset.vehicleNumber} • {currentPoint.speed} {isHi ? 'किमी/घं' : 'km/h'}
                                 </div>
                             </Tooltip>
                         </Marker>
@@ -340,16 +342,16 @@ export function RouteReplayMap({
             {/* Floating Legend / Quick Status Bar overlay */}
             <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-xs border border-slate-300 rounded-lg px-3 py-1.5 shadow-md hidden sm:flex items-center gap-3 text-[11px] font-mono">
                 <span className="flex items-center gap-1 text-slate-700">
-                    <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" /> Master Route
+                    <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" /> {isHi ? 'मुख्य मार्ग' : 'Master Route'}
                 </span>
                 <span className="flex items-center gap-1 text-emerald-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> Bin Cleaned
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" /> {isHi ? 'कचरा पात्र संकलित' : 'Bin Cleaned'}
                 </span>
                 <span className="flex items-center gap-1 text-amber-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> Stop
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block" /> {isHi ? 'ठहराव' : 'Stop'}
                 </span>
                 <span className="flex items-center gap-1 text-red-700">
-                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse inline-block" /> Unexpected Stop
+                    <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse inline-block" /> {isHi ? 'अनपेक्षित ठहराव' : 'Unexpected Stop'}
                 </span>
             </div>
         </div>
