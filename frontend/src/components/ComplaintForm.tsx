@@ -35,13 +35,13 @@ export function ComplaintForm() {
 
     // Basic validation
     if (!form.name.trim() || !form.mobile.trim() || !form.area.trim()) {
-      setError('Please fill in all required fields.');
+      setError(t('complaint.form.validationRequired'));
       setLoading(false);
       return;
     }
 
     if (!/^[6-9]\d{9}$/.test(form.mobile)) {
-      setError('Please enter a valid 10-digit mobile number.');
+      setError(t('complaint.form.validationMobile'));
       setLoading(false);
       return;
     }
@@ -51,7 +51,7 @@ export function ComplaintForm() {
       setSuccess(result.complaint_number);
       setForm({ name: '', mobile: '', area: '', complaint_type: 'vehicle_not_arrived', description: '' });
     } catch (err: any) {
-      setError(err.message || 'Failed to submit complaint. Please try again.');
+      setError(err.message || t('complaint.form.errorSubmit'));
     } finally {
       setLoading(false);
     }
@@ -65,7 +65,7 @@ export function ComplaintForm() {
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-amber-100 text-amber-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-amber-200">
               <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
-              Public Grievance Redressal
+              {t('complaint.info.badge')}
             </div>
 
             <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
@@ -81,8 +81,8 @@ export function ComplaintForm() {
                   1
                 </div>
                 <div>
-                  <p className="font-semibold text-navy-900 text-sm">Submit Grievance Form</p>
-                  <p className="text-xs text-slate-500">Provide your contact details and description of the issue.</p>
+                  <p className="font-semibold text-navy-900 text-sm">{t('complaint.info.step1Title')}</p>
+                  <p className="text-xs text-slate-500">{t('complaint.info.step1Desc')}</p>
                 </div>
               </div>
 
@@ -91,8 +91,8 @@ export function ComplaintForm() {
                   2
                 </div>
                 <div>
-                  <p className="font-semibold text-navy-900 text-sm">Receive Official Complaint Reference</p>
-                  <p className="text-xs text-slate-500">A unique ZP reference number (e.g. ZP-2026-00001) will be generated.</p>
+                  <p className="font-semibold text-navy-900 text-sm">{t('complaint.info.step2Title')}</p>
+                  <p className="text-xs text-slate-500">{t('complaint.info.step2Desc')}</p>
                 </div>
               </div>
 
@@ -101,8 +101,8 @@ export function ComplaintForm() {
                   3
                 </div>
                 <div>
-                  <p className="font-semibold text-navy-900 text-sm">Action by Administration</p>
-                  <p className="text-xs text-slate-500">Zila Panchayat administration will inspect and resolve the issue.</p>
+                  <p className="font-semibold text-navy-900 text-sm">{t('complaint.info.step3Title')}</p>
+                  <p className="text-xs text-slate-500">{t('complaint.info.step3Desc')}</p>
                 </div>
               </div>
             </div>
@@ -117,7 +117,7 @@ export function ComplaintForm() {
                 </div>
                 <div>
                   <CardTitle className="text-base font-bold text-white">{t('complaint.title')}</CardTitle>
-                  <CardDescription className="text-xs text-slate-300">Uttarakhand Public Service Portal</CardDescription>
+                  <CardDescription className="text-xs text-slate-300">{t('complaint.portalSub')}</CardDescription>
                 </div>
               </div>
             </CardHeader>

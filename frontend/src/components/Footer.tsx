@@ -1,6 +1,8 @@
 import { Truck, Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function Footer() {
+  const { t } = useTranslation();
   return (
     <footer className="bg-navy-950 text-white border-t border-navy-900">
       {/* Tricolor Accent Bar */}
@@ -16,33 +18,38 @@ export function Footer() {
               </div>
               <div>
                 <span className="font-poppins font-bold text-white text-base block leading-none">
-                  Zila Panchayat Safai
+                  {t('footer.brandName')}
                 </span>
                 <span className="text-[10px] font-medium text-emerald-400 tracking-wider uppercase block mt-0.5">
-                  Government of Uttarakhand
+                  {t('footer.govBadge')}
                 </span>
               </div>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed mb-4">
-              Smart Waste Collection Tracking & Citizen Grievance Redressal Service Portal for Devbhoomi Uttarakhand.
+              {t('footer.desc')}
             </p>
             <div className="inline-flex items-center gap-1 text-[10px] text-emerald-300 font-semibold bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60 uppercase">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              Official Digital Portal
+              {t('footer.officialBadge')}
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">Portal Links</h4>
+            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">{t('footer.linksTitle')}</h4>
             <ul className="space-y-2">
-              {['Home', 'About', 'Complaint', 'Contact'].map((item) => (
-                <li key={item}>
+              {[
+                { name: t('nav.home'), href: '/' },
+                { name: t('nav.about'), href: '/#about' },
+                { name: t('nav.complaint'), href: '/#complaint' },
+                { name: t('nav.contact'), href: '/#contact' }
+              ].map((item) => (
+                <li key={item.name}>
                   <a
-                    href={item === 'Home' ? '/' : `/#${item.toLowerCase()}`}
+                    href={item.href}
                     className="text-xs text-slate-400 hover:text-white transition-colors"
                   >
-                    {item}
+                    {item.name}
                   </a>
                 </li>
               ))}
@@ -51,9 +58,14 @@ export function Footer() {
 
           {/* Core Services */}
           <div>
-            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">Public Services</h4>
+            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">{t('footer.servicesTitle')}</h4>
             <ul className="space-y-2">
-              {['Real-Time GPS Fleet Tracking', 'Daily Vehicle Route History', 'Grievance Submission Portal', 'District Administrative Control'].map((item) => (
+              {[
+                t('footer.services.tracking'),
+                t('footer.services.history'),
+                t('footer.services.grievance'),
+                t('footer.services.admin')
+              ].map((item) => (
                 <li key={item}>
                   <span className="text-xs text-slate-400">{item}</span>
                 </li>
@@ -63,7 +75,7 @@ export function Footer() {
 
           {/* Official Contact */}
           <div>
-            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">State Helpline</h4>
+            <h4 className="font-poppins font-semibold text-xs tracking-wider uppercase mb-3 text-slate-300">{t('footer.contactTitle')}</h4>
             <ul className="space-y-2.5">
               <li className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-amber-400" />
@@ -75,7 +87,7 @@ export function Footer() {
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="w-3.5 h-3.5 text-blue-400 mt-0.5" />
-                <span className="text-xs text-slate-300">Zila Panchayat Bhavan, District HQ, Uttarakhand</span>
+                <span className="text-xs text-slate-300">{t('footer.hqAddress')}</span>
               </li>
             </ul>
           </div>
@@ -83,10 +95,10 @@ export function Footer() {
 
         <div className="border-t border-navy-900 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <p className="text-xs text-slate-500">
-            © {new Date().getFullYear()} Zila Panchayat Safai Portal • Government of Uttarakhand. All rights reserved.
+            {t('footer.copyright', { year: new Date().getFullYear() })}
           </p>
           <p className="text-[11px] text-slate-500">
-            Designed for Uttarakhand Digital Governance & Smart Waste Collection
+            {t('footer.designedFor')}
           </p>
         </div>
       </div>

@@ -8,7 +8,9 @@ import {
   Truck, Radio, Settings
 } from 'lucide-react';
 import { TopBarLogos } from '@/components/TopBarLogos';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
@@ -21,6 +23,7 @@ const navItems = [
 export function TopHeader() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [now, setNow] = useState(new Date());
 
@@ -60,11 +63,11 @@ export function TopHeader() {
             <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
             <div>
               <p className="text-[16px] sm:text-[16px] font-bold text-white leading-none uppercase tracking-wide">
-                Admin Control Panel
+                {t('admin.nav.controlPanel')}
               </p>
               <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
                 <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
-              Zila Panchayat Safai Portal |
+              {t('admin.nav.portalTitle')} |
               </p></span>
                 <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
               </div>
@@ -74,6 +77,13 @@ export function TopHeader() {
 
         {/* Right: Status + User */}
         <div className="flex items-center gap-4">
+
+          <div className="w-px h-6 bg-navy-700 hidden sm:block" />
+
+          {/* Language Switcher */}
+          <div className="hidden sm:block">
+            <LanguageSwitcher />
+          </div>
 
           <div className="w-px h-6 bg-navy-700 hidden sm:block" />
 
@@ -121,7 +131,9 @@ export function TopHeader() {
                       isActive ? 'text-amber-400' : 'text-slate-400'
                     )}
                   />
-                  <span>{item.label}</span>
+                  <div className="flex flex-col items-center justify-center leading-none">
+                    <span>{t(`admin.nav.${item.to.split('/').pop() || 'dashboard'}`)}</span>
+                  </div>
                 </>
               )}
             </NavLink>
@@ -157,8 +169,7 @@ export function TopHeader() {
                       )}
                     />
                     <div className="flex gap-2 items-center">
-                      <span>{item.label}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">| {item.labelHi}</span>
+                      <span>{t(`admin.nav.${item.to.split('/').pop() || 'dashboard'}`)}</span>
                     </div>
                   </>
                 )}
@@ -170,7 +181,7 @@ export function TopHeader() {
               className="flex items-center gap-3 px-6 py-2.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors w-full text-left"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>Sign Out</span>
+              <span>{t('admin.nav.signOut')}</span>
             </button>
           </nav>
         </div>

@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
+import { useTranslation } from 'react-i18next';
 
 const statusLabels: Record<string, string> = {
   new: 'New',
@@ -25,6 +26,7 @@ const complaintTypeLabels: Record<string, string> = {
 };
 
 export function ComplaintsPage() {
+  const { t } = useTranslation();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -93,10 +95,10 @@ export function ComplaintsPage() {
   }
 
   const filterTabs = [
-    { key: 'all', label: 'All Grievances' },
-    { key: 'new', label: 'New' },
-    { key: 'in_progress', label: 'In Progress' },
-    { key: 'resolved', label: 'Resolved' },
+    { key: 'all', label: t('admin.complaints.tabs.all') },
+    { key: 'new', label: t('admin.complaints.tabs.new') },
+    { key: 'in_progress', label: t('admin.complaints.tabs.inProgress') },
+    { key: 'resolved', label: t('admin.complaints.tabs.resolved') },
   ];
 
   return (
@@ -107,7 +109,9 @@ export function ComplaintsPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <MessageSquareWarning className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">Grievance &amp; Complaints Desk</p>
+            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+              {t('admin.complaints.title')}
+            </p>
           </div>
         </div>
       </div>
@@ -139,8 +143,8 @@ export function ComplaintsPage() {
       ) : complaints.length === 0 ? (
         <EmptyState
           icon={MessageSquareWarning}
-          title="No Complaints Available"
-          description="There are no complaints to display. When citizens submit complaints through the website, they will appear here."
+          title={t('admin.complaints.emptyTitle')}
+          description={t('admin.complaints.emptyDesc')}
         />
       ) : (
         <div className="grid lg:grid-cols-5 gap-4">
@@ -148,7 +152,7 @@ export function ComplaintsPage() {
           <div className="lg:col-span-3 bg-white border border-slate-300 rounded overflow-hidden">
             <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
               <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
-                Grievance Register — {complaints.length} Record(s)
+                {t('admin.complaints.register')} — {complaints.length} {t('admin.complaints.records')}
               </p>
             </div>
             <div className="divide-y divide-slate-200 max-h-[600px] overflow-y-auto">
@@ -195,7 +199,7 @@ export function ComplaintsPage() {
                 <div className="bg-[#0a1628] px-4 py-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-amber-400" />
-                    <p className="text-[14px] font-bold text-white uppercase tracking-wider">Complaint Details</p>
+                    <p className="text-[14px] font-bold text-white uppercase tracking-wider">{t('admin.complaints.title')}</p>
                   </div>
                   <button onClick={() => setSelectedComplaint(null)} className="text-slate-400 hover:text-white transition-colors">
                     <X className="w-3.5 h-3.5" />
@@ -212,10 +216,10 @@ export function ComplaintsPage() {
                   {/* Details rows */}
                   <div className="px-4 py-3 space-y-2">
                     {[
-                      { icon: User, label: 'Complainant', value: selectedComplaint.name },
-                      { icon: Phone, label: 'Mobile', value: selectedComplaint.mobile },
-                      { icon: MapPin, label: 'Area/Ward', value: selectedComplaint.area },
-                      { icon: Clock, label: 'Filed On', value: format(new Date(selectedComplaint.created_at), 'dd MMM yyyy, HH:mm') },
+                      { icon: User, label: t('admin.complaints.complainant'), value: selectedComplaint.name },
+                      { icon: Phone, label: t('admin.complaints.mobile'), value: selectedComplaint.mobile },
+                      { icon: MapPin, label: t('admin.complaints.area'), value: selectedComplaint.area },
+                      { icon: Clock, label: t('admin.complaints.filedOn'), value: format(new Date(selectedComplaint.created_at), 'dd MMM yyyy, HH:mm') },
                     ].map(({ icon: Icon, label, value }) => (
                       <div key={label} className="flex items-center gap-2 text-[11px]">
                         <Icon className="w-3 h-3 text-slate-400 shrink-0" />
@@ -227,11 +231,11 @@ export function ComplaintsPage() {
 
                   {/* Type + Description */}
                   <div className="px-4 py-3 bg-[#f7f9fc]">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">Complaint Type</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">{t('admin.complaints.type')}</p>
                     <p className="text-[11px] font-semibold text-[#0a1628]">{complaintTypeLabels[selectedComplaint.complaint_type]}</p>
                     {selectedComplaint.description && (
                       <>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1 mt-2">Description</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1 mt-2">{t('admin.complaints.desc')}</p>
                         <p className="text-[11px] text-slate-700">{selectedComplaint.description}</p>
                       </>
                     )}
@@ -239,18 +243,18 @@ export function ComplaintsPage() {
 
                   {/* Update Status */}
                   <div className="px-4 py-3 space-y-2">
-                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Update Status</p>
+                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">{t('admin.complaints.updateStatus')}</p>
                     <select
                       value={statusForm.status}
                       onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
                       className="w-full h-8 border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                     >
-                      <option value="new">New</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
+                      <option value="new">{statusLabels.new}</option>
+                      <option value="in_progress">{statusLabels.in_progress}</option>
+                      <option value="resolved">{statusLabels.resolved}</option>
                     </select>
                     <Textarea
-                      placeholder="Add official remark..."
+                      placeholder={t('admin.complaints.placeholder')}
                       value={statusForm.remark}
                       onChange={(e) => setStatusForm({ ...statusForm, remark: e.target.value })}
                       rows={2}
@@ -262,14 +266,14 @@ export function ComplaintsPage() {
                       className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
                     >
                       <Save className="w-3 h-3" />
-                      {updating ? 'Updating...' : 'Update Status'}
+                      {updating ? t('admin.complaints.btnUpdating') : t('admin.complaints.btnUpdate')}
                     </button>
                   </div>
 
                   {/* Update history */}
                   {updates.length > 0 && (
                     <div className="px-4 py-3">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-2">Update History</p>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-2">{t('admin.complaints.history')}</p>
                       <div className="space-y-1 max-h-36 overflow-y-auto">
                         {updates.map((update) => (
                           <div key={update.id} className="flex items-center justify-between text-[10px] px-2 py-1.5 bg-[#f0f4f9] border border-slate-200 rounded-sm">
@@ -289,7 +293,7 @@ export function ComplaintsPage() {
             ) : (
               <div className="bg-white border border-slate-300 rounded p-8 text-center">
                 <MessageSquareWarning className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-                <p className="text-[11px] font-mono text-slate-500">Select a complaint from the register to view details</p>
+                <p className="text-[11px] font-mono text-slate-500">{t('admin.complaints.selectText')}</p>
               </div>
             )}
           </div>

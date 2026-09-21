@@ -1,6 +1,9 @@
 import { Phone, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function TollFreeSection() {
+  const { t } = useTranslation();
+  
   return (
     <section className="py-12 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,14 +18,14 @@ export function TollFreeSection() {
           <div className="relative">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-emerald-950 text-emerald-300 text-xs font-semibold uppercase tracking-wider mb-4 border border-emerald-800">
               <ShieldCheck className="w-3.5 h-3.5" />
-              Official Citizen Helpline
+              {t('tollFree.badge')}
             </div>
 
             <h2 className="font-poppins text-2xl sm:text-3xl font-bold mb-3">
-              Uttarakhand State Service Assistance
+              {t('tollFree.title')}
             </h2>
             <p className="text-slate-300 mb-6 max-w-md mx-auto text-sm">
-              Call our official toll-free helpline for urgent assistance regarding waste collection operations.
+              {t('tollFree.subtitle')}
             </p>
 
             <div className="inline-flex items-center gap-4 bg-navy-950/90 rounded-md px-6 py-4 border border-slate-700 shadow-xs">
@@ -30,13 +33,13 @@ export function TollFreeSection() {
                 <Phone className="w-6 h-6" />
               </div>
               <div className="text-left">
-                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Toll-Free Helpline</p>
+                <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">{t('tollFree.label')}</p>
                 <p className="font-poppins text-2xl sm:text-3xl font-bold tracking-wide text-white">1800-185-1850</p>
               </div>
             </div>
 
             <p className="mt-4 text-xs text-slate-400">
-              Available during official hours • Government of Uttarakhand Digital Assistance
+              {t('tollFree.note')}
             </p>
           </div>
         </div>

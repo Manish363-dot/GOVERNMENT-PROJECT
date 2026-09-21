@@ -5,13 +5,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Mail, MapPin, Send, ShieldCheck } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function ContactSection() {
+  const { t } = useTranslation();
   const [form, setForm] = useState({ name: '', email: '', message: '' });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Thank you for your message! We will get back to you soon.');
+    alert(t('contact.form.success'));
     setForm({ name: '', email: '', message: '' });
   };
 
@@ -21,13 +23,13 @@ export function ContactSection() {
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-200 text-navy-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-300">
             <ShieldCheck className="w-3.5 h-3.5 text-navy-700" />
-            District Contact & Desk
+            {t('contact.badge')}
           </div>
           <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
-            Contact Administration
+            {t('contact.title')}
           </h2>
           <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
-            Reach out to Zila Panchayat Safai administration for queries or official assistance.
+            {t('contact.subtitle')}
           </p>
         </div>
 
@@ -40,7 +42,7 @@ export function ContactSection() {
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-slate-500 font-medium uppercase">Toll-Free Helpline</p>
+                  <p className="text-[11px] text-slate-500 font-medium uppercase">{t('contact.tollFreeLabel')}</p>
                   <p className="font-bold text-navy-900 text-sm">1800-185-1850</p>
                 </div>
               </CardContent>
@@ -52,7 +54,7 @@ export function ContactSection() {
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-slate-500 font-medium uppercase">Official Portal Email</p>
+                  <p className="text-[11px] text-slate-500 font-medium uppercase">{t('contact.emailLabel')}</p>
                   <p className="font-semibold text-navy-900 text-xs sm:text-sm">safai@zilapanchayat.uk.gov.in</p>
                 </div>
               </CardContent>
@@ -64,8 +66,8 @@ export function ContactSection() {
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] text-slate-500 font-medium uppercase">Headquarters Office</p>
-                  <p className="font-semibold text-navy-900 text-xs sm:text-sm">Zila Panchayat Bhavan, District HQ, Uttarakhand</p>
+                  <p className="text-[11px] text-slate-500 font-medium uppercase">{t('contact.hqLabel')}</p>
+                  <p className="font-semibold text-navy-900 text-xs sm:text-sm">{t('contact.hqAddress')}</p>
                 </div>
               </CardContent>
             </Card>
@@ -77,10 +79,10 @@ export function ContactSection() {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="contact-name" className="text-xs font-semibold text-navy-900">Your Name</Label>
+                    <Label htmlFor="contact-name" className="text-xs font-semibold text-navy-900">{t('contact.form.nameLabel')}</Label>
                     <Input
                       id="contact-name"
-                      placeholder="Enter your full name"
+                      placeholder={t('contact.form.namePlaceholder')}
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="border-slate-300 focus:border-navy-900 text-sm"
@@ -88,11 +90,11 @@ export function ContactSection() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="contact-email" className="text-xs font-semibold text-navy-900">Email Address</Label>
+                    <Label htmlFor="contact-email" className="text-xs font-semibold text-navy-900">{t('contact.form.emailLabel')}</Label>
                     <Input
                       id="contact-email"
                       type="email"
-                      placeholder="Enter your official or personal email"
+                      placeholder={t('contact.form.emailPlaceholder')}
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="border-slate-300 focus:border-navy-900 text-sm"
@@ -101,10 +103,10 @@ export function ContactSection() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="contact-message" className="text-xs font-semibold text-navy-900">Message / Query</Label>
+                  <Label htmlFor="contact-message" className="text-xs font-semibold text-navy-900">{t('contact.form.messageLabel')}</Label>
                   <Textarea
                     id="contact-message"
-                    placeholder="Write your message or inquiry here..."
+                    placeholder={t('contact.form.messagePlaceholder')}
                     value={form.message}
                     onChange={(e) => setForm({ ...form, message: e.target.value })}
                     className="border-slate-300 focus:border-navy-900 text-sm"
@@ -114,7 +116,7 @@ export function ContactSection() {
                 </div>
                 <Button type="submit" size="lg" className="bg-navy-900 hover:bg-navy-800 text-white font-medium shadow-xs">
                   <Send className="w-4 h-4 mr-2" />
-                  Submit Inquiry
+                  {t('contact.form.submit')}
                 </Button>
               </form>
             </CardContent>

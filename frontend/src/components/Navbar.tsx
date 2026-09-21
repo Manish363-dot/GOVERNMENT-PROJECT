@@ -52,17 +52,15 @@ export function Navbar() {
 
       {/* Main Header Brand & Navigation */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="flex items-center justify-between h-14 sm:h-20">
           {/* Logo & Identity */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs" />
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="font-poppins font-bold text-navy-900 text-lg sm:text-xl tracking-tight leading-none">
-                  {t('nav.brandName')}
-                </span>
-              </div>
-              <span className="text-[11px] font-bold text-ukgreen-800 tracking-wide uppercase block mt-0.5">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-8 h-8 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs shrink-0" />
+            <div className="flex flex-col justify-center">
+              <span className="font-poppins font-bold text-navy-900 text-[15px] sm:text-xl tracking-tight leading-none mb-[2px] sm:mb-0">
+                {t('nav.brandName')}
+              </span>
+              <span className="text-[8px] sm:text-[11px] font-bold text-ukgreen-800 tracking-wide uppercase leading-[1.1] sm:mt-0.5 max-w-[190px] sm:max-w-none">
                 {t('nav.brandTagline')}
               </span>
             </div>

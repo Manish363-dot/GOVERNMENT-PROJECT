@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { VehicleCurrentLocation } from '@/types';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 // Map Tile Layers Configuration
 const TILE_LAYERS = {
@@ -114,6 +115,7 @@ function MapControlsHandler({
 }
 
 export function LiveTrackingPage() {
+  const { t } = useTranslation();
   const [locations, setLocations] = useState<VehicleCurrentLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
@@ -270,13 +272,13 @@ export function LiveTrackingPage() {
         <div className="flex flex-col gap-1 pb-4 border-b border-slate-200">
           <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 uppercase tracking-wider w-fit">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            उत्तराखंड शासन • GIS Live Command Portal
+            {t('admin.tracking.govBadge')}
           </span>
           <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Live Vehicle Telematics &amp; GPS Console
+            {t('admin.tracking.title')}
           </h1>
           <p className="text-xs text-slate-500 font-medium">
-            Real-time District Waste Collection Vehicle Tracking, Speed Metrics &amp; Route Auditing
+            {t('admin.tracking.subtitle')}
           </p>
         </div>
         <GarbageTruckLoader
@@ -294,7 +296,7 @@ export function LiveTrackingPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Live Vehicle Telematics & GPS Console
+            {t('admin.tracking.title')}
           </h1>
         </div>
 
@@ -303,7 +305,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Moving</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{movingCount}</span>
             </div>
           </div>
@@ -311,7 +313,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Idle</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{idleCount}</span>
             </div>
           </div>
@@ -319,7 +321,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Offline</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{offlineCount}</span>
             </div>
           </div>
@@ -340,13 +342,13 @@ export function LiveTrackingPage() {
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
               <span className="font-poppins text-xs font-bold uppercase tracking-wider text-slate-100">
-                Zila Panchayat GIS Telematics Map
+                {t('admin.tracking.mapTitle')}
               </span>
             </div>
 
             {/* Map Layer Controls & Fullscreen Button */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono text-slate-300 hidden sm:inline mr-1">Layer:</span>
+              <span className="text-[11px] font-mono text-slate-300 hidden sm:inline mr-1">{t('admin.tracking.layer')}</span>
               {(Object.keys(TILE_LAYERS) as Array<keyof typeof TILE_LAYERS>).map((layerKey) => (
                 <button
                   key={layerKey}
@@ -368,12 +370,12 @@ export function LiveTrackingPage() {
                 {isFullscreen ? (
                   <>
                     <Minimize2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Exit Fullscreen</span>
+                    <span className="hidden sm:inline">{t('admin.tracking.exitFullscreen')}</span>
                   </>
                 ) : (
                   <>
                     <Expand className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Fullscreen</span>
+                    <span className="hidden sm:inline">{t('admin.tracking.fullscreen')}</span>
                   </>
                 )}
               </button>
@@ -421,19 +423,19 @@ export function LiveTrackingPage() {
                         </div>
                         <div className="space-y-1 text-slate-700">
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Speed:</span>
+                            <span className="text-slate-500">{t('admin.tracking.speed')}</span>
                             <span className="font-bold text-navy-900">{loc.speed?.toFixed(1) || 0} km/h</span>
                           </p>
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Latitude:</span>
+                            <span className="text-slate-500">{t('admin.tracking.lat')}</span>
                             <span className="font-mono text-slate-700">{loc.latitude.toFixed(5)}</span>
                           </p>
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Longitude:</span>
+                            <span className="text-slate-500">{t('admin.tracking.lng')}</span>
                             <span className="font-mono text-slate-700">{loc.longitude.toFixed(5)}</span>
                           </p>
                           <p className="flex justify-between border-t border-slate-200 pt-1 mt-1 text-[11px] text-slate-500">
-                            <span>Last Ping:</span>
+                            <span>{t('admin.tracking.lastPing')}</span>
                             <span>{format(new Date(loc.updated_at), 'HH:mm:ss')}</span>
                           </p>
                         </div>
@@ -493,7 +495,7 @@ export function LiveTrackingPage() {
             <div className="flex items-center justify-between">
               <h3 className="font-poppins font-bold text-[14px] text-navy-900 flex items-center gap-1.5">
                 <Truck className="w-4 h-4 text-emerald-600" />
-                Active Fleet List
+                {t('admin.tracking.fleetTitle')}
               </h3>
               <span className="text-[14px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                 {filteredLocations.length} / {locations.length}
@@ -503,7 +505,7 @@ export function LiveTrackingPage() {
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <Input
-                placeholder="Search vehicle number..."
+                placeholder={t('admin.tracking.search')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 text-xs bg-slate-50 border-slate-200"
@@ -514,7 +516,7 @@ export function LiveTrackingPage() {
           {/* Vehicle List Items */}
           <div className="flex-1 overflow-y-auto space-y-2.5 pr-1 custom-scrollbar">
             {filteredLocations.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-6">No matching vehicles found.</p>
+              <p className="text-xs text-slate-500 text-center py-6">{t('admin.tracking.noVehicles')}</p>
             ) : (
               filteredLocations.map((loc) => {
                 const vNumber = (loc as any).vehicles?.vehicle_number || 'Vehicle';
@@ -573,7 +575,7 @@ export function LiveTrackingPage() {
                   onClick={() => setSelectedVehicle(null)}
                   className="text-[10px] font-semibold text-emerald-700 hover:underline"
                 >
-                  Clear Focus
+                  {t('admin.tracking.clearFocus')}
                 </button>
               </div>
               <p className="text-[10px] text-slate-500 font-mono truncate">

@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
 export function GpsDevicesPage() {
+  const { t } = useTranslation();
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -79,7 +81,7 @@ export function GpsDevicesPage() {
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <p className="text-[16px] font-bold text-white uppercase tracking-wide">GPS Devices &amp; Hardware Registry</p>
+              <p className="text-[16px] font-bold text-white uppercase tracking-wide">{t('admin.gps.title')}</p>
             </div>
           </div>
           <button
@@ -87,7 +89,7 @@ export function GpsDevicesPage() {
             className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-sm transition-colors shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
-            Add GPS Device
+            {t('admin.gps.addBtn')}
           </button>
         </div>
       </div>
@@ -96,7 +98,7 @@ export function GpsDevicesPage() {
       {showForm && (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Register New GPS Device</p>
+            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">{t('admin.gps.form.addTitle')}</p>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
@@ -111,7 +113,7 @@ export function GpsDevicesPage() {
           <form onSubmit={handleSubmit} className="p-4 grid sm:grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
-                Device Identifier (Traccar ID) *
+                {t('admin.gps.form.identifier')}
               </Label>
               <Input
                 placeholder="e.g. 123456"
@@ -123,7 +125,7 @@ export function GpsDevicesPage() {
               <p className="text-[10px] text-slate-500 font-mono">Must match the identifier set in your Traccar app.</p>
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">Device Type</Label>
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">{t('admin.gps.form.type')}</Label>
               <select
                 value={form.device_type}
                 onChange={(e) => setForm({ ...form, device_type: e.target.value })}
@@ -142,14 +144,14 @@ export function GpsDevicesPage() {
                 className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
               >
                 <Save className="w-3 h-3" />
-                {saving ? 'Registering...' : 'Register Device'}
+                {saving ? t('admin.gps.form.btnSaving') : t('admin.gps.form.btnAdd')}
               </button>
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
                 className="border border-slate-300 text-slate-600 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
               >
-                Cancel
+                {t('admin.gps.form.btnCancel')}
               </button>
             </div>
           </form>
@@ -166,30 +168,30 @@ export function GpsDevicesPage() {
       ) : devices.length === 0 ? (
         <EmptyState
           icon={Radio}
-          title="No GPS Devices Added"
-          description="Add a device identifier from Traccar so you can link it to a vehicle."
+          title={t('admin.gps.emptyTitle')}
+          description={t('admin.gps.emptyDesc')}
         >
           <Button onClick={openAddForm}>
             <Plus className="w-4 h-4" />
-            Add First Device
+            {t('admin.gps.addFirst')}
           </Button>
         </EmptyState>
       ) : (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
             <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
-              GPS Hardware Register — {devices.length} Device(s)
+              {t('admin.gps.register')} — {devices.length} Device(s)
             </p>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fc]">
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Device ID</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Type</th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Status</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.gps.table.identifier')}</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.gps.table.type')}</th>
+                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.gps.table.status')}</th>
                   <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Last Seen</th>
-                  <th className="text-right px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">Actions</th>
+                  <th className="text-right px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.gps.table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">

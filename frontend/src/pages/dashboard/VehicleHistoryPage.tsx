@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { History, MapPin, Clock, Route, Truck, Search } from 'lucide-react';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import type { Vehicle, HistoryResult } from '@/types';
 
 const startIcon = L.divIcon({
@@ -28,6 +29,7 @@ const endIcon = L.divIcon({
 });
 
 export function VehicleHistoryPage() {
+  const { t } = useTranslation();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -75,7 +77,9 @@ export function VehicleHistoryPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <History className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">Vehicle Route History &amp; Audit Log</p>
+            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+              {t('admin.history.title')}
+            </p>
           </div>
         </div>
       </div>
@@ -83,12 +87,12 @@ export function VehicleHistoryPage() {
       {/* ── Filter Panel ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">Search Route History</p>
+          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">{t('admin.history.filter.title')}</p>
         </div>
         <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Vehicle</Label>
+              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">{t('admin.history.filter.selectVehicle')}</Label>
               {vehiclesLoading ? (
                 <Skeleton className="h-8 w-full rounded-sm" />
               ) : (
@@ -97,7 +101,7 @@ export function VehicleHistoryPage() {
                   onChange={(e) => setSelectedVehicle(e.target.value)}
                   className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                 >
-                  <option value="">-- Select Vehicle --</option>
+                  <option value="">{t('admin.history.filter.chooseVehicle')}</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.vehicle_number} {v.vehicle_name ? `(${v.vehicle_name})` : ''}
@@ -107,7 +111,7 @@ export function VehicleHistoryPage() {
               )}
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Date</Label>
+              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">{t('admin.history.filter.date')}</Label>
               <Input
                 type="date"
                 value={selectedDate}
@@ -122,7 +126,7 @@ export function VehicleHistoryPage() {
               className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-sm transition-colors whitespace-nowrap"
             >
               <Search className="w-3.5 h-3.5" />
-              {loading ? 'Loading...' : 'View History'}
+              {loading ? t('admin.history.filter.btnLoading') : t('admin.history.filter.btnQuery')}
             </button>
           </div>
         </div>
@@ -158,13 +162,15 @@ export function VehicleHistoryPage() {
           {routeCoords.length === 0 ? (
             <EmptyState
               icon={History}
-              title="No Vehicle History Available"
-              description={`No GPS data found for ${selectedVehicleData?.vehicle_number} on ${selectedDate}. GPS history is only available when a real GPS device is transmitting data.`}
+              title={t('admin.history.playback.noData')}
+              description=""
             />
           ) : (
             <div className="bg-white border border-slate-300 rounded overflow-hidden">
               <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-                <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">Route Map — {selectedVehicleData?.vehicle_number}</p>
+                <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">
+                  {t('admin.history.filter.title')} — {selectedVehicleData?.vehicle_number}
+                </p>
                 <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />Start</span>
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" />End</span>
@@ -215,8 +221,8 @@ export function VehicleHistoryPage() {
       {!result && !loading && (
         <div className="bg-white border border-slate-300 rounded p-10 text-center">
           <History className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">Select a Vehicle and Date</p>
-          <p className="text-[11px] text-slate-400 font-mono mt-1">Choose a vehicle and date above, then click 'View History'</p>
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">{t('admin.history.filter.chooseVehicle')} &amp; {t('admin.history.filter.date')}</p>
+          <p className="text-[11px] text-slate-400 font-mono mt-1"></p>
         </div>
       )}
     </div>

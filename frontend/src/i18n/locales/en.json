@@ -71,8 +71,21 @@
         "submit": "Submit Complaint",
         "submitting": "Submitting...",
         "success": "Complaint Submitted",
-        "successMsg": "Your complaint has been registered successfully. Complaint Number: "
-      }
+        "successMsg": "Your complaint has been registered successfully. Complaint Number: ",
+        "validationRequired": "Please fill in all required fields.",
+        "validationMobile": "Please enter a valid 10-digit mobile number.",
+        "errorSubmit": "Failed to submit complaint. Please try again."
+      },
+      "info": {
+        "badge": "Public Grievance Redressal",
+        "step1Title": "Submit Grievance Form",
+        "step1Desc": "Provide your contact details and description of the issue.",
+        "step2Title": "Receive Official Complaint Reference",
+        "step2Desc": "A unique ZP reference number (e.g. ZP-2026-00001) will be generated.",
+        "step3Title": "Action by Administration",
+        "step3Desc": "Zila Panchayat administration will inspect and resolve the issue."
+      },
+      "portalSub": "Uttarakhand Public Service Portal"
     },
     "about": {
       "badge": "About",
@@ -92,6 +105,222 @@
       "cap2": "Monitor collection operations across Uttarakhand panchayats",
       "cap3": "Store and view daily vehicle route history records",
       "cap4": "Receive and manage citizen public complaints efficiently"
+    },
+    "admin": {
+      "nav": {
+        "dashboard": "Dashboard",
+        "tracking": "Tracking",
+        "history": "History",
+        "grievances": "Grievances",
+        "vehicles": "Vehicles",
+        "controlPanel": "Admin Control Panel",
+        "portalTitle": "Zila Panchayat Safai Portal",
+        "signOut": "Sign Out"
+      },
+      "dashboard": {
+        "title": "District Sanitation & Telematics Command Panel",
+        "metrics": "Key Operational Metrics",
+        "totalVehicles": "Total Vehicles",
+        "totalVehiclesSub": "Sanitation Vehicles",
+        "liveGps": "Live GPS Active",
+        "liveGpsSub": "Currently Tracking",
+        "onlineDevices": "Online Telematics",
+        "onlineDevicesSub": "Traccar Network",
+        "pendingComplaints": "Pending Complaints",
+        "pendingComplaintsSub": "Action Required"
+      },
+      "complaints": {
+        "title": "Grievance & Complaints Desk",
+        "tabs": {
+          "all": "All Grievances",
+          "new": "New",
+          "inProgress": "In Progress",
+          "resolved": "Resolved"
+        },
+        "emptyTitle": "No Complaints Available",
+        "emptyDesc": "There are no complaints to display.",
+        "register": "Grievance Register",
+        "records": "Record(s)",
+        "details": "Complaint Details",
+        "complainant": "Complainant",
+        "mobile": "Mobile",
+        "area": "Area/Ward",
+        "filedOn": "Filed On",
+        "type": "Complaint Type",
+        "desc": "Description",
+        "updateStatus": "Update Status",
+        "placeholder": "Add official remark...",
+        "btnUpdate": "Update Status",
+        "btnUpdating": "Updating...",
+        "history": "Update History",
+        "selectText": "Select a complaint from the register to view details"
+      },
+      "vehicles": {
+        "title": "Sanitation Vehicles Directory",
+        "addBtn": "Add New Vehicle",
+        "editTitle": "Edit Vehicle Record",
+        "addTitle": "Add New Vehicle Record",
+        "form": {
+          "number": "Vehicle Number *",
+          "name": "Vehicle Name",
+          "type": "Vehicle Type",
+          "types": {
+            "truck": "Truck",
+            "mini_truck": "Mini Truck",
+            "auto": "Auto",
+            "other": "Other"
+          },
+          "btnUpdate": "Update Record",
+          "btnAdd": "Add Vehicle",
+          "btnSaving": "Saving...",
+          "btnCancel": "Cancel"
+        },
+        "linkModal": {
+          "title": "Link GPS Device",
+          "select": "Select GPS Device",
+          "choose": "-- Choose a registered device --",
+          "note": "If device isn't listed, add it in the GPS Devices page first.",
+          "btnLink": "Link Device",
+          "btnLinking": "Linking...",
+          "btnCancel": "Cancel"
+        },
+        "emptyTitle": "No Vehicles Added",
+        "emptyDesc": "Start by adding garbage collection vehicles to the system. You can then assign GPS devices to track them.",
+        "addFirst": "Add First Vehicle",
+        "register": "Vehicle Register",
+        "table": {
+          "number": "Vehicle No.",
+          "name": "Name",
+          "type": "Type",
+          "status": "Status",
+          "date": "Registered On",
+          "actions": "Actions",
+          "linkGps": "Link GPS"
+        }
+      },
+      "tracking": {
+        "title": "Live Vehicle Telematics & GPS Console",
+        "subtitle": "Real-time District Waste Collection Vehicle Tracking, Speed Metrics & Route Auditing",
+        "govBadge": "उत्तराखंड शासन • GIS Live Command Portal",
+        "moving": "Moving",
+        "idle": "Idle",
+        "offline": "Offline",
+        "mapTitle": "Zila Panchayat GIS Telematics Map",
+        "layer": "Layer:",
+        "fullscreen": "Fullscreen",
+        "exitFullscreen": "Exit Fullscreen",
+        "speed": "Speed:",
+        "lat": "Latitude:",
+        "lng": "Longitude:",
+        "lastPing": "Last Ping:",
+        "fleetTitle": "Active Fleet List",
+        "search": "Search vehicle number...",
+        "noVehicles": "No matching vehicles found.",
+        "clearFocus": "Clear Focus"
+      },
+      "history": {
+        "title": "Historical Route Playback Console",
+        "filter": {
+          "title": "Route Query Parameters",
+          "selectVehicle": "Select Vehicle",
+          "chooseVehicle": "Choose a vehicle",
+          "date": "Select Date",
+          "btnQuery": "Query Trajectory Data",
+          "btnLoading": "Loading..."
+        },
+        "playback": {
+          "title": "Telematics Playback Engine",
+          "speed": "Speed:",
+          "play": "Play",
+          "pause": "Pause",
+          "reset": "Reset",
+          "noData": "No GPS telemetry data available for this vehicle on the selected date."
+        },
+        "table": {
+          "title": "Telemetry Data Logs",
+          "time": "Timestamp",
+          "lat": "Latitude",
+          "lng": "Longitude",
+          "speed": "Speed (km/h)",
+          "heading": "Heading"
+        }
+      },
+      "gps": {
+        "title": "Telematics & GPS Device Registry",
+        "addBtn": "Register New Device",
+        "form": {
+          "editTitle": "Edit GPS Device Configuration",
+          "addTitle": "Register New GPS Device",
+          "identifier": "Device Identifier (IMEI/UUID) *",
+          "type": "Device Model/Type",
+          "status": "Network Status",
+          "statusTypes": {
+            "online": "Online",
+            "offline": "Offline",
+            "unknown": "Unknown"
+          },
+          "btnUpdate": "Update Device",
+          "btnAdd": "Register Device",
+          "btnSaving": "Saving...",
+          "btnCancel": "Cancel"
+        },
+        "emptyTitle": "No GPS Devices Registered",
+        "emptyDesc": "Register your Traccar GPS devices here. You can then assign them to sanitation vehicles.",
+        "addFirst": "Register First Device",
+        "register": "Telematics Hardware Register",
+        "table": {
+          "identifier": "Device ID (IMEI)",
+          "type": "Model",
+          "status": "Network",
+          "vehicle": "Linked Vehicle",
+          "date": "Registered On",
+          "actions": "Actions"
+        }
+      }
+    },
+    "contact": {
+      "badge": "District Contact & Desk",
+      "title": "Contact Administration",
+      "subtitle": "Reach out to Zila Panchayat Safai administration for queries or official assistance.",
+      "tollFreeLabel": "Toll-Free Helpline",
+      "emailLabel": "Official Portal Email",
+      "hqLabel": "Headquarters Office",
+      "hqAddress": "Zila Panchayat Bhavan, District HQ, Uttarakhand",
+      "form": {
+        "nameLabel": "Your Name",
+        "namePlaceholder": "Enter your full name",
+        "emailLabel": "Email Address",
+        "emailPlaceholder": "Enter your official or personal email",
+        "messageLabel": "Message / Query",
+        "messagePlaceholder": "Write your message or inquiry here...",
+        "submit": "Submit Inquiry",
+        "success": "Thank you for your message! We will get back to you soon."
+      }
+    },
+    "footer": {
+      "brandName": "Zila Panchayat Safai",
+      "govBadge": "Government of Uttarakhand",
+      "desc": "Smart Waste Collection Tracking & Citizen Grievance Redressal Service Portal for Devbhoomi Uttarakhand.",
+      "officialBadge": "Official Digital Portal",
+      "linksTitle": "Portal Links",
+      "servicesTitle": "Public Services",
+      "services": {
+        "tracking": "Real-Time GPS Fleet Tracking",
+        "history": "Daily Vehicle Route History",
+        "grievance": "Grievance Submission Portal",
+        "admin": "District Administrative Control"
+      },
+      "contactTitle": "State Helpline",
+      "hqAddress": "Zila Panchayat Bhavan, District HQ, Uttarakhand",
+      "copyright": "© {{year}} Zila Panchayat Safai Portal • Government of Uttarakhand. All rights reserved.",
+      "designedFor": "Designed for Uttarakhand Digital Governance & Smart Waste Collection"
+    },
+    "tollFree": {
+      "badge": "Official Citizen Helpline",
+      "title": "Uttarakhand State Service Assistance",
+      "subtitle": "Call our official toll-free helpline for urgent assistance regarding waste collection operations.",
+      "label": "Toll-Free Helpline",
+      "note": "Available during official hours • Government of Uttarakhand Digital Assistance"
     }
   }
 }
