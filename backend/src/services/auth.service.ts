@@ -1,7 +1,8 @@
 import { supabaseAdmin } from '../config/supabase';
 import { env } from '../config/env';
 import { Profile } from '../types';
-import { sendVerificationOtpEmail } from './email.service';
+import { sendVerificationOtpEmail, sendPasswordResetOtpEmail } from './email.service';
+import crypto from 'crypto';
 
 interface PendingRegistration {
   userId: string;
@@ -13,6 +14,18 @@ interface PendingRegistration {
 
 // In-memory cache for fast OTP verification
 const pendingRegistrations = new Map<string, PendingRegistration>();
+
+interface PendingPasswordReset {
+  userId: string;
+  email: string;
+  otp: string;
+  expiresAt: number;
+  attempts: number;
+  verifiedToken: string | null;
+}
+
+// In-memory cache for password resets
+const pendingPasswordResets = new Map<string, PendingPasswordReset>();
 
 /**
  * Verify admin passkey and initiate unconfirmed admin registration with OTP.
@@ -292,4 +305,101 @@ export async function updateProfile(
 
   if (error) throw new Error('Failed to update profile');
   return data;
+}
+
+/**
+ * Initiates a password reset flow by sending an OTP to the user's email.
+ * Always returns a generic success message to prevent user enumeration.
+ */
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  const emailNormalized = email.trim().toLowerCase();
+  
+  // Look up user in Supabase
+  const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
+  const existingUser = users.find((u) => u.email?.toLowerCase() === emailNormalized);
+
+  // If user doesn't exist, we still return success but do nothing
+  if (!existingUser) {
+    return { message: 'If an account exists for this email, a verification OTP has been sent.' };
+  }
+
+  // Generate a secure 6-digit OTP
+  const otp = crypto.randomInt(100000, 999999).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  pendingPasswordResets.set(emailNormalized, {
+    userId: existingUser.id,
+    email: emailNormalized,
+    otp,
+    expiresAt,
+    attempts: 0,
+    verifiedToken: null,
+  });
+
+  await sendPasswordResetOtpEmail(emailNormalized, otp);
+
+  return { message: 'If an account exists for this email, a verification OTP has been sent.' };
+}
+
+/**
+ * Verifies the 6-digit OTP for password reset and issues a reset token.
+ */
+export async function verifyPasswordResetOtp(email: string, otp: string): Promise<{ message: string; resetToken: string }> {
+  const emailNormalized = email.trim().toLowerCase();
+  const pendingReset = pendingPasswordResets.get(emailNormalized);
+
+  if (!pendingReset) {
+    throw new Error('NO_PENDING_RESET');
+  }
+
+  if (Date.now() > pendingReset.expiresAt) {
+    pendingPasswordResets.delete(emailNormalized);
+    throw new Error('OTP_EXPIRED');
+  }
+
+  if (pendingReset.otp !== otp) {
+    pendingReset.attempts += 1;
+    if (pendingReset.attempts >= 3) {
+      pendingPasswordResets.delete(emailNormalized);
+      throw new Error('TOO_MANY_ATTEMPTS');
+    }
+    throw new Error('INVALID_OTP');
+  }
+
+  // Generate a secure token to allow password reset
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  pendingReset.verifiedToken = resetToken;
+
+  return { message: 'OTP verified successfully.', resetToken };
+}
+
+/**
+ * Resets the password using the verified reset token.
+ */
+export async function resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
+  const emailNormalized = email.trim().toLowerCase();
+  const pendingReset = pendingPasswordResets.get(emailNormalized);
+
+  if (!pendingReset || !pendingReset.verifiedToken || pendingReset.verifiedToken !== resetToken) {
+    throw new Error('INVALID_RESET_TOKEN');
+  }
+  
+  if (Date.now() > pendingReset.expiresAt) {
+    pendingPasswordResets.delete(emailNormalized);
+    throw new Error('TOKEN_EXPIRED');
+  }
+
+  // Update password via Supabase Admin (securely hashes)
+  const { error } = await supabaseAdmin.auth.admin.updateUserById(pendingReset.userId, {
+    password: newPassword
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // Invalidate the session
+  pendingPasswordResets.delete(emailNormalized);
+
+  return { message: 'Password has been successfully updated.' };
 }

@@ -159,7 +159,7 @@ export function SignInPage() {
                     to="/forgot-password"
                     className="text-xs font-bold text-navy-700 hover:text-navy-900 hover:underline"
                   >
-                    Recover Access?
+                    Forgot Password?
                   </Link>
                 </div>
                 <div className="relative">

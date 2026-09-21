@@ -132,3 +132,70 @@ export async function sendVerificationOtpEmail(toEmail: string, fullName: string
   const result = await sendEmail({ to: toEmail, subject, text, html });
   return result.sent;
 }
+
+/**
+ * Send a 6-digit Password Reset OTP email.
+ */
+export async function sendPasswordResetOtpEmail(toEmail: string, otp: string): Promise<boolean> {
+  const subject = `[Zila Panchayat Safai] Password Reset Code: ${otp}`;
+  const text = `Your Zila Panchayat Safai password reset code is: ${otp}. Valid for 10 minutes.`;
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>Password Reset</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; }
+        .container { max-width: 540px; margin: 0 auto; background: #ffffff; border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; }
+        .tricolor { height: 4px; display: flex; width: 100%; }
+        .tricolor-green { flex: 1; background: #15803d; }
+        .tricolor-white { flex: 1; background: #ffffff; }
+        .tricolor-saffron { flex: 1; background: #ea580c; }
+        .header { background: #0f172a; padding: 24px; text-align: center; color: #ffffff; }
+        .header h1 { margin: 0; font-size: 20px; letter-spacing: 0.5px; }
+        .header p { margin: 6px 0 0 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .content { padding: 32px 28px; color: #334155; line-height: 1.6; }
+        .otp-box { background: #f1f5f9; border: 2px dashed #0f172a; border-radius: 8px; padding: 18px; text-align: center; margin: 24px 0; }
+        .otp-code { font-size: 36px; font-weight: 800; letter-spacing: 8px; color: #0f172a; font-family: monospace; }
+        .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="tricolor">
+          <div class="tricolor-green" style="background:#15803d; width:33.3%;"></div>
+          <div class="tricolor-white" style="background:#f8fafc; width:33.3%;"></div>
+          <div class="tricolor-saffron" style="background:#ea580c; width:33.4%;"></div>
+        </div>
+        <div class="header">
+          <h1>Zila Panchayat Safai</h1>
+          <p>Government of Uttarakhand • Security Alert</p>
+        </div>
+        <div class="content">
+          <p>Dear <strong>Official</strong>,</p>
+          <p>We received a request to reset the password for your Zila Panchayat Safai Portal account.</p>
+          <p>To proceed, please enter the following 6-digit verification code:</p>
+          
+          <div class="otp-box">
+            <div class="otp-code">${otp}</div>
+            <p style="margin:8px 0 0 0; font-size:12px; color:#64748b;">Valid for 10 minutes</p>
+          </div>
+
+          <p style="font-size:13px; color:#64748b;">
+            ⚠️ <strong>Security Notice:</strong> If you did not request a password reset, you can safely ignore this email. Your password will not be changed.
+          </p>
+        </div>
+        <div class="footer">
+          <p>© ${new Date().getFullYear()} Government of Uttarakhand. All rights reserved.</p>
+          <p>NIC Cloud Gateway • 256-Bit SSL Encrypted Communication</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  const result = await sendEmail({ to: toEmail, subject, text, html });
+  return result.sent;
+}

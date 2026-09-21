@@ -174,3 +174,93 @@ export async function googleSignupComplete(req: AuthenticatedRequest, res: Respo
     res.status(500).json({ error: 'Failed to complete Google setup: ' + (err.message || 'Unknown error') });
   }
 }
+
+/**
+ * POST /api/auth/forgot-password
+ * Public — initiates the password reset flow by sending a 6-digit OTP.
+ */
+export async function forgotPassword(req: Request, res: Response): Promise<void> {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ error: 'Email is required' });
+      return;
+    }
+
+    const result = await authService.forgotPassword(email);
+    res.status(200).json(result);
+  } catch (err: any) {
+    console.error('Forgot Password Error:', err);
+    res.status(500).json({ error: 'Failed to initiate password reset' });
+  }
+}
+
+/**
+ * POST /api/auth/verify-reset-otp
+ * Public — verifies the OTP for password reset and returns a reset token.
+ */
+export async function verifyResetOtp(req: Request, res: Response): Promise<void> {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      res.status(400).json({ error: 'Email and OTP are required' });
+      return;
+    }
+
+    const result = await authService.verifyPasswordResetOtp(email, otp);
+    res.status(200).json(result);
+  } catch (err: any) {
+    console.error('Verify Reset OTP Error:', err);
+    if (err.message === 'OTP_EXPIRED') {
+      res.status(400).json({ error: 'Verification code has expired. Please request a new one.' });
+      return;
+    }
+    if (err.message === 'INVALID_OTP') {
+      res.status(400).json({ error: 'Invalid verification code. Please try again.' });
+      return;
+    }
+    if (err.message === 'TOO_MANY_ATTEMPTS') {
+      res.status(400).json({ error: 'Too many incorrect attempts. Please request a new verification code.' });
+      return;
+    }
+    if (err.message === 'NO_PENDING_RESET') {
+      res.status(400).json({ error: 'No password reset request found. Please start over.' });
+      return;
+    }
+    res.status(500).json({ error: 'Failed to verify OTP' });
+  }
+}
+
+/**
+ * POST /api/auth/reset-password
+ * Public — resets the user's password using the verified token.
+ */
+export async function resetPassword(req: Request, res: Response): Promise<void> {
+  try {
+    const { email, resetToken, newPassword } = req.body;
+    if (!email || !resetToken || !newPassword) {
+      res.status(400).json({ error: 'Email, reset token, and new password are required' });
+      return;
+    }
+
+    // Password validation
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumbers = /\d/.test(newPassword);
+    const hasNonAlphas = /\W/.test(newPassword);
+    if (newPassword.length < 8 || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonAlphas) {
+      res.status(400).json({ error: 'Password does not meet the minimum requirements.' });
+      return;
+    }
+
+    const result = await authService.resetPassword(email, resetToken, newPassword);
+    res.status(200).json(result);
+  } catch (err: any) {
+    console.error('Reset Password Error:', err);
+    if (err.message === 'INVALID_RESET_TOKEN' || err.message === 'TOKEN_EXPIRED') {
+      res.status(400).json({ error: 'Your session is invalid or expired. Please start over.' });
+      return;
+    }
+    res.status(500).json({ error: 'Failed to reset password: ' + err.message });
+  }
+}

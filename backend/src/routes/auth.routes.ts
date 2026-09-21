@@ -27,10 +27,25 @@ const updateProfileSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const resetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  resetToken: z.string().min(1, 'Reset token is required'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
 // Public: Admin signup with passkey & OTP verification
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/verify-otp', validate(verifyOtpSchema), authController.verifyOtp);
 router.post('/resend-otp', validate(resendOtpSchema), authController.resendOtp);
+
+// Public: Password Reset
+router.post('/forgot-password', validate(forgotPasswordSchema), authController.forgotPassword);
+router.post('/verify-reset-otp', validate(verifyOtpSchema), authController.verifyResetOtp);
+router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 
 // Authenticated: Profile operations
 router.get('/profile', authMiddleware, authController.getProfile);
