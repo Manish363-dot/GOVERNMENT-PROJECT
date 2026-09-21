@@ -15,6 +15,7 @@ import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { LiveTrackingPage } from '@/pages/dashboard/LiveTrackingPage';
 import { VehicleHistoryPage } from '@/pages/dashboard/VehicleHistoryPage';
+import { RouteReplayPage } from '@/pages/dashboard/RouteReplayPage';
 import { ComplaintsPage } from '@/pages/dashboard/ComplaintsPage';
 import { VehiclesPage } from '@/pages/dashboard/VehiclesPage';
 import { GpsDevicesPage } from '@/pages/dashboard/GpsDevicesPage';
@@ -51,6 +52,7 @@ function App() {
             <Route index element={<DashboardPage />} />
             <Route path="tracking" element={<LiveTrackingPage />} />
             <Route path="history" element={<VehicleHistoryPage />} />
+            <Route path="route-replay" element={<RouteReplayPage />} />
             <Route path="complaints" element={<ComplaintsPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
           </Route>

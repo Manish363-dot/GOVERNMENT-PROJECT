@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import {
   Menu, X, Bell, User, ShieldCheck, LogOut,
-  LayoutDashboard, MapPin, History, MessageSquareWarning,
+  LayoutDashboard, MapPin, History, PlaySquare, MessageSquareWarning,
   Truck, Radio, Settings
 } from 'lucide-react';
 import { TopBarLogos } from '@/components/TopBarLogos';
@@ -14,6 +14,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
   { icon: MapPin, label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
   { icon: History, label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
+  { icon: PlaySquare, label: 'Route Replay', labelHi: 'रूट रीप्ले', to: '/dashboard/route-replay' },
   { icon: MessageSquareWarning, label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
   { icon: Truck, label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' }
 ];
