@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { KPICard } from '@/components/KPICard';
 import {
   Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck,
@@ -12,6 +13,7 @@ import { format } from 'date-fns';
 import { GpsDevicesPage } from './GpsDevicesPage';
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     totalVehicles: 0,
     liveVehicles: 0,
@@ -19,8 +21,6 @@ export function DashboardPage() {
     newComplaints: 0,
   });
   const [loading, setLoading] = useState(true);
-  const currentDateStr = format(new Date(), 'dd MMMM yyyy');
-  const currentTimeStr = format(new Date(), 'HH:mm');
 
   useEffect(() => {
     fetchStats();
@@ -58,7 +58,7 @@ export function DashboardPage() {
             <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-wide">
-                District Sanitation &amp; Telematics Command Panel
+                {t('admin.dashboard.commandPanel')}
               </p>
             </div>
           </div>
@@ -68,36 +68,38 @@ export function DashboardPage() {
       {/* ── Section Label ── */}
       <div className="flex items-center gap-3 pt-2">
         <div className="w-1.5 h-5 bg-navy-800 rounded-full" />
-        <p className="text-xs font-bold text-navy-900 uppercase tracking-widest font-mono">Key Operational Metrics</p>
+        <p className="text-xs font-bold text-navy-900 uppercase tracking-widest font-mono">
+          {t('admin.dashboard.keyMetrics')}
+        </p>
         <div className="flex-1 h-px bg-slate-200" />
       </div>
 
       {/* ── KPI Cards ── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
-          title="Total Registered Vehicle"
-          subtitle="Sanitation Vehicles"
+          title={t('admin.dashboard.totalVehicles')}
+          subtitle={t('admin.dashboard.totalVehiclesSub')}
           value={stats.totalVehicles}
           icon={Truck}
           loading={loading}
         />
         <KPICard
-          title="Live GPS Active"
-          subtitle="Currently Tracking"
+          title={t('admin.dashboard.liveActive')}
+          subtitle={t('admin.dashboard.liveActiveSub')}
           value={stats.liveVehicles}
           icon={MapPin}
           loading={loading}
         />
         <KPICard
-          title="Online Telematics"
-          subtitle="Traccar Network"
+          title={t('admin.dashboard.onlineTelematics')}
+          subtitle={t('admin.dashboard.onlineTelematicsSub')}
           value={stats.onlineDevices}
           icon={Radio}
           loading={loading}
         />
         <KPICard
-          title="Pending Complaints"
-          subtitle="Action Required"
+          title={t('admin.dashboard.pendingComplaints')}
+          subtitle={t('admin.dashboard.pendingComplaintsSub')}
           value={stats.newComplaints}
           icon={MessageSquareWarning}
           loading={loading}

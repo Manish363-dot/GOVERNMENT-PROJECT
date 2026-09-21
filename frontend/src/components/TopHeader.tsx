@@ -2,26 +2,29 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 import {
   Menu, X, Bell, User, ShieldCheck, LogOut,
   LayoutDashboard, MapPin, History, PlaySquare, MessageSquareWarning,
   Truck, Radio, Settings
 } from 'lucide-react';
 import { TopBarLogos } from '@/components/TopBarLogos';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
-  { icon: MapPin, label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
-  { icon: History, label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
-  { icon: PlaySquare, label: 'Route Replay', labelHi: 'रूट रीप्ले', to: '/dashboard/route-replay' },
-  { icon: MessageSquareWarning, label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
-  { icon: Truck, label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' }
+  { icon: LayoutDashboard, labelKey: 'admin.nav.dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
+  { icon: MapPin, labelKey: 'admin.nav.tracking', label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
+  { icon: History, labelKey: 'admin.nav.history', label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
+  { icon: PlaySquare, labelKey: 'admin.nav.routeReplay', label: 'Route Replay', labelHi: 'रूट रीप्ले', to: '/dashboard/route-replay' },
+  { icon: MessageSquareWarning, labelKey: 'admin.nav.grievances', label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
+  { icon: Truck, labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' }
 ];
 
 export function TopHeader() {
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [now, setNow] = useState(new Date());
 
@@ -34,6 +37,8 @@ export function TopHeader() {
     await signOut();
     navigate('/signin');
   };
+
+  const isHi = i18n.language === 'hi';
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-300 shadow-sm flex flex-col w-full">
@@ -62,11 +67,11 @@ export function TopHeader() {
             <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
             <div>
               <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
-                Admin Control Panel
+                {isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}
               </p>
               <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
                 <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
-                  Zila Panchayat Safai Portal |
+                  {isHi ? 'जिला पंचायत सफाई पोर्टल |' : 'Zila Panchayat Safai Portal |'}
                 </p></span>
                 <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
               </div>
@@ -74,22 +79,27 @@ export function TopHeader() {
           </div>
         </div>
 
-        {/* Right: Status + User */}
+        {/* Right: Status + Language Switcher + User */}
         <div className="flex items-center gap-2 sm:gap-4">
+
+          {/* Hindi / English Language Switcher */}
+          <div className="scale-90 sm:scale-100">
+            <LanguageSwitcher />
+          </div>
 
           <div className="w-px h-6 bg-navy-700 hidden sm:block" />
 
           {/* User Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block text-right">
-              <p className="text-[11px] font-bold text-white leading-none">{profile?.full_name || 'Admin Officer'}</p>
+              <p className="text-[11px] font-bold text-white leading-none">{profile?.full_name || (isHi ? 'प्रशासनिक अधिकारी' : 'Admin Officer')}</p>
             </div>
             <div className="w-8 h-8 rounded bg-navy-800 border border-navy-700 text-amber-400 flex items-center justify-center shrink-0">
               <User className="w-4 h-4" />
             </div>
             <button
               onClick={handleLogout}
-              title="Sign Out"
+              title={isHi ? 'साइन आउट' : 'Sign Out'}
               className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors ml-0.5 touch-target flex items-center justify-center"
               aria-label="Sign Out"
             >
@@ -124,7 +134,7 @@ export function TopHeader() {
                       isActive ? 'text-amber-400' : 'text-slate-400'
                     )}
                   />
-                  <span>{item.label}</span>
+                  <span>{isHi ? item.labelHi : item.label}</span>
                 </>
               )}
             </NavLink>
@@ -160,8 +170,8 @@ export function TopHeader() {
                       )}
                     />
                     <div className="flex gap-2 items-center">
-                      <span className="tracking-wide uppercase text-[11px]">{item.label}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">| {item.labelHi}</span>
+                      <span className="tracking-wide uppercase text-[11px]">{isHi ? item.labelHi : item.label}</span>
+                      <span className="text-[10px] text-slate-400 font-normal">| {isHi ? item.label : item.labelHi}</span>
                     </div>
                   </>
                 )}
@@ -173,7 +183,7 @@ export function TopHeader() {
               className="flex items-center gap-3 px-5 py-3 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors w-full text-left min-h-[44px]"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span className="uppercase text-[11px] tracking-wide font-bold">Sign Out</span>
+              <span className="uppercase text-[11px] tracking-wide font-bold">{isHi ? 'साइन आउट' : 'Sign Out'}</span>
             </button>
           </nav>
         </div>

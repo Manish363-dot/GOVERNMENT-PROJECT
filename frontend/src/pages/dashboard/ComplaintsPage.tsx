@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { complaintService } from '@/services/complaint.service';
 import { useRealtime } from '@/hooks/useRealtime';
 import { EmptyState } from '@/components/EmptyState';
@@ -12,19 +13,21 @@ import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save } f
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
 
-const statusLabels: Record<string, string> = {
-  new: 'New',
-  in_progress: 'In Progress',
-  resolved: 'Resolved',
-};
-
-const complaintTypeLabels: Record<string, string> = {
-  vehicle_not_arrived: 'Vehicle Did Not Arrive',
-  garbage_not_collected: 'Garbage Not Collected',
-  other: 'Other',
-};
-
 export function ComplaintsPage() {
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
+
+  const statusLabels: Record<string, string> = {
+    new: isHi ? 'नया / खुला' : 'New',
+    in_progress: isHi ? 'प्रगति पर' : 'In Progress',
+    resolved: isHi ? 'निस्तारित' : 'Resolved',
+  };
+
+  const complaintTypeLabels: Record<string, string> = {
+    vehicle_not_arrived: isHi ? 'सफाई वाहन नहीं आया' : 'Vehicle Did Not Arrive',
+    garbage_not_collected: isHi ? 'कचरा नहीं उठाया गया' : 'Garbage Not Collected',
+    other: isHi ? 'अन्य समस्या' : 'Other',
+  };
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -99,10 +102,10 @@ export function ComplaintsPage() {
   }
 
   const filterTabs = [
-    { key: 'all', label: 'All Grievances' },
-    { key: 'new', label: 'New' },
-    { key: 'in_progress', label: 'In Progress' },
-    { key: 'resolved', label: 'Resolved' },
+    { key: 'all', label: isHi ? 'सभी शिकायतें' : 'All Grievances' },
+    { key: 'new', label: isHi ? 'नया / खुला' : 'New' },
+    { key: 'in_progress', label: isHi ? 'प्रगति पर' : 'In Progress' },
+    { key: 'resolved', label: isHi ? 'निस्तारित' : 'Resolved' },
   ];
 
   return (
@@ -113,7 +116,9 @@ export function ComplaintsPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <MessageSquareWarning className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">Grievance &amp; Complaints Desk</p>
+            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+              {t('admin.grievances.title')}
+            </p>
           </div>
         </div>
       </div>

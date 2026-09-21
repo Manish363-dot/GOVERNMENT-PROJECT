@@ -109,13 +109,91 @@
       "dashboard": {
         "title": "Administrative Command Console",
         "subtitle": "Real-time solid waste management, fleet telematics & grievance overview",
-        "totalVehicles": "Total Fleet Vehicles",
-        "activeVehicles": "Active On Route",
-        "idleVehicles": "Idle Vehicles",
-        "pendingComplaints": "Open Grievances",
-        "resolvedComplaints": "Resolved Grievances",
-        "liveFleetStatus": "Live Fleet Status Map",
-        "quickActions": "Quick Administrative Actions"
+        "commandPanel": "District Sanitation & Telematics Command Panel",
+        "keyMetrics": "Key Operational Metrics",
+        "totalVehicles": "Total Registered Vehicles",
+        "totalVehiclesSub": "Sanitation Fleet Vehicles",
+        "liveActive": "Live GPS Active",
+        "liveActiveSub": "Currently Tracking",
+        "onlineTelematics": "Online Telematics",
+        "onlineTelematicsSub": "Traccar Network",
+        "pendingComplaints": "Pending Complaints",
+        "pendingComplaintsSub": "Action Required"
+      },
+      "devices": {
+        "title": "GPS Device Hardware Registry",
+        "subtitle": "Register, assign & manage telemetry devices",
+        "registerDevice": "Register GPS Device",
+        "deviceName": "Device Name",
+        "deviceIdentifier": "Device Identifier / IMEI",
+        "assignedVehicle": "Assigned Vehicle",
+        "status": "Status",
+        "actions": "Actions",
+        "assign": "Assign",
+        "unassign": "Unassign",
+        "active": "Active",
+        "inactive": "Inactive",
+        "unassigned": "Unassigned"
+      },
+      "vehicles": {
+        "title": "Sanitation Fleet Management",
+        "subtitle": "Manage waste collection vehicles across district wards",
+        "addVehicle": "Add New Vehicle",
+        "vehicleNumber": "Vehicle Number",
+        "vehicleName": "Vehicle Name",
+        "vehicleType": "Vehicle Type",
+        "status": "Status",
+        "wardArea": "Ward / Area",
+        "gpsStatus": "GPS Device Status"
+      },
+      "replay": {
+        "title": "Route Replay & Audit Panel",
+        "subtitle": "Historical GPS playback and route compliance audit",
+        "selectVehicle": "Select Vehicle",
+        "selectDate": "Select Date",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "loadRoute": "Load Route Replay",
+        "playing": "Playing",
+        "paused": "Paused",
+        "speed": "Speed",
+        "performanceSummary": "Route Performance Summary",
+        "totalDistance": "Total Distance",
+        "drivingTime": "Active Driving Time",
+        "totalStops": "Total Stops",
+        "visitedPoints": "Visited Bins",
+        "missedPoints": "Missed Bins",
+        "deviations": "Route Deviations",
+        "noDataTitle": "No Recorded Telemetry Data",
+        "noDataDesc": "No historical GPS logs were found for vehicle"
+      },
+      "tracking": {
+        "title": "Live GIS Fleet Tracking Console",
+        "subtitle": "Real-time location monitoring for waste collection vehicles",
+        "totalFleet": "Total Fleet",
+        "moving": "Moving",
+        "idle": "Idle",
+        "offline": "Offline",
+        "allWards": "All Wards",
+        "searchPlaceholder": "Search vehicle number or ward..."
+      },
+      "grievances": {
+        "title": "Grievance Redressal Command",
+        "subtitle": "Public complaints, ward status & action tracking",
+        "allStatus": "All Statuses",
+        "new": "New / Open",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "complaintNo": "Complaint No",
+        "citizenName": "Citizen Name",
+        "area": "Ward / Area",
+        "type": "Issue Type",
+        "date": "Date"
+      },
+      "history": {
+        "title": "Vehicle Daily Movement History",
+        "subtitle": "Detailed GPS log history and speed records",
+        "selectVehicleDate": "Select Vehicle & Date to View History"
       }
     }
   }

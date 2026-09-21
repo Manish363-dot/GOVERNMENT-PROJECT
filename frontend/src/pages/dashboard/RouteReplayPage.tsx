@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { vehicleService } from '@/services/vehicle.service';
 import { routeReplayService } from '@/services/routeReplayService';
 import type { Vehicle } from '@/types';
@@ -19,6 +20,8 @@ import { PlaySquare, ShieldCheck, Search, Info, RotateCcw, Truck } from 'lucide-
 import { format } from 'date-fns';
 
 export function RouteReplayPage() {
+    const { t, i18n } = useTranslation();
+    const isHi = i18n.language === 'hi';
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
     const [selectedVehicleId, setSelectedVehicleId] = useState('');
     const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -169,7 +172,7 @@ export function RouteReplayPage() {
                         </div>
                         <div>
                             <h1 className="font-poppins text-sm sm:text-base font-bold text-white tracking-wide uppercase">
-                                Route Replay & GIS Telematics Console
+                                {t('admin.replay.title')}
                             </h1>
                             <p className="text-[11px] text-slate-300 font-mono">
                                 Uttarakhand Zila Panchayat • Historical Trajectory & Audit Playback

@@ -113,7 +113,11 @@ function MapControlsHandler({
   return null;
 }
 
+import { useTranslation } from 'react-i18next';
+
 export function LiveTrackingPage() {
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
   const [locations, setLocations] = useState<VehicleCurrentLocation[]>([]);
   const [loading, setLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
@@ -274,7 +278,7 @@ export function LiveTrackingPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
         <div>
           <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Live Vehicle Telematics & GPS Console
+            {t('admin.tracking.title')}
           </h1>
         </div>
 
@@ -283,7 +287,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Moving</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{movingCount}</span>
             </div>
           </div>
@@ -291,7 +295,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Idle</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{idleCount}</span>
             </div>
           </div>
@@ -299,7 +303,7 @@ export function LiveTrackingPage() {
           <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
             <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">Offline</span>
+              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
               <span className="text-sm font-bold text-navy-900 leading-none">{offlineCount}</span>
             </div>
           </div>
