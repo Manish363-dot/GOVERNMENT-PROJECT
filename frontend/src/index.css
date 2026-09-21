@@ -42,10 +42,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
   scroll-behavior: smooth;
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -54,6 +57,8 @@ body {
   background-color: var(--color-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 h1,
@@ -63,6 +68,37 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
+}
+
+/* ============================================================ */
+/* Mobile & Touch Optimizations                                 */
+/* ============================================================ */
+
+/* Touch smooth momentum scrolling */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+/* Hide scrollbars for clean mobile tab bars while allowing scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Minimum touch target size helper */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Custom horizontal mobile scroll fade indicators */
+.scroll-shadow-x {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.05), transparent 15px, transparent calc(100% - 15px), rgba(0, 0, 0, 0.05));
 }
 
 /* ============================================================ */
@@ -76,13 +112,19 @@ h6 {
   z-index: 1;
 }
 
+@media (max-width: 640px) {
+  .leaflet-container {
+    border-radius: 0.375rem;
+  }
+}
+
 /* ============================================================ */
 /* Scrollbar Styling                                            */
 /* ============================================================ */
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {

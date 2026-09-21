@@ -16,10 +16,10 @@ export function LanguageSwitcher() {
       variant="outline"
       size="sm"
       onClick={toggleLanguage}
-      className="flex items-center gap-2 border-primary/20 text-navy-700 hover:bg-primary/5 hover:text-primary transition-colors font-medium bg-white/50 backdrop-blur-sm"
+      className="h-7 px-2.5 text-[11px] font-bold gap-1.5 border-navy-700 bg-navy-800 text-amber-300 hover:bg-navy-700 hover:text-amber-400 transition-colors shadow-xs rounded"
     >
-      <Languages className="w-4 h-4" />
-      {i18n.language === 'en' ? 'हिंदी' : 'English'}
+      <Languages className="w-3.5 h-3.5 text-amber-400" />
+      {i18n.language === 'en' ? 'हिंदी' : 'EN'}
     </Button>
   );
 }

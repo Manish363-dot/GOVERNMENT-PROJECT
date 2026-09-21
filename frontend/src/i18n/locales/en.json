@@ -107,175 +107,106 @@
       "cap4": "Receive and manage citizen public complaints efficiently"
     },
     "admin": {
+      "controlPanel": "Admin Control Panel",
+      "portalTitle": "Zila Panchayat Safai Portal",
+      "signOut": "Sign Out",
       "nav": {
         "dashboard": "Dashboard",
-        "tracking": "Tracking",
-        "history": "History",
+        "tracking": "Live Tracking",
+        "history": "Vehicle History",
+        "routeReplay": "Route Replay",
         "grievances": "Grievances",
         "vehicles": "Vehicles",
-        "controlPanel": "Admin Control Panel",
-        "portalTitle": "Zila Panchayat Safai Portal",
-        "signOut": "Sign Out"
+        "gpsDevices": "GPS Devices"
       },
       "dashboard": {
-        "title": "District Sanitation & Telematics Command Panel",
-        "metrics": "Key Operational Metrics",
-        "totalVehicles": "Total Vehicles",
-        "totalVehiclesSub": "Sanitation Vehicles",
-        "liveGps": "Live GPS Active",
-        "liveGpsSub": "Currently Tracking",
-        "onlineDevices": "Online Telematics",
-        "onlineDevicesSub": "Traccar Network",
+        "title": "Administrative Command Console",
+        "subtitle": "Real-time solid waste management, fleet telematics & grievance overview",
+        "commandPanel": "District Sanitation & Telematics Command Panel",
+        "keyMetrics": "Key Operational Metrics",
+        "totalVehicles": "Total Registered Vehicles",
+        "totalVehiclesSub": "Sanitation Fleet Vehicles",
+        "liveActive": "Live GPS Active",
+        "liveActiveSub": "Currently Tracking",
+        "onlineTelematics": "Online Telematics",
+        "onlineTelematicsSub": "Traccar Network",
         "pendingComplaints": "Pending Complaints",
         "pendingComplaintsSub": "Action Required"
       },
-      "complaints": {
-        "title": "Grievance & Complaints Desk",
-        "tabs": {
-          "all": "All Grievances",
-          "new": "New",
-          "inProgress": "In Progress",
-          "resolved": "Resolved"
-        },
-        "emptyTitle": "No Complaints Available",
-        "emptyDesc": "There are no complaints to display.",
-        "register": "Grievance Register",
-        "records": "Record(s)",
-        "details": "Complaint Details",
-        "complainant": "Complainant",
-        "mobile": "Mobile",
-        "area": "Area/Ward",
-        "filedOn": "Filed On",
-        "type": "Complaint Type",
-        "desc": "Description",
-        "updateStatus": "Update Status",
-        "placeholder": "Add official remark...",
-        "btnUpdate": "Update Status",
-        "btnUpdating": "Updating...",
-        "history": "Update History",
-        "selectText": "Select a complaint from the register to view details"
+      "devices": {
+        "title": "GPS Device Hardware Registry",
+        "subtitle": "Register, assign & manage telemetry devices",
+        "registerDevice": "Register GPS Device",
+        "deviceName": "Device Name",
+        "deviceIdentifier": "Device Identifier / IMEI",
+        "assignedVehicle": "Assigned Vehicle",
+        "status": "Status",
+        "actions": "Actions",
+        "assign": "Assign",
+        "unassign": "Unassign",
+        "active": "Active",
+        "inactive": "Inactive",
+        "unassigned": "Unassigned"
       },
       "vehicles": {
-        "title": "Sanitation Vehicles Directory",
-        "addBtn": "Add New Vehicle",
-        "editTitle": "Edit Vehicle Record",
-        "addTitle": "Add New Vehicle Record",
-        "form": {
-          "number": "Vehicle Number *",
-          "name": "Vehicle Name",
-          "type": "Vehicle Type",
-          "types": {
-            "truck": "Truck",
-            "mini_truck": "Mini Truck",
-            "auto": "Auto",
-            "other": "Other"
-          },
-          "btnUpdate": "Update Record",
-          "btnAdd": "Add Vehicle",
-          "btnSaving": "Saving...",
-          "btnCancel": "Cancel"
-        },
-        "linkModal": {
-          "title": "Link GPS Device",
-          "select": "Select GPS Device",
-          "choose": "-- Choose a registered device --",
-          "note": "If device isn't listed, add it in the GPS Devices page first.",
-          "btnLink": "Link Device",
-          "btnLinking": "Linking...",
-          "btnCancel": "Cancel"
-        },
-        "emptyTitle": "No Vehicles Added",
-        "emptyDesc": "Start by adding garbage collection vehicles to the system. You can then assign GPS devices to track them.",
-        "addFirst": "Add First Vehicle",
-        "register": "Vehicle Register",
-        "table": {
-          "number": "Vehicle No.",
-          "name": "Name",
-          "type": "Type",
-          "status": "Status",
-          "date": "Registered On",
-          "actions": "Actions",
-          "linkGps": "Link GPS"
-        }
+        "title": "Sanitation Fleet Management",
+        "subtitle": "Manage waste collection vehicles across district wards",
+        "addVehicle": "Add New Vehicle",
+        "vehicleNumber": "Vehicle Number",
+        "vehicleName": "Vehicle Name",
+        "vehicleType": "Vehicle Type",
+        "status": "Status",
+        "wardArea": "Ward / Area",
+        "gpsStatus": "GPS Device Status"
+      },
+      "replay": {
+        "title": "Route Replay & Audit Panel",
+        "subtitle": "Historical GPS playback and route compliance audit",
+        "selectVehicle": "Select Vehicle",
+        "selectDate": "Select Date",
+        "startTime": "Start Time",
+        "endTime": "End Time",
+        "loadRoute": "Load Route Replay",
+        "playing": "Playing",
+        "paused": "Paused",
+        "speed": "Speed",
+        "performanceSummary": "Route Performance Summary",
+        "totalDistance": "Total Distance",
+        "drivingTime": "Active Driving Time",
+        "totalStops": "Total Stops",
+        "visitedPoints": "Visited Bins",
+        "missedPoints": "Missed Bins",
+        "deviations": "Route Deviations",
+        "noDataTitle": "No Recorded Telemetry Data",
+        "noDataDesc": "No historical GPS logs were found for vehicle"
       },
       "tracking": {
-        "title": "Live Vehicle Telematics & GPS Console",
-        "subtitle": "Real-time District Waste Collection Vehicle Tracking, Speed Metrics & Route Auditing",
-        "govBadge": "उत्तराखंड शासन • GIS Live Command Portal",
+        "title": "Live GIS Fleet Tracking Console",
+        "subtitle": "Real-time location monitoring for waste collection vehicles",
+        "totalFleet": "Total Fleet",
         "moving": "Moving",
         "idle": "Idle",
         "offline": "Offline",
-        "mapTitle": "Zila Panchayat GIS Telematics Map",
-        "layer": "Layer:",
-        "fullscreen": "Fullscreen",
-        "exitFullscreen": "Exit Fullscreen",
-        "speed": "Speed:",
-        "lat": "Latitude:",
-        "lng": "Longitude:",
-        "lastPing": "Last Ping:",
-        "fleetTitle": "Active Fleet List",
-        "search": "Search vehicle number...",
-        "noVehicles": "No matching vehicles found.",
-        "clearFocus": "Clear Focus"
+        "allWards": "All Wards",
+        "searchPlaceholder": "Search vehicle number or ward..."
+      },
+      "grievances": {
+        "title": "Grievance Redressal Command",
+        "subtitle": "Public complaints, ward status & action tracking",
+        "allStatus": "All Statuses",
+        "new": "New / Open",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "complaintNo": "Complaint No",
+        "citizenName": "Citizen Name",
+        "area": "Ward / Area",
+        "type": "Issue Type",
+        "date": "Date"
       },
       "history": {
-        "title": "Historical Route Playback Console",
-        "filter": {
-          "title": "Route Query Parameters",
-          "selectVehicle": "Select Vehicle",
-          "chooseVehicle": "Choose a vehicle",
-          "date": "Select Date",
-          "btnQuery": "Query Trajectory Data",
-          "btnLoading": "Loading..."
-        },
-        "playback": {
-          "title": "Telematics Playback Engine",
-          "speed": "Speed:",
-          "play": "Play",
-          "pause": "Pause",
-          "reset": "Reset",
-          "noData": "No GPS telemetry data available for this vehicle on the selected date."
-        },
-        "table": {
-          "title": "Telemetry Data Logs",
-          "time": "Timestamp",
-          "lat": "Latitude",
-          "lng": "Longitude",
-          "speed": "Speed (km/h)",
-          "heading": "Heading"
-        }
-      },
-      "gps": {
-        "title": "Telematics & GPS Device Registry",
-        "addBtn": "Register New Device",
-        "form": {
-          "editTitle": "Edit GPS Device Configuration",
-          "addTitle": "Register New GPS Device",
-          "identifier": "Device Identifier (IMEI/UUID) *",
-          "type": "Device Model/Type",
-          "status": "Network Status",
-          "statusTypes": {
-            "online": "Online",
-            "offline": "Offline",
-            "unknown": "Unknown"
-          },
-          "btnUpdate": "Update Device",
-          "btnAdd": "Register Device",
-          "btnSaving": "Saving...",
-          "btnCancel": "Cancel"
-        },
-        "emptyTitle": "No GPS Devices Registered",
-        "emptyDesc": "Register your Traccar GPS devices here. You can then assign them to sanitation vehicles.",
-        "addFirst": "Register First Device",
-        "register": "Telematics Hardware Register",
-        "table": {
-          "identifier": "Device ID (IMEI)",
-          "type": "Model",
-          "status": "Network",
-          "vehicle": "Linked Vehicle",
-          "date": "Registered On",
-          "actions": "Actions"
-        }
+        "title": "Vehicle Daily Movement History",
+        "subtitle": "Detailed GPS log history and speed records",
+        "selectVehicleDate": "Select Vehicle & Date to View History"
       }
     },
     "contact": {
