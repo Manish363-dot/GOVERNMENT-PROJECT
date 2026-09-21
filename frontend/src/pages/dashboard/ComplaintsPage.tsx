@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { complaintService } from '@/services/complaint.service';
 import { useRealtime } from '@/hooks/useRealtime';
 import { EmptyState } from '@/components/EmptyState';
@@ -33,6 +33,7 @@ export function ComplaintsPage() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [statusForm, setStatusForm] = useState({ status: '', remark: '' });
   const [updating, setUpdating] = useState(false);
+  const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchComplaints();
@@ -65,6 +66,11 @@ export function ComplaintsPage() {
     setSelectedComplaint(complaint);
     setStatusForm({ status: complaint.status, remark: '' });
     setDetailLoading(true);
+    if (window.innerWidth < 1024) {
+      setTimeout(() => {
+        detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
     try {
       const data = await complaintService.getById(complaint.id);
       setUpdates(data.updates);
@@ -114,14 +120,14 @@ export function ComplaintsPage() {
 
       {/* ── Filter Tabs ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
-        <div className="flex divide-x divide-slate-300 overflow-x-auto">
+        <div className="flex divide-x divide-slate-300 overflow-x-auto touch-scroll no-scrollbar">
           {filterTabs.map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap ${filter === tab.key
-                  ? 'bg-[#0a1628] text-white'
-                  : 'text-slate-600 hover:bg-[#f0f4f9] hover:text-[#0a1628]'
+              className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap touch-target flex items-center justify-center ${filter === tab.key
+                ? 'bg-[#0a1628] text-white'
+                : 'text-slate-600 hover:bg-[#f0f4f9] hover:text-[#0a1628]'
                 }`}
             >
               {tab.label}
@@ -151,18 +157,18 @@ export function ComplaintsPage() {
                 Grievance Register — {complaints.length} Record(s)
               </p>
             </div>
-            <div className="divide-y divide-slate-200 max-h-[600px] overflow-y-auto">
+            <div className="divide-y divide-slate-200 max-h-[600px] overflow-y-auto touch-scroll">
               {complaints.map((complaint) => (
                 <button
                   key={complaint.id}
                   onClick={() => viewComplaint(complaint)}
                   className={`w-full text-left px-4 py-3 transition-colors ${selectedComplaint?.id === complaint.id
-                      ? 'bg-[#e6edf7] border-l-2 border-l-[#1a3a6b]'
-                      : 'hover:bg-[#f7f9fc] border-l-2 border-l-transparent'
+                    ? 'bg-[#e6edf7] border-l-4 border-l-[#1a3a6b]'
+                    : 'hover:bg-[#f7f9fc] border-l-4 border-l-transparent'
                     }`}
                 >
                   <div className="flex items-start justify-between gap-2 mb-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-[14px] font-bold text-[#1a3a6b]">
                         {complaint.complaint_number}
                       </span>
@@ -189,7 +195,7 @@ export function ComplaintsPage() {
           </div>
 
           {/* Detail panel */}
-          <div className="lg:col-span-2">
+          <div ref={detailRef} className="lg:col-span-2">
             {selectedComplaint ? (
               <div className="bg-white border border-slate-300 rounded overflow-hidden sticky top-4">
                 <div className="bg-[#0a1628] px-4 py-2 flex items-center justify-between">

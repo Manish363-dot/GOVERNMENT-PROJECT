@@ -58,9 +58,9 @@ export function ComplaintForm() {
   };
 
   return (
-    <section id="complaint" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
+    <section id="complaint" className="py-10 sm:py-20 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-2 gap-12 items-start">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
           {/* Left: Information */}
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-amber-100 text-amber-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-amber-200">
@@ -110,7 +110,7 @@ export function ComplaintForm() {
 
           {/* Right: Form Card */}
           <Card className="shadow-md border border-slate-200 bg-white rounded-lg">
-            <CardHeader className="bg-navy-900 text-white rounded-t-lg p-5 border-b border-navy-800">
+            <CardHeader className="bg-navy-900 text-white rounded-t-lg p-4 sm:p-5 border-b border-navy-800">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
                   <MessageSquareWarning className="w-5 h-5" />
@@ -121,7 +121,7 @@ export function ComplaintForm() {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="p-6">
+            <CardContent className="p-4 sm:p-6">
               {/* Success Alert */}
               {success && (
                 <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-md flex items-start gap-3">
@@ -151,7 +151,7 @@ export function ComplaintForm() {
                     placeholder={t('complaint.form.namePlaceholder')}
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    className="border-slate-300 focus:border-navy-900 text-sm"
+                    className="border-slate-300 focus:border-navy-900 h-11 text-base sm:text-sm"
                     required
                   />
                 </div>
@@ -163,7 +163,7 @@ export function ComplaintForm() {
                     placeholder={t('complaint.form.mobilePlaceholder')}
                     value={form.mobile}
                     onChange={(e) => setForm({ ...form, mobile: e.target.value.replace(/\D/g, '').slice(0, 10) })}
-                    className="border-slate-300 focus:border-navy-900 text-sm"
+                    className="border-slate-300 focus:border-navy-900 h-11 text-base sm:text-sm"
                     required
                     maxLength={10}
                   />
@@ -176,7 +176,7 @@ export function ComplaintForm() {
                     placeholder={t('complaint.form.areaPlaceholder')}
                     value={form.area}
                     onChange={(e) => setForm({ ...form, area: e.target.value })}
-                    className="border-slate-300 focus:border-navy-900 text-sm"
+                    className="border-slate-300 focus:border-navy-900 h-11 text-base sm:text-sm"
                     required
                   />
                 </div>
@@ -187,7 +187,7 @@ export function ComplaintForm() {
                     id="complaint_type"
                     value={form.complaint_type}
                     onChange={(e) => setForm({ ...form, complaint_type: e.target.value })}
-                    className="flex h-10 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
+                    className="flex h-11 w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-base sm:text-sm text-navy-900 focus:border-navy-900 focus:outline-none"
                     required
                   >
                     {complaintTypes.map((type) => (
@@ -205,12 +205,12 @@ export function ComplaintForm() {
                     placeholder={t('complaint.form.descriptionPlaceholder')}
                     value={form.description}
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    className="border-slate-300 focus:border-navy-900 text-sm"
+                    className="border-slate-300 focus:border-navy-900 text-base sm:text-sm"
                     rows={3}
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-navy-900 hover:bg-navy-800 text-white font-medium shadow-xs" size="lg" disabled={loading}>
+                <Button type="submit" className="w-full bg-navy-900 hover:bg-navy-800 text-white font-medium shadow-xs h-12 text-sm uppercase tracking-wide font-bold" size="lg" disabled={loading}>
                   {loading ? (
                     <span className="flex items-center gap-2">
                       <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

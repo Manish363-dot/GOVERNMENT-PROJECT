@@ -37,17 +37,18 @@ export function TopHeader() {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-300 shadow-sm flex flex-col w-full">
       {/* Top Logos Strip */}
-      <TopBarLogos variant="dashboard" className="border-b border-slate-200 bg-white hidden sm:flex" />
+      <TopBarLogos variant="dashboard" className="border-b border-slate-200 bg-white flex" />
 
       {/* Main Header Bar */}
-      <div className="flex items-center justify-between h-14 px-4 sm:px-6 bg-navy-900 border-b border-navy-800">
+      <div className="flex items-center justify-between h-14 px-3 sm:px-6 bg-navy-900 border-b border-navy-800">
         {/* Left: Mobile Menu + Title */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           <button
-            className="lg:hidden p-1.5 rounded text-slate-300 hover:bg-navy-800 hover:text-white transition-colors"
+            className="lg:hidden p-2 rounded text-slate-300 hover:bg-navy-800 hover:text-white transition-colors touch-target flex items-center justify-center"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle Navigation Menu"
           >
-            {mobileMenuOpen ? <X className="w-5 h-5" /> : (
+            {mobileMenuOpen ? <X className="w-5 h-5 text-amber-400" /> : (
               <div className="flex flex-col gap-[3.5px] w-5 h-5 justify-center items-center">
                 <span className="w-5 h-[2px] bg-[#FF9933] rounded-full" />
                 <span className="w-5 h-[2px] bg-white rounded-full" />
@@ -56,16 +57,16 @@ export function TopHeader() {
             )}
           </button>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
             <div>
-              <p className="text-[16px] sm:text-[16px] font-bold text-white leading-none uppercase tracking-wide">
+              <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
                 Admin Control Panel
               </p>
               <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
                 <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
-              Zila Panchayat Safai Portal |
-              </p></span>
+                  Zila Panchayat Safai Portal |
+                </p></span>
                 <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
               </div>
             </div>
@@ -73,12 +74,12 @@ export function TopHeader() {
         </div>
 
         {/* Right: Status + User */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
 
           <div className="w-px h-6 bg-navy-700 hidden sm:block" />
 
           {/* User Profile */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <div className="hidden sm:block text-right">
               <p className="text-[11px] font-bold text-white leading-none">{profile?.full_name || 'Admin Officer'}</p>
             </div>
@@ -88,7 +89,8 @@ export function TopHeader() {
             <button
               onClick={handleLogout}
               title="Sign Out"
-              className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors ml-1"
+              className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors ml-0.5 touch-target flex items-center justify-center"
+              aria-label="Sign Out"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -131,8 +133,8 @@ export function TopHeader() {
 
       {/* Mobile Navigation Dropdown */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-navy-900 border-b border-navy-800">
-          <nav className="flex flex-col py-1">
+        <div className="lg:hidden bg-navy-950 border-b border-navy-800 animate-in slide-in-from-top-2 duration-200 shadow-xl">
+          <nav className="flex flex-col py-2">
             {navItems.map((item) => (
               <NavLink
                 key={item.to}
@@ -141,10 +143,10 @@ export function TopHeader() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex items-center gap-3 px-6 py-2.5 text-xs font-semibold transition-colors',
+                    'flex items-center gap-3 px-5 py-3 text-xs font-semibold transition-colors min-h-[44px]',
                     isActive
-                      ? 'text-white bg-navy-800/80 border-l-2 border-amber-400'
-                      : 'text-slate-300 hover:text-white hover:bg-navy-800/40 border-l-2 border-transparent'
+                      ? 'text-white bg-navy-800/90 border-l-4 border-amber-400 font-bold'
+                      : 'text-slate-300 hover:text-white hover:bg-navy-800/50 border-l-4 border-transparent'
                   )
                 }
               >
@@ -157,20 +159,20 @@ export function TopHeader() {
                       )}
                     />
                     <div className="flex gap-2 items-center">
-                      <span>{item.label}</span>
+                      <span className="tracking-wide uppercase text-[11px]">{item.label}</span>
                       <span className="text-[10px] text-slate-400 font-normal">| {item.labelHi}</span>
                     </div>
                   </>
                 )}
               </NavLink>
             ))}
-            <div className="w-full bg-navy-800 h-px my-1" />
+            <div className="w-full bg-navy-800 h-px my-1.5" />
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-6 py-2.5 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors w-full text-left"
+              className="flex items-center gap-3 px-5 py-3 text-xs font-semibold text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors w-full text-left min-h-[44px]"
             >
               <LogOut className="w-4 h-4 shrink-0" />
-              <span>Sign Out</span>
+              <span className="uppercase text-[11px] tracking-wide font-bold">Sign Out</span>
             </button>
           </nav>
         </div>

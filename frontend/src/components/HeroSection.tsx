@@ -84,22 +84,22 @@ export function HeroSection() {
             {t('hero.subtitle')}
           </p>
 
-          {/* Only 2 Buttons: Register Complaint & Our Blogs */}
-          <div className="flex flex-wrap justify-center items-center gap-4">
-            <Button size="lg" className="bg-red-600 hover:bg-emerald-700 text-white font-semibold shadow-lg border border-emerald-500/30 px-6" asChild>
-              <a href="#complaint">
+          {/* Buttons: Full-width stacked on mobile, inline on sm+ */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto bg-red-600 hover:bg-emerald-700 text-white font-semibold shadow-lg border border-emerald-500/30 px-6 h-12 text-sm" asChild>
+              <a href="#complaint" className="flex items-center justify-center">
                 <MessageSquareWarning className="w-4.5 h-4.5 mr-2 text-white" />
                 {t('hero.registerComplaint', 'Register Complaint')}
               </a>
             </Button>
-            <Button size="lg" className="bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6" onClick={() => setIsBlogModalOpen(true)}>
+            <Button size="lg" className="w-full sm:w-auto bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 text-sm" onClick={() => setIsBlogModalOpen(true)}>
               <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
               {t('hero.ourBlogs', 'Our Blogs')}
             </Button>
           </div>
 
           {/* Subtle Slide Indicators */}
-          <div className="flex items-center justify-center gap-1.5 mt-8 mb-4">
+          <div className="flex items-center justify-center gap-1.5 mt-6 sm:mt-8 mb-4">
             {HERO_IMAGES.map((_, idx) => (
               <button
                 key={idx}
@@ -111,11 +111,11 @@ export function HeroSection() {
             ))}
           </div>
 
-          {/* Dignitary Quote Card Banner: Half on Hero, Half on Next Section */}
-          <div className="mt-8 sm:mt-10 w-full max-w-4xl mx-auto px-2 sm:px-4 translate-y-1/2 relative z-30">
-            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 py-4 sm:py-5 px-4 sm:px-6 pl-20 sm:pl-28 md:pl-32 flex items-center min-h-[110px]">
-              {/* Protruding Circular Dignitary Photo */}
-              <div className="absolute -left-4 sm:-left-8 md:-left-10 top-1/2 -translate-y-1/2 w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-100 shrink-0 select-none">
+          {/* Dignitary Quote Card Banner: Stacked on mobile, overlapped on sm+ */}
+          <div className="mt-6 sm:mt-10 w-full max-w-4xl mx-auto px-1 sm:px-4 sm:translate-y-1/2 relative z-30 mb-6 sm:mb-0">
+            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[110px]">
+              {/* Dignitary Photo */}
+              <div className="sm:absolute -top-8 sm:top-1/2 sm:-translate-y-1/2 sm:-left-8 md:-left-10 w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-100 shrink-0 select-none mx-auto sm:mx-0">
                 {!img5Error ? (
                   <img
                     src={DIGNITARY_IMAGE_URL}
@@ -131,7 +131,7 @@ export function HeroSection() {
               </div>
 
               {/* Quote Content & Details */}
-              <div className="text-left w-full pl-2 sm:pl-3">
+              <div className="text-center sm:text-left w-full sm:pl-3">
                 <p className="text-xs sm:text-sm md:text-[14px] lg:text-[15px] font-medium text-slate-700 leading-relaxed">
                   <span className="text-red-500 font-serif text-lg sm:text-xl font-bold mr-1 inline leading-none">
                     “
@@ -143,10 +143,10 @@ export function HeroSection() {
                 </p>
 
                 {/* Red Accent Divider */}
-                <div className="w-10 h-0.5 bg-red-500 my-2 rounded-full" />
+                <div className="w-10 h-0.5 bg-red-500 my-2 mx-auto sm:mx-0 rounded-full" />
 
                 {/* Speaker & Context Info */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-500 font-medium">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-500 font-medium text-center sm:text-left">
                   <span className="font-semibold text-slate-800">
                     Swachh Bharat Mission (Clean India Mission)
                   </span>

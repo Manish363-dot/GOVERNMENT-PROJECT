@@ -102,7 +102,7 @@ export function SignInPage() {
           </div>
 
           {/* Right Side: Login Form */}
-          <div className="p-8 sm:p-12 lg:p-14 col-span-3 flex flex-col justify-center relative">
+          <div className="p-5 sm:p-12 lg:p-14 col-span-3 flex flex-col justify-center relative">
 
             {/* Back Button */}
             <Link

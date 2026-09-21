@@ -86,16 +86,16 @@ export function VehicleHistoryPage() {
           <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">Search Route History</p>
         </div>
         <div className="p-4">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Vehicle</Label>
+              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">Select Vehicle</Label>
               {vehiclesLoading ? (
-                <Skeleton className="h-8 w-full rounded-sm" />
+                <Skeleton className="h-10 sm:h-8 w-full rounded-sm" />
               ) : (
                 <select
                   value={selectedVehicle}
                   onChange={(e) => setSelectedVehicle(e.target.value)}
-                  className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
+                  className="flex h-10 sm:h-8 w-full border border-slate-300 bg-white px-2.5 text-xs sm:text-[11px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                 >
                   <option value="">-- Select Vehicle --</option>
                   {vehicles.map((v) => (
@@ -107,21 +107,21 @@ export function VehicleHistoryPage() {
               )}
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label className="text-[14px] font-bold text-slate-700 uppercase tracking-wider font-bold">Select Date</Label>
+              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">Select Date</Label>
               <Input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
                 max={format(new Date(), 'yyyy-MM-dd')}
-                className="h-8 text-[11px] font-bold border-slate-300 rounded-sm"
+                className="h-10 sm:h-8 text-xs sm:text-[11px] font-bold border-slate-300 rounded-sm"
               />
             </div>
             <button
               onClick={handleViewHistory}
               disabled={!selectedVehicle || !selectedDate || loading}
-              className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-2 rounded-sm transition-colors whitespace-nowrap"
+              className="flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-xs sm:text-[11px] font-bold uppercase tracking-wider px-5 h-10 sm:h-8 rounded-sm transition-colors whitespace-nowrap w-full sm:w-auto"
             >
-              <Search className="w-3.5 h-3.5" />
+              <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               {loading ? 'Loading...' : 'View History'}
             </button>
           </div>
@@ -148,7 +148,7 @@ export function VehicleHistoryPage() {
                   <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{label}</p>
                 </div>
                 <div className="px-3 py-2.5">
-                  <p className="font-mono text-sm font-bold text-[#0a1628]">{value}</p>
+                  <p className="font-mono text-xs sm:text-sm font-bold text-[#0a1628] truncate">{value}</p>
                 </div>
               </div>
             ))}
@@ -170,7 +170,7 @@ export function VehicleHistoryPage() {
                   <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" />End</span>
                 </div>
               </div>
-              <div className="h-[480px]">
+              <div className="h-[360px] sm:h-[480px]">
                 <MapContainer
                   center={routeCoords[0]}
                   zoom={14}

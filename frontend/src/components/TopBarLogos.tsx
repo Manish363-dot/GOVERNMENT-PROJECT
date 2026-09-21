@@ -112,22 +112,22 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
   // Render a single logo - clean image, no boxes, no cards, no borders, not clickable
   const renderLogo = (logo: TopBarLogoItem, idx: number) => {
     const hasError = imageErrors[logo.id] || !logo.logo_url;
-    const imgHeight = variant === 'dashboard' ? 'h-9 sm:h-10 text-slate-400' : 'h-10 sm:h-14 text-slate-400';
+    const imgHeight = variant === 'dashboard' ? 'h-7 sm:h-9 md:h-10 text-slate-400' : 'h-7 sm:h-10 md:h-14 text-slate-400';
 
     return (
-      <div key={logo.id} className="flex items-center justify-center">
+      <div key={logo.id} className="flex items-center justify-center shrink-0">
         {!hasError ? (
           <img
             src={logo.logo_url}
             alt={logo.title || `Logo ${logo.sort_order}`}
             onError={() => handleImageError(logo.id)}
-            className={`${imgHeight} w-auto max-w-[120px] sm:max-w-[160px] object-contain select-none pointer-events-none`}
+            className={`${imgHeight} w-auto max-w-[65px] xs:max-w-[90px] sm:max-w-[140px] md:max-w-[160px] object-contain select-none pointer-events-none transition-all`}
             draggable={false}
           />
         ) : (
-          <div className={`flex items-center gap-1.5 ${imgHeight}`}>
+          <div className={`flex items-center gap-1 ${imgHeight}`}>
             {FALLBACK_ICONS[idx % FALLBACK_ICONS.length]}
-            <span className="text-xs sm:text-sm font-semibold select-none uppercase tracking-wide">
+            <span className="text-[10px] sm:text-xs font-semibold select-none uppercase tracking-wide">
               {logo.title}
             </span>
           </div>
@@ -138,14 +138,14 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
 
   if (variant === 'dashboard') {
     return (
-      <div className={`w-full flex items-center justify-between px-4 sm:px-8 py-2 ${className} flex-nowrap`}>
+      <div className={`w-full flex items-center justify-between px-2 sm:px-6 md:px-8 py-1.5 sm:py-2 ${className} flex-nowrap overflow-x-hidden`}>
         {/* Left Logos */}
-        <div className="flex-1 flex items-center justify-start gap-6 sm:gap-10">
+        <div className="flex-1 flex items-center justify-start gap-2 sm:gap-6 md:gap-10">
           {leftLogos.map((logo, idx) => renderLogo(logo, idx))}
         </div>
 
         {/* Right Logos */}
-        <div className="flex-1 flex items-center justify-end gap-6 sm:gap-10">
+        <div className="flex-1 flex items-center justify-end gap-2 sm:gap-6 md:gap-10">
           {rightLogos.map((logo, idx) => renderLogo(logo, idx + 2))}
         </div>
       </div>
@@ -155,15 +155,15 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
   // Public Variant
   return (
     <div className={`w-full bg-white border-b border-slate-100 ${className}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
-        <div className="w-full flex items-center justify-between flex-nowrap">
+      <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-1.5 sm:py-3">
+        <div className="w-full flex items-center justify-between flex-nowrap overflow-x-hidden">
           {/* Left Logos */}
-          <div className="flex-1 flex items-center justify-start gap-6 sm:gap-10">
+          <div className="flex-1 flex items-center justify-start gap-2 sm:gap-6 md:gap-10">
             {leftLogos.map((logo, idx) => renderLogo(logo, idx))}
           </div>
 
           {/* Right Logos */}
-          <div className="flex-1 flex items-center justify-end gap-6 sm:gap-10">
+          <div className="flex-1 flex items-center justify-end gap-2 sm:gap-6 md:gap-10">
             {rightLogos.map((logo, idx) => renderLogo(logo, idx + 2))}
           </div>
         </div>

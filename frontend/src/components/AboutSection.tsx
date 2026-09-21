@@ -12,7 +12,7 @@ export function AboutSection() {
   ];
 
   return (
-    <section id="about" className="pt-24 sm:pt-28 pb-16 sm:pb-20 bg-slate-50 border-b border-slate-200">
+    <section id="about" className="pt-10 sm:pt-28 pb-12 sm:pb-20 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Full-width layout — no grid split */}
         <div>
