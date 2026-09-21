@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -28,6 +29,9 @@ const endIcon = L.divIcon({
 });
 
 export function VehicleHistoryPage() {
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
+
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState('');
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
@@ -75,7 +79,9 @@ export function VehicleHistoryPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <History className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">Vehicle Route History &amp; Audit Log</p>
+            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+              {isHi ? 'वाहन रूट इतिहास एवं ऑडिट लॉग' : 'Vehicle Route History & Audit Log'}
+            </p>
           </div>
         </div>
       </div>
@@ -83,12 +89,16 @@ export function VehicleHistoryPage() {
       {/* ── Filter Panel ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">Search Route History</p>
+          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest">
+            {isHi ? 'रूट इतिहास खोजें' : 'Search Route History'}
+          </p>
         </div>
         <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">Select Vehicle</Label>
+              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">
+                {isHi ? 'वाहन चुनें' : 'Select Vehicle'}
+              </Label>
               {vehiclesLoading ? (
                 <Skeleton className="h-10 sm:h-8 w-full rounded-sm" />
               ) : (
@@ -97,7 +107,7 @@ export function VehicleHistoryPage() {
                   onChange={(e) => setSelectedVehicle(e.target.value)}
                   className="flex h-10 sm:h-8 w-full border border-slate-300 bg-white px-2.5 text-xs sm:text-[11px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
                 >
-                  <option value="">-- Select Vehicle --</option>
+                  <option value="">{isHi ? '-- वाहन चुनें --' : '-- Select Vehicle --'}</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.vehicle_number} {v.vehicle_name ? `(${v.vehicle_name})` : ''}
@@ -107,7 +117,9 @@ export function VehicleHistoryPage() {
               )}
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">Select Date</Label>
+              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">
+                {isHi ? 'दिनांक चुनें' : 'Select Date'}
+              </Label>
               <Input
                 type="date"
                 value={selectedDate}
@@ -122,7 +134,7 @@ export function VehicleHistoryPage() {
               className="flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-xs sm:text-[11px] font-bold uppercase tracking-wider px-5 h-10 sm:h-8 rounded-sm transition-colors whitespace-nowrap w-full sm:w-auto"
             >
               <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
-              {loading ? 'Loading...' : 'View History'}
+              {loading ? (isHi ? 'लोड हो रहा है...' : 'Loading...') : (isHi ? 'इतिहास देखें' : 'View History')}
             </button>
           </div>
         </div>
@@ -133,14 +145,14 @@ export function VehicleHistoryPage() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
-              { icon: Truck, label: 'Vehicle', value: selectedVehicleData?.vehicle_number || '—' },
+              { icon: Truck, label: isHi ? 'वाहन' : 'Vehicle', value: selectedVehicleData?.vehicle_number || '—' },
               {
-                icon: Clock, label: 'Start — End', value: result.summary.startTime
+                icon: Clock, label: isHi ? 'प्रारंभ — समाप्त' : 'Start — End', value: result.summary.startTime
                   ? `${format(new Date(result.summary.startTime), 'HH:mm')} – ${format(new Date(result.summary.endTime!), 'HH:mm')}`
                   : 'N/A'
               },
-              { icon: Route, label: 'Total Distance', value: `${result.summary.totalDistance} km` },
-              { icon: MapPin, label: 'GPS Points', value: String(result.summary.totalPoints) },
+              { icon: Route, label: isHi ? 'कुल दूरी' : 'Total Distance', value: `${result.summary.totalDistance} ${isHi ? 'किमी' : 'km'}` },
+              { icon: MapPin, label: isHi ? 'जीपीएस बिंदु' : 'GPS Points', value: String(result.summary.totalPoints) },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="bg-white border border-slate-300 rounded overflow-hidden">
                 <div className="bg-[#f0f4f9] border-b border-slate-200 px-3 py-1.5 flex items-center gap-1.5">
@@ -158,16 +170,22 @@ export function VehicleHistoryPage() {
           {routeCoords.length === 0 ? (
             <EmptyState
               icon={History}
-              title="No Vehicle History Available"
-              description={`No GPS data found for ${selectedVehicleData?.vehicle_number} on ${selectedDate}. GPS history is only available when a real GPS device is transmitting data.`}
+              title={isHi ? 'कोई वाहन इतिहास उपलब्ध नहीं' : 'No Vehicle History Available'}
+              description={
+                isHi
+                  ? `${selectedVehicleData?.vehicle_number || 'वाहन'} के लिए ${selectedDate} पर कोई जीपीएस डेटा नहीं मिला। जीपीएस इतिहास केवल तभी उपलब्ध होता है जब एक वास्तविक जीपीएस उपकरण डेटा प्रसारित कर रहा हो।`
+                  : `No GPS data found for ${selectedVehicleData?.vehicle_number} on ${selectedDate}. GPS history is only available when a real GPS device is transmitting data.`
+              }
             />
           ) : (
             <div className="bg-white border border-slate-300 rounded overflow-hidden">
               <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-                <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">Route Map — {selectedVehicleData?.vehicle_number}</p>
+                <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+                  {isHi ? 'रूट मानचित्र' : 'Route Map'} — {selectedVehicleData?.vehicle_number}
+                </p>
                 <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />Start</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" />End</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-600 inline-block" />{isHi ? 'प्रारंभ' : 'Start'}</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-600 inline-block" />{isHi ? 'समाप्त' : 'End'}</span>
                 </div>
               </div>
               <div className="h-[360px] sm:h-[480px]">
@@ -188,7 +206,7 @@ export function VehicleHistoryPage() {
                   <Marker position={routeCoords[0]} icon={startIcon}>
                     <Popup>
                       <div className="font-mono text-xs">
-                        <p className="font-bold text-emerald-700">Start Point</p>
+                        <p className="font-bold text-emerald-700">{isHi ? 'प्रारंभ बिंदु' : 'Start Point'}</p>
                         <p className="text-slate-500">{result.summary.startTime && format(new Date(result.summary.startTime), 'HH:mm:ss')}</p>
                       </div>
                     </Popup>
@@ -196,7 +214,7 @@ export function VehicleHistoryPage() {
                   <Marker position={routeCoords[routeCoords.length - 1]} icon={endIcon}>
                     <Popup>
                       <div className="font-mono text-xs">
-                        <p className="font-bold text-red-700">End Point</p>
+                        <p className="font-bold text-red-700">{isHi ? 'समाप्त बिंदु' : 'End Point'}</p>
                         <p className="text-slate-500">{result.summary.endTime && format(new Date(result.summary.endTime), 'HH:mm:ss')}</p>
                       </div>
                     </Popup>
@@ -204,7 +222,9 @@ export function VehicleHistoryPage() {
                 </MapContainer>
               </div>
               <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
-                <p className="text-[10px] font-mono text-slate-500">Route Audit Log | Zila Panchayat Safai | Uttarakhand</p>
+                <p className="text-[10px] font-mono text-slate-500">
+                  {isHi ? 'रूट ऑडिट लॉग | जिला पंचायत सफाई | उत्तराखंड' : 'Route Audit Log | Zila Panchayat Safai | Uttarakhand'}
+                </p>
               </div>
             </div>
           )}
@@ -215,8 +235,12 @@ export function VehicleHistoryPage() {
       {!result && !loading && (
         <div className="bg-white border border-slate-300 rounded p-10 text-center">
           <History className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">Select a Vehicle and Date</p>
-          <p className="text-[11px] text-slate-400 font-mono mt-1">Choose a vehicle and date above, then click 'View History'</p>
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">
+            {isHi ? 'वाहन और दिनांक चुनें' : 'Select a Vehicle and Date'}
+          </p>
+          <p className="text-[11px] text-slate-400 font-mono mt-1">
+            {isHi ? 'ऊपर एक वाहन और तिथि चुनें, फिर \'इतिहास देखें\' पर क्लिक करें' : "Choose a vehicle and date above, then click 'View History'"}
+          </p>
         </div>
       )}
     </div>
