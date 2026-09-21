@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { ReplayEvent } from '@/types/routeReplay';
 import { CheckCircle2, AlertOctagon, AlertTriangle, ShieldAlert, Clock, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -9,18 +10,23 @@ interface EventsTimelineProps {
 }
 
 export function EventsTimeline({ events, onSelectEvent, activePointIndex }: EventsTimelineProps) {
+    const { i18n } = useTranslation();
+    const isHi = i18n.language === 'hi';
+
     return (
         <div className="bg-white border border-slate-300 rounded-xl overflow-hidden shadow-md">
             <div className="bg-navy-950 border-b border-navy-800 px-4 py-2.5 flex items-center justify-between">
                 <span className="font-poppins text-xs font-bold text-white uppercase tracking-wider">
-                    ⏱️ Telematics Events Timeline ({events.length})
+                    ⏱️ {isHi ? 'टेलीमैटिक्स घटनाक्रम समय-सारणी' : 'Telematics Events Timeline'} ({events.length})
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">Click event to seek replay</span>
+                <span className="text-[10px] text-slate-400 font-mono">{isHi ? 'रीप्ले देखने हेतु क्लिक करें' : 'Click event to seek replay'}</span>
             </div>
 
             <div className="divide-y divide-slate-200 max-h-[300px] overflow-y-auto touch-scroll">
                 {events.length === 0 ? (
-                    <div className="p-4 text-center text-xs text-slate-500 font-mono">No telemetry events logged for this route interval.</div>
+                    <div className="p-4 text-center text-xs text-slate-500 font-mono">
+                        {isHi ? 'इस मार्ग अंतराल के लिए कोई टेलीमैटिक्स घटना दर्ज नहीं है।' : 'No telemetry events logged for this route interval.'}
+                    </div>
                 ) : (
                     events.map((ev) => {
                         const isCurrent = activePointIndex === ev.pointIndex;

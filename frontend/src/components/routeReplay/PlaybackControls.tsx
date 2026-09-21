@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Play, Pause, RotateCcw, FastForward, SkipBack, SkipForward, Clock, Gauge } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +29,8 @@ export function PlaybackControls({
     onStepBack,
     onStepForward,
 }: PlaybackControlsProps) {
+    const { i18n } = useTranslation();
+    const isHi = i18n.language === 'hi';
     const progressPercent = totalPoints > 0 ? Math.round(((currentIndex + 1) / totalPoints) * 100) : 0;
 
     return (
@@ -39,7 +42,7 @@ export function PlaybackControls({
                     {/* Restart */}
                     <button
                         onClick={onRestart}
-                        title="Restart Replay"
+                        title={isHi ? 'पुनः प्रारंभ करें' : 'Restart Replay'}
                         className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
                     >
                         <RotateCcw className="w-3.5 h-3.5" />
@@ -49,7 +52,7 @@ export function PlaybackControls({
                     <button
                         onClick={onStepBack}
                         disabled={currentIndex <= 0}
-                        title="Step Back"
+                        title={isHi ? 'पीछे जाएं' : 'Step Back'}
                         className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
                     >
                         <SkipBack className="w-3.5 h-3.5" />
@@ -68,12 +71,12 @@ export function PlaybackControls({
                         {isPlaying ? (
                             <>
                                 <Pause className="w-3.5 h-3.5 fill-white" />
-                                <span>Pause</span>
+                                <span>{isHi ? 'रोकें' : 'Pause'}</span>
                             </>
                         ) : (
                             <>
                                 <Play className="w-3.5 h-3.5 fill-white ml-0.5" />
-                                <span>Play</span>
+                                <span>{isHi ? 'चलाएं' : 'Play'}</span>
                             </>
                         )}
                     </button>
@@ -82,7 +85,7 @@ export function PlaybackControls({
                     <button
                         onClick={onStepForward}
                         disabled={currentIndex >= totalPoints - 1}
-                        title="Step Forward"
+                        title={isHi ? 'आगे बढ़ाएं' : 'Step Forward'}
                         className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
                     >
                         <SkipForward className="w-3.5 h-3.5" />
@@ -93,12 +96,12 @@ export function PlaybackControls({
                 <div className="flex items-center gap-2 bg-navy-950 text-white px-2.5 py-1 rounded-lg border border-navy-800 shadow-xs shrink-0">
                     <Clock className="w-3.5 h-3.5 text-emerald-400 animate-pulse shrink-0" />
                     <div>
-                        <span className="text-[9px] text-slate-400 uppercase font-bold block leading-none">GPS Time</span>
+                        <span className="text-[9px] text-slate-400 uppercase font-bold block leading-none">{isHi ? 'जीपीएस समय' : 'GPS Time'}</span>
                         <span className="text-xs font-bold text-amber-400 font-mono leading-tight">{currentTimeStr || '--:--'}</span>
                     </div>
                     <div className="w-px h-5 bg-navy-800 mx-0.5" />
                     <div className="text-right">
-                        <span className="text-[9px] text-slate-400 uppercase font-bold block leading-none">Done</span>
+                        <span className="text-[9px] text-slate-400 uppercase font-bold block leading-none">{isHi ? 'पूर्ण' : 'Done'}</span>
                         <span className="text-xs font-bold text-slate-200 font-mono leading-tight">{progressPercent}%</span>
                     </div>
                 </div>
@@ -108,7 +111,7 @@ export function PlaybackControls({
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-slate-600">
                     <Gauge className="w-3.5 h-3.5 text-slate-500" />
-                    <span className="text-[11px] font-bold uppercase tracking-wider">Playback Speed</span>
+                    <span className="text-[11px] font-bold uppercase tracking-wider">{isHi ? 'प्लेबैक गति' : 'Playback Speed'}</span>
                 </div>
 
                 <div className="flex items-center gap-1">

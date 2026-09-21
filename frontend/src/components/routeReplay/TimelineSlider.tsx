@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import type { RouteReplayDataset } from '@/types/routeReplay';
 import { cn } from '@/lib/utils';
 
@@ -8,6 +9,8 @@ interface TimelineSliderProps {
 }
 
 export function TimelineSlider({ dataset, currentIndex, onSeekIndex }: TimelineSliderProps) {
+    const { i18n } = useTranslation();
+    const isHi = i18n.language === 'hi';
     const totalPoints = dataset.points.length;
     const currentPoint = dataset.points[currentIndex];
 
@@ -20,14 +23,14 @@ export function TimelineSlider({ dataset, currentIndex, onSeekIndex }: TimelineS
             <div className="flex items-center justify-between text-xs font-mono text-slate-600 font-bold">
                 <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    Start: {startTimeStr}
+                    {isHi ? 'प्रारंभ:' : 'Start:'} {startTimeStr}
                 </span>
                 <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300 font-bold">
-                    Active: {currentPoint?.timeStr || '--:--'} ({currentPoint?.speed || 0} km/h)
+                    {isHi ? 'सक्रिय:' : 'Active:'} {currentPoint?.timeStr || '--:--'} ({currentPoint?.speed || 0} {isHi ? 'किमी/घं' : 'km/h'})
                 </span>
                 <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-red-500" />
-                    End: {endTimeStr}
+                    {isHi ? 'समाप्त:' : 'End:'} {endTimeStr}
                 </span>
             </div>
 
