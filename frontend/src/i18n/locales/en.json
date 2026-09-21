@@ -92,6 +92,31 @@
       "cap2": "Monitor collection operations across Uttarakhand panchayats",
       "cap3": "Store and view daily vehicle route history records",
       "cap4": "Receive and manage citizen public complaints efficiently"
+    },
+    "admin": {
+      "controlPanel": "Admin Control Panel",
+      "portalTitle": "Zila Panchayat Safai Portal",
+      "signOut": "Sign Out",
+      "nav": {
+        "dashboard": "Dashboard",
+        "tracking": "Live Tracking",
+        "history": "Vehicle History",
+        "routeReplay": "Route Replay",
+        "grievances": "Grievances",
+        "vehicles": "Vehicles",
+        "gpsDevices": "GPS Devices"
+      },
+      "dashboard": {
+        "title": "Administrative Command Console",
+        "subtitle": "Real-time solid waste management, fleet telematics & grievance overview",
+        "totalVehicles": "Total Fleet Vehicles",
+        "activeVehicles": "Active On Route",
+        "idleVehicles": "Idle Vehicles",
+        "pendingComplaints": "Open Grievances",
+        "resolvedComplaints": "Resolved Grievances",
+        "liveFleetStatus": "Live Fleet Status Map",
+        "quickActions": "Quick Administrative Actions"
+      }
     }
   }
 }
