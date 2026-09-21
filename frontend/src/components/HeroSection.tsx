@@ -136,7 +136,7 @@ export function HeroSection() {
                   <span className="text-red-500 font-serif text-lg sm:text-xl font-bold mr-1 inline leading-none">
                     “
                   </span>
-                  Na gandagi karenge, na karne denge -Cleaning up the country cannot be the sole responsibility of sanitation workers (safai karamcharis). Do citizens have no role in this? We have to change this mindset.
+                  {t('hero.slogan')}
                   <span className="text-red-500 font-serif text-lg sm:text-xl font-bold ml-1 inline leading-none">
                     ”
                   </span>
@@ -148,7 +148,7 @@ export function HeroSection() {
                 {/* Speaker & Context Info */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-500 font-medium text-center sm:text-left">
                   <span className="font-semibold text-slate-800">
-                    Swachh Bharat Mission (Clean India Mission)
+                    {t('hero.sloganMission')}
                   </span>
                 </div>
               </div>

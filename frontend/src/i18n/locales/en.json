@@ -46,7 +46,9 @@
         "tracked": "Vehicles Tracked",
         "citizens": "Citizens Served",
         "resolved": "Complaints Resolved"
-      }
+      },
+      "slogan": "Na gandagi karenge, na karne denge -Cleaning up the country cannot be the sole responsibility of sanitation workers (safai karamcharis). Do citizens have no role in this? We have to change this mindset.",
+      "sloganMission": "Swachh Bharat Mission (Clean India Mission)"
     },
     "complaint": {
       "badge": "Citizen Services",
@@ -152,12 +154,46 @@
         "title": "Sanitation Fleet Management",
         "subtitle": "Manage waste collection vehicles across district wards",
         "addVehicle": "Add New Vehicle",
-        "vehicleNumber": "Vehicle Number",
-        "vehicleName": "Vehicle Name",
-        "vehicleType": "Vehicle Type",
-        "status": "Status",
-        "wardArea": "Ward / Area",
-        "gpsStatus": "GPS Device Status"
+        "addBtn": "Add Vehicle",
+        "editTitle": "Edit Vehicle",
+        "addTitle": "Add Vehicle",
+        "emptyTitle": "No Vehicles Found",
+        "emptyDesc": "Add your first vehicle to the system.",
+        "addFirst": "Add First Vehicle",
+        "register": "Vehicle Register",
+        "form": {
+          "number": "Vehicle Number",
+          "name": "Vehicle Name",
+          "type": "Vehicle Type",
+          "types": {
+            "truck": "Truck",
+            "mini_truck": "Mini Truck",
+            "auto": "Auto",
+            "other": "Other"
+          },
+          "btnSaving": "Saving...",
+          "btnUpdate": "Update",
+          "btnAdd": "Add",
+          "btnCancel": "Cancel"
+        },
+        "linkModal": {
+          "title": "Link GPS",
+          "select": "Select Device",
+          "choose": "Choose a device...",
+          "note": "Linking a GPS device will enable live tracking.",
+          "btnLinking": "Linking...",
+          "btnLink": "Link Device",
+          "btnCancel": "Cancel"
+        },
+        "table": {
+          "number": "Vehicle No.",
+          "name": "Vehicle Name",
+          "type": "Type",
+          "status": "Status",
+          "date": "Date Added",
+          "actions": "Actions",
+          "linkGps": "Link GPS"
+        }
       },
       "replay": {
         "title": "Route Replay & Audit Panel",
