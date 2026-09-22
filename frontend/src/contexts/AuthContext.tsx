@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Profile } from '@/types';
 import { api } from '@/services/api';
-import { useGoogleLogin } from '@react-oauth/google';
 
 interface AuthContextType {
   user: Profile | null;
@@ -10,7 +9,6 @@ interface AuthContextType {
   loading: boolean;
   isNewGoogleUser: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signUp: (data: { full_name: string; email: string; password: string; passkey: string }) => Promise<{ message: string; email: string; requiresOtp: boolean }>;
   verifyOtp: (email: string, otp: string) => Promise<string>;
   resendOtp: (email: string) => Promise<string>;
@@ -75,29 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(newProfile);
   }
 
-  const googleLoginFn = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
-      // Actually we need the id_token, but useGoogleLogin by default returns an access token
-      // Wait, to get id_token we need flow: 'implicit' or 'auth-code'
-      // By default flow='implicit' returns access_token. 
-      // If we use flow='auth-code' we get code. 
-      // Let's just use Google OAuth 2.0 endpoint or fetch user info.
-      // But we built the backend to expect `idToken`.
-    },
-    onError: error => console.log('Google Login Failed', error)
-  });
-
-  // Since useGoogleLogin with default implicit flow returns access_token, getting an id_token requires a bit more setup or using @react-oauth/google's GoogleLogin component.
-  // We can just use it to fetch the user profile on frontend, and then POST to backend. But wait, it's safer to use the credentialResponse from <GoogleLogin> which gives `credential` (id_token).
-  // I will refactor signInWithGoogle to just trigger a state that we will handle, or just rely on a separate approach.
-  // Actually, wait, useGoogleLogin with flow: 'implicit' doesn't give id_token. 
-  // We can just redirect to backend for Google OAuth, or we can use the `<GoogleLogin>` component inside SignInPage.tsx!
-  // For now, I'll provide a placeholder or we can use the `googleLoginFn`. Let's just make it do nothing and tell SignInPage to use <GoogleLogin> instead.
-
-  async function signInWithGoogle() {
-    // We will handle this directly in the components using @react-oauth/google <GoogleLogin />
-    console.warn("Use <GoogleLogin> component from @react-oauth/google directly instead of signInWithGoogle");
-  }
 
   async function signUp(data: { full_name: string; email: string; password: string; passkey: string }) {
     const result = await api.post<{ message: string; email: string; requiresOtp: boolean }>('/auth/signup', data);
@@ -161,7 +136,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         loading,
         isNewGoogleUser,
         signIn,
-        signInWithGoogle,
         signUp,
         verifyOtp,
         resendOtp,

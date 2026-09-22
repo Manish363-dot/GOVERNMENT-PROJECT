@@ -32,7 +32,7 @@ export async function createVehicle(vehicle: {
         vehicle_number: vehicle.vehicle_number.toUpperCase(),
         vehicle_name: vehicle.vehicle_name || null,
         vehicle_type: (vehicle.vehicle_type as any) || 'truck',
-        status: 'inactive' as any
+        status: 'offline'
       }
     });
   } catch (error: any) {

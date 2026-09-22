@@ -18,7 +18,6 @@ import { VehicleHistoryPage } from '@/pages/dashboard/VehicleHistoryPage';
 import { RouteReplayPage } from '@/pages/dashboard/RouteReplayPage';
 import { ComplaintsPage } from '@/pages/dashboard/ComplaintsPage';
 import { VehiclesPage } from '@/pages/dashboard/VehiclesPage';
-import { GpsDevicesPage } from '@/pages/dashboard/GpsDevicesPage';
 
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';

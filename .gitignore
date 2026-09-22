@@ -1,0 +1,23 @@
+# ── Project Root ──
+*.pem
+*.tar.gz
+*.zip
+deploy.sh
+
+# ── Environment ──
+.env
+.env.local
+.env.production
+
+# ── Dependencies ──
+node_modules/
+
+# ── Build output ──
+dist/
+
+# ── Logs ──
+*.log
+
+# ── OS files ──
+.DS_Store
+Thumbs.db

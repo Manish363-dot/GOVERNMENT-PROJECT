@@ -21,6 +21,10 @@ export async function login(req: Request, res: Response): Promise<void> {
       res.status(401).json({ error: 'Invalid email or password' });
       return;
     }
+    if (err.message === 'EMAIL_NOT_VERIFIED') {
+      res.status(403).json({ error: 'Your email is not verified. Please complete email verification first.' });
+      return;
+    }
     res.status(500).json({ error: 'Login failed' });
   }
 }
@@ -53,6 +57,10 @@ export async function signup(req: Request, res: Response): Promise<void> {
     }
     if (err.message === 'INVALID_EMAIL_FORMAT') {
       res.status(400).json({ error: 'Please enter a valid email address.' });
+      return;
+    }
+    if (err.message === 'WEAK_PASSWORD') {
+      res.status(400).json({ error: 'Password must be at least 8 characters with uppercase, lowercase, number, and special character.' });
       return;
     }
     if (err.message === 'EMAIL_ALREADY_REGISTERED' || err.message?.includes('already been registered')) {
@@ -91,6 +99,10 @@ export async function verifyOtp(req: Request, res: Response): Promise<void> {
     }
     if (err.message === 'OTP_EXPIRED') {
       res.status(400).json({ error: 'Verification code has expired. Please request a new code.' });
+      return;
+    }
+    if (err.message === 'TOO_MANY_ATTEMPTS') {
+      res.status(400).json({ error: 'Too many incorrect attempts. Please request a new verification code.' });
       return;
     }
     if (err.message === 'USER_NOT_FOUND') {
@@ -260,16 +272,6 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     const { email, resetToken, newPassword } = req.body;
     if (!email || !resetToken || !newPassword) {
       res.status(400).json({ error: 'Email, reset token, and new password are required' });
-      return;
-    }
-
-    // Password validation
-    const hasUpperCase = /[A-Z]/.test(newPassword);
-    const hasLowerCase = /[a-z]/.test(newPassword);
-    const hasNumbers = /\d/.test(newPassword);
-    const hasNonAlphas = /\W/.test(newPassword);
-    if (newPassword.length < 8 || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonAlphas) {
-      res.status(400).json({ error: 'Password does not meet the minimum requirements.' });
       return;
     }
 

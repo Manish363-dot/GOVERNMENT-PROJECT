@@ -27,8 +27,9 @@ export function useRealtime<T>(
 
     socket.on('connect', () => {
       console.log('Socket connected');
+      // MED-11: Use the correct event name that matches the backend
       if (room) {
-        socket.emit('join_room', room);
+        socket.emit('subscribe_live_locations');
       }
     });
 
@@ -37,9 +38,6 @@ export function useRealtime<T>(
     });
 
     return () => {
-      if (room) {
-        socket.emit('leave_room', room);
-      }
       socket.off(event);
       socket.disconnect();
     };

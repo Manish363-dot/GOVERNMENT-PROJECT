@@ -70,7 +70,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ sent: bool
  * Send a 6-digit Verification OTP email with official Uttarakhand Government styling.
  */
 export async function sendVerificationOtpEmail(toEmail: string, fullName: string, otp: string): Promise<boolean> {
-  const subject = `[Zila Panchayat Safai] Verification Code: ${otp}`;
+  const subject = `[Zila Panchayat Safai] Your Verification Code`;
   const text = `Your Zila Panchayat Safai official verification code is: ${otp}. Valid for 15 minutes.`;
 
   const html = `
@@ -137,7 +137,7 @@ export async function sendVerificationOtpEmail(toEmail: string, fullName: string
  * Send a 6-digit Password Reset OTP email.
  */
 export async function sendPasswordResetOtpEmail(toEmail: string, otp: string): Promise<boolean> {
-  const subject = `[Zila Panchayat Safai] Password Reset Code: ${otp}`;
+  const subject = `[Zila Panchayat Safai] Password Reset Request`;
   const text = `Your Zila Panchayat Safai password reset code is: ${otp}. Valid for 10 minutes.`;
 
   const html = `

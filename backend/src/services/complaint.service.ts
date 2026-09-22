@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma';
 import { Complaint } from '@prisma/client';
+import crypto from 'crypto';
 
 export async function createComplaint(complaint: {
   name: string;
@@ -9,14 +10,20 @@ export async function createComplaint(complaint: {
   description?: string;
 }) {
   try {
+    // MED-10: Sanitize text inputs (strip HTML tags)
+    const sanitize = (str: string) => str.replace(/<[^>]*>/g, '').trim();
+
+    // MED-6: Use crypto UUID for guaranteed uniqueness
+    const complaintNumber = `COMP-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+
     const newComplaint = await prisma.complaint.create({
       data: {
-        name: complaint.name,
+        name: sanitize(complaint.name),
         mobile: complaint.mobile,
-        area: complaint.area,
-        complaint_number: `COMP-${Date.now()}`,
+        area: sanitize(complaint.area),
+        complaint_number: complaintNumber,
         complaint_type: complaint.complaint_type as any,
-        description: complaint.description || null,
+        description: complaint.description ? sanitize(complaint.description) : null,
         status: 'new' as any
       }
     });

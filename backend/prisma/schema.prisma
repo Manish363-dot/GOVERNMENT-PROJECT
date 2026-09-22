@@ -40,18 +40,44 @@ enum ComplaintStatus {
   resolved
 }
 
+// ── Auth & OTP Models ──────────────────────────────────────────
+
 model Profile {
-  id         String   @id @default(uuid())
-  full_name  String
-  email      String   @unique
-  role       String
+  id           String   @id @default(uuid())
+  full_name    String
+  email        String   @unique
+  role         String
   passwordHash String
-  isVerified Boolean @default(false)
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  
+  isVerified   Boolean  @default(false)
+  authProvider String   @default("email") // "email" | "google"
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
   complaintUpdates ComplaintUpdate[]
 }
+
+model PendingRegistration {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  userId    String
+  otpHash   String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model PendingPasswordReset {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  userId        String
+  otpHash       String
+  expiresAt     DateTime
+  attempts      Int      @default(0)
+  verifiedToken String?
+  createdAt     DateTime @default(now())
+}
+
+// ── Vehicle & GPS Models ───────────────────────────────────────
 
 model Vehicle {
   id             String        @id @default(uuid())
@@ -89,8 +115,8 @@ model VehicleGpsAssignment {
   unassigned_at  DateTime?
   is_active      Boolean   @default(true)
 
-  vehicle   Vehicle   @relation(fields: [vehicle_id], references: [id])
-  gpsDevice GpsDevice @relation(fields: [gps_device_id], references: [id])
+  vehicle   Vehicle   @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  gpsDevice GpsDevice @relation(fields: [gps_device_id], references: [id], onDelete: Cascade)
 }
 
 model VehicleCurrentLocation {
@@ -104,8 +130,8 @@ model VehicleCurrentLocation {
   status         VehicleStatus
   updated_at     DateTime      @updatedAt
 
-  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id])
-  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id])
+  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id], onDelete: SetNull)
 }
 
 model VehicleLocationHistory {
@@ -118,9 +144,11 @@ model VehicleLocationHistory {
   heading        Float
   recorded_at    DateTime @default(now())
 
-  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id])
-  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id])
+  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id], onDelete: SetNull)
 }
+
+// ── Complaint Models ───────────────────────────────────────────
 
 model Complaint {
   id               String          @id @default(uuid())
@@ -144,6 +172,6 @@ model ComplaintUpdate {
   updated_by   String?
   updated_at   DateTime        @default(now())
 
-  complaint Complaint @relation(fields: [complaint_id], references: [id])
-  updater   Profile?  @relation(fields: [updated_by], references: [id])
+  complaint Complaint @relation(fields: [complaint_id], references: [id], onDelete: Cascade)
+  updater   Profile?  @relation(fields: [updated_by], references: [id], onDelete: SetNull)
 }

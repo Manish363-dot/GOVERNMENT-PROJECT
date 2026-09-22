@@ -26,6 +26,7 @@ export async function authMiddleware(
       const decoded = jwt.verify(token, env.JWT_SECRET) as any;
       req.userId = decoded.userId;
       req.userEmail = decoded.email;
+      req.userRole = decoded.role;
       next();
     } catch (err) {
       res.status(401).json({ error: 'Invalid or expired token' });
@@ -33,4 +34,18 @@ export async function authMiddleware(
   } catch (err) {
     res.status(401).json({ error: 'Authentication failed' });
   }
+}
+
+/**
+ * Middleware factory: Require a specific role to access a route.
+ * Must be used AFTER authMiddleware.
+ */
+export function requireRole(...roles: string[]) {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
+    if (!req.userRole || !roles.includes(req.userRole)) {
+      res.status(403).json({ error: 'Insufficient permissions. Admin access required.' });
+      return;
+    }
+    next();
+  };
 }
