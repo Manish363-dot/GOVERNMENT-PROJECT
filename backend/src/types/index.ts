@@ -125,10 +125,8 @@ export interface TraccarWebhookPayload {
 // --- Express Extended Types ---
 
 import { Request } from 'express';
-import type { User } from '@supabase/supabase-js';
 
 export interface AuthenticatedRequest extends Request {
   userId?: string;
   userEmail?: string;
-  user?: User;
 }

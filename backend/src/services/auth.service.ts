@@ -1,8 +1,12 @@
-import { supabaseAdmin } from '../config/supabase';
 import { env } from '../config/env';
-import { Profile } from '../types';
+import { prisma } from '../config/prisma';
 import { sendVerificationOtpEmail, sendPasswordResetOtpEmail } from './email.service';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
+
+const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID || 'placeholder_google_client_id');
 
 interface PendingRegistration {
   userId: string;
@@ -12,7 +16,6 @@ interface PendingRegistration {
   expiresAt: number;
 }
 
-// In-memory cache for fast OTP verification
 const pendingRegistrations = new Map<string, PendingRegistration>();
 
 interface PendingPasswordReset {
@@ -24,74 +27,86 @@ interface PendingPasswordReset {
   verifiedToken: string | null;
 }
 
-// In-memory cache for password resets
 const pendingPasswordResets = new Map<string, PendingPasswordReset>();
 
-/**
- * Verify admin passkey and initiate unconfirmed admin registration with OTP.
- */
+export async function login(email: string, password: string) {
+  const emailNormalized = email.trim().toLowerCase();
+
+  const admin = await prisma.profile.findUnique({
+    where: { email: emailNormalized }
+  });
+
+  if (!admin) {
+    throw new Error('INVALID_CREDENTIALS');
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
+  if (!isPasswordValid) {
+    throw new Error('INVALID_CREDENTIALS');
+  }
+
+  const token = jwt.sign(
+    { userId: admin.id, role: admin.role, email: admin.email },
+    env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { token, profile: { id: admin.id, full_name: admin.full_name, email: admin.email, role: admin.role } };
+}
+
 export async function signupAdmin(
   fullName: string,
   email: string,
   password: string,
   passkey: string
-): Promise<{ email: string; requiresOtp: boolean; message: string }> {
-  // 1. Verify passkey
+) {
   if (passkey !== env.ADMIN_PASSKEY) {
     throw new Error('INVALID_PASSKEY');
   }
 
-  // 2. Validate email format
   const emailNormalized = email.trim().toLowerCase();
   const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (!emailRegex.test(emailNormalized)) {
     throw new Error('INVALID_EMAIL_FORMAT');
   }
 
-  // 3. Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiresAt = Date.now() + 15 * 60 * 1000; // 15 minutes
+  const expiresAt = Date.now() + 15 * 60 * 1000;
 
-  // 4. Check if user already exists in Supabase
-  const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-  const existingUser = users.find((u) => u.email?.toLowerCase() === emailNormalized);
+  const existingAdmin = await prisma.profile.findUnique({
+    where: { email: emailNormalized }
+  });
 
   let userId: string;
 
-  if (existingUser) {
-    if (existingUser.email_confirmed_at) {
+  if (existingAdmin) {
+    if (existingAdmin.isVerified) {
       throw new Error('EMAIL_ALREADY_REGISTERED');
     }
-    // Update existing unconfirmed user with new password & OTP
-    userId = existingUser.id;
-    await supabaseAdmin.auth.admin.updateUserById(userId, {
-      password,
-      user_metadata: {
+    // Update existing unconfirmed admin with new password & OTP
+    const passwordHash = await bcrypt.hash(password, 10);
+    const updated = await prisma.profile.update({
+      where: { id: existingAdmin.id },
+      data: {
+        passwordHash,
         full_name: fullName,
-        verification_otp: otp,
-        otp_expires_at: expiresAt,
-      },
+      }
     });
+    userId = updated.id;
   } else {
-    // Create new unconfirmed user in Supabase Auth
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
-      email: emailNormalized,
-      password,
-      email_confirm: false,
-      user_metadata: {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const newAdmin = await prisma.profile.create({
+      data: {
+        email: emailNormalized,
         full_name: fullName,
-        verification_otp: otp,
-        otp_expires_at: expiresAt,
-      },
+        passwordHash,
+        role: 'admin',
+        isVerified: false
+      }
     });
-
-    if (authError) {
-      throw new Error(authError.message);
-    }
-    userId = authData.user.id;
+    userId = newAdmin.id;
   }
 
-  // Store in memory cache
   pendingRegistrations.set(emailNormalized, {
     userId,
     fullName,
@@ -100,7 +115,6 @@ export async function signupAdmin(
     expiresAt,
   });
 
-  // 5. Send verification email
   await sendVerificationOtpEmail(emailNormalized, fullName, otp);
 
   return {
@@ -110,121 +124,63 @@ export async function signupAdmin(
   };
 }
 
-/**
- * Verify OTP and activate admin account.
- */
-export async function verifyOtp(
-  email: string,
-  otp: string
-): Promise<{ verified: boolean; message: string; profile: Profile }> {
+export async function verifyOtp(email: string, otp: string) {
   const emailNormalized = email.trim().toLowerCase();
   const pending = pendingRegistrations.get(emailNormalized);
 
-  let userId = pending?.userId;
-  let fullName = pending?.fullName;
-  let validOtp = pending?.otp;
-  let expiresAt = pending?.expiresAt;
-
   if (!pending) {
-    // Fallback to Supabase users lookup
-    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-    const user = users.find((u) => u.email?.toLowerCase() === emailNormalized);
-    if (!user) {
-      throw new Error('USER_NOT_FOUND');
-    }
-    userId = user.id;
-    fullName = user.user_metadata?.full_name || 'Admin';
-    validOtp = user.user_metadata?.verification_otp;
-    expiresAt = user.user_metadata?.otp_expires_at;
+    throw new Error('USER_NOT_FOUND');
   }
 
-  if (!validOtp || validOtp !== otp.trim()) {
+  if (pending.otp !== otp.trim()) {
     throw new Error('INVALID_OTP');
   }
 
-  if (expiresAt && Date.now() > expiresAt) {
+  if (Date.now() > pending.expiresAt) {
     throw new Error('OTP_EXPIRED');
   }
 
-  // Confirm email in Supabase Auth
-  await supabaseAdmin.auth.admin.updateUserById(userId!, {
-    email_confirm: true,
+  const admin = await prisma.profile.update({
+    where: { id: pending.userId },
+    data: { isVerified: true }
   });
 
-  // Create or update admin profile in database
-  const { data: existingProfile } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
-    .eq('id', userId!)
-    .maybeSingle();
-
-  let profile = existingProfile;
-
-  if (!profile) {
-    const { data: newProfile, error: profileError } = await supabaseAdmin
-      .from('profiles')
-      .insert({
-        id: userId!,
-        full_name: fullName || emailNormalized.split('@')[0],
-        email: emailNormalized,
-        role: 'admin',
-      })
-      .select()
-      .single();
-
-    if (profileError) {
-      throw new Error('Failed to create admin profile: ' + profileError.message);
-    }
-    profile = newProfile;
-  }
-
-  // Clear from pending
   pendingRegistrations.delete(emailNormalized);
 
   return {
     verified: true,
     message: 'Official account successfully verified and activated',
-    profile,
+    profile: { id: admin.id, full_name: admin.full_name, email: admin.email, role: admin.role },
   };
 }
 
-/**
- * Resend OTP to email.
- */
-export async function resendOtp(email: string): Promise<{ sent: boolean; message: string }> {
+export async function resendOtp(email: string) {
   const emailNormalized = email.trim().toLowerCase();
-  const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-  const user = users.find((u) => u.email?.toLowerCase() === emailNormalized);
 
-  if (!user) {
+  const admin = await prisma.profile.findUnique({
+    where: { email: emailNormalized }
+  });
+
+  if (!admin) {
     throw new Error('USER_NOT_FOUND');
   }
 
-  if (user.email_confirmed_at) {
+  if (admin.isVerified) {
     throw new Error('EMAIL_ALREADY_CONFIRMED');
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 15 * 60 * 1000;
-  const fullName = user.user_metadata?.full_name || 'Admin';
-
-  await supabaseAdmin.auth.admin.updateUserById(user.id, {
-    user_metadata: {
-      ...user.user_metadata,
-      verification_otp: otp,
-      otp_expires_at: expiresAt,
-    },
-  });
 
   pendingRegistrations.set(emailNormalized, {
-    userId: user.id,
-    fullName,
+    userId: admin.id,
+    fullName: admin.full_name,
     email: emailNormalized,
     otp,
     expiresAt,
   });
 
-  await sendVerificationOtpEmail(emailNormalized, fullName, otp);
+  await sendVerificationOtpEmail(emailNormalized, admin.full_name, otp);
 
   return {
     sent: true,
@@ -232,103 +188,39 @@ export async function resendOtp(email: string): Promise<{ sent: boolean; message
   };
 }
 
-/**
- * Get admin profile by user ID.
- */
-export async function getProfile(userId: string): Promise<Profile | null> {
-  const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .single();
-
-  if (error) return null;
-  return data;
+export async function getProfile(userId: string) {
+  const admin = await prisma.profile.findUnique({
+    where: { id: userId },
+    select: { id: true, full_name: true, email: true, role: true }
+  });
+  return admin;
 }
 
-/**
- * Create admin profile for a Google OAuth user (called after OAuth completes).
- * Idempotent: returns existing profile without error if already created.
- */
-export async function createGoogleAdminProfile(
-  userId: string,
-  email: string,
-  fullName: string,
-  passkey: string
-): Promise<Profile> {
-  // Verify passkey — same gate as email/password signup
-  if (passkey !== env.ADMIN_PASSKEY) {
-    throw new Error('INVALID_PASSKEY');
-  }
-
-  // Check if profile already exists (idempotent)
-  const { data: existing } = await supabaseAdmin
-    .from('profiles')
-    .select('*')
-    .eq('id', userId)
-    .maybeSingle();
-
-  if (existing) return existing;
-
-  // Create new admin profile
-  const { data: profile, error: profileError } = await supabaseAdmin
-    .from('profiles')
-    .insert({
-      id: userId,
-      full_name: fullName || email.split('@')[0],
-      email,
-      role: 'admin',
-    })
-    .select()
-    .single();
-
-  if (profileError) {
-    throw new Error('Failed to create admin profile: ' + profileError.message);
-  }
-
-  return profile;
+export async function updateProfile(userId: string, updates: { full_name?: string }) {
+  const admin = await prisma.profile.update({
+    where: { id: userId },
+    data: { ...updates },
+    select: { id: true, full_name: true, email: true, role: true }
+  });
+  return admin;
 }
 
-/**
- * Update admin profile.
- */
-export async function updateProfile(
-  userId: string,
-  updates: { full_name?: string }
-): Promise<Profile> {
-  const { data, error } = await supabaseAdmin
-    .from('profiles')
-    .update(updates)
-    .eq('id', userId)
-    .select()
-    .single();
-
-  if (error) throw new Error('Failed to update profile');
-  return data;
-}
-
-/**
- * Initiates a password reset flow by sending an OTP to the user's email.
- * Always returns a generic success message to prevent user enumeration.
- */
-export async function forgotPassword(email: string): Promise<{ message: string }> {
+export async function forgotPassword(email: string) {
   const emailNormalized = email.trim().toLowerCase();
-  
-  // Look up user in Supabase
-  const { data: { users } } = await supabaseAdmin.auth.admin.listUsers();
-  const existingUser = users.find((u) => u.email?.toLowerCase() === emailNormalized);
 
-  // If user doesn't exist, we still return success but do nothing
-  if (!existingUser) {
+  const existingAdmin = await prisma.profile.findUnique({
+    where: { email: emailNormalized }
+  });
+
+  if (!existingAdmin) {
     return { message: 'If an account exists for this email, a verification OTP has been sent.' };
   }
 
-  // Generate a secure 6-digit OTP
   const otp = crypto.randomInt(100000, 999999).toString();
-  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+  const expiresAt = Date.now() + 10 * 60 * 1000;
 
   pendingPasswordResets.set(emailNormalized, {
-    userId: existingUser.id,
+    userId: existingAdmin.id,
     email: emailNormalized,
     otp,
     expiresAt,
@@ -341,10 +233,7 @@ export async function forgotPassword(email: string): Promise<{ message: string }
   return { message: 'If an account exists for this email, a verification OTP has been sent.' };
 }
 
-/**
- * Verifies the 6-digit OTP for password reset and issues a reset token.
- */
-export async function verifyPasswordResetOtp(email: string, otp: string): Promise<{ message: string; resetToken: string }> {
+export async function verifyPasswordResetOtp(email: string, otp: string) {
   const emailNormalized = email.trim().toLowerCase();
   const pendingReset = pendingPasswordResets.get(emailNormalized);
 
@@ -366,40 +255,73 @@ export async function verifyPasswordResetOtp(email: string, otp: string): Promis
     throw new Error('INVALID_OTP');
   }
 
-  // Generate a secure token to allow password reset
   const resetToken = crypto.randomBytes(32).toString('hex');
   pendingReset.verifiedToken = resetToken;
 
   return { message: 'OTP verified successfully.', resetToken };
 }
 
-/**
- * Resets the password using the verified reset token.
- */
-export async function resetPassword(email: string, resetToken: string, newPassword: string): Promise<{ message: string }> {
+export async function resetPassword(email: string, resetToken: string, newPassword: string) {
   const emailNormalized = email.trim().toLowerCase();
   const pendingReset = pendingPasswordResets.get(emailNormalized);
 
   if (!pendingReset || !pendingReset.verifiedToken || pendingReset.verifiedToken !== resetToken) {
     throw new Error('INVALID_RESET_TOKEN');
   }
-  
+
   if (Date.now() > pendingReset.expiresAt) {
     pendingPasswordResets.delete(emailNormalized);
     throw new Error('TOKEN_EXPIRED');
   }
 
-  // Update password via Supabase Admin (securely hashes)
-  const { error } = await supabaseAdmin.auth.admin.updateUserById(pendingReset.userId, {
-    password: newPassword
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+
+  await prisma.profile.update({
+    where: { id: pendingReset.userId },
+    data: { passwordHash }
   });
 
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  // Invalidate the session
   pendingPasswordResets.delete(emailNormalized);
 
   return { message: 'Password has been successfully updated.' };
+}
+
+export async function googleLogin(idToken: string, passkey?: string) {
+  const ticket = await googleClient.verifyIdToken({
+    idToken,
+    audience: env.GOOGLE_CLIENT_ID,
+  });
+  const payload = ticket.getPayload();
+  if (!payload || !payload.email) throw new Error('INVALID_GOOGLE_TOKEN');
+  
+  const emailNormalized = payload.email.trim().toLowerCase();
+  let profile = await prisma.profile.findUnique({
+    where: { email: emailNormalized }
+  });
+
+  if (!profile) {
+    if (!passkey) {
+      throw new Error('PASSKEY_REQUIRED');
+    }
+    if (passkey !== env.ADMIN_PASSKEY) {
+      throw new Error('INVALID_PASSKEY');
+    }
+    profile = await prisma.profile.create({
+      data: {
+        email: emailNormalized,
+        full_name: payload.name || 'Google User',
+        passwordHash: '',
+        role: 'admin',
+        isVerified: true
+      }
+    });
+  }
+
+  const token = jwt.sign(
+    { userId: profile.id, role: profile.role, email: profile.email },
+    env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+
+  return { token, profile: { id: profile.id, full_name: profile.full_name, email: profile.email, role: profile.role } };
 }

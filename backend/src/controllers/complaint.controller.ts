@@ -10,6 +10,11 @@ export async function create(req: Request, res: Response): Promise<void> {
   try {
     const complaint = await complaintService.createComplaint(req.body);
 
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('complaint_update', { type: 'INSERT', new: complaint });
+    }
+
     res.status(201).json({
       message: 'Complaint registered successfully',
       complaint_number: complaint.complaint_number,
@@ -64,6 +69,12 @@ export async function updateStatus(req: AuthenticatedRequest, res: Response): Pr
       remark || null,
       req.userId!
     );
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('complaint_update', { type: 'UPDATE', new: complaint });
+    }
+
     res.json({ complaint });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update complaint' });

@@ -2,20 +2,19 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, MessageSquareWarning, BookOpen, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { supabase } from '@/lib/supabase';
+
 import { BlogGalleryModal } from './BlogGalleryModal';
 
 const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg'];
 
-// Generate public URLs from the 'portal-logos' Supabase bucket
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://your-bucket-name.s3.amazonaws.com';
+
 const HERO_IMAGES = BG_IMAGE_NAMES.map(
-  (filename) => supabase.storage.from('portal-logos').getPublicUrl(filename).data.publicUrl
+  (filename) => `${S3_BUCKET}/portal-logos/${filename}`
 );
 
 // Dignitary photo image5.jpg from 'portal-logos' bucket
-const DIGNITARY_IMAGE_URL = supabase.storage
-  .from('portal-logos')
-  .getPublicUrl('image5.jpg').data.publicUrl;
+const DIGNITARY_IMAGE_URL = `${S3_BUCKET}/portal-logos/image5.jpg`;
 
 export function HeroSection() {
   const { t } = useTranslation();

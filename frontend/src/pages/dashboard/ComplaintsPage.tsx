@@ -43,12 +43,12 @@ export function ComplaintsPage() {
   }, [filter]);
 
   // Realtime: new complaints
-  useRealtime<Complaint>('complaints', (payload) => {
-    if (payload.eventType === 'INSERT' && payload.new) {
-      setComplaints((prev) => [payload.new as Complaint, ...prev]);
-    } else if (payload.eventType === 'UPDATE' && payload.new) {
+  useRealtime<{ type: string, new: Complaint }>('complaint_update', (payload) => {
+    if (payload.type === 'INSERT' && payload.new) {
+      setComplaints((prev) => [payload.new, ...prev]);
+    } else if (payload.type === 'UPDATE' && payload.new) {
       setComplaints((prev) =>
-        prev.map((c) => (c.id === (payload.new as Complaint).id ? (payload.new as Complaint) : c))
+        prev.map((c) => (c.id === payload.new.id ? payload.new : c))
       );
     }
   });

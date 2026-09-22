@@ -163,7 +163,7 @@ export function LiveTrackingPage() {
   };
 
   // Realtime vehicle tracking subscription
-  useRealtime('vehicle_current_locations', (payload) => {
+  useRealtime<{ type: string, new: VehicleCurrentLocation }>('location_update', (payload) => {
     if (payload.new) {
       setLocations((prev) => {
         const idx = prev.findIndex((l) => l.vehicle_id === (payload.new as any).vehicle_id);

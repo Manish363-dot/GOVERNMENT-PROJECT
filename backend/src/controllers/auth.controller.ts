@@ -3,6 +3,29 @@ import { AuthenticatedRequest } from '../types';
 import * as authService from '../services/auth.service';
 
 /**
+ * POST /api/auth/login
+ * Public — logs in an admin and returns a JWT token.
+ */
+export async function login(req: Request, res: Response): Promise<void> {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password are required' });
+      return;
+    }
+    const result = await authService.login(email, password);
+    res.status(200).json(result);
+  } catch (err: any) {
+    console.error('Login Error:', err);
+    if (err.message === 'INVALID_CREDENTIALS') {
+      res.status(401).json({ error: 'Invalid email or password' });
+      return;
+    }
+    res.status(500).json({ error: 'Login failed' });
+  }
+}
+
+/**
  * POST /api/auth/signup
  * Public — validates passkey and initiates email OTP verification.
  */
@@ -144,34 +167,31 @@ export async function updateProfile(req: AuthenticatedRequest, res: Response): P
   }
 }
 
-/**
- * POST /api/auth/google-callback
- * Authenticated — finishes profile creation for new Google OAuth signups via passkey.
- */
-export async function googleSignupComplete(req: AuthenticatedRequest, res: Response): Promise<void> {
+export async function googleLogin(req: Request, res: Response): Promise<void> {
   try {
-    const { passkey } = req.body;
-    const user = req.user!; 
-    const email = user.email;
-    const full_name = user.user_metadata?.full_name || user.user_metadata?.name;
-    
-    // Fallbacks just in case
-    const userEmail = email || 'unknown@example.com';
-    const userFullName = full_name || userEmail.split('@')[0];
-
-    const profile = await authService.createGoogleAdminProfile(req.userId!, userEmail, userFullName, passkey);
-
-    res.status(200).json({
-      message: 'Google admin profile setup successfully',
-      profile,
-    });
-  } catch (err: any) {
-    console.error('Google Signup Callback Error:', err);
-    if (err.message === 'INVALID_PASSKEY') {
-      res.status(403).json({ error: 'Invalid admin passkey' });
+    const { idToken, passkey } = req.body;
+    if (!idToken) {
+      res.status(400).json({ error: 'Google ID token is required' });
       return;
     }
-    res.status(500).json({ error: 'Failed to complete Google setup: ' + (err.message || 'Unknown error') });
+
+    const result = await authService.googleLogin(idToken, passkey);
+    res.status(200).json(result);
+  } catch (err: any) {
+    console.error('Google Login Error:', err);
+    if (err.message === 'PASSKEY_REQUIRED') {
+      res.status(403).json({ error: 'New users must provide an admin passkey', requiresPasskey: true });
+      return;
+    }
+    if (err.message === 'INVALID_PASSKEY') {
+      res.status(403).json({ error: 'Invalid admin passkey. Contact your department head.' });
+      return;
+    }
+    if (err.message === 'INVALID_GOOGLE_TOKEN') {
+      res.status(401).json({ error: 'Invalid Google authentication token' });
+      return;
+    }
+    res.status(500).json({ error: 'Google login failed' });
   }
 }
 

@@ -1,0 +1,149 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum VehicleStatus {
+  moving
+  idle
+  offline
+}
+
+enum VehicleType {
+  truck
+  mini_truck
+  auto
+  other
+}
+
+enum DeviceStatus {
+  active
+  inactive
+}
+
+enum ComplaintType {
+  vehicle_not_arrived
+  garbage_not_collected
+  other
+}
+
+enum ComplaintStatus {
+  new
+  in_progress
+  resolved
+}
+
+model Profile {
+  id         String   @id @default(uuid())
+  full_name  String
+  email      String   @unique
+  role       String
+  passwordHash String
+  isVerified Boolean @default(false)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  
+  complaintUpdates ComplaintUpdate[]
+}
+
+model Vehicle {
+  id             String        @id @default(uuid())
+  vehicle_number String        @unique
+  vehicle_name   String?
+  vehicle_type   VehicleType
+  status         VehicleStatus
+  created_at     DateTime      @default(now())
+  updated_at     DateTime      @updatedAt
+
+  gpsAssignments   VehicleGpsAssignment[]
+  currentLocations VehicleCurrentLocation[]
+  locationHistory  VehicleLocationHistory[]
+}
+
+model GpsDevice {
+  id                String       @id @default(uuid())
+  device_name       String?
+  device_identifier String       @unique
+  imei              String?
+  status            DeviceStatus
+  last_seen_at      DateTime?
+  created_at        DateTime     @default(now())
+
+  vehicleAssignments VehicleGpsAssignment[]
+  currentLocations   VehicleCurrentLocation[]
+  locationHistory    VehicleLocationHistory[]
+}
+
+model VehicleGpsAssignment {
+  id             String    @id @default(uuid())
+  vehicle_id     String
+  gps_device_id  String
+  assigned_at    DateTime  @default(now())
+  unassigned_at  DateTime?
+  is_active      Boolean   @default(true)
+
+  vehicle   Vehicle   @relation(fields: [vehicle_id], references: [id])
+  gpsDevice GpsDevice @relation(fields: [gps_device_id], references: [id])
+}
+
+model VehicleCurrentLocation {
+  id             String        @id @default(uuid())
+  vehicle_id     String        @unique
+  gps_device_id  String?
+  latitude       Float
+  longitude      Float
+  speed          Float
+  heading        Float
+  status         VehicleStatus
+  updated_at     DateTime      @updatedAt
+
+  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id])
+  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id])
+}
+
+model VehicleLocationHistory {
+  id             String   @id @default(uuid())
+  vehicle_id     String
+  gps_device_id  String?
+  latitude       Float
+  longitude      Float
+  speed          Float
+  heading        Float
+  recorded_at    DateTime @default(now())
+
+  vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id])
+  gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id])
+}
+
+model Complaint {
+  id               String          @id @default(uuid())
+  complaint_number String          @unique
+  name             String
+  mobile           String
+  area             String
+  complaint_type   ComplaintType
+  description      String?
+  status           ComplaintStatus
+  created_at       DateTime        @default(now())
+
+  updates ComplaintUpdate[]
+}
+
+model ComplaintUpdate {
+  id           String          @id @default(uuid())
+  complaint_id String
+  status       ComplaintStatus
+  remark       String?
+  updated_by   String?
+  updated_at   DateTime        @default(now())
+
+  complaint Complaint @relation(fields: [complaint_id], references: [id])
+  updater   Profile?  @relation(fields: [updated_by], references: [id])
+}

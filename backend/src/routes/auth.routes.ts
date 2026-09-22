@@ -7,6 +7,11 @@ import { validate } from '../middleware/validate';
 const router = Router();
 
 // Validation schemas
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+});
+
 const signupSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
@@ -37,7 +42,8 @@ const resetPasswordSchema = z.object({
   newPassword: z.string().min(8, 'Password must be at least 8 characters'),
 });
 
-// Public: Admin signup with passkey & OTP verification
+// Public: Admin login and signup
+router.post('/login', validate(loginSchema), authController.login);
 router.post('/signup', validate(signupSchema), authController.signup);
 router.post('/verify-otp', validate(verifyOtpSchema), authController.verifyOtp);
 router.post('/resend-otp', validate(resendOtpSchema), authController.resendOtp);
@@ -51,7 +57,7 @@ router.post('/reset-password', validate(resetPasswordSchema), authController.res
 router.get('/profile', authMiddleware, authController.getProfile);
 router.put('/profile', authMiddleware, validate(updateProfileSchema), authController.updateProfile);
 
-// Authenticated: Finish Google OAuth signup (create profile with passkey)
-router.post('/google-callback', authMiddleware, authController.googleSignupComplete);
+// Public: Finish Google OAuth signup / login
+router.post('/google-login', authController.googleLogin);
 
 export default router;

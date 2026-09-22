@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as trackingService from '../services/tracking.service';
 import * as gpsService from '../services/gps.service';
+import { io } from '../server';
 
 /**
  * GET /api/tracking/live
@@ -110,6 +111,13 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     });
 
     if (result.success) {
+      // Emit real-time update to all connected clients in 'live_locations' room
+      if (result.vehicleId) {
+        const updatedLocation = await trackingService.getVehicleLiveLocation(result.vehicleId);
+        if (updatedLocation) {
+          io.to('live_locations').emit('location_update', updatedLocation);
+        }
+      }
       res.json(result);
     } else {
       res.status(422).json(result);

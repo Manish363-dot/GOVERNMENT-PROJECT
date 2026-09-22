@@ -15,7 +15,7 @@
     "@radix-ui/react-select": "^2.1.1",
     "@radix-ui/react-separator": "^1.1.0",
     "@radix-ui/react-slot": "^1.1.0",
-    "@supabase/supabase-js": "^2.45.0",
+    "@react-oauth/google": "^0.13.5",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
@@ -27,6 +27,7 @@
     "react-i18next": "^17.0.13",
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^6.26.1",
+    "socket.io-client": "^4.8.3",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.5.2"
   },

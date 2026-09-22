@@ -1,29 +1,48 @@
-import { useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-import type { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { useEffect, useRef } from 'react';
+import { io, Socket } from 'socket.io-client';
+
+const API_URL = import.meta.env.VITE_API_URL || '';
+// Derive the base URL from API_URL by removing '/api' if it's there
+const BASE_URL = API_URL.replace(/\/api$/, '') || window.location.origin;
 
 /**
- * Hook to subscribe to Supabase realtime changes on a table.
+ * Hook to subscribe to Socket.io events.
+ * Connects to the backend websocket and listens for a specific event.
  */
-export function useRealtime<T extends { [key: string]: any }>(
-  table: string,
-  callback: (payload: RealtimePostgresChangesPayload<T>) => void,
-  event: 'INSERT' | 'UPDATE' | 'DELETE' | '*' = '*'
+export function useRealtime<T>(
+  event: string,
+  callback: (payload: T) => void,
+  room?: string
 ) {
+  const socketRef = useRef<Socket | null>(null);
+
   useEffect(() => {
-    const channel = supabase
-      .channel(`realtime:${table}`)
-      .on(
-        'postgres_changes' as any,
-        { event, schema: 'public', table },
-        (payload: RealtimePostgresChangesPayload<T>) => {
-          callback(payload);
-        }
-      )
-      .subscribe();
+    // Initialize socket connection
+    const socket = io(BASE_URL, {
+      path: '/socket.io',
+      transports: ['websocket'],
+    });
+
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      if (room) {
+        socket.emit('join_room', room);
+      }
+    });
+
+    socket.on(event, (payload: T) => {
+      callback(payload);
+    });
 
     return () => {
-      supabase.removeChannel(channel);
+      if (room) {
+        socket.emit('leave_room', room);
+      }
+      socket.off(event);
+      socket.disconnect();
     };
-  }, [table, event]);
+  }, [event, room]); // We intentionally leave callback out to avoid reconnects on every render, assuming callback handles state properly or is wrapped in useCallback
+
 }

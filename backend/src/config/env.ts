@@ -5,13 +5,13 @@ dotenv.config();
 
 const envSchema = z.object({
   PORT: z.string().default('3001'),
-  SUPABASE_URL: z.string().url('SUPABASE_URL must be a valid URL'),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1, 'SUPABASE_SERVICE_ROLE_KEY is required'),
-  SUPABASE_ANON_KEY: z.string().min(1, 'SUPABASE_ANON_KEY is required'),
+  DATABASE_URL: z.string().url('DATABASE_URL must be a valid URL'),
+  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
   ADMIN_PASSKEY: z.string().min(1, 'ADMIN_PASSKEY is required'),
   TRACCAR_BASE_URL: z.string().optional(),
   TRACCAR_API_TOKEN: z.string().optional(),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
 import { Shield, Sparkles, Globe, Award } from 'lucide-react';
 
 export interface TopBarLogoItem {
@@ -55,51 +54,14 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    async function fetchLogos() {
-      try {
-        const { data, error } = await supabase
-          .from('top_bar_logos')
-          .select('id, title, file_name, logo_url, sort_order')
-          .eq('is_active', true)
-          .order('sort_order', { ascending: true })
-          .limit(4);
-
-        if (!error && data && data.length > 0) {
-          const resolved = data.map((item) => {
-            let finalUrl = item.logo_url;
-            if (item.file_name) {
-              const { data: storageData } = supabase.storage
-                .from('portal-logos')
-                .getPublicUrl(item.file_name);
-              if (storageData?.publicUrl) {
-                finalUrl = storageData.publicUrl;
-              }
-            }
-            return {
-              ...item,
-              logo_url: finalUrl,
-            };
-          });
-          setLogos(resolved);
-        } else {
-          // Resolve storage URLs for default files (logo1.png - logo4.png)
-          const withStorageUrls = DEFAULT_LOGOS.map((item) => {
-            const { data: storageData } = supabase.storage
-              .from('portal-logos')
-              .getPublicUrl(item.file_name || `logo${item.sort_order}.png`);
-            return {
-              ...item,
-              logo_url: storageData?.publicUrl,
-            };
-          });
-          setLogos(withStorageUrls);
-        }
-      } catch {
-        // Fallback silently
-      }
-    }
-
-    fetchLogos();
+    const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://your-bucket-name.s3.amazonaws.com';
+    const withStorageUrls = DEFAULT_LOGOS.map((item) => {
+      return {
+        ...item,
+        logo_url: `${S3_BUCKET}/portal-logos/${item.file_name}`,
+      };
+    });
+    setLogos(withStorageUrls);
   }, []);
 
   const handleImageError = (id: string) => {
