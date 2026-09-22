@@ -265,22 +265,54 @@
       }
     },
     "footer": {
-      "brandName": "Zila Panchayat Safai",
+      "deptName": "Department of Panchayati Raj & Rural Development",
+      "deptNameHi": "Panchayati Raj & Rural Development Department",
+      "districtTitle": "District Panchayat Almora • Devbhoomi Uttarakhand",
+      "missionTitle": "Swachh Bharat Mission (Grameen) • Solid & Liquid Waste Management",
+      "brandName": "Zila Panchayat Safai Portal",
       "govBadge": "Government of Uttarakhand",
-      "desc": "Smart Waste Collection Tracking & Citizen Grievance Redressal Service Portal for Devbhoomi Uttarakhand.",
-      "officialBadge": "Official Digital Portal",
-      "linksTitle": "Portal Links",
-      "servicesTitle": "Public Services",
+      "desc": "Official Smart Waste Collection Tracking & Citizen Grievance Redressal Portal under District Panchayat Almora, Government of Uttarakhand.",
+      "officialBadge": "Official Government Portal",
+      "nicBadge": "Hosted by NIC / Govt. IT Cell",
+      "slogan": "Swachh Bharat • Swachh Devbhoomi",
+      "linksTitle": "Portal Navigation",
+      "nav": {
+        "home": "Home Page",
+        "about": "About Initiative",
+        "complaint": "Register Grievance",
+        "contact": "Contact Administration",
+        "gallery": "Media & Photo Archives",
+        "admin": "Admin Control Console"
+      },
+      "servicesTitle": "Citizen & Telematics Services",
       "services": {
         "tracking": "Real-Time GPS Fleet Tracking",
-        "history": "Daily Vehicle Route History",
-        "grievance": "Grievance Submission Portal",
-        "admin": "District Administrative Control"
+        "history": "Daily Vehicle Route Playback",
+        "grievance": "Public Grievance Redressal",
+        "mrf": "Material Recovery Facility (MRF)",
+        "paryavaran": "Paryavaran Mitra Directory"
       },
-      "contactTitle": "State Helpline",
-      "hqAddress": "Zila Panchayat Bhavan, District HQ, Uttarakhand",
-      "copyright": "© {{year}} Zila Panchayat Safai Portal • Government of Uttarakhand. All rights reserved.",
-      "designedFor": "Designed for Uttarakhand Digital Governance & Smart Waste Collection"
+      "contactTitle": "Official Helpline & Control Room",
+      "tollFreeLabel": "Toll-Free Helpline",
+      "tollFreeTime": "Mon-Sat (9:00 AM - 6:00 PM)",
+      "controlRoom": "24x7 Control Room Monitoring Active",
+      "emailLabel": "Official Portal Email",
+      "hqAddress": "Zila Panchayat Bhavan, Vikas Bhavan Complex, Almora, Uttarakhand - 263601",
+      "policiesTitle": "Government Website Policies",
+      "policies": {
+        "websitePolicies": "Website Policies",
+        "terms": "Terms of Use",
+        "privacy": "Privacy Policy",
+        "accessibility": "Accessibility Statement",
+        "copyrightPolicy": "Copyright Policy",
+        "hyperlinkPolicy": "Hyperlink Policy",
+        "disclaimer": "Disclaimer"
+      },
+      "contentOwner": "Website Content Owned & Maintained by District Panchayat Almora, Department of Panchayati Raj, Government of Uttarakhand.",
+      "developedBy": "Designed, Developed & Hosted by National Informatics Centre (NIC) / Government Digital Governance Division.",
+      "lastUpdated": "Last Updated",
+      "visitorCounter": "Total Visitor Count",
+      "copyright": "© {{year}} District Panchayat Almora • Government of Uttarakhand. All rights reserved."
     },
     "tollFree": {
       "badge": "Official Citizen Helpline",
