@@ -116,37 +116,39 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     // Touch Swipe Ref
     const touchStartX = useRef(0);
 
-    // 1. Instant Background Image Preloader for zero lag during slideshow
+    // 1. Fetch Dynamic Media from API
+    const [mediaList, setMediaList] = useState<string[]>(PLACEHOLDER_IMAGES);
+    const [gridMedia, setGridMedia] = useState<string[]>(ALL_GALLERY_IMAGES);
+
     useEffect(() => {
-        if (!isOpen) return;
-
-        // Preload all carousel images immediately into browser cache
-        PLACEHOLDER_IMAGES.forEach((src) => {
-            const img = new Image();
-            img.src = src;
-        });
-
-        // Preload grid images in background
-        const timer = setTimeout(() => {
-            ALL_GALLERY_IMAGES.forEach((src) => {
-                const img = new Image();
-                img.src = src;
-            });
-        }, 300);
-
-        return () => clearTimeout(timer);
+        const fetchMedia = async () => {
+            try {
+                const res = await fetch('/api/media/blog');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.length > 0) {
+                        const urls = data.map((m: any) => m.url);
+                        setMediaList(urls);
+                        setGridMedia(urls);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to fetch blog media:", err);
+            }
+        };
+        fetchMedia();
     }, [isOpen]);
 
     // 2. GUARANTEED CONTINUOUS AUTO-SLIDE EVERY 2 SECONDS
     useEffect(() => {
-        if (!isOpen) return;
+        if (!isOpen || mediaList.length === 0) return;
 
         const timer = setInterval(() => {
-            setCurrentIndex((prev) => (prev + 1) % PLACEHOLDER_IMAGES.length);
+            setCurrentIndex((prev) => (prev + 1) % mediaList.length);
         }, 2000);
 
         return () => clearInterval(timer);
-    }, [isOpen]);
+    }, [isOpen, mediaList]);
 
     // 3. Keyboard navigation & Body scroll lock
     useEffect(() => {
@@ -171,11 +173,11 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     if (!isOpen) return null;
 
     const nextImage = () => {
-        setCurrentIndex((prev) => (prev + 1) % PLACEHOLDER_IMAGES.length);
+        setCurrentIndex((prev) => (prev + 1) % mediaList.length);
     };
 
     const prevImage = () => {
-        setCurrentIndex((prev) => (prev - 1 + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length);
+        setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
     };
 
     // Touch Swipe Handlers for mobile smoothness
@@ -190,12 +192,12 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
         else if (diff < -40) prevImage();
     };
 
-    const prevIndex = (currentIndex - 1 + PLACEHOLDER_IMAGES.length) % PLACEHOLDER_IMAGES.length;
-    const nextIndex = (currentIndex + 1) % PLACEHOLDER_IMAGES.length;
+    const prevIndex = (currentIndex - 1 + mediaList.length) % mediaList.length;
+    const nextIndex = (currentIndex + 1) % mediaList.length;
 
     // Handle clicking a grid item
     const handleGridItemClick = (src: string) => {
-        const carouselIdx = PLACEHOLDER_IMAGES.indexOf(src);
+        const carouselIdx = mediaList.indexOf(src);
         if (carouselIdx !== -1) {
             setCurrentIndex(carouselIdx);
         }
@@ -303,7 +305,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                 >
                     {/* Left Tilted Image (Previous) */}
                     <div className="hidden sm:block absolute left-0 md:left-8 top-1/2 -translate-y-1/2 w-[25%] md:w-[22%] aspect-[4/3] z-0 opacity-[0.65] shadow-lg border border-slate-200/50 p-1.5 bg-white -rotate-[3deg] scale-[0.85] transition-all duration-700 pointer-events-none rounded-sm blur-[1px] overflow-hidden">
-                        {PLACEHOLDER_IMAGES.map((imgSrc, idx) => (
+                        {mediaList.map((imgSrc, idx) => (
                             <img
                                 key={`prev-${imgSrc}`}
                                 loading="eager"
@@ -318,7 +320,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
 
                     {/* Right Tilted Image (Next) */}
                     <div className="hidden sm:block absolute right-0 md:right-8 top-1/2 -translate-y-1/2 w-[25%] md:w-[22%] aspect-[4/3] z-0 opacity-[0.65] shadow-lg border border-slate-200/50 p-1.5 bg-white rotate-[3deg] scale-[0.85] transition-all duration-700 pointer-events-none rounded-sm blur-[1px] overflow-hidden">
-                        {PLACEHOLDER_IMAGES.map((imgSrc, idx) => (
+                        {mediaList.map((imgSrc, idx) => (
                             <img
                                 key={`next-${imgSrc}`}
                                 loading="eager"
@@ -350,7 +352,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
 
                         {/* Main Polaroid Frame */}
                         <div className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu">
-                            {PLACEHOLDER_IMAGES.map((imgSrc, idx) => (
+                            {mediaList.map((imgSrc, idx) => (
                                 <img
                                     key={imgSrc}
                                     loading="eager"
@@ -388,7 +390,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                         Community Cleanliness Initiative
                     </div>
                     <div className="inline-flex items-center justify-center gap-1.5 mt-3 px-4 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full shadow-sm text-[11px] sm:text-xs font-semibold text-slate-700 tracking-wider">
-                        {String(currentIndex + 1).padStart(2, '0')} <span className="text-slate-300">/</span> {PLACEHOLDER_IMAGES.length}
+                        {String(currentIndex + 1).padStart(2, '0')} <span className="text-slate-300">/</span> {mediaList.length}
                     </div>
                 </div>
 
@@ -545,7 +547,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                        {ALL_GALLERY_IMAGES.map((img, idx) => (
+                        {gridMedia.map((img, idx) => (
                             <GalleryGridItem
                                 key={img + idx}
                                 src={img}

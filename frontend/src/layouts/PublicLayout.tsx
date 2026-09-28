@@ -1,7 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { GovHelpBot } from '@/components/GovHelpBot';
 
 export function PublicLayout() {
   return (
@@ -11,7 +10,6 @@ export function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
-      <GovHelpBot />
     </div>
   );
 }

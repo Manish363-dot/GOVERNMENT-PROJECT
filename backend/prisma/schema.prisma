@@ -175,3 +175,21 @@ model ComplaintUpdate {
   complaint Complaint @relation(fields: [complaint_id], references: [id], onDelete: Cascade)
   updater   Profile?  @relation(fields: [updated_by], references: [id], onDelete: SetNull)
 }
+
+// ── Media & Daily Work Models ──────────────────────────────────
+
+model BlogMedia {
+  id         String   @id @default(uuid())
+  url        String
+  type       String   // e.g., "image" or "video"
+  created_at DateTime @default(now())
+}
+
+model DailyWork {
+  id          String   @id @default(uuid())
+  url         String
+  type        String   // e.g., "image" or "video"
+  date        DateTime @db.Date
+  description String?
+  created_at  DateTime @default(now())
+}

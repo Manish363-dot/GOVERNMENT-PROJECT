@@ -12,6 +12,7 @@ import gpsDeviceRoutes from './routes/gpsDevice.routes';
 import trackingRoutes from './routes/tracking.routes';
 import historyRoutes from './routes/history.routes';
 import complaintRoutes from './routes/complaint.routes';
+import mediaRoutes from './routes/media.routes';
 
 const app = express();
 
@@ -90,6 +91,7 @@ app.use('/api/gps-devices', gpsDeviceRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/complaints', complaintRoutes);
+app.use('/api/media', mediaRoutes);
 
 // 404 handler
 app.use((_req, res) => {

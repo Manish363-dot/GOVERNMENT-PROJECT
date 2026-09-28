@@ -18,6 +18,7 @@ import { VehicleHistoryPage } from '@/pages/dashboard/VehicleHistoryPage';
 import { RouteReplayPage } from '@/pages/dashboard/RouteReplayPage';
 import { ComplaintsPage } from '@/pages/dashboard/ComplaintsPage';
 import { VehiclesPage } from '@/pages/dashboard/VehiclesPage';
+import { MediaDailyWorkPage } from '@/pages/dashboard/MediaDailyWorkPage';
 
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
@@ -54,6 +55,7 @@ function App() {
             <Route path="route-replay" element={<RouteReplayPage />} />
             <Route path="complaints" element={<ComplaintsPage />} />
             <Route path="vehicles" element={<VehiclesPage />} />
+            <Route path="media" element={<MediaDailyWorkPage />} />
           </Route>
         </Routes>
       </BrowserRouter>

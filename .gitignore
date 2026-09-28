@@ -21,3 +21,11 @@ dist/
 # ── OS files ──
 .DS_Store
 Thumbs.db
+
+# ── AI Assistant Files ──
+.gemini/
+.agent/
+.agents/
+.gsd/
+adapters/
+scripts/

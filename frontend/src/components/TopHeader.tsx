@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import {
   Menu, X, Bell, User, ShieldCheck, LogOut,
   LayoutDashboard, MapPin, History, PlaySquare, MessageSquareWarning,
-  Truck, Radio, Settings
+  Truck, Radio, Settings, Image
 } from 'lucide-react';
 import { TopBarLogos } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -18,7 +18,8 @@ const navItems = [
   { icon: History, labelKey: 'admin.nav.history', label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
   { icon: PlaySquare, labelKey: 'admin.nav.routeReplay', label: 'Route Replay', labelHi: 'रूट रीप्ले', to: '/dashboard/route-replay' },
   { icon: MessageSquareWarning, labelKey: 'admin.nav.grievances', label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
-  { icon: Truck, labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' }
+  { icon: Truck, labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' },
+  { icon: Image, labelKey: 'admin.nav.media', label: 'Media', labelHi: 'मीडिया', to: '/dashboard/media' }
 ];
 
 export function TopHeader() {
