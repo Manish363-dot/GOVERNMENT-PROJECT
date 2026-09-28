@@ -14,11 +14,11 @@ const s3 = new S3Client({
 
 export const addBlogMedia = async (req: Request, res: Response) => {
   try {
-    if (!req.file) {
+    if (!(req as any).file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
-    const url = (req.file as any).location; // S3 URL provided by multer-s3
-    const type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
+    const url = ((req as any).file as any).location; // S3 URL provided by multer-s3
+    const type = (req as any).file.mimetype.startsWith('video') ? 'video' : 'image';
 
     const blogMedia = await prisma.blogMedia.create({
       data: {
@@ -73,11 +73,11 @@ export const deleteBlogMedia = async (req: Request, res: Response) => {
 export const addDailyWork = async (req: Request, res: Response) => {
   try {
     const { date, description } = req.body;
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    if (!(req as any).file) return res.status(400).json({ error: 'No file uploaded' });
     if (!date) return res.status(400).json({ error: 'Date is required' });
 
-    const url = (req.file as any).location;
-    const type = req.file.mimetype.startsWith('video') ? 'video' : 'image';
+    const url = ((req as any).file as any).location;
+    const type = (req as any).file.mimetype.startsWith('video') ? 'video' : 'image';
 
     const dailyWork = await prisma.dailyWork.create({
       data: {
