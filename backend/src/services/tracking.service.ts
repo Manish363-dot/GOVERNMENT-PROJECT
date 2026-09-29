@@ -10,7 +10,16 @@ export async function getLiveLocations(): Promise<any[]> {
       },
       orderBy: { updated_at: 'desc' }
     });
-    return locations;
+    
+    const now = Date.now();
+    return locations.map(loc => {
+      const isOffline = (now - loc.updated_at.getTime()) > 5 * 60 * 1000;
+      if (isOffline) {
+        loc.status = 'offline';
+        if (loc.vehicle) loc.vehicle.status = 'offline';
+      }
+      return loc;
+    });
   } catch (error) {
     throw new Error('Failed to fetch live locations');
   }
