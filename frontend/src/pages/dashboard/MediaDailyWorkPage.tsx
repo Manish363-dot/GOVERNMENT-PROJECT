@@ -6,6 +6,18 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText, FileSpreadsheet, FileArchive, Headphones } from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -81,8 +93,6 @@ export function MediaDailyWorkPage() {
   };
 
   const handleBlogDelete = async (id: String) => {
-    if (!confirm('Are you sure you want to delete this media?')) return;
-
     try {
       const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/blog/${id}`, {
@@ -156,8 +166,6 @@ export function MediaDailyWorkPage() {
   };
 
   const handleDailyDelete = async (id: String) => {
-    if (!confirm('Are you sure you want to delete this work entry?')) return;
-
     try {
       const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/daily-work/${id}`, {
@@ -254,12 +262,28 @@ export function MediaDailyWorkPage() {
                 ) : (
                   <img src={media.url} alt="Blog media" className="w-full h-full object-cover" />
                 )}
-                <button
-                  onClick={() => handleBlogDelete(media.id)}
-                  className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <button className="absolute top-2 right-2 p-2 bg-red-500/80 text-white rounded opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm z-10">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent size="sm">
+                    <AlertDialogHeader>
+                      <AlertDialogMedia className="bg-red-100 text-red-600">
+                        <Trash2 className="w-6 h-6" />
+                      </AlertDialogMedia>
+                      <AlertDialogTitle>Delete media?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete this media from the blog gallery. This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleBlogDelete(media.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             ))}
             {blogMedia.length === 0 && (
@@ -349,10 +373,29 @@ export function MediaDailyWorkPage() {
                     </div>
                     <p className="text-slate-700 text-sm">{work.description || 'No description provided.'}</p>
                   </div>
-                  <Button variant="destructive" size="sm" onClick={() => handleDailyDelete(work.id)}>
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="sm">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent size="sm">
+                      <AlertDialogHeader>
+                        <AlertDialogMedia className="bg-red-100 text-red-600">
+                          <Trash2 className="w-6 h-6" />
+                        </AlertDialogMedia>
+                        <AlertDialogTitle>Delete work entry?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This will permanently delete this daily work update. This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDailyDelete(work.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </CardContent>
               </Card>
             ))}
