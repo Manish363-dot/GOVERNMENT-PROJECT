@@ -131,33 +131,6 @@ cd GOVERNMENT-PROJECT
 cd backend
 npm install
 ```
-
-Create a `.env` file in `/backend`:
-
-```env
-PORT=3001
-NODE_ENV=development
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/DB_NAME"
-JWT_SECRET=your_jwt_secret_min_32_chars
-ADMIN_PASSKEY=your_admin_passkey
-WEBHOOK_API_KEY=your_webhook_key
-GOOGLE_CLIENT_ID=your_google_oauth_client_id
-CORS_ORIGIN=http://localhost:5173
-
-# Optional: SMTP for OTP emails
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-SMTP_FROM="Zila Panchayat Safai <no-reply@uk.gov.in>"
-
-# AWS S3
-AWS_REGION=ap-south-1
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_S3_BUCKET_NAME=your_bucket_name
-```
-
 Run database migrations:
 
 ```bash
@@ -181,13 +154,6 @@ cd frontend
 npm install
 ```
 
-Create a `.env` file in `/frontend`:
-
-```env
-VITE_API_URL=/api
-VITE_SUPABASE_URL=your_supabase_url
-VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_AWS_S3_BUCKET_URL=https://your-bucket.s3.ap-south-1.amazonaws.com
 ```
 
 Start the frontend dev server:
@@ -244,7 +210,7 @@ DailyWork        — Daily cleanliness work records
 
 ## 📸 Screenshots
 
-> Portal available at: [http://3.110.196.170:5173](http://3.110.196.170:5173)
+> Deploy the project on your server to access the live portal.
 
 | Page | Description |
 |------|-------------|
@@ -266,11 +232,6 @@ DailyWork        — Daily cleanliness work records
 
 ---
 
-## 👨‍💻 Author
-
-**Manish Paliwal**  
-Full Stack Developer  
-GitHub: [@Manish363-dot](https://github.com/Manish363-dot)
 
 ---
 
