@@ -151,63 +151,71 @@ export function DailyWorkSection() {
                         key={work.id}
                         onClick={() => handleCardClick(work)}
                         className={cn(
-                          "rounded-xl overflow-hidden cursor-pointer transition-all duration-300 flex flex-col bg-white border group",
+                          "group/card relative h-80 w-full overflow-hidden border-0 rounded-2xl cursor-pointer transition-all duration-300 shadow-md",
                           isActive 
-                            ? "border-blue-500 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/20" 
-                            : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+                            ? "ring-2 ring-blue-500 shadow-xl shadow-blue-500/20" 
+                            : "hover:shadow-2xl"
                         )}
                       >
-                        {/* Image */}
-                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
-                          {work.type === 'video' ? (
-                            <video
-                              src={work.url}
-                              className="w-full h-full object-cover"
-                              muted
-                              loop
-                              autoPlay
-                              playsInline
-                            />
-                          ) : work.type === 'document' ? (
-                            <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50">
-                              <FileText className="w-16 h-16 text-blue-400 mb-3" />
-                              <a href={work.url} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
-                                Open Document
-                              </a>
-                            </div>
-                          ) : (
-                            <img
-                              src={work.url}
-                              alt="Daily Work"
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                              loading="lazy"
-                            />
-                          )}
-                          {/* Date Badge */}
-                          <div className="absolute top-3 left-3">
-                            <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm border border-white/50">
-                              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
-                                {format(parseISO(work.date), 'MMM')}
-                              </p>
-                              <p className="text-lg font-black text-navy-900 leading-tight -mt-0.5">
-                                {format(parseISO(work.date), 'dd')}
-                              </p>
-                            </div>
+                        {/* Media Background */}
+                        {work.type === 'video' ? (
+                          <video
+                            src={work.url}
+                            className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover/card:scale-110"
+                            muted
+                            loop
+                            autoPlay
+                            playsInline
+                          />
+                        ) : work.type === 'document' ? (
+                          <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-slate-100 transition-transform duration-500 group-hover/card:scale-110">
+                            <FileText className="w-16 h-16 text-blue-400/80 mb-3 drop-shadow-sm" />
+                          </div>
+                        ) : (
+                          <img
+                            src={work.url}
+                            alt="Daily Work"
+                            className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover/card:scale-110"
+                            loading="lazy"
+                          />
+                        )}
+
+                        {/* Background fade effects */}
+                        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/80 via-black/30 to-transparent transition-opacity duration-500 group-hover/card:from-black/90 pointer-events-none" />
+
+                        {/* Date Badge (Top Left) */}
+                        <div className="absolute top-4 left-4 z-10">
+                          <div className="bg-white/95 backdrop-blur-md rounded-xl px-3 py-1.5 shadow-lg border border-white/20 text-center flex flex-col items-center justify-center">
+                            <p className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest leading-none mb-1">
+                              {format(parseISO(work.date), 'MMM')}
+                            </p>
+                            <p className="text-xl font-black text-navy-900 leading-none">
+                              {format(parseISO(work.date), 'dd')}
+                            </p>
                           </div>
                         </div>
+                        
+                        {/* Status Icon (Top Right) */}
+                        {work.type === 'document' && (
+                          <div className="absolute top-4 right-4 z-10">
+                            <div className="bg-white/20 backdrop-blur-md rounded-full p-2 text-white border border-white/30">
+                              <FileText className="w-4 h-4" />
+                            </div>
+                          </div>
+                        )}
 
-                        {/* Details */}
-                        <div className="p-3.5 flex-1 flex flex-col">
-                          <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1.5">
-                            <Clock className="w-3 h-3" />
+                        {/* Content */}
+                        <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 z-10 pointer-events-none">
+                          <div className="flex items-center gap-1.5 text-amber-300 text-xs font-bold mb-2 uppercase tracking-wider drop-shadow-md">
+                            <Clock className="w-3.5 h-3.5" />
                             <span>{format(parseISO(work.date), 'dd MMMM yyyy')}</span>
                           </div>
-                          <p className="text-sm text-slate-700 font-medium leading-snug line-clamp-3 flex-1">
-                            {work.description || 'Daily work update — click to view details.'}
-                          </p>
-                          <div className="flex items-center gap-1 text-blue-600 text-xs font-semibold mt-2.5 group-hover:gap-2 transition-all">
-                            <span>View Details</span>
-                            <ArrowRight className="w-3 h-3" />
+                          <h3 className="text-base sm:text-lg font-bold text-white leading-snug line-clamp-2 drop-shadow-lg group-hover/card:text-amber-50 transition-colors duration-300">
+                            {work.description || 'Daily work update details'}
+                          </h3>
+                          <div className="flex items-center gap-1.5 text-blue-300 text-xs font-bold mt-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-300">
+                            <span>{work.type === 'document' ? 'Open Document' : 'View Details'}</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
                           </div>
                         </div>
                       </div>
