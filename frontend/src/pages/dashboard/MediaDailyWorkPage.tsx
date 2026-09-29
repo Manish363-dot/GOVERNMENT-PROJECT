@@ -58,7 +58,7 @@ export function MediaDailyWorkPage() {
     formData.append('file', blogFile);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/blog`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -84,7 +84,7 @@ export function MediaDailyWorkPage() {
     if (!confirm('Are you sure you want to delete this media?')) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/blog/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
@@ -112,7 +112,7 @@ export function MediaDailyWorkPage() {
     formData.append('description', dailyDesc);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/daily-work`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
@@ -140,7 +140,7 @@ export function MediaDailyWorkPage() {
     if (!confirm('Are you sure you want to delete this work entry?')) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/daily-work/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
