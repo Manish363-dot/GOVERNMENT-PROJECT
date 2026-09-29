@@ -30,7 +30,7 @@ export function MediaDailyWorkPage() {
   
   // Blog State
   const [blogMedia, setBlogMedia] = useState<any[]>([]);
-  const [blogFile, setBlogFile] = useState<File | null>(null);
+  const [blogFiles, setBlogFiles] = useState<File[]>([]);
   const [blogUploading, setBlogUploading] = useState(false);
 
   // Daily Work State
@@ -67,27 +67,35 @@ export function MediaDailyWorkPage() {
 
   const handleBlogUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!blogFile) return toast.error(isHi ? 'कृपया एक फ़ाइल चुनें' : 'Please select a file');
+    if (blogFiles.length === 0) return toast.error(isHi ? 'कृपया फ़ाइलें चुनें' : 'Please select files');
 
     setBlogUploading(true);
-    const formData = new FormData();
-    formData.append('file', blogFile);
+    let successCount = 0;
+    let errorCount = 0;
+    const token = localStorage.getItem('access_token');
 
     try {
-      const token = localStorage.getItem('access_token');
-      const res = await fetch(`${API_URL}/media/blog`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
+      const uploadPromises = blogFiles.map(async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch(`${API_URL}/media/blog`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
+        });
+        if (res.ok) successCount++;
+        else errorCount++;
       });
 
-      if (res.ok) {
-        toast.success(isHi ? 'मीडिया सफलतापूर्वक अपलोड हो गया' : 'Media uploaded successfully');
-        setBlogFile(null);
+      await Promise.all(uploadPromises);
+
+      if (successCount > 0) {
+        toast.success(isHi ? `${successCount} मीडिया सफलतापूर्वक अपलोड हो गए` : `${successCount} media uploaded successfully`);
+        setBlogFiles([]);
         fetchBlogMedia();
-      } else {
-        const err = await res.json();
-        toast.error(err.error || (isHi ? 'अपलोड विफल रहा' : 'Upload failed'));
+      }
+      if (errorCount > 0) {
+        toast.error(isHi ? `${errorCount} अपलोड विफल रहे` : `${errorCount} uploads failed`);
       }
     } catch (e) {
       toast.error(isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload');
@@ -114,15 +122,17 @@ export function MediaDailyWorkPage() {
     }
   };
 
-  const renderFilePreview = (file: File | null) => {
-    if (!file) return null;
+  const renderFilesPreview = (files: File[]) => {
+    if (files.length === 0) return null;
     return (
-      <div className="mt-4 p-4 border rounded-lg bg-slate-50 flex flex-col gap-2 items-center text-center">
-        <FileText className="w-8 h-8 text-blue-500" />
-        <div>
-          <p className="text-sm font-semibold truncate max-w-xs">{file.name}</p>
-          <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-        </div>
+      <div className="mt-4 p-4 border rounded-lg bg-slate-50 flex flex-wrap gap-2 items-start text-center max-h-48 overflow-y-auto">
+        {files.map((file, idx) => (
+          <div key={idx} className="flex flex-col items-center gap-1 bg-white p-2 border rounded shadow-sm flex-1 min-w-[120px] max-w-[150px]">
+            <FileText className="w-6 h-6 text-blue-500" />
+            <p className="text-xs font-semibold truncate w-full" title={file.name}>{file.name}</p>
+            <p className="text-[10px] text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+        ))}
       </div>
     );
   };
@@ -233,17 +243,19 @@ export function MediaDailyWorkPage() {
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-2 text-slate-400" />
                       <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">{isHi ? 'अपलोड करने के लिए क्लिक करें' : 'Click to upload'}</span> {isHi ? 'या ड्रैग और ड्रॉप करें' : 'or drag and drop'}</p>
-                      <p className="text-xs text-slate-500">SVG, PNG, JPG, MP4, PDF, DOCX ({isHi ? 'अधिकतम 50MB' : 'MAX. 50MB'})</p>
+                      <p className="text-xs text-slate-500">SVG, PNG, JPG, MP4, PDF, DOCX ({isHi ? 'अधिकतम 50MB प्रति फ़ाइल' : 'MAX. 50MB per file'})</p>
+                      <p className="text-[10px] text-blue-500 font-semibold mt-1 bg-blue-50 px-2 py-0.5 rounded">{isHi ? 'एक साथ कई फ़ाइलें चुन सकते हैं' : 'You can select multiple files at once'}</p>
                     </div>
                     <Input 
                       id="blog-file" 
                       type="file" 
+                      multiple
                       className="hidden"
                       accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip"
-                      onChange={(e) => setBlogFile(e.target.files?.[0] || null)}
+                      onChange={(e) => setBlogFiles(Array.from(e.target.files || []))}
                     />
                   </label>
-                  {renderFilePreview(blogFile)}
+                  {renderFilesPreview(blogFiles)}
                 </div>
                 <Button type="submit" disabled={blogUploading} className="bg-navy-800 hover:bg-navy-700 w-full sm:w-auto self-end">
                   <Upload className="w-4 h-4 mr-2" />
@@ -324,7 +336,15 @@ export function MediaDailyWorkPage() {
                         onChange={(e) => setDailyFile(e.target.files?.[0] || null)}
                       />
                     </label>
-                    {renderFilePreview(dailyFile)}
+                    {dailyFile && (
+                      <div className="mt-4 p-4 border rounded-lg bg-slate-50 flex flex-col gap-2 items-center text-center">
+                        <FileText className="w-8 h-8 text-blue-500" />
+                        <div>
+                          <p className="text-sm font-semibold truncate max-w-xs">{dailyFile.name}</p>
+                          <p className="text-xs text-slate-500">{(dailyFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="daily-date">{isHi ? 'दिनांक' : 'Date'}</Label>
