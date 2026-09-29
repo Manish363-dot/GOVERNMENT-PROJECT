@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   format, 
   startOfMonth, 
@@ -10,9 +10,10 @@ import {
   isSameDay, 
   addMonths, 
   subMonths,
-  parseISO
+  parseISO,
+  getDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Video, Calendar as CalendarIcon, Image as ImageIcon } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, ArrowRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -33,9 +34,26 @@ export function DailyWorkSection() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedWork, setSelectedWork] = useState<DailyWork | null>(null);
 
+  // Carousel state — show 2 cards at a time
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const cardsPerView = 2;
+  const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   useEffect(() => {
     fetchWorks();
   }, []);
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (works.length <= cardsPerView) return;
+    autoPlayRef.current = setInterval(() => {
+      setCarouselIndex(prev => {
+        const maxIndex = Math.max(0, works.length - cardsPerView);
+        return prev >= maxIndex ? 0 : prev + 1;
+      });
+    }, 4000);
+    return () => { if (autoPlayRef.current) clearInterval(autoPlayRef.current); };
+  }, [works]);
 
   const fetchWorks = async () => {
     try {
@@ -44,12 +62,11 @@ export function DailyWorkSection() {
         const data = await res.json();
         setWorks(data);
         if (data.length > 0) {
-          // If the selected date has a work, select it. Otherwise select the most recent one.
           const workForToday = data.find((w: DailyWork) => isSameDay(parseISO(w.date), new Date()));
-          setSelectedWork(workForToday || data[0]); // Default to today or the most recent
+          setSelectedWork(workForToday || data[0]);
           if (!workForToday) {
-             setSelectedDate(parseISO(data[0].date));
-             setCurrentMonth(parseISO(data[0].date));
+            setSelectedDate(parseISO(data[0].date));
+            setCurrentMonth(parseISO(data[0].date));
           }
         }
       }
@@ -63,168 +80,276 @@ export function DailyWorkSection() {
     const work = works.find(w => isSameDay(parseISO(w.date), date));
     if (work) {
       setSelectedWork(work);
-    } else {
-      // If no work on this date, fallback to the most recent work
-      if (works.length > 0) {
-         setSelectedWork(works[0]);
-      }
+      // Also scroll carousel to this work
+      const workIdx = works.indexOf(work);
+      setCarouselIndex(Math.min(workIdx, Math.max(0, works.length - cardsPerView)));
     }
+  };
+
+  const handleCardClick = (work: DailyWork) => {
+    setSelectedWork(work);
+    setSelectedDate(parseISO(work.date));
+    setCurrentMonth(parseISO(work.date));
+  };
+
+  const prevSlide = () => {
+    setCarouselIndex(prev => Math.max(0, prev - 1));
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
+  };
+
+  const nextSlide = () => {
+    const maxIndex = Math.max(0, works.length - cardsPerView);
+    setCarouselIndex(prev => Math.min(maxIndex, prev + 1));
+    if (autoPlayRef.current) clearInterval(autoPlayRef.current);
   };
 
   const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
   const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
 
-  // Calendar logic
+  // Calendar
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(monthStart);
-  const startDate = startOfWeek(monthStart);
-  const endDate = endOfWeek(monthEnd);
-  
-  const dateFormat = "d";
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
+  const calStart = startOfWeek(monthStart);
+  const calEnd = endOfWeek(monthEnd);
+  const days = eachDayOfInterval({ start: calStart, end: calEnd });
+  const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
-  const weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const visibleCards = works.slice(carouselIndex, carouselIndex + cardsPerView);
 
   return (
-    <section className="py-16 bg-slate-50 relative overflow-hidden">
+    <section className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+
+        {/* Section Header */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-extrabold text-navy-900 tracking-tight flex items-center justify-center gap-3">
-            <CalendarIcon className="w-8 h-8 text-amber-500" />
+          <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
+            <CalendarIcon className="w-4 h-4" />
             {t('nav.dailyWorkTitle', 'Daily Work Updates')}
+          </div>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-navy-900 tracking-tight">
+            {t('nav.dailyWorkHeading', 'Our Day-to-Day Progress')}
           </h2>
-          <p className="text-slate-600 mt-2 max-w-2xl mx-auto">
+          <p className="text-slate-500 mt-2 max-w-xl mx-auto text-sm">
             {t('nav.dailyWorkDesc', 'Check out our day-to-day progress. Select a date on the calendar to see the work accomplished.')}
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-8 items-start bg-white rounded-3xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-slate-200 overflow-hidden">
-          
-          {/* Left Side: Media & Details */}
-          <div className="w-full lg:w-2/3 p-6 sm:p-8 flex flex-col h-full min-h-[400px]">
-            {selectedWork ? (
-              <div className="flex flex-col h-full animate-in fade-in duration-500">
-                <div className="relative w-full aspect-video md:aspect-[16/9] rounded-2xl overflow-hidden bg-slate-900 shadow-inner group">
-                  {selectedWork.type === 'video' ? (
-                    <video 
-                      src={selectedWork.url} 
-                      className="w-full h-full object-contain"
-                      controls
-                      autoPlay
-                      muted
-                      loop
-                    />
-                  ) : (
-                    <img 
-                      src={selectedWork.url} 
-                      alt="Daily Work" 
-                      className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105"
-                    />
-                  )}
-                  <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold tracking-wider flex items-center gap-2">
-                    <CalendarIcon className="w-3.5 h-3.5 text-amber-400" />
-                    {format(parseISO(selectedWork.date), 'dd MMMM yyyy')}
+        {/* Main Content: Carousel + Calendar */}
+        <div className="flex flex-col lg:flex-row gap-0 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-200/80 overflow-hidden">
+
+          {/* LEFT: Card Carousel */}
+          <div className="w-full lg:w-[60%] p-5 sm:p-6 flex flex-col">
+
+            {works.length > 0 ? (
+              <>
+                {/* Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-[320px]">
+                  {visibleCards.map((work) => {
+                    const isActive = selectedWork?.id === work.id;
+                    return (
+                      <div
+                        key={work.id}
+                        onClick={() => handleCardClick(work)}
+                        className={cn(
+                          "rounded-xl overflow-hidden cursor-pointer transition-all duration-300 flex flex-col bg-white border group",
+                          isActive 
+                            ? "border-blue-500 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500/20" 
+                            : "border-slate-200 hover:border-slate-300 hover:shadow-md"
+                        )}
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                          {work.type === 'video' ? (
+                            <video
+                              src={work.url}
+                              className="w-full h-full object-cover"
+                              muted
+                              loop
+                              autoPlay
+                              playsInline
+                            />
+                          ) : (
+                            <img
+                              src={work.url}
+                              alt="Daily Work"
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                              loading="lazy"
+                            />
+                          )}
+                          {/* Date Badge */}
+                          <div className="absolute top-3 left-3">
+                            <div className="bg-white/95 backdrop-blur-sm rounded-lg px-2.5 py-1 shadow-sm border border-white/50">
+                              <p className="text-[10px] font-bold text-blue-700 uppercase tracking-wider">
+                                {format(parseISO(work.date), 'MMM')}
+                              </p>
+                              <p className="text-lg font-black text-navy-900 leading-tight -mt-0.5">
+                                {format(parseISO(work.date), 'dd')}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Details */}
+                        <div className="p-3.5 flex-1 flex flex-col">
+                          <div className="flex items-center gap-1.5 text-slate-400 text-xs mb-1.5">
+                            <Clock className="w-3 h-3" />
+                            <span>{format(parseISO(work.date), 'dd MMMM yyyy')}</span>
+                          </div>
+                          <p className="text-sm text-slate-700 font-medium leading-snug line-clamp-3 flex-1">
+                            {work.description || 'Daily work update — click to view details.'}
+                          </p>
+                          <div className="flex items-center gap-1 text-blue-600 text-xs font-semibold mt-2.5 group-hover:gap-2 transition-all">
+                            <span>View Details</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Carousel Navigation */}
+                <div className="flex items-center justify-center gap-3 mt-5 pt-4 border-t border-slate-100">
+                  <button
+                    onClick={prevSlide}
+                    disabled={carouselIndex === 0}
+                    className={cn(
+                      "w-9 h-9 rounded-full flex items-center justify-center border transition-all",
+                      carouselIndex === 0 
+                        ? "border-slate-200 text-slate-300 cursor-not-allowed" 
+                        : "border-slate-300 text-slate-600 hover:bg-navy-900 hover:text-white hover:border-navy-900"
+                    )}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  {/* Dot indicators */}
+                  <div className="flex gap-1.5">
+                    {Array.from({ length: Math.max(1, works.length - cardsPerView + 1) }).map((_, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setCarouselIndex(i)}
+                        className={cn(
+                          "transition-all duration-300 rounded-full",
+                          i === carouselIndex 
+                            ? "w-6 h-2 bg-blue-600" 
+                            : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
+                        )}
+                      />
+                    ))}
                   </div>
+
+                  <button
+                    onClick={nextSlide}
+                    disabled={carouselIndex >= works.length - cardsPerView}
+                    className={cn(
+                      "w-9 h-9 rounded-full flex items-center justify-center border transition-all",
+                      carouselIndex >= works.length - cardsPerView
+                        ? "border-slate-200 text-slate-300 cursor-not-allowed"
+                        : "border-blue-500 text-white bg-blue-600 hover:bg-blue-700"
+                    )}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-                
-                <div className="mt-6 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-navy-900 mb-2 border-b border-slate-100 pb-2">
-                    Work Description
-                  </h3>
-                  <p className="text-slate-700 leading-relaxed bg-slate-50/50 p-4 rounded-xl border border-slate-100 flex-1">
-                    {selectedWork.description || 'No description provided for this date.'}
-                  </p>
-                  
-                  {!isSameDay(parseISO(selectedWork.date), selectedDate) && (
-                    <div className="mt-4 p-3 rounded-lg bg-amber-50 text-amber-800 text-sm border border-amber-200 flex items-center gap-2">
-                      <ImageIcon className="w-4 h-4 shrink-0" />
-                      <span>No images uploaded for <strong>{format(selectedDate, 'dd MMM yyyy')}</strong>. Displaying the most recent update instead.</span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              </>
             ) : (
-              <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                <ImageIcon className="w-16 h-16 mb-4 text-slate-300" />
-                <p className="font-medium text-lg text-slate-500">No daily work updates available yet.</p>
+              <div className="flex flex-col items-center justify-center h-full min-h-[320px] text-slate-400">
+                <ImageIcon className="w-16 h-16 mb-4 text-slate-200" />
+                <p className="font-medium text-slate-500">No daily work updates available yet.</p>
               </div>
             )}
           </div>
 
-          {/* Right Side: Calendar */}
-          <div className="w-full lg:w-1/3 bg-slate-50 p-6 sm:p-8 lg:border-l border-t lg:border-t-0 border-slate-200 h-full flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-navy-900">
+          {/* RIGHT: Calendar */}
+          <div className="w-full lg:w-[40%] bg-gradient-to-b from-sky-50/80 to-blue-50/50 lg:border-l border-t lg:border-t-0 border-slate-200 p-5 sm:p-6 flex flex-col">
+            
+            {/* Month Header */}
+            <div className="flex items-center justify-between mb-5">
+              <button 
+                onClick={prevMonth}
+                className="w-8 h-8 rounded-md flex items-center justify-center text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <h3 className="text-base font-extrabold text-navy-900 uppercase tracking-wider">
                 {format(currentMonth, 'MMMM yyyy')}
               </h3>
-              <div className="flex gap-1">
-                <button 
-                  onClick={prevMonth}
-                  className="p-2 rounded-full hover:bg-slate-200 text-slate-600 transition-colors"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button 
-                  onClick={nextMonth}
-                  className="p-2 rounded-full hover:bg-slate-200 text-slate-600 transition-colors"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              <button 
+                onClick={nextMonth}
+                className="w-8 h-8 rounded-md flex items-center justify-center text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
 
-            <div className="grid grid-cols-7 mb-4">
-              {weekDays.map(day => (
-                <div key={day} className="text-center text-xs font-bold text-slate-400 uppercase tracking-wider py-2">
+            {/* Weekday Headers */}
+            <div className="grid grid-cols-7 mb-1">
+              {weekDays.map((day, i) => (
+                <div 
+                  key={day} 
+                  className={cn(
+                    "text-center text-[11px] font-bold tracking-wider py-2.5 border-b-2",
+                    i === 0 ? "text-red-500 border-red-200" : "text-slate-500 border-slate-200"
+                  )}
+                >
                   {day}
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 flex-1">
               {days.map((day, idx) => {
                 const isSelected = isSameDay(day, selectedDate);
                 const hasWork = works.some(w => isSameDay(parseISO(w.date), day));
                 const isCurrentMonth = isSameMonth(day, monthStart);
                 const isToday = isSameDay(day, new Date());
+                const isSunday = getDay(day) === 0;
 
                 return (
                   <button
                     key={day.toString() + idx}
                     onClick={() => handleDateClick(day)}
                     className={cn(
-                      "aspect-square flex flex-col items-center justify-center rounded-xl text-sm font-medium transition-all relative",
+                      "relative flex items-center justify-center py-2.5 text-sm font-semibold transition-all border-b border-slate-100",
                       !isCurrentMonth && "text-slate-300",
-                      isCurrentMonth && !isSelected && "text-slate-700 hover:bg-slate-200",
-                      isSelected && "bg-navy-900 text-white shadow-md scale-105",
-                      isToday && !isSelected && "border-2 border-amber-400 text-amber-700",
-                      hasWork && !isSelected && "bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                      isCurrentMonth && !isSelected && !isToday && !isSunday && "text-slate-700 hover:bg-blue-50",
+                      isSunday && isCurrentMonth && !isSelected && "text-red-500",
+                      isToday && !isSelected && "text-white bg-blue-600 rounded-md mx-0.5",
+                      isSelected && "text-white bg-navy-900 rounded-md mx-0.5 shadow-md",
+                      hasWork && !isSelected && !isToday && isCurrentMonth && "text-emerald-700 font-bold"
                     )}
                   >
-                    <span>{format(day, dateFormat)}</span>
-                    {hasWork && (
+                    <span>{format(day, 'd')}</span>
+                    {hasWork && isCurrentMonth && (
                       <span className={cn(
-                        "absolute bottom-1.5 w-1 h-1 rounded-full",
-                        isSelected ? "bg-amber-400" : "bg-emerald-500"
+                        "absolute bottom-0.5 w-1.5 h-1.5 rounded-full",
+                        isSelected || isToday ? "bg-amber-400" : "bg-emerald-500"
                       )} />
                     )}
                   </button>
                 );
               })}
             </div>
-            
-            <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col gap-3">
+
+            {/* Legend */}
+            <div className="mt-4 pt-4 border-t border-slate-200/80 flex flex-wrap items-center gap-x-5 gap-y-2">
               <div className="flex items-center gap-2 text-xs text-slate-600">
-                <span className="w-3 h-3 rounded-full bg-emerald-100 border border-emerald-300"></span>
-                <span>Work Update Available</span>
+                <span className="w-3.5 h-3.5 rounded-sm bg-emerald-500"></span>
+                <span className="font-medium">Work Updated</span>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-600">
-                <span className="w-3 h-3 rounded-full bg-navy-900"></span>
-                <span>Selected Date</span>
+                <span className="w-3.5 h-3.5 rounded-sm bg-red-500"></span>
+                <span className="font-medium">Sunday / Holiday</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-600">
+                <span className="w-3.5 h-3.5 rounded-sm bg-blue-600"></span>
+                <span className="font-medium">Today</span>
               </div>
             </div>
           </div>
-          
+
         </div>
       </div>
     </section>
