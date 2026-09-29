@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,9 @@ import {
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export function MediaDailyWorkPage() {
+  const { i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
+
   const [activeTab, setActiveTab] = useState<'blog' | 'daily'>('blog');
   
   // Blog State
@@ -63,7 +67,7 @@ export function MediaDailyWorkPage() {
 
   const handleBlogUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!blogFile) return toast.error('Please select a file');
+    if (!blogFile) return toast.error(isHi ? 'कृपया एक फ़ाइल चुनें' : 'Please select a file');
 
     setBlogUploading(true);
     const formData = new FormData();
@@ -78,15 +82,15 @@ export function MediaDailyWorkPage() {
       });
 
       if (res.ok) {
-        toast.success('Media uploaded successfully');
+        toast.success(isHi ? 'मीडिया सफलतापूर्वक अपलोड हो गया' : 'Media uploaded successfully');
         setBlogFile(null);
         fetchBlogMedia();
       } else {
         const err = await res.json();
-        toast.error(err.error || 'Upload failed');
+        toast.error(err.error || (isHi ? 'अपलोड विफल रहा' : 'Upload failed'));
       }
     } catch (e) {
-      toast.error('An error occurred during upload');
+      toast.error(isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload');
     } finally {
       setBlogUploading(false);
     }
@@ -100,13 +104,13 @@ export function MediaDailyWorkPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        toast.success('Media deleted');
+        toast.success(isHi ? 'मीडिया हटा दिया गया' : 'Media deleted');
         fetchBlogMedia();
       } else {
-        toast.error('Failed to delete media');
+        toast.error(isHi ? 'मीडिया हटाने में विफल' : 'Failed to delete media');
       }
     } catch (e) {
-      toast.error('Error deleting media');
+      toast.error(isHi ? 'मीडिया हटाने में त्रुटि' : 'Error deleting media');
     }
   };
 
@@ -131,8 +135,8 @@ export function MediaDailyWorkPage() {
 
   const handleDailyUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!dailyFile) return toast.error('Please select a file');
-    if (!dailyDate) return toast.error('Please select a date');
+    if (!dailyFile) return toast.error(isHi ? 'कृपया एक फ़ाइल चुनें' : 'Please select a file');
+    if (!dailyDate) return toast.error(isHi ? 'कृपया एक तिथि चुनें' : 'Please select a date');
 
     setDailyUploading(true);
     const formData = new FormData();
@@ -149,17 +153,17 @@ export function MediaDailyWorkPage() {
       });
 
       if (res.ok) {
-        toast.success('Daily work uploaded successfully');
+        toast.success(isHi ? 'दैनिक कार्य सफलतापूर्वक अपलोड हो गया' : 'Daily work uploaded successfully');
         setDailyFile(null);
         setDailyDate('');
         setDailyDesc('');
         fetchDailyWorks();
       } else {
         const err = await res.json();
-        toast.error(err.error || 'Upload failed');
+        toast.error(err.error || (isHi ? 'अपलोड विफल रहा' : 'Upload failed'));
       }
     } catch (e) {
-      toast.error('An error occurred during upload');
+      toast.error(isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload');
     } finally {
       setDailyUploading(false);
     }
@@ -173,13 +177,13 @@ export function MediaDailyWorkPage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
-        toast.success('Work entry deleted');
+        toast.success(isHi ? 'कार्य प्रविष्टि हटा दी गई' : 'Work entry deleted');
         fetchDailyWorks();
       } else {
-        toast.error('Failed to delete work entry');
+        toast.error(isHi ? 'कार्य प्रविष्टि हटाने में विफल' : 'Failed to delete work entry');
       }
     } catch (e) {
-      toast.error('Error deleting work entry');
+      toast.error(isHi ? 'कार्य प्रविष्टि हटाने में त्रुटि' : 'Error deleting work entry');
     }
   };
 
@@ -188,10 +192,10 @@ export function MediaDailyWorkPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-navy-900 flex items-center gap-2">
           <ImageIcon className="w-6 h-6 text-amber-500" />
-          Media & Daily Work
+          {isHi ? 'मीडिया और दैनिक कार्य' : 'Media & Daily Work'}
         </h1>
         <p className="text-slate-500 text-sm">
-          Manage photos and videos for the landing page Blogs section and the new Daily Work calendar section.
+          {isHi ? 'लैंडिंग पेज के ब्लॉग सेक्शन और नए दैनिक कार्य कैलेंडर सेक्शन के लिए फ़ोटो और वीडियो प्रबंधित करें।' : 'Manage photos and videos for the landing page Blogs section and the new Daily Work calendar section.'}
         </p>
       </div>
 
@@ -202,7 +206,7 @@ export function MediaDailyWorkPage() {
             activeTab === 'blog' ? 'border-amber-500 text-amber-600' : 'border-transparent text-slate-500 hover:text-navy-700'
           }`}
         >
-          Blogs Media
+          {isHi ? 'ब्लॉग मीडिया' : 'Blogs Media'}
         </button>
         <button
           onClick={() => setActiveTab('daily')}
@@ -210,7 +214,7 @@ export function MediaDailyWorkPage() {
             activeTab === 'daily' ? 'border-amber-500 text-amber-600' : 'border-transparent text-slate-500 hover:text-navy-700'
           }`}
         >
-          Daily Work Updates
+          {isHi ? 'दैनिक कार्य अपडेट' : 'Daily Work Updates'}
         </button>
       </div>
 
@@ -218,18 +222,18 @@ export function MediaDailyWorkPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Upload to Blogs Gallery</CardTitle>
-              <CardDescription>Upload photos or videos. These will appear directly in the Blogs section on the homepage.</CardDescription>
+              <CardTitle>{isHi ? 'ब्लॉग गैलरी में अपलोड करें' : 'Upload to Blogs Gallery'}</CardTitle>
+              <CardDescription>{isHi ? 'फ़ोटो या वीडियो अपलोड करें। ये होमपेज पर ब्लॉग सेक्शन में सीधे दिखाई देंगे।' : 'Upload photos or videos. These will appear directly in the Blogs section on the homepage.'}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleBlogUpload} className="flex flex-col gap-6">
                 <div className="w-full">
-                  <Label>Photo / Video / Document</Label>
+                  <Label>{isHi ? 'फ़ोटो / वीडियो / दस्तावेज़' : 'Photo / Video / Document'}</Label>
                   <label htmlFor="blog-file" className="mt-2 flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Upload className="w-8 h-8 mb-2 text-slate-400" />
-                      <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
-                      <p className="text-xs text-slate-500">SVG, PNG, JPG, MP4, PDF, DOCX (MAX. 50MB)</p>
+                      <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">{isHi ? 'अपलोड करने के लिए क्लिक करें' : 'Click to upload'}</span> {isHi ? 'या ड्रैग और ड्रॉप करें' : 'or drag and drop'}</p>
+                      <p className="text-xs text-slate-500">SVG, PNG, JPG, MP4, PDF, DOCX ({isHi ? 'अधिकतम 50MB' : 'MAX. 50MB'})</p>
                     </div>
                     <Input 
                       id="blog-file" 
@@ -243,7 +247,7 @@ export function MediaDailyWorkPage() {
                 </div>
                 <Button type="submit" disabled={blogUploading} className="bg-navy-800 hover:bg-navy-700 w-full sm:w-auto self-end">
                   <Upload className="w-4 h-4 mr-2" />
-                  {blogUploading ? 'Uploading...' : 'Upload'}
+                  {blogUploading ? (isHi ? 'अपलोड हो रहा है...' : 'Uploading...') : (isHi ? 'अपलोड करें' : 'Upload')}
                 </Button>
               </form>
             </CardContent>
@@ -257,7 +261,7 @@ export function MediaDailyWorkPage() {
                 ) : media.type === 'document' ? (
                   <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
                     <FileText className="w-12 h-12 text-slate-400 mb-2" />
-                    <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">View File</a>
+                    <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">{isHi ? 'फ़ाइल देखें' : 'View File'}</a>
                   </div>
                 ) : (
                   <img src={media.url} alt="Blog media" className="w-full h-full object-cover" />
@@ -273,14 +277,14 @@ export function MediaDailyWorkPage() {
                       <AlertDialogMedia className="bg-red-100 text-red-600">
                         <Trash2 className="w-6 h-6" />
                       </AlertDialogMedia>
-                      <AlertDialogTitle>Delete media?</AlertDialogTitle>
+                      <AlertDialogTitle>{isHi ? 'मीडिया हटाएं?' : 'Delete media?'}</AlertDialogTitle>
                       <AlertDialogDescription>
-                        This will permanently delete this media from the blog gallery. This action cannot be undone.
+                        {isHi ? 'यह ब्लॉग गैलरी से इस मीडिया को स्थायी रूप से हटा देगा। यह कार्रवाई पूर्ववत नहीं की जा सकती।' : 'This will permanently delete this media from the blog gallery. This action cannot be undone.'}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => handleBlogDelete(media.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                      <AlertDialogCancel>{isHi ? 'रद्द करें' : 'Cancel'}</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleBlogDelete(media.id)} className="bg-red-600 hover:bg-red-700 text-white">{isHi ? 'हटाएं' : 'Delete'}</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -288,7 +292,7 @@ export function MediaDailyWorkPage() {
             ))}
             {blogMedia.length === 0 && (
               <div className="col-span-full py-12 text-center text-slate-500 border border-dashed rounded-lg bg-slate-50">
-                No media uploaded yet.
+                {isHi ? 'अभी तक कोई मीडिया अपलोड नहीं किया गया है।' : 'No media uploaded yet.'}
               </div>
             )}
           </div>
@@ -299,18 +303,18 @@ export function MediaDailyWorkPage() {
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Add Daily Work</CardTitle>
-              <CardDescription>Upload a photo/video for a specific date with a short description. This will appear on the homepage next to the calendar.</CardDescription>
+              <CardTitle>{isHi ? 'दैनिक कार्य जोड़ें' : 'Add Daily Work'}</CardTitle>
+              <CardDescription>{isHi ? 'एक छोटे विवरण के साथ किसी विशिष्ट तिथि के लिए एक फोटो/वीडियो अपलोड करें। यह होमपेज पर कैलेंडर के बगल में दिखाई देगा।' : 'Upload a photo/video for a specific date with a short description. This will appear on the homepage next to the calendar.'}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleDailyUpload} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Photo / Video / Document</Label>
+                    <Label>{isHi ? 'फ़ोटो / वीडियो / दस्तावेज़' : 'Photo / Video / Document'}</Label>
                     <label htmlFor="daily-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <Upload className="w-6 h-6 mb-2 text-slate-400" />
-                        <p className="text-xs text-slate-500 font-semibold">Click to upload file</p>
+                        <p className="text-xs text-slate-500 font-semibold">{isHi ? 'फ़ाइल अपलोड करने के लिए क्लिक करें' : 'Click to upload file'}</p>
                       </div>
                       <Input 
                         id="daily-file" 
@@ -323,7 +327,7 @@ export function MediaDailyWorkPage() {
                     {renderFilePreview(dailyFile)}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="daily-date">Date</Label>
+                    <Label htmlFor="daily-date">{isHi ? 'दिनांक' : 'Date'}</Label>
                     <Input 
                       id="daily-date" 
                       type="date" 
@@ -333,17 +337,17 @@ export function MediaDailyWorkPage() {
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="daily-desc">Short Description</Label>
+                  <Label htmlFor="daily-desc">{isHi ? 'संक्षिप्त विवरण' : 'Short Description'}</Label>
                   <Textarea 
                     id="daily-desc" 
-                    placeholder="Enter details about the work done on this date..."
+                    placeholder={isHi ? 'इस तिथि पर किए गए कार्य के बारे में विवरण दर्ज करें...' : 'Enter details about the work done on this date...'}
                     value={dailyDesc}
                     onChange={(e) => setDailyDesc(e.target.value)}
                   />
                 </div>
                 <Button type="submit" disabled={dailyUploading} className="bg-navy-800 hover:bg-navy-700 w-full sm:w-auto">
                   <Upload className="w-4 h-4 mr-2" />
-                  {dailyUploading ? 'Uploading...' : 'Save Daily Work'}
+                  {dailyUploading ? (isHi ? 'अपलोड हो रहा है...' : 'Uploading...') : (isHi ? 'दैनिक कार्य सहेजें' : 'Save Daily Work')}
                 </Button>
               </form>
             </CardContent>
@@ -371,13 +375,13 @@ export function MediaDailyWorkPage() {
                       <Calendar className="w-4 h-4" />
                       {new Date(work.date).toLocaleDateString()}
                     </div>
-                    <p className="text-slate-700 text-sm">{work.description || 'No description provided.'}</p>
+                    <p className="text-slate-700 text-sm">{work.description || (isHi ? 'कोई विवरण प्रदान नहीं किया गया।' : 'No description provided.')}</p>
                   </div>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="sm">
                         <Trash2 className="w-4 h-4 mr-2" />
-                        Delete
+                        {isHi ? 'हटाएं' : 'Delete'}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent size="sm">
@@ -385,14 +389,14 @@ export function MediaDailyWorkPage() {
                         <AlertDialogMedia className="bg-red-100 text-red-600">
                           <Trash2 className="w-6 h-6" />
                         </AlertDialogMedia>
-                        <AlertDialogTitle>Delete work entry?</AlertDialogTitle>
+                        <AlertDialogTitle>{isHi ? 'कार्य प्रविष्टि हटाएं?' : 'Delete work entry?'}</AlertDialogTitle>
                         <AlertDialogDescription>
-                          This will permanently delete this daily work update. This action cannot be undone.
+                          {isHi ? 'यह इस दैनिक कार्य अपडेट को स्थायी रूप से हटा देगा। यह कार्रवाई पूर्ववत नहीं की जा सकती।' : 'This will permanently delete this daily work update. This action cannot be undone.'}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDailyDelete(work.id)} className="bg-red-600 hover:bg-red-700 text-white">Delete</AlertDialogAction>
+                        <AlertDialogCancel>{isHi ? 'रद्द करें' : 'Cancel'}</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => handleDailyDelete(work.id)} className="bg-red-600 hover:bg-red-700 text-white">{isHi ? 'हटाएं' : 'Delete'}</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -401,7 +405,7 @@ export function MediaDailyWorkPage() {
             ))}
             {dailyWorks.length === 0 && (
               <div className="py-12 text-center text-slate-500 border border-dashed rounded-lg bg-slate-50">
-                No daily work entries yet.
+                {isHi ? 'अभी तक कोई दैनिक कार्य प्रविष्टियां नहीं हैं।' : 'No daily work entries yet.'}
               </div>
             )}
           </div>

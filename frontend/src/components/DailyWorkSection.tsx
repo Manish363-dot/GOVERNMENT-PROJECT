@@ -120,20 +120,6 @@ export function DailyWorkSection() {
     <section className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
 
-        {/* Section Header */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-1.5 rounded-full text-sm font-semibold mb-4">
-            <CalendarIcon className="w-4 h-4" />
-            {t('nav.dailyWorkTitle', 'Daily Work Updates')}
-          </div>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-navy-900 tracking-tight">
-            {t('nav.dailyWorkHeading', 'Our Day-to-Day Progress')}
-          </h2>
-          <p className="text-slate-500 mt-2 max-w-xl mx-auto text-sm">
-            {t('nav.dailyWorkDesc', 'Check out our day-to-day progress. Select a date on the calendar to see the work accomplished.')}
-          </p>
-        </div>
-
         {/* Main Content: Carousel + Calendar */}
         <div className="flex flex-col lg:flex-row gap-0 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-200/80 overflow-hidden">
 
