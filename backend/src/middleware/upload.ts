@@ -14,13 +14,24 @@ const s3 = new S3Client({
   },
 });
 
-const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'video/mp4'];
+const allowedTypes = [
+  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 
+  'video/mp4', 'video/webm', 'video/quicktime',
+  'application/pdf',
+  'application/msword', // doc
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+  'application/vnd.ms-excel', // xls
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+  'application/vnd.ms-powerpoint', // ppt
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // pptx
+  'application/zip', 'application/x-zip-compressed'
+];
 
 const fileFilter = (req: any, file: any, cb: any) => {
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Invalid file type. Only JPEG, PNG, WEBP, and MP4 are allowed.'));
+    cb(new Error('Invalid file type. Only images, videos, documents, and zips are allowed.'));
   }
 };
 

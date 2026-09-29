@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Trash2, Image as ImageIcon, Calendar, Video } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText, FileSpreadsheet, FileArchive, Headphones } from 'lucide-react';
 import { toast } from 'sonner';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
@@ -98,6 +98,25 @@ export function MediaDailyWorkPage() {
     } catch (e) {
       toast.error('Error deleting media');
     }
+  };
+
+  const renderFilePreview = (file: File | null) => {
+    if (!file) return null;
+    return (
+      <div className="mt-4 p-4 border rounded-lg bg-slate-50 flex flex-col gap-2 items-center text-center">
+        <FileText className="w-8 h-8 text-blue-500" />
+        <div>
+          <p className="text-sm font-semibold truncate max-w-xs">{file.name}</p>
+          <p className="text-xs text-slate-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMediaIcon = (type: string) => {
+    if (type === 'video') return <Video className="w-8 h-8 text-slate-400" />;
+    if (type === 'document') return <FileText className="w-8 h-8 text-slate-400" />;
+    return <ImageIcon className="w-8 h-8 text-slate-400" />;
   };
 
   const handleDailyUpload = async (e: React.FormEvent) => {
@@ -195,17 +214,26 @@ export function MediaDailyWorkPage() {
               <CardDescription>Upload photos or videos. These will appear directly in the Blogs section on the homepage.</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleBlogUpload} className="flex items-end gap-4">
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                  <Label htmlFor="blog-file">Photo / Video</Label>
-                  <Input 
-                    id="blog-file" 
-                    type="file" 
-                    accept="image/*,video/mp4" 
-                    onChange={(e) => setBlogFile(e.target.files?.[0] || null)}
-                  />
+              <form onSubmit={handleBlogUpload} className="flex flex-col gap-6">
+                <div className="w-full">
+                  <Label>Photo / Video / Document</Label>
+                  <label htmlFor="blog-file" className="mt-2 flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Upload className="w-8 h-8 mb-2 text-slate-400" />
+                      <p className="mb-2 text-sm text-slate-500"><span className="font-semibold">Click to upload</span> or drag and drop</p>
+                      <p className="text-xs text-slate-500">SVG, PNG, JPG, MP4, PDF, DOCX (MAX. 50MB)</p>
+                    </div>
+                    <Input 
+                      id="blog-file" 
+                      type="file" 
+                      className="hidden"
+                      accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip"
+                      onChange={(e) => setBlogFile(e.target.files?.[0] || null)}
+                    />
+                  </label>
+                  {renderFilePreview(blogFile)}
                 </div>
-                <Button type="submit" disabled={blogUploading} className="bg-navy-800 hover:bg-navy-700">
+                <Button type="submit" disabled={blogUploading} className="bg-navy-800 hover:bg-navy-700 w-full sm:w-auto self-end">
                   <Upload className="w-4 h-4 mr-2" />
                   {blogUploading ? 'Uploading...' : 'Upload'}
                 </Button>
@@ -218,6 +246,11 @@ export function MediaDailyWorkPage() {
               <div key={media.id} className="relative group rounded-lg overflow-hidden border border-slate-200 bg-white aspect-square flex items-center justify-center">
                 {media.type === 'video' ? (
                   <video src={media.url} className="w-full h-full object-cover" controls />
+                ) : media.type === 'document' ? (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100">
+                    <FileText className="w-12 h-12 text-slate-400 mb-2" />
+                    <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">View File</a>
+                  </div>
                 ) : (
                   <img src={media.url} alt="Blog media" className="w-full h-full object-cover" />
                 )}
@@ -249,13 +282,21 @@ export function MediaDailyWorkPage() {
               <form onSubmit={handleDailyUpload} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="daily-file">Photo / Video</Label>
-                    <Input 
-                      id="daily-file" 
-                      type="file" 
-                      accept="image/*,video/mp4" 
-                      onChange={(e) => setDailyFile(e.target.files?.[0] || null)}
-                    />
+                    <Label>Photo / Video / Document</Label>
+                    <label htmlFor="daily-file" className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Upload className="w-6 h-6 mb-2 text-slate-400" />
+                        <p className="text-xs text-slate-500 font-semibold">Click to upload file</p>
+                      </div>
+                      <Input 
+                        id="daily-file" 
+                        type="file" 
+                        className="hidden"
+                        accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip"
+                        onChange={(e) => setDailyFile(e.target.files?.[0] || null)}
+                      />
+                    </label>
+                    {renderFilePreview(dailyFile)}
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="daily-date">Date</Label>
@@ -292,6 +333,10 @@ export function MediaDailyWorkPage() {
                     {work.type === 'video' ? (
                       <div className="w-full h-full flex items-center justify-center bg-slate-200">
                         <Video className="w-8 h-8 text-slate-400" />
+                      </div>
+                    ) : work.type === 'document' ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-slate-200">
+                        <FileText className="w-8 h-8 text-slate-400" />
                       </div>
                     ) : (
                       <img src={work.url} alt="Daily work" className="w-full h-full object-cover" />

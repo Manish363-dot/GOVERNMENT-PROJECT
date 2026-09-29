@@ -13,7 +13,7 @@ import {
   parseISO,
   getDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, ArrowRight, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -168,6 +168,13 @@ export function DailyWorkSection() {
                               autoPlay
                               playsInline
                             />
+                          ) : work.type === 'document' ? (
+                            <div className="w-full h-full flex flex-col items-center justify-center bg-blue-50">
+                              <FileText className="w-16 h-16 text-blue-400 mb-3" />
+                              <a href={work.url} target="_blank" rel="noopener noreferrer" className="px-4 py-1.5 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 transition-colors shadow-sm">
+                                Open Document
+                              </a>
+                            </div>
                           ) : (
                             <img
                               src={work.url}
