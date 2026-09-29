@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { TopBarLogos } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 const PLACEHOLDER_IMAGES = [
     '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM (1).jpeg',
     '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.09 PM.jpeg',
@@ -123,7 +125,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     useEffect(() => {
         const fetchMedia = async () => {
             try {
-                const res = await fetch('/api/media/blog');
+                const res = await fetch(`${API_URL}/media/blog`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.length > 0) {

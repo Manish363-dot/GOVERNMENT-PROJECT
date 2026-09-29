@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Upload, Trash2, Image as ImageIcon, Calendar, Video } from 'lucide-react';
 import { toast } from 'sonner';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 export function MediaDailyWorkPage() {
   const [activeTab, setActiveTab] = useState<'blog' | 'daily'>('blog');
   
@@ -29,7 +31,7 @@ export function MediaDailyWorkPage() {
 
   const fetchBlogMedia = async () => {
     try {
-      const res = await fetch('/api/media/blog');
+      const res = await fetch(`${API_URL}/media/blog`);
       const data = await res.json();
       setBlogMedia(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -39,7 +41,7 @@ export function MediaDailyWorkPage() {
 
   const fetchDailyWorks = async () => {
     try {
-      const res = await fetch('/api/media/daily-work');
+      const res = await fetch(`${API_URL}/media/daily-work`);
       const data = await res.json();
       setDailyWorks(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -57,7 +59,7 @@ export function MediaDailyWorkPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/media/blog', {
+      const res = await fetch(`${API_URL}/media/blog`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -83,7 +85,7 @@ export function MediaDailyWorkPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/media/blog/${id}`, {
+      const res = await fetch(`${API_URL}/media/blog/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -111,7 +113,7 @@ export function MediaDailyWorkPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('/api/media/daily-work', {
+      const res = await fetch(`${API_URL}/media/daily-work`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,
@@ -139,7 +141,7 @@ export function MediaDailyWorkPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`/api/media/daily-work/${id}`, {
+      const res = await fetch(`${API_URL}/media/daily-work/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

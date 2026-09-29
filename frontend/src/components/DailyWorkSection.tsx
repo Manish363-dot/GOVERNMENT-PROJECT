@@ -16,6 +16,8 @@ import { ChevronLeft, ChevronRight, Video, Calendar as CalendarIcon, Image as Im
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
 interface DailyWork {
   id: string;
   url: string;
@@ -37,7 +39,7 @@ export function DailyWorkSection() {
 
   const fetchWorks = async () => {
     try {
-      const res = await fetch('/api/media/daily-work');
+      const res = await fetch(`${API_URL}/media/daily-work`);
       if (res.ok) {
         const data = await res.json();
         setWorks(data);
