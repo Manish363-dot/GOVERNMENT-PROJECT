@@ -7,75 +7,6 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-const PLACEHOLDER_IMAGES = [
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.09 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.08 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.04 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.14 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.00 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.14 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.13 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.15 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.16 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.13 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM (2).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.01 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.54 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.03 PM.jpeg',
-];
-
-// All images for bottom grid (complete collection)
-const ALL_GALLERY_IMAGES = [
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.38.57 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.38.59 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.39.01 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.39.05 PM copy.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.39.05 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.39.50 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.40.20 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.40.35 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.40.37 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.40.55 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.40.56 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.41.00 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.41.01 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.41.02 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.41.04 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.41.05 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.54 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM (2).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.43.56 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.00 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.01 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.03 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.03 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.04 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.04 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.05 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.07 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.08 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.09 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.11 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.13 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.13 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.14 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.14 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.15 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.16 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.17 PM (1).jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.17 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.20 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.21 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.22 PM.jpeg',
-    '/assets/gallery/WhatsApp Image 2026-09-14 at 6.44.23 PM.jpeg',
-    '/assets/gallery/image copy 2.png',
-    '/assets/gallery/image copy.png',
-
-];
-
 // Single Grid Item Component with progressive image loading & skeleton preview
 function GalleryGridItem({ src, index, onClick }: { src: string; index: number; onClick: () => void }) {
     const [isLoaded, setIsLoaded] = useState(false);
@@ -119,8 +50,8 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     const touchStartX = useRef(0);
 
     // 1. Fetch Dynamic Media from API
-    const [mediaList, setMediaList] = useState<string[]>(PLACEHOLDER_IMAGES);
-    const [gridMedia, setGridMedia] = useState<string[]>(ALL_GALLERY_IMAGES);
+    const [mediaList, setMediaList] = useState<string[]>([]);
+    const [gridMedia, setGridMedia] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchMedia = async () => {
@@ -132,6 +63,9 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                         const urls = data.map((m: any) => m.url);
                         setMediaList(urls);
                         setGridMedia(urls);
+                    } else {
+                        setMediaList([]);
+                        setGridMedia([]);
                     }
                 }
             } catch (err) {
@@ -341,8 +275,9 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                             e.stopPropagation();
                             prevImage();
                         }}
-                        className="absolute left-1 sm:left-1/4 md:left-[21%] z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white hover:scale-110 active:scale-95 text-navy-900 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200 transition-all focus:outline-none cursor-pointer"
+                        className="absolute left-1 sm:left-1/4 md:left-[21%] z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white hover:scale-110 active:scale-95 text-navy-900 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200 transition-all focus:outline-none cursor-pointer disabled:opacity-50"
                         aria-label="Previous Image"
+                        disabled={mediaList.length <= 1}
                     >
                         <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-navy-900" />
                     </button>
@@ -353,8 +288,8 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                         <div className="absolute inset-0 bg-black/10 translate-y-3 blur-xl rounded-md transition-all duration-500"></div>
 
                         {/* Main Polaroid Frame */}
-                        <div className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu">
-                            {mediaList.map((imgSrc, idx) => (
+                        <div className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu flex items-center justify-center">
+                            {mediaList.length > 0 ? mediaList.map((imgSrc, idx) => (
                                 <img
                                     key={imgSrc}
                                     loading="eager"
@@ -366,7 +301,9 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                                         : 'opacity-0 scale-[1.03] z-0 pointer-events-none'
                                         }`}
                                 />
-                            ))}
+                            )) : (
+                                <div className="text-slate-400 font-medium">No media uploaded yet</div>
+                            )}
                         </div>
                     </div>
 
@@ -376,8 +313,9 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                             e.stopPropagation();
                             nextImage();
                         }}
-                        className="absolute right-1 sm:right-1/4 md:right-[21%] z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white hover:scale-110 active:scale-95 text-navy-900 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200 transition-all focus:outline-none cursor-pointer"
+                        className="absolute right-1 sm:right-1/4 md:right-[21%] z-30 p-2.5 sm:p-3 bg-white/95 hover:bg-white hover:scale-110 active:scale-95 text-navy-900 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.2)] border border-slate-200 transition-all focus:outline-none cursor-pointer disabled:opacity-50"
                         aria-label="Next Image"
+                        disabled={mediaList.length <= 1}
                     >
                         <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-navy-900" />
                     </button>
@@ -392,7 +330,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                         Community Cleanliness Initiative
                     </div>
                     <div className="inline-flex items-center justify-center gap-1.5 mt-3 px-4 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full shadow-sm text-[11px] sm:text-xs font-semibold text-slate-700 tracking-wider">
-                        {String(currentIndex + 1).padStart(2, '0')} <span className="text-slate-300">/</span> {mediaList.length}
+                        {mediaList.length > 0 ? `${String(currentIndex + 1).padStart(2, '0')} / ${mediaList.length}` : '00 / 00'}
                     </div>
                 </div>
 
@@ -549,14 +487,18 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                        {gridMedia.map((img, idx) => (
+                        {gridMedia.length > 0 ? gridMedia.map((img, idx) => (
                             <GalleryGridItem
                                 key={img + idx}
                                 src={img}
                                 index={idx}
                                 onClick={() => handleGridItemClick(img)}
                             />
-                        ))}
+                        )) : (
+                            <div className="col-span-full py-10 text-center text-slate-400 font-medium">
+                                No media uploaded yet
+                            </div>
+                        )}
                     </div>
                 </div>
 
