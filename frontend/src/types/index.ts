@@ -44,8 +44,8 @@ export interface VehicleGpsAssignment {
   assigned_at: string;
   unassigned_at: string | null;
   is_active: boolean;
-  vehicles?: Vehicle;
-  gps_devices?: GpsDevice;
+  vehicle?: Vehicle;
+  gpsDevice?: GpsDevice;
 }
 
 export interface VehicleCurrentLocation {
@@ -58,7 +58,7 @@ export interface VehicleCurrentLocation {
   heading: number;
   status: VehicleStatus;
   updated_at: string;
-  vehicles?: Vehicle;
+  vehicle?: Vehicle;
 }
 
 export interface VehicleLocationHistory {

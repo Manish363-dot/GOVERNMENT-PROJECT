@@ -195,7 +195,7 @@ export function LiveTrackingPage() {
             heading: 45,
             status: 'moving',
             updated_at: new Date().toISOString(),
-            vehicles: {
+            vehicle: {
               id: 'v-test-1',
               vehicle_number: 'UK-01-TEST-01',
               vehicle_name: 'Testing Demo Vehicle (Safai Truck)',
@@ -217,8 +217,8 @@ export function LiveTrackingPage() {
 
   // Filtered vehicles list
   const filteredLocations = locations.filter((loc) => {
-    const vNum = (loc as any).vehicles?.vehicle_number || '';
-    const vName = (loc as any).vehicles?.vehicle_name || '';
+    const vNum = (loc as any).vehicle?.vehicle_number || '';
+    const vName = (loc as any).vehicle?.vehicle_name || '';
     return (
       vNum.toLowerCase().includes(searchQuery.toLowerCase()) ||
       vName.toLowerCase().includes(searchQuery.toLowerCase())
@@ -388,7 +388,7 @@ export function LiveTrackingPage() {
 
               {/* Single Vehicle Isolation: If selectedVehicle exists, render ONLY that vehicle on map */}
               {(selectedVehicle ? [selectedVehicle] : locations).map((loc) => {
-                const vNumber = (loc as any).vehicles?.vehicle_number || 'Vehicle';
+                const vNumber = (loc as any).vehicle?.vehicle_number || 'Vehicle';
                 return (
                   <Marker
                     key={loc.vehicle_id}
@@ -436,7 +436,7 @@ export function LiveTrackingPage() {
                 <div>
                   <span className="text-[10px] text-slate-300 font-bold uppercase block">Focused Isolation Tracking</span>
                   <span className="font-bold text-amber-400">
-                    {(selectedVehicle as any).vehicles?.vehicle_number || 'Selected Vehicle'} ONLY
+                    {(selectedVehicle as any).vehicle?.vehicle_number || 'Selected Vehicle'} ONLY
                   </span>
                 </div>
                 <button
@@ -521,8 +521,8 @@ export function LiveTrackingPage() {
               <p className="text-xs text-slate-500 text-center py-6">No matching vehicles found.</p>
             ) : (
               filteredLocations.map((loc) => {
-                const vNumber = (loc as any).vehicles?.vehicle_number || 'Vehicle';
-                const vName = (loc as any).vehicles?.vehicle_name;
+                const vNumber = (loc as any).vehicle?.vehicle_number || 'Vehicle';
+                const vName = (loc as any).vehicle?.vehicle_name;
                 const isSelected = selectedVehicle?.vehicle_id === loc.vehicle_id;
 
                 return (
@@ -573,7 +573,7 @@ export function LiveTrackingPage() {
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span className="text-xs font-bold text-amber-400">
-                    {(selectedVehicle as any).vehicles?.vehicle_number}
+                    {(selectedVehicle as any).vehicle?.vehicle_number}
                   </span>
                 </div>
                 <button

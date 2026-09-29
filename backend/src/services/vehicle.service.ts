@@ -1,10 +1,23 @@
 import { prisma } from '../config/prisma';
 import { Vehicle } from '@prisma/client';
 
-export async function getAllVehicles(): Promise<Vehicle[]> {
+export async function getAllVehicles(): Promise<any[]> {
   try {
-    return await prisma.vehicle.findMany({
-      orderBy: { created_at: 'desc' }
+    const vehicles = await prisma.vehicle.findMany({
+      orderBy: { created_at: 'desc' },
+      include: { currentLocations: true }
+    });
+    
+    const now = Date.now();
+    return vehicles.map(v => {
+      const currentLoc = v.currentLocations?.[0];
+      const isOffline = !currentLoc || (now - currentLoc.updated_at.getTime()) > 5 * 60 * 1000;
+      
+      const { currentLocations, ...vehicleData } = v;
+      return { 
+        ...vehicleData, 
+        status: isOffline ? 'offline' : currentLoc.status 
+      };
     });
   } catch (error) {
     throw new Error('Failed to fetch vehicles');

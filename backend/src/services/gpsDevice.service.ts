@@ -3,8 +3,15 @@ import { GpsDevice, VehicleGpsAssignment } from '@prisma/client';
 
 export async function getAllDevices(): Promise<GpsDevice[]> {
   try {
-    return await prisma.gpsDevice.findMany({
+    const devices = await prisma.gpsDevice.findMany({
       orderBy: { created_at: 'desc' }
+    });
+    
+    const now = Date.now();
+    return devices.map(d => {
+      if (!d.last_seen_at) return { ...d, status: 'inactive' };
+      const isOffline = (now - d.last_seen_at.getTime()) > 5 * 60 * 1000;
+      return { ...d, status: isOffline ? 'inactive' : 'active' };
     });
   } catch (error) {
     throw new Error('Failed to fetch GPS devices');
