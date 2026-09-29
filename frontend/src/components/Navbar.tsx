@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Truck, Menu, X, ShieldCheck, PhoneCall } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { TopBarLogos } from '@/components/TopBarLogos';
+import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -55,7 +55,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-14 sm:h-20">
           {/* Logo & Identity */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-8 h-8 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs shrink-0" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-8 h-8 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs shrink-0" />
             <div className="flex flex-col justify-center">
               <span className="font-poppins font-bold text-navy-900 text-[15px] sm:text-xl tracking-tight leading-none mb-[2px] sm:mb-0">
                 {t('nav.brandName')}
