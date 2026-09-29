@@ -65,7 +65,7 @@ export function TopHeader() {
           </button>
 
           <div className="flex items-center gap-2 sm:gap-2.5">
-            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded shrink-0" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded shrink-0" />
             <div>
               <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
                 {isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}

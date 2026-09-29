@@ -64,7 +64,7 @@ export function Footer() {
       <div className="border-b border-navy-800 bg-navy-900/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Logo" className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-300 shrink-0" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Logo" className="w-11 h-11 object-contain rounded bg-white p-0.5 border border-slate-300 shrink-0" />
             <div>
               <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest leading-none">
                 {isHi ? 'उत्तराखंड सरकार • पंचायती राज विभाग' : 'Govt. of Uttarakhand • Panchayati Raj Department'}

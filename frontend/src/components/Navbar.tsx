@@ -55,7 +55,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-14 sm:h-20">
           {/* Logo & Identity */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-8 h-8 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs shrink-0" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-11 h-11 sm:w-14 sm:h-14 object-contain rounded-lg shadow-xs shrink-0" />
             <div className="flex flex-col justify-center">
               <span className="font-poppins font-bold text-navy-900 text-[15px] sm:text-xl tracking-tight leading-none mb-[2px] sm:mb-0">
                 {t('nav.brandName')}
