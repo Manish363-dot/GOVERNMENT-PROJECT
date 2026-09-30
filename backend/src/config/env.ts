@@ -29,7 +29,39 @@ export const env = parsed.data;
 /**
  * Parse CORS_ORIGIN into an array of allowed origins.
  * Supports comma-separated values in the env var.
+ * Strips trailing slashes to prevent mismatches.
  */
 export function getCorsOrigins(): string[] {
-  return env.CORS_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+  return env.CORS_ORIGIN.split(',')
+    .map((o) => o.trim().replace(/\/+$/, ''))
+    .filter(Boolean);
+}
+
+/**
+ * Strictly and safely validates whether an incoming origin is allowed.
+ * 
+ * Security Guarantees:
+ * 1. Requests with no origin (mobile apps, server-to-server, curl) -> Allowed
+ * 2. Explicitly configured origins in CORS_ORIGIN (e.g. deployed domain) -> Allowed
+ * 3. Localhost & 127.0.0.1 on any port (for local dev/testing) -> Allowed
+ * 4. Any external/unauthorized website (e.g. evil.com) -> Blocked
+ */
+export function isOriginAllowed(origin?: string): boolean {
+  if (!origin) return true;
+
+  const normalized = origin.trim().replace(/\/+$/, '');
+  const allowed = getCorsOrigins();
+
+  // Check configured production origins
+  if (allowed.includes(normalized)) {
+    return true;
+  }
+
+  // Check localhost & 127.0.0.1 on any port for local development
+  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?$/.test(normalized);
+  if (isLocalhost) {
+    return true;
+  }
+
+  return false;
 }

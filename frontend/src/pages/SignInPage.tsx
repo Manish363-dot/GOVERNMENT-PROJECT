@@ -72,35 +72,12 @@ export function SignInPage() {
             <div className="absolute inset-0 bg-navy-900/40 pointer-events-none z-0"></div>
 
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
-                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
+                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold font-poppins leading-tight mb-2">
-                Zila Panchayat Safai
+                Department Of Zila Panchayat Almora
               </h1>
-              <p className="text-sm text-slate-300 font-mono tracking-wide uppercase">
-                Operations &amp; Command Portal
-              </p>
-
-              <div className="mt-8 space-y-4">
-                <div className="flex items-start gap-3">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300 leading-relaxed">
-                    Secure unified dashboard for real-time district sanitation monitoring.
-                  </p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Building2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-slate-300 leading-relaxed">
-                    Authorized access for administrative officials of Uttarakhand Government.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative z-10 pt-16">
-              <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">NIC Cloud Gateway</p>
-              <p className="text-[10px] text-slate-500 mt-1">256-Bit SSL Encrypted Access</p>
             </div>
           </div>
 
@@ -117,8 +94,8 @@ export function SignInPage() {
             </Link>
 
             <div className="lg:hidden flex items-center gap-3 mb-8 pb-6 border-b border-slate-200">
-              <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
-                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-16 h-16 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
+                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">Zila Panchayat</h1>
@@ -283,7 +260,6 @@ export function SignInPage() {
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-navy-800 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-navy-800 transition-colors">Terms of Use</a>
-            <p className="font-mono bg-slate-100 px-2 py-1 rounded text-[10px]">v2.1.0-secure</p>
           </div>
         </div>
       </footer>

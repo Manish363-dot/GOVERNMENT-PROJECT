@@ -166,16 +166,13 @@ export function SignUpPage() {
 
             {/* Top brand block */}
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
-                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
+                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold font-poppins leading-tight mb-1">
-                Zila Panchayat Safai
+                Department Of Zila Panchayat Almora
               </h1>
-              <p className="text-sm text-slate-300 font-mono tracking-wide uppercase">
-                Official Registration Portal
-              </p>
-
+  
               <div className="mt-8 space-y-4">
                 <div className="flex items-start gap-3">
                   <UserPlus className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
@@ -219,8 +216,8 @@ export function SignUpPage() {
 
             {/* Mobile header */}
             <div className="lg:hidden flex items-center gap-3 mb-8 pb-6 border-b border-slate-200">
-              <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
-                <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-16 h-16 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
+                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">Zila Panchayat</h1>
@@ -500,7 +497,7 @@ export function SignUpPage() {
                       <Input
                         id="signup-passkey"
                         type={showPasskey ? 'text' : 'password'}
-                        placeholder="Enter passkey issued by department head (ADMIN1234)"
+                        placeholder="Enter passkey issued by department head"
                         value={form.passkey}
                         onChange={(e) => setForm({ ...form, passkey: e.target.value })}
                         className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11 pr-10"
@@ -556,7 +553,6 @@ export function SignUpPage() {
           <div className="flex items-center gap-4">
             <a href="#" className="hover:text-navy-800 transition-colors">Privacy Policy</a>
             <a href="#" className="hover:text-navy-800 transition-colors">Terms of Use</a>
-            <p className="font-mono bg-slate-100 px-2 py-1 rounded text-[10px]">v2.1.0-secure</p>
           </div>
         </div>
       </footer>

@@ -83,7 +83,7 @@ export function GpsDevicesPage() {
           <div className="flex items-center gap-2">
             <Radio className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+              <p className="text-[16px] font-bold text-white uppercase tracking-normal">
                 {t('admin.devices.title')}
               </p>
             </div>
@@ -102,7 +102,7 @@ export function GpsDevicesPage() {
       {showForm && (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">
+            <p className="text-[12px] font-bold text-[#0a1628] uppercase tracking-normal">
               {t('admin.devices.registerDevice')}
             </p>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
@@ -186,27 +186,28 @@ export function GpsDevicesPage() {
       ) : (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-            <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+            <p className="text-[12px] font-bold text-[#0a1628] uppercase tracking-normal">
               {t('admin.devices.title')} — {devices.length} {isHi ? 'उपकरण' : 'Device(s)'}
             </p>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fc]">
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {t('admin.devices.deviceIdentifier')}
                   </th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {isHi ? 'प्रकार' : 'Type'}
                   </th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {t('admin.devices.status')}
                   </th>
-                  <th className="text-left px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {isHi ? 'अंतिम देखा गया' : 'Last Seen'}
                   </th>
-                  <th className="text-right px-4 py-2 text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">
+                  <th className="text-right px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {t('admin.devices.actions')}
                   </th>
                 </tr>
@@ -217,7 +218,7 @@ export function GpsDevicesPage() {
                     <td className="px-4 py-2.5 font-mono text-[11px] font-bold text-[#1a3a6b]">
                       {device.device_identifier}
                     </td>
-                    <td className="px-4 py-2.5 text-[11px] text-slate-600 font-mono">
+                    <td className="px-4 py-2.5 text-[11px] text-slate-600">
                       <div className="flex items-center gap-1.5">
                         {device.device_type === 'mobile_app' ? <Smartphone className="w-3 h-3" /> : <Cpu className="w-3 h-3" />}
                         {deviceTypeLabels[device.device_type]}
@@ -243,6 +244,49 @@ export function GpsDevicesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col divide-y divide-slate-200">
+            {devices.map((device) => (
+              <div key={device.id} className="p-4 space-y-3 bg-white">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.devices.deviceIdentifier')}</p>
+                    <p className="font-mono text-sm font-bold text-[#1a3a6b] break-all">{device.device_identifier}</p>
+                  </div>
+                  <Badge variant={device.status === 'active' ? 'success' : 'secondary'} className="shrink-0">
+                    {device.status === 'active' ? (isHi ? 'सक्रिय' : 'Active') : (isHi ? 'निष्क्रिय' : 'Inactive')}
+                  </Badge>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{isHi ? 'प्रकार' : 'Type'}</p>
+                    <div className="flex items-center gap-1.5 text-[12px] text-slate-700">
+                      {device.device_type === 'mobile_app' ? <Smartphone className="w-3.5 h-3.5 text-slate-400" /> : <Cpu className="w-3.5 h-3.5 text-slate-400" />}
+                      <span className="truncate">{deviceTypeLabels[device.device_type]}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{isHi ? 'अंतिम देखा गया' : 'Last Seen'}</p>
+                    <div className="text-[11px] text-slate-600 font-mono">
+                      {device.last_seen_at ? format(new Date(device.last_seen_at), 'dd MMM yyyy HH:mm') : (isHi ? 'कभी नहीं' : 'Never')}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex justify-end">
+                  <button
+                    onClick={() => handleDelete(device.id)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors text-[11px] font-bold uppercase tracking-normal"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {isHi ? 'हटाएं' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

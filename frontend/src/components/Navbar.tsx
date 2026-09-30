@@ -15,6 +15,8 @@ export function Navbar() {
   const navLinks = [
     { name: t('nav.home'), href: '/' },
     { name: t('nav.about'), href: '/#about' },
+    { name: t('nav.Notices'), href: '/#Notices' },
+    { name: t('nav.documents'), href: '/#documents' },
     { name: t('nav.complaint'), href: '/#complaint' },
     { name: t('nav.contact'), href: '/#contact' },
   ];
@@ -26,7 +28,7 @@ export function Navbar() {
 
       {/* 2. Official Government Strip */}
       <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2 font-medium">
             <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-ukgreen-900/60 text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">
               <ShieldCheck className="w-3 h-3 text-emerald-400" />
@@ -51,23 +53,25 @@ export function Navbar() {
       <div className="uk-tricolor-line" />
 
       {/* Main Header Brand & Navigation */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
         <div className="flex items-center justify-between h-14 sm:h-20">
           {/* Logo & Identity */}
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-8 h-8 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs shrink-0" />
+          <div className="flex flex-1 justify-start">
+            <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+              <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-16 sm:h-16 object-contain rounded-lg shadow-md shrink-0 bg-white p-0.5" />
             <div className="flex flex-col justify-center">
-              <span className="font-poppins font-bold text-navy-900 text-[15px] sm:text-xl tracking-tight leading-none mb-[2px] sm:mb-0">
+              <span className="font-poppins font-bold text-navy-900 text-[15px] sm:text-xl tracking-tight leading-none mb-[2px] sm:mb-0 whitespace-nowrap">
                 {t('nav.brandName')}
               </span>
-              <span className="text-[8px] sm:text-[11px] font-bold text-ukgreen-800 tracking-wide uppercase leading-[1.1] sm:mt-0.5 max-w-[190px] sm:max-w-none">
+              <span className="text-[8px] sm:text-[11px] font-bold text-ukgreen-800 tracking-wide uppercase leading-[1.1] sm:mt-0.5 max-w-[190px] sm:max-w-none whitespace-nowrap">
                 {t('nav.brandTagline')}
               </span>
             </div>
           </Link>
+          </div>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden xl:flex items-center justify-center gap-1 xl:pl-24 2xl:pl-40">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -80,7 +84,7 @@ export function Navbar() {
           </nav>
 
           {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex flex-1 items-center justify-end gap-3">
             {user && profile ? (
               <Button size="sm" className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center gap-2" asChild>
                 <Link to="/dashboard">

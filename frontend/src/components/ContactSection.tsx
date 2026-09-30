@@ -1,34 +1,23 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Phone, Mail, MapPin, Send, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 export function ContactSection() {
   const { t } = useTranslation();
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    alert(t('contact.form.success'));
-    setForm({ name: '', email: '', message: '' });
-  };
 
   return (
     <section id="contact" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-slate-200 text-navy-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-slate-300">
-            <ShieldCheck className="w-3.5 h-3.5 text-navy-700" />
+        <div className="text-left mb-12 flex flex-col items-start">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-pink-200 text-pink-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-pink-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-pink-900" />
             {t('contact.badge')}
           </div>
           <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
             {t('contact.title')}
           </h2>
-          <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
+          <p className="text-slate-600 max-w-xl text-sm sm:text-base">
             {t('contact.subtitle')}
           </p>
         </div>
@@ -55,7 +44,7 @@ export function ContactSection() {
                 </div>
                 <div>
                   <p className="text-[11px] text-slate-500 font-medium uppercase">{t('contact.emailLabel')}</p>
-                  <p className="font-semibold text-navy-900 text-xs sm:text-sm">safai@zilapanchayat.uk.gov.in</p>
+                  <p className="font-semibold text-navy-900 text-xs sm:text-sm">amazpalmora@gmail.com</p>
                 </div>
               </CardContent>
             </Card>
@@ -73,53 +62,18 @@ export function ContactSection() {
             </Card>
           </div>
 
-          {/* Contact Form */}
-          <Card className="lg:col-span-2 border-slate-200 bg-white shadow-xs rounded-lg">
-            <CardContent className="p-6 sm:p-8">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label htmlFor="contact-name" className="text-xs font-semibold text-navy-900">{t('contact.form.nameLabel')}</Label>
-                    <Input
-                      id="contact-name"
-                      placeholder={t('contact.form.namePlaceholder')}
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="border-slate-300 focus:border-navy-900 text-sm"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="contact-email" className="text-xs font-semibold text-navy-900">{t('contact.form.emailLabel')}</Label>
-                    <Input
-                      id="contact-email"
-                      type="email"
-                      placeholder={t('contact.form.emailPlaceholder')}
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      className="border-slate-300 focus:border-navy-900 text-sm"
-                      required
-                    />
-                  </div>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="contact-message" className="text-xs font-semibold text-navy-900">{t('contact.form.messageLabel')}</Label>
-                  <Textarea
-                    id="contact-message"
-                    placeholder={t('contact.form.messagePlaceholder')}
-                    value={form.message}
-                    onChange={(e) => setForm({ ...form, message: e.target.value })}
-                    className="border-slate-300 focus:border-navy-900 text-sm"
-                    rows={4}
-                    required
-                  />
-                </div>
-                <Button type="submit" size="lg" className="bg-navy-900 hover:bg-navy-800 text-white font-medium shadow-xs">
-                  <Send className="w-4 h-4 mr-2" />
-                  {t('contact.form.submit')}
-                </Button>
-              </form>
-            </CardContent>
+          {/* Map Embed */}
+          <Card className="lg:col-span-2 border-slate-200 bg-white shadow-xs rounded-lg overflow-hidden flex flex-col min-h-[350px]">
+            <iframe
+              src="https://maps.google.com/maps?q=Zila%20Panchayat%20Office,%20Dharanaula,%20Almora,%20Uttarakhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              width="100%"
+              height="100%"
+              style={{ border: 0, flexGrow: 1 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Zila Panchayat Almora Location"
+            ></iframe>
           </Card>
         </div>
       </div>

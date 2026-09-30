@@ -16,8 +16,8 @@ export function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Full-width layout — no grid split */}
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-navy-100 text-navy-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-navy-200">
-            <ShieldCheck className="w-3.5 h-3.5 text-navy-700" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-green-200 text-green-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-green-200">
+            <ShieldCheck className="w-3.5 h-3.5 text-green-900" />
             {t('about.badge')}
           </div>
 

@@ -10,6 +10,7 @@ import { HomePage } from '@/pages/HomePage';
 import { SignUpPage } from '@/pages/SignUpPage';
 import { SignInPage } from '@/pages/SignInPage';
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage';
+import { SecurityPolicyPage } from '@/pages/SecurityPolicyPage';
 
 // Dashboard pages
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
@@ -33,6 +34,7 @@ function App() {
           {/* Public routes */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
+            <Route path="/security-policy" element={<SecurityPolicyPage />} />
           </Route>
 
           {/* Auth routes (no layout) */}

@@ -117,8 +117,22 @@ export function DailyWorkSection() {
   const visibleCards = works.slice(carouselIndex, carouselIndex + cardsPerView);
 
   return (
-    <section className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+    <section id="blogs" className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+
+        {/* Section Heading */}
+        <div className="text-left mb-10 flex flex-col items-start">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-sky-200 text-sky-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-sky-300">
+            <ImageIcon className="w-3.5 h-3.5 text-sky-700" />
+            {t('dailyWork.badge', 'DAILY WORK & ACTIVITIES')}
+          </div>
+          <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
+            {t('dailyWork.title', 'Our Daily Operations & Blogs')}
+          </h2>
+          <p className="text-slate-600 max-w-xl text-left text-sm sm:text-base">
+            {t('dailyWork.subtitle', 'Explore our daily sanitation activities, field work images, and community initiatives updated regularly.')}
+          </p>
+        </div>
 
         {/* Main Content: Carousel + Calendar */}
         <div className="flex flex-col lg:flex-row gap-0 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-slate-200/80 overflow-hidden">

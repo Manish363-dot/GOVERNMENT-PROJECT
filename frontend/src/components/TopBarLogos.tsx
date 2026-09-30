@@ -20,7 +20,7 @@ const DEFAULT_LOGOS: TopBarLogoItem[] = [
   {
     id: 'logo-2',
     title: 'Logo 2 (Left)',
-    file_name: 'logo2.png',
+    file_name: 'logo5.png',
     sort_order: 2,
   },
   {

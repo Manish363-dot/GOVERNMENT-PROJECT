@@ -171,7 +171,7 @@ export function RouteReplayPage() {
                             <PlaySquare className="w-4 h-4" />
                         </div>
                         <div>
-                            <h1 className="font-poppins text-sm sm:text-base font-bold text-white tracking-wide uppercase">
+                            <h1 className="font-poppins text-sm sm:text-base font-bold text-white tracking-normal uppercase">
                                 {t('admin.replay.title')}
                             </h1>
                             <p className="text-[11px] text-slate-300 font-mono">
@@ -179,7 +179,7 @@ export function RouteReplayPage() {
                             </p>
                         </div>
                     </div>
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800 uppercase font-mono">
+                    <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800 uppercase">
                         <ShieldCheck className="w-3.5 h-3.5" />
                         {isHi ? 'सत्यापित जीआईएस ऑडिट' : 'Verified GIS Audit'}
                     </span>
@@ -190,7 +190,7 @@ export function RouteReplayPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-end font-mono">
                         {/* Vehicle Selector */}
                         <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('admin.replay.selectVehicle')} *</Label>
+                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-normal">{t('admin.replay.selectVehicle')} *</Label>
                             {vehiclesLoading ? (
                                 <Skeleton className="h-10 w-full rounded" />
                             ) : (
@@ -210,7 +210,7 @@ export function RouteReplayPage() {
 
                         {/* Date Selector */}
                         <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('admin.replay.selectDate')} *</Label>
+                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-normal">{t('admin.replay.selectDate')} *</Label>
                             <Input
                                 type="date"
                                 value={selectedDate}
@@ -222,7 +222,7 @@ export function RouteReplayPage() {
 
                         {/* Start Time */}
                         <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('admin.replay.startTime')}</Label>
+                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-normal">{t('admin.replay.startTime')}</Label>
                             <Input
                                 type="time"
                                 value={startTime}
@@ -233,7 +233,7 @@ export function RouteReplayPage() {
 
                         {/* End Time */}
                         <div className="space-y-1">
-                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{t('admin.replay.endTime')}</Label>
+                            <Label className="text-xs font-bold text-slate-700 uppercase tracking-normal">{t('admin.replay.endTime')}</Label>
                             <Input
                                 type="time"
                                 value={endTime}
@@ -247,7 +247,7 @@ export function RouteReplayPage() {
                             <button
                                 onClick={handleLoadReplay}
                                 disabled={!selectedVehicleId || loading}
-                                className="w-full h-10 bg-navy-900 hover:bg-navy-800 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-wider rounded transition-colors flex items-center justify-center gap-2 shadow-xs touch-target"
+                                className="w-full h-10 bg-navy-900 hover:bg-navy-800 disabled:opacity-60 text-white text-xs font-bold uppercase tracking-normal rounded transition-colors flex items-center justify-center gap-2 shadow-xs touch-target"
                             >
                                 <Search className="w-4 h-4 text-amber-400" />
                                 {loading ? (isHi ? 'लोड हो रहा है...' : 'Fetching...') : t('admin.replay.loadRoute')}
@@ -262,7 +262,7 @@ export function RouteReplayPage() {
                 <div className="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-xs font-mono text-xs">
                     <Info className="w-5 h-5 text-amber-700 shrink-0" />
                     <div className="flex-1">
-                        <span className="font-bold uppercase tracking-wider text-amber-950 block">
+                        <span className="font-bold uppercase tracking-normal text-amber-950 block">
                             {isHi ? 'सिमुलेशन डेमो परत सक्रिय' : 'Simulation Demo Layer Active'}
                         </span>
                         <span className="text-[11px] text-amber-800">
@@ -291,7 +291,7 @@ export function RouteReplayPage() {
                         <Truck className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-amber-950 uppercase tracking-wide">
+                        <h3 className="text-sm font-bold text-amber-950 uppercase tracking-normal">
                             No Recorded Telemetry Data for {dataset.vehicleNumber}
                         </h3>
                         <p className="text-xs text-amber-900 leading-relaxed">

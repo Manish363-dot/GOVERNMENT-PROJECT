@@ -29,7 +29,7 @@ export function KPICard({ title, subtitle, value, icon: Icon, loading }: KPICard
     <div className="bg-white border border-slate-200 shadow-sm rounded-md hover:border-navy-800 hover:shadow-md transition-all duration-200 overflow-hidden group">
       {/* Card Header - Official Style */}
       <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex items-center justify-between group-hover:bg-navy-50/50 transition-colors">
-        <p className="text-[10px] sm:text-xs font-bold text-navy-900 uppercase tracking-widest font-mono truncate pr-2">{title}</p>
+        <p className="text-[11px] sm:text-[13px] font-bold text-navy-900 uppercase tracking-normal leading-tight line-clamp-2 pr-2">{title}</p>
         <div className="w-7 h-7 rounded-sm bg-navy-100 border border-navy-200 flex items-center justify-center shrink-0 group-hover:bg-navy-800 group-hover:border-navy-900 transition-colors">
           <Icon className="w-3.5 h-3.5 text-navy-800 group-hover:text-white transition-colors" />
         </div>

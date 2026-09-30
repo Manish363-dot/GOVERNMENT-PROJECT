@@ -1,5 +1,5 @@
 import app from './app';
-import { env, getCorsOrigins } from './config/env';
+import { env, isOriginAllowed } from './config/env';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
@@ -8,10 +8,15 @@ const PORT = parseInt(env.PORT, 10);
 const httpServer = createServer(app);
 
 // Socket.io with multi-origin CORS support
-const allowedOrigins = getCorsOrigins();
 export const io = new Server(httpServer, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('CORS origin not allowed'), false);
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
   },

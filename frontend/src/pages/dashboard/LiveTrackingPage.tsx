@@ -20,18 +20,18 @@ import { format } from 'date-fns';
 const TILE_LAYERS = {
   streets: {
     name: 'Gov Standard',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
+    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
   },
   satellite: {
     name: 'Satellite View',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: '&copy; Esri World Imagery',
+    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
   },
   topo: {
     name: 'Terrain View',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenTopoMap',
+    url: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+    attribution: '&copy; Google Maps',
   },
 };
 
@@ -283,28 +283,28 @@ export function LiveTrackingPage() {
         </div>
 
         {/* Telematics Quick Summary Cards */}
-        <div className="flex items-center gap-3 overflow-x-auto pb-1 lg:pb-0">
-          <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+        <div className="grid grid-cols-3 lg:flex lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
+          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
-              <span className="text-sm font-bold text-navy-900 leading-none">{movingCount}</span>
+              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
+              <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{movingCount}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
-              <span className="text-sm font-bold text-navy-900 leading-none">{idleCount}</span>
+              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
+              <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{idleCount}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg px-3 py-1.5 flex items-center gap-2 shadow-xs">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-400" />
+          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+            <div className="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0" />
             <div>
-              <span className="text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
-              <span className="text-sm font-bold text-navy-900 leading-none">{offlineCount}</span>
+              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
+              <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{offlineCount}</span>
             </div>
           </div>
         </div>
@@ -316,26 +316,26 @@ export function LiveTrackingPage() {
           ref={mapContainerRef}
           className={cn(
             "lg:col-span-3 bg-white rounded-xl border border-slate-300 overflow-hidden shadow-md relative flex flex-col transition-all duration-200",
-            isFullscreen ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none border-none" : "h-[460px]"
+            isFullscreen ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none border-none" : "h-[75vh] sm:h-[460px] lg:h-[600px]"
           )}
         >
           {/* Official Top GIS Bar */}
-          <div className="bg-[#081325] text-white px-4 py-2.5 flex items-center justify-between z-20 border-b border-slate-800">
+          <div className="bg-[#081325] text-white px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 z-20 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
-              <span className="font-poppins text-xs font-bold uppercase tracking-wider text-slate-100">
-                Zila Panchayat GIS Telematics Map
+              <Radio className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
+              <span className="font-poppins text-xs font-bold uppercase tracking-normal text-slate-100">
+                {isHi ? 'जिला पंचायत GIS टेलीमैटिक्स मैप' : 'Zila Panchayat GIS Telematics Map'}
               </span>
             </div>
 
             {/* Map Layer Controls & Fullscreen Button */}
-            <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono text-slate-300 hidden sm:inline mr-1">Layer:</span>
+            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 sm:pb-0">
+              <span className="text-[11px] font-mono text-slate-300 hidden md:inline mr-1 shrink-0">Layer:</span>
               {(Object.keys(TILE_LAYERS) as Array<keyof typeof TILE_LAYERS>).map((layerKey) => (
                 <button
                   key={layerKey}
                   onClick={() => setCurrentLayer(layerKey)}
-                  className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-all ${currentLayer === layerKey
+                  className={`px-2 py-1 sm:px-2.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all shrink-0 ${currentLayer === layerKey
                     ? 'bg-emerald-700 text-white shadow-xs'
                     : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700'
                     }`}
@@ -347,16 +347,16 @@ export function LiveTrackingPage() {
               <button
                 onClick={toggleFullscreen}
                 title={isFullscreen ? "Exit Fullscreen Mode" : "Expand to Fullscreen Map"}
-                className="ml-2 px-2.5 py-1 text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 shadow-xs transition-colors"
+                className="ml-auto sm:ml-2 px-2 py-1 sm:px-2.5 text-[10px] sm:text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
               >
                 {isFullscreen ? (
                   <>
-                    <Minimize2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Exit Fullscreen</span>
+                    <Minimize2 className="w-3.5 h-3.5 shrink-0" />
+                    <span className="hidden sm:inline">Exit</span>
                   </>
                 ) : (
                   <>
-                    <Expand className="w-3.5 h-3.5" />
+                    <Expand className="w-3.5 h-3.5 shrink-0" />
                     <span className="hidden sm:inline">Fullscreen</span>
                   </>
                 )}
@@ -376,6 +376,7 @@ export function LiveTrackingPage() {
               touchZoom={false}
               dragging={true}
               doubleClickZoom={true}
+              attributionControl={false}
             >
               <TileLayer
                 attribution={TILE_LAYERS[currentLayer].attribution}

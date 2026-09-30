@@ -79,7 +79,7 @@ export function VehicleHistoryPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <History className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+            <p className="text-[16px] font-bold text-white uppercase tracking-normal">
               {isHi ? 'वाहन रूट इतिहास एवं ऑडिट लॉग' : 'Vehicle Route History & Audit Log'}
             </p>
           </div>
@@ -89,14 +89,14 @@ export function VehicleHistoryPage() {
       {/* ── Filter Panel ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest">
+          <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-normal">
             {isHi ? 'रूट इतिहास खोजें' : 'Search Route History'}
           </p>
         </div>
         <div className="p-4">
           <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end">
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">
+              <Label className="text-[12px] sm:text-[14px] font-bold text-slate-700 uppercase tracking-normal">
                 {isHi ? 'वाहन चुनें' : 'Select Vehicle'}
               </Label>
               {vehiclesLoading ? (
@@ -117,7 +117,7 @@ export function VehicleHistoryPage() {
               )}
             </div>
             <div className="flex-1 space-y-1.5">
-              <Label className="text-xs sm:text-[14px] font-bold text-slate-700 uppercase tracking-wider">
+              <Label className="text-[12px] sm:text-[14px] font-bold text-slate-700 uppercase tracking-normal">
                 {isHi ? 'दिनांक चुनें' : 'Select Date'}
               </Label>
               <Input
@@ -131,7 +131,7 @@ export function VehicleHistoryPage() {
             <button
               onClick={handleViewHistory}
               disabled={!selectedVehicle || !selectedDate || loading}
-              className="flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-xs sm:text-[11px] font-bold uppercase tracking-wider px-5 h-10 sm:h-8 rounded-sm transition-colors whitespace-nowrap w-full sm:w-auto"
+              className="flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-xs sm:text-[11px] font-bold uppercase tracking-normal px-5 h-10 sm:h-8 rounded-sm transition-colors whitespace-nowrap w-full sm:w-auto"
             >
               <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
               {loading ? (isHi ? 'लोड हो रहा है...' : 'Loading...') : (isHi ? 'इतिहास देखें' : 'View History')}
@@ -157,7 +157,7 @@ export function VehicleHistoryPage() {
               <div key={label} className="bg-white border border-slate-300 rounded overflow-hidden">
                 <div className="bg-[#f0f4f9] border-b border-slate-200 px-3 py-1.5 flex items-center gap-1.5">
                   <Icon className="w-3 h-3 text-[#1a3a6b]" />
-                  <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest font-mono">{label}</p>
+                  <p className="text-[11px] font-bold text-slate-600 uppercase tracking-normal">{label}</p>
                 </div>
                 <div className="px-3 py-2.5">
                   <p className="font-mono text-xs sm:text-sm font-bold text-[#0a1628] truncate">{value}</p>
@@ -180,7 +180,7 @@ export function VehicleHistoryPage() {
           ) : (
             <div className="bg-white border border-slate-300 rounded overflow-hidden">
               <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-                <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+                <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-normal">
                   {isHi ? 'रूट मानचित्र' : 'Route Map'} — {selectedVehicleData?.vehicle_number}
                 </p>
                 <div className="flex items-center gap-3 text-[10px] font-mono text-slate-500">
@@ -194,10 +194,11 @@ export function VehicleHistoryPage() {
                   zoom={14}
                   className="h-full w-full"
                   scrollWheelZoom={false}
+                  attributionControl={false}
                 >
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+                    url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                   />
                   <Polyline
                     positions={routeCoords}
@@ -235,7 +236,7 @@ export function VehicleHistoryPage() {
       {!result && !loading && (
         <div className="bg-white border border-slate-300 rounded p-10 text-center">
           <History className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest font-mono">
+          <p className="text-[12px] font-bold text-slate-500 uppercase tracking-normal">
             {isHi ? 'वाहन और दिनांक चुनें' : 'Select a Vehicle and Date'}
           </p>
           <p className="text-[11px] text-slate-400 font-mono mt-1">

@@ -68,7 +68,7 @@ export function DashboardPage() {
       {/* ── Section Label ── */}
       <div className="flex items-center gap-3 pt-2">
         <div className="w-1.5 h-5 bg-navy-800 rounded-full" />
-        <p className="text-xs font-bold text-navy-900 uppercase tracking-widest font-mono">
+        <p className="text-[13px] font-bold text-navy-900 uppercase tracking-normal">
           {t('admin.dashboard.keyMetrics')}
         </p>
         <div className="flex-1 h-px bg-slate-200" />

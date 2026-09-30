@@ -169,10 +169,10 @@ export function RouteReplayMap({
 
             {/* Main Map */}
             <div className="flex-1 w-full h-full relative z-10">
-                <MapContainer center={mapCenter} zoom={14} className="h-full w-full" zoomControl={false}>
+                <MapContainer center={mapCenter} zoom={14} className="h-full w-full" zoomControl={false} attributionControl={false}>
                     <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+                        url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
                     />
 
                     {/* Camera recenter helper */}

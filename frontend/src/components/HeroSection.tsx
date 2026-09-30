@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { BlogGalleryModal } from './BlogGalleryModal';
 
-const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg'];
+const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg','image6.jpeg'];
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://your-bucket-name.s3.amazonaws.com';
 

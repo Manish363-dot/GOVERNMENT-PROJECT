@@ -115,7 +115,7 @@ export function ForgotPasswordPage() {
         {/* Header Section */}
         <div className="flex flex-col items-center justify-center mb-8">
           <div className="bg-white/10 p-3 rounded-2xl shadow-xl mb-4 ring-1 ring-white/20 backdrop-blur-md">
-            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-12 h-12 object-contain filter drop-shadow-md" />
+            <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-12 h-12 object-contain filter drop-shadow-md" />
           </div>
           <h1 className="font-poppins font-bold text-white text-3xl tracking-tight text-center">Zila Panchayat</h1>
           <p className="text-blue-200/70 text-sm mt-1 font-medium tracking-wide uppercase">Command Portal</p>

@@ -5,13 +5,16 @@
       "about": "About",
       "complaint": "Complaint",
       "contact": "Contact",
+      "notices": "Notices & Updates",
+      "Notices": "Notices & Updates",
+      "documents": "Bylaws & Rules",
       "features": "Features",
       "howItWorks": "How It Works",
       "complaints": "Complaints",
       "adminLogin": "Admin Login",
       "adminSignUp": "Admin Sign Up",
       "signIn": "Sign In",
-      "brandName": "Zila Panchayat Safai",
+      "brandName": "Department Of Zila Panchayat Almora",
       "brandTagline": "Smart Waste Collection Tracking System",
       "govBadge": "Government of Uttarakhand",
       "govBadgeHi": "उत्तराखंड शासन",
@@ -245,14 +248,19 @@
         "selectVehicleDate": "Select Vehicle & Date to View History"
       }
     },
+    "dailyWork": {
+      "badge": "DAILY WORK & ACTIVITIES",
+      "title": "Our Daily Operations & Blogs",
+      "subtitle": "Explore our daily sanitation activities, field work images, and community initiatives updated regularly."
+    },
     "contact": {
       "badge": "District Contact & Desk",
       "title": "Contact Administration",
       "subtitle": "Reach out to Zila Panchayat Safai administration for queries or official assistance.",
       "tollFreeLabel": "Toll-Free Helpline",
       "emailLabel": "Official Portal Email",
-      "hqLabel": "Headquarters Office",
-      "hqAddress": "Zila Panchayat Bhavan, District HQ, Uttarakhand",
+      "hqLabel": "Office",
+      "hqAddress": "Dharanaula Zila Panchayat Almora, Uttarakhand - 263601",
       "form": {
         "nameLabel": "Your Name",
         "namePlaceholder": "Enter your full name",

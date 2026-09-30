@@ -189,7 +189,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                     <div className="flex items-center justify-between h-16 sm:h-20">
                         {/* Logo & Identity */}
                         <div className="flex items-center gap-3">
-                            <img src="/assets/app-logo.png" alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs" />
+                            <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-10 h-10 sm:w-11 sm:h-11 object-contain rounded-lg shadow-xs" />
                             <div>
                                 <div className="flex items-center gap-1.5">
                                     <span className="font-poppins font-bold text-navy-900 text-lg sm:text-xl tracking-tight leading-none">

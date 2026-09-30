@@ -134,12 +134,12 @@ export function VehiclesPage() {
           <div className="flex items-center gap-2">
             <Truck className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
-              <p className="text-[16px] font-bold text-white uppercase tracking-wide">{t('admin.vehicles.title')}</p>
+              <p className="text-[16px] font-bold text-white uppercase tracking-normal">{t('admin.vehicles.title')}</p>
             </div>
           </div>
           <button
             onClick={openAddForm}
-            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-sm transition-colors shrink-0"
+            className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-800 text-white text-[11px] font-bold uppercase tracking-normal px-3 py-1.5 rounded-sm transition-colors shrink-0"
           >
             <Plus className="w-3.5 h-3.5" />
             {t('admin.vehicles.addBtn')}
@@ -151,7 +151,7 @@ export function VehiclesPage() {
       {showForm && (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
-            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">
+            <p className="text-[11px] font-bold text-[#0a1628] uppercase tracking-normal">
               {editingVehicle ? t('admin.vehicles.editTitle') : t('admin.vehicles.addTitle')}
             </p>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
@@ -167,7 +167,7 @@ export function VehiclesPage() {
 
           <form onSubmit={handleSubmit} className="p-4 grid sm:grid-cols-3 gap-4">
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">{t('admin.vehicles.form.number')}</Label>
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.number')}</Label>
               <Input
                 placeholder="e.g. UK-01-XX-1234"
                 value={form.vehicle_number}
@@ -177,7 +177,7 @@ export function VehiclesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">{t('admin.vehicles.form.name')}</Label>
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.name')}</Label>
               <Input
                 placeholder="e.g. Ward 5 Truck"
                 value={form.vehicle_name}
@@ -186,7 +186,7 @@ export function VehiclesPage() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">{t('admin.vehicles.form.type')}</Label>
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.type')}</Label>
               <select
                 value={form.vehicle_type}
                 onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })}
@@ -202,7 +202,7 @@ export function VehiclesPage() {
               <button
                 type="submit"
                 disabled={saving}
-                className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
+                className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-normal px-4 py-1.5 rounded-sm transition-colors"
               >
                 <Save className="w-3 h-3" />
                 {saving ? t('admin.vehicles.form.btnSaving') : editingVehicle ? t('admin.vehicles.form.btnUpdate') : t('admin.vehicles.form.btnAdd')}
@@ -210,7 +210,7 @@ export function VehiclesPage() {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="flex items-center gap-1.5 border border-slate-300 text-slate-600 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
+                className="flex items-center gap-1.5 border border-slate-300 text-slate-600 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-normal px-4 py-1.5 rounded-sm transition-colors"
               >
                 {t('admin.vehicles.form.btnCancel')}
               </button>
@@ -227,7 +227,7 @@ export function VehiclesPage() {
               <div className="flex items-center gap-2">
                 <Radio className="w-4 h-4 text-amber-400" />
                 <div>
-                  <p className="text-[11px] font-bold text-white uppercase tracking-wider">{t('admin.vehicles.linkModal.title')}</p>
+                  <p className="text-[11px] font-bold text-white uppercase tracking-normal">{t('admin.vehicles.linkModal.title')}</p>
                   <p className="text-[10px] text-slate-400 font-mono">{linkingVehicle.vehicle_number}</p>
                 </div>
               </div>
@@ -237,7 +237,7 @@ export function VehiclesPage() {
             </div>
             <div className="p-4 space-y-3">
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">{t('admin.vehicles.linkModal.select')}</Label>
+                <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.linkModal.select')}</Label>
                 <select
                   value={selectedDeviceId}
                   onChange={(e) => setSelectedDeviceId(e.target.value)}
@@ -254,7 +254,7 @@ export function VehiclesPage() {
                 <button
                   onClick={handleLinkDevice}
                   disabled={!selectedDeviceId || linking}
-                  className="flex-1 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
+                  className="flex-1 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-normal py-2 rounded-sm transition-colors"
                 >
                   {linking ? t('admin.vehicles.linkModal.btnLinking') : t('admin.vehicles.linkModal.btnLink')}
                 </button>
@@ -291,26 +291,27 @@ export function VehiclesPage() {
       ) : (
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-            <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-bold">
+            <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-normal font-bold">
               {t('admin.vehicles.register')} — {vehicles.length} Record(s)
             </p>
           </div>
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-slate-300 bg-[#f7f9fc]">
-                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.number')}</th>
-                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.name')}</th>
-                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.type')}</th>
-                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.status')}</th>
-                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.date')}</th>
-                  <th className="text-right px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-widest font-mono">{t('admin.vehicles.table.actions')}</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.number')}</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.name')}</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.type')}</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.status')}</th>
+                  <th className="text-left px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.date')}</th>
+                  <th className="text-right px-4 py-2 text-[14px] font-bold text-slate-600 uppercase tracking-normal">{t('admin.vehicles.table.actions')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {vehicles.map((vehicle) => (
                   <tr key={vehicle.id} className="hover:bg-[#f7f9fc] transition-colors">
-                    <td className="px-4 py-2.5 font-bold text-[12px] font-bold text-[#1a3a6b]">{vehicle.vehicle_number}</td>
+                    <td className="px-4 py-2.5 font-bold text-[12px] text-[#1a3a6b]">{vehicle.vehicle_number}</td>
                     <td className="px-4 py-2.5 text-[12px] text-slate-700">{vehicle.vehicle_name || '—'}</td>
                     <td className="px-4 py-2.5 text-[12px] text-slate-600 font-bold">{vehicleTypeLabels[vehicle.vehicle_type]}</td>
                     <td className="px-4 py-2.5">
@@ -323,7 +324,7 @@ export function VehiclesPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => openLinkModal(vehicle)}
-                          className="flex items-center gap-1 text-[10px] font-bold font-mono text-[#1a3a6b] border border-[#1a3a6b]/30 bg-[#1a3a6b]/5 hover:bg-[#1a3a6b] hover:text-white px-2 py-1 rounded-sm transition-colors"
+                          className="flex items-center gap-1 text-[10px] font-bold text-[#1a3a6b] border border-[#1a3a6b]/30 bg-[#1a3a6b]/5 hover:bg-[#1a3a6b] hover:text-white px-2 py-1 rounded-sm transition-colors"
                         >
                           <Radio className="w-3 h-3" />
                           {t('admin.vehicles.table.linkGps')}
@@ -346,6 +347,69 @@ export function VehiclesPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden flex flex-col divide-y divide-slate-200">
+            {vehicles.map((vehicle) => (
+              <div key={vehicle.id} className="p-4 space-y-3 bg-white">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.number')}</p>
+                    <p className="font-bold text-sm text-[#1a3a6b] break-all">{vehicle.vehicle_number}</p>
+                  </div>
+                  <Badge variant={vehicle.status as any} className="shrink-0">
+                    {vehicle.status}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.type')}</p>
+                    <div className="text-[12px] text-slate-700 font-bold">
+                      {vehicleTypeLabels[vehicle.vehicle_type]}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.date')}</p>
+                    <div className="text-[11px] text-slate-600 font-bold">
+                      {format(new Date(vehicle.created_at), 'dd MMM yyyy')}
+                    </div>
+                  </div>
+                </div>
+
+                {vehicle.vehicle_name && (
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.name')}</p>
+                    <p className="text-[12px] text-slate-700">{vehicle.vehicle_name}</p>
+                  </div>
+                )}
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => openLinkModal(vehicle)}
+                    className="flex items-center justify-center flex-1 gap-1.5 text-[10px] font-bold uppercase text-[#1a3a6b] border border-[#1a3a6b]/30 bg-[#1a3a6b]/5 hover:bg-[#1a3a6b] hover:text-white px-2 py-2 rounded transition-colors"
+                  >
+                    <Radio className="w-3 h-3" />
+                    {t('admin.vehicles.table.linkGps')}
+                  </button>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => openEditForm(vehicle)}
+                      className="p-2 text-slate-500 hover:text-[#1a3a6b] hover:bg-[#f0f4f9] rounded transition-colors"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(vehicle.id)}
+                      className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           <div className="bg-[#f0f4f9] border-t border-slate-300 px-4 py-1.5">
             

@@ -116,7 +116,7 @@ export function ComplaintsPage() {
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
           <MessageSquareWarning className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
-            <p className="text-[16px] font-bold text-white uppercase tracking-wide">
+            <p className="text-[16px] font-bold text-white uppercase tracking-normal">
               {t('admin.grievances.title')}
             </p>
           </div>
@@ -130,7 +130,7 @@ export function ComplaintsPage() {
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-colors whitespace-nowrap touch-target flex items-center justify-center ${filter === tab.key
+              className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-normal transition-colors whitespace-nowrap touch-target flex items-center justify-center ${filter === tab.key
                 ? 'bg-[#0a1628] text-white'
                 : 'text-slate-600 hover:bg-[#f0f4f9] hover:text-[#0a1628]'
                 }`}
@@ -158,7 +158,7 @@ export function ComplaintsPage() {
           {/* Complaints list */}
           <div className="lg:col-span-3 bg-white border border-slate-300 rounded overflow-hidden">
             <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
-              <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-widest font-mono">
+              <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-normal">
                 Grievance Register — {complaints.length} Record(s)
               </p>
             </div>
@@ -206,7 +206,7 @@ export function ComplaintsPage() {
                 <div className="bg-[#0a1628] px-4 py-2 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="w-3.5 h-3.5 text-amber-400" />
-                    <p className="text-[14px] font-bold text-white uppercase tracking-wider">Complaint Details</p>
+                    <p className="text-[14px] font-bold text-white uppercase tracking-normal">Complaint Details</p>
                   </div>
                   <button onClick={() => setSelectedComplaint(null)} className="text-slate-400 hover:text-white transition-colors">
                     <X className="w-3.5 h-3.5" />
@@ -238,11 +238,11 @@ export function ComplaintsPage() {
 
                   {/* Type + Description */}
                   <div className="px-4 py-3 bg-[#f7f9fc]">
-                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1">Complaint Type</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-normal mb-1">Complaint Type</p>
                     <p className="text-[11px] font-semibold text-[#0a1628]">{complaintTypeLabels[selectedComplaint.complaint_type]}</p>
                     {selectedComplaint.description && (
                       <>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-1 mt-2">Description</p>
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-normal mb-1 mt-2">Description</p>
                         <p className="text-[11px] text-slate-700">{selectedComplaint.description}</p>
                       </>
                     )}
@@ -250,7 +250,7 @@ export function ComplaintsPage() {
 
                   {/* Update Status */}
                   <div className="px-4 py-3 space-y-2">
-                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-wider font-mono">Update Status</p>
+                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-normal">Update Status</p>
                     <select
                       value={statusForm.status}
                       onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
@@ -270,7 +270,7 @@ export function ComplaintsPage() {
                     <button
                       onClick={handleUpdateStatus}
                       disabled={updating}
-                      className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider py-2 rounded-sm transition-colors"
+                      className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-normal py-2 rounded-sm transition-colors"
                     >
                       <Save className="w-3 h-3" />
                       {updating ? 'Updating...' : 'Update Status'}
@@ -280,7 +280,7 @@ export function ComplaintsPage() {
                   {/* Update history */}
                   {updates.length > 0 && (
                     <div className="px-4 py-3">
-                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider font-mono mb-2">Update History</p>
+                      <p className="text-[10px] font-bold text-slate-500 uppercase tracking-normal mb-2">Update History</p>
                       <div className="space-y-1 max-h-36 overflow-y-auto">
                         {updates.map((update) => (
                           <div key={update.id} className="flex items-center justify-between text-[10px] px-2 py-1.5 bg-[#f0f4f9] border border-slate-200 rounded-sm">
