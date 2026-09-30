@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { AlertCircle, CheckCircle2, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 
 type Step = 'ENTER_EMAIL' | 'VERIFY_OTP' | 'NEW_PASSWORD' | 'SUCCESS';
 
@@ -17,10 +18,10 @@ export function ForgotPasswordPage() {
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   // OTP Countdown
   const [timeLeft, setTimeLeft] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
@@ -109,13 +110,13 @@ export function ForgotPasswordPage() {
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-[20%] right-[20%] w-[30%] h-[30%] bg-emerald-600/10 rounded-full blur-[100px] pointer-events-none" />
-      
+
       <div className="w-full max-w-md relative z-10 px-4 animate-in fade-in zoom-in-95 duration-500">
-        
+
         {/* Header Section */}
         <div className="flex flex-col items-center justify-center mb-8">
           <div className="bg-white/10 p-3 rounded-2xl shadow-xl mb-4 ring-1 ring-white/20 backdrop-blur-md">
-            <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-12 h-12 object-contain filter drop-shadow-md" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-12 h-12 object-contain filter drop-shadow-md" />
           </div>
           <h1 className="font-poppins font-bold text-white text-3xl tracking-tight text-center">Zila Panchayat</h1>
           <p className="text-blue-200/70 text-sm mt-1 font-medium tracking-wide uppercase">Command Portal</p>
@@ -124,7 +125,7 @@ export function ForgotPasswordPage() {
         {/* Main Card */}
         <Card className="shadow-[0_20px_40px_-15px_rgba(0,0,0,0.5)] border-0 rounded-2xl overflow-hidden bg-white/95 backdrop-blur-xl supports-[backdrop-filter]:bg-white/80 transition-all duration-300">
           <div className="h-1.5 w-full bg-gradient-to-r from-[#15803d] via-white to-[#ea580c]" />
-          
+
           <CardHeader className="text-center pb-4 pt-8">
             <CardTitle className="text-2xl font-bold text-slate-800">
               {step === 'ENTER_EMAIL' && 'Forgot Password?'}
@@ -162,9 +163,9 @@ export function ForgotPasswordPage() {
                     className="h-12 bg-slate-50/50 border-slate-200 focus:border-primary focus:ring-primary/20 transition-all rounded-xl px-4"
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]" 
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]"
                   disabled={loading}
                 >
                   {loading ? 'Sending...' : 'Send OTP'}
@@ -192,9 +193,9 @@ export function ForgotPasswordPage() {
                     className="h-14 text-center text-2xl tracking-[0.5em] font-mono bg-slate-50/50 border-slate-200 focus:border-primary focus:ring-primary/20 transition-all rounded-xl"
                   />
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]" 
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]"
                   disabled={loading || otp.length < 6}
                 >
                   {loading ? 'Verifying...' : 'Verify OTP'}
@@ -275,9 +276,9 @@ export function ForgotPasswordPage() {
                   </div>
                 </div>
 
-                <Button 
-                  type="submit" 
-                  className="w-full h-12 mt-6 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]" 
+                <Button
+                  type="submit"
+                  className="w-full h-12 mt-6 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02]"
                   disabled={loading || !isPasswordValid || newPassword !== confirmPassword}
                 >
                   {loading ? 'Resetting...' : 'Reset Password'}
@@ -290,15 +291,15 @@ export function ForgotPasswordPage() {
                 <div className="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2 ring-8 ring-emerald-50/50">
                   <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                 </div>
-                <Button 
-                  className="w-full h-12 text-base font-semibold rounded-xl bg-slate-900 hover:bg-slate-800 transition-all hover:scale-[1.02]" 
+                <Button
+                  className="w-full h-12 text-base font-semibold rounded-xl bg-slate-900 hover:bg-slate-800 transition-all hover:scale-[1.02]"
                   onClick={() => navigate('/signin')}
                 >
                   Go to Login
                 </Button>
               </div>
             )}
-            
+
           </CardContent>
         </Card>
       </div>

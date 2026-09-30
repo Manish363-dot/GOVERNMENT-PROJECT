@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Truck, Eye, EyeOff, AlertCircle, ShieldCheck, LockKeyhole, Building2, ArrowLeft } from 'lucide-react';
-import { TopBarLogos } from '@/components/TopBarLogos';
+import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { GoogleLogin } from '@react-oauth/google';
 
 export function SignInPage() {
@@ -72,8 +72,8 @@ export function SignInPage() {
             <div className="absolute inset-0 bg-navy-900/40 pointer-events-none z-0"></div>
 
             <div className="relative z-10">
-              <div className="w-24 h-24 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
-                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-6 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
+                <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold font-poppins leading-tight mb-2">
                 Department Of Zila Panchayat Almora
@@ -94,8 +94,8 @@ export function SignInPage() {
             </Link>
 
             <div className="lg:hidden flex items-center gap-3 mb-8 pb-6 border-b border-slate-200">
-              <div className="w-16 h-16 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
-                <img src={`${import.meta.env.VITE_AWS_S3_BUCKET_URL || ''}/portal-logos/logo2.png`} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
+              <div className="w-10 h-10 bg-navy-900 rounded-lg flex items-center justify-center shadow-md overflow-hidden p-1">
+                <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
                 <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">Zila Panchayat</h1>

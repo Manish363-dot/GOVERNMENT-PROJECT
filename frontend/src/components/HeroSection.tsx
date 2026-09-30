@@ -7,7 +7,7 @@ import { BlogGalleryModal } from './BlogGalleryModal';
 
 const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg','image6.jpeg'];
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://your-bucket-name.s3.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
 
 const HERO_IMAGES = BG_IMAGE_NAMES.map(
   (filename) => `${S3_BUCKET}/portal-logos/${filename}`
