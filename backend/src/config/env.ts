@@ -12,7 +12,7 @@ const envSchema = z.object({
   WEBHOOK_API_KEY: z.string().min(1, 'WEBHOOK_API_KEY is required'),
   TRACCAR_BASE_URL: z.string().optional(),
   TRACCAR_API_TOKEN: z.string().optional(),
-  CORS_ORIGIN: z.string().default('http://localhost:5175'),
+  FRONTEND_URL: z.string().default('http://localhost:5175'),
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
 });
 
@@ -27,12 +27,12 @@ if (!parsed.success) {
 export const env = parsed.data;
 
 /**
- * Parse CORS_ORIGIN into an array of allowed origins.
+ * Parse FRONTEND_URL into an array of allowed origins.
  * Supports comma-separated values in the env var.
  * Strips trailing slashes to prevent mismatches.
  */
 export function getCorsOrigins(): string[] {
-  return env.CORS_ORIGIN.split(',')
+  return env.FRONTEND_URL.split(',')
     .map((o) => o.trim().replace(/\/+$/, ''))
     .filter(Boolean);
 }
@@ -42,7 +42,7 @@ export function getCorsOrigins(): string[] {
  * 
  * Security Guarantees:
  * 1. Requests with no origin (mobile apps, server-to-server, curl) -> Allowed
- * 2. Explicitly configured origins in CORS_ORIGIN (e.g. deployed domain) -> Allowed
+ * 2. Explicitly configured origins in FRONTEND_URL (e.g. deployed domain) -> Allowed
  * 3. Localhost & 127.0.0.1 on any port (for local dev/testing) -> Allowed
  * 4. Any external/unauthorized website (e.g. evil.com) -> Blocked
  */

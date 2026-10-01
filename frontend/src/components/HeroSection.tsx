@@ -15,6 +15,9 @@ const HERO_IMAGES = BG_IMAGE_NAMES.map(
 
 // Dignitary photo image5.jpg from 'portal-logos' bucket
 const DIGNITARY_IMAGE_URL = `${S3_BUCKET}/portal-logos/image5.jpg`;
+const CM_IMAGE_URL = `${S3_BUCKET}/portal-logos/CM.jpg`;
+const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.jpg`;
+const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
 
 export function HeroSection() {
   const { t } = useTranslation();
@@ -110,9 +113,10 @@ export function HeroSection() {
             ))}
           </div>
 
-          {/* Dignitary Quote Card Banner: Stacked on mobile, overlapped on sm+ */}
-          <div className="mt-6 sm:mt-10 w-full max-w-4xl mx-auto px-1 sm:px-4 sm:translate-y-1/2 relative z-30 mb-6 sm:mb-0">
-            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[110px]">
+          {/* Dignitary Quote Card Banner & Additional Sections */}
+          <div className="mt-6 sm:mt-10 w-full max-w-7xl mx-auto px-2 sm:px-6 relative z-30 translate-y-[15%] sm:translate-y-[1%] -mb-4 sm:-mb-20">
+            {/* Main PM Card */}
+            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[110px] mb-4">
               {/* Dignitary Photo */}
               <div className="sm:absolute -top-8 sm:top-1/2 sm:-translate-y-1/2 sm:-left-8 md:-left-10 w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-100 shrink-0 select-none mx-auto sm:mx-0">
                 {!img5Error ? (
@@ -151,6 +155,43 @@ export function HeroSection() {
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* 4 Additional Sections */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+              {[
+                {
+                  id: 1,
+                  name: "Shri Pushkar Singh Dhami",
+                  designation: "Chief Minister, Uttarakhand",
+                  image: CM_IMAGE_URL,
+                  quote: "स्वच्छ उत्तराखण्ड, स्वस्थ उत्तराखण्ड"
+                },
+                { id: 2, name: "Madan Kaushik", designation: "Minister for Disaster Management and Rehabilitation of Uttarakhand", image: MK_IMAGE_URL, quote: "" },
+                { id: 3, name: "Hema Gaira", designation: "Chairman Zila Panchayat Almora", image: CH_IMAGE_URL, quote: "" },
+                { id: 4, name: "Rajesh Kumar", designation: "Apar Mukhya Adhikari (AMA)", image: null, quote: "" }
+              ].map((official) => (
+                <div key={official.id} className="bg-white rounded-2xl shadow-xl border border-slate-200 p-3 sm:py-4 sm:px-5 flex flex-col items-center text-center transition-all hover:-translate-y-2 hover:shadow-2xl duration-300">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-slate-200 overflow-hidden bg-slate-50 mb-2 sm:mb-3 shadow-md">
+                    {official.image ? (
+                      <img src={official.image} alt={official.name} className="w-full h-full object-cover object-top" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] sm:text-xs font-medium">Image {official.id}</div>
+                    )}
+                  </div>
+                  <h4 className="text-sm sm:text-base font-bold text-slate-800 leading-tight">{official.name}</h4>
+                  <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-semibold">{official.designation}</p>
+                  
+                  {/* Optional Quote Space */}
+                  {official.quote ? (
+                    <p className="text-[10px] sm:text-[11px] text-slate-600 mt-2 sm:mt-3 italic border-t border-red-500 pt-2 w-full font-medium leading-tight">
+                      "{official.quote}"
+                    </p>
+                  ) : (
+                    <div className="mt-2 sm:mt-3 pt-2 w-full border-t border-red-500 min-h-[20px]"></div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 

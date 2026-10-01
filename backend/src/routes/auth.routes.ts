@@ -1,46 +1,19 @@
 import { Router } from 'express';
-import { z } from 'zod';
 import * as authController from '../controllers/auth.controller';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, requireAdmin } from '../middleware/auth';
 import { validate } from '../middleware/validate';
+import {
+  loginSchema,
+  signupSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
+  updateProfileSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  googleLoginSchema,
+} from '../schemas/auth.schema';
 
 const router = Router();
-
-// Validation schemas
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
-
-const signupSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  passkey: z.string().min(1, 'Admin passkey is required'),
-});
-
-const verifyOtpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  otp: z.string().min(4, 'Verification code is required'),
-});
-
-const resendOtpSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-const updateProfileSchema = z.object({
-  full_name: z.string().min(2, 'Name must be at least 2 characters'),
-});
-
-const forgotPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-});
-
-const resetPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  resetToken: z.string().min(1, 'Reset token is required'),
-  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
-});
 
 // Public: Admin login and signup
 router.post('/login', validate(loginSchema), authController.login);
@@ -54,10 +27,13 @@ router.post('/verify-reset-otp', validate(verifyOtpSchema), authController.verif
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 
 // Authenticated: Profile operations
-router.get('/profile', authMiddleware, authController.getProfile);
-router.put('/profile', authMiddleware, validate(updateProfileSchema), authController.updateProfile);
+router.get('/profile', authMiddleware, requireAdmin, authController.getProfile);
+router.put('/profile', authMiddleware, requireAdmin, validate(updateProfileSchema), authController.updateProfile);
 
 // Public: Finish Google OAuth signup / login
-router.post('/google-login', authController.googleLogin);
+router.post('/google-login', validate(googleLoginSchema), authController.googleLogin);
+
+// Public: Logout
+router.post('/logout', authController.logout);
 
 export default router;

@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import * as historyController from '../controllers/history.controller';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, requireAdmin } from '../middleware/auth';
+import { validate } from '../middleware/validate';
+import { getHistorySchema } from '../schemas/history.schema';
 
 const router = Router();
 
 // All history routes require authentication
-router.use(authMiddleware);
+router.use(authMiddleware, requireAdmin);
 
-router.get('/', historyController.getHistory);
+router.get('/', validate(getHistorySchema), historyController.getHistory);
 
 export default router;

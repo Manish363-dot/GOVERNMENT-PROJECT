@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { KeyRound, ShieldCheck, EyeOff, Eye, AlertCircle, Loader2 } from 'lucide-react';
+import { KeyRound, ShieldCheck, EyeOff, Eye, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export function GooglePasskeyModal() {
@@ -20,7 +20,7 @@ export function GooglePasskeyModal() {
   const handleCancel = async () => {
     sessionStorage.removeItem('oauth_in_progress');
     await signOut();
-    navigate('/');
+    navigate('/signup');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -63,7 +63,7 @@ export function GooglePasskeyModal() {
         {/* Content */}
         <div className="p-6 sm:p-8">
           <p className="text-sm text-slate-600 mb-6">
-            You successfully authenticated with Google. Because this administrative portal is restricted to authorized Zila Panchayat staff, please enter your assigned <strong>Admin Passkey</strong> (e.g. <code className="bg-slate-100 px-1 py-0.5 rounded font-mono font-bold text-navy-900">ADMIN1234</code>) to activate your account.
+            You successfully authenticated with Google. Because this administrative portal is restricted to authorized Zila Panchayat staff, please enter your assigned <strong>Admin Passkey</strong> to activate your account.
           </p>
 
           {error && (
@@ -83,7 +83,7 @@ export function GooglePasskeyModal() {
                 <Input
                   id="google-passkey"
                   type={showPasskey ? 'text' : 'password'}
-                  placeholder="Enter passkey (ADMIN1234)"
+                  placeholder="Enter your secure admin passkey"
                   value={passkey}
                   onChange={(e) => setPasskey(e.target.value)}
                   className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-12 pr-10 text-lg tracking-wide"
@@ -120,20 +120,13 @@ export function GooglePasskeyModal() {
                 type="button"
                 onClick={handleCancel}
                 disabled={loading}
-                className="w-full py-2 text-xs font-semibold text-slate-500 hover:text-red-600 hover:underline transition-colors text-center"
+                className="w-full py-2 flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-navy-900 hover:underline transition-colors"
               >
-                Cancel &amp; Sign Out
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Sign Up
               </button>
             </div>
           </form>
-        </div>
-        
-        {/* Footer */}
-        <div className="bg-slate-50 px-6 py-4 border-t border-slate-100">
-          <p className="text-xs text-slate-500 text-center flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-ukgreen-600" />
-            256-Bit Encrypted Secure Gateway
-          </p>
         </div>
       </div>
     </div>

@@ -15,12 +15,13 @@ export async function authMiddleware(
   try {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      res.status(401).json({ error: 'Missing or invalid authorization header' });
+    // Prefer cookie over Authorization header
+    const token = req.cookies?.access_token || (authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+
+    if (!token) {
+      res.status(401).json({ error: 'Missing or invalid authentication token' });
       return;
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
       const decoded = jwt.verify(token, env.JWT_SECRET) as any;
@@ -43,9 +44,12 @@ export async function authMiddleware(
 export function requireRole(...roles: string[]) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
     if (!req.userRole || !roles.includes(req.userRole)) {
-      res.status(403).json({ error: 'Insufficient permissions. Admin access required.' });
+      res.status(403).json({ error: `Insufficient permissions. Required role: ${roles.join(' or ')}.` });
       return;
     }
     next();
   };
 }
+
+export const requireAdmin = requireRole('admin', 'super_admin');
+export const requireSuperAdmin = requireRole('super_admin');

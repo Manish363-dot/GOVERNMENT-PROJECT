@@ -2,6 +2,15 @@ import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../types';
 import * as authService from '../services/auth.service';
 
+const setAuthCookie = (res: Response, token: string) => {
+  res.cookie('access_token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+  });
+};
+
 /**
  * POST /api/auth/login
  * Public — logs in an admin and returns a JWT token.
@@ -14,7 +23,9 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
     const result = await authService.login(email, password);
-    res.status(200).json(result);
+    setAuthCookie(res, result.token);
+    // Send profile data without the token in the body (or keep token for backwards compatibility but rely on cookie)
+    res.status(200).json({ profile: result.profile });
   } catch (err: any) {
     console.error('Login Error:', err);
     if (err.message === 'INVALID_CREDENTIALS') {
@@ -188,7 +199,8 @@ export async function googleLogin(req: Request, res: Response): Promise<void> {
     }
 
     const result = await authService.googleLogin(idToken, passkey);
-    res.status(200).json(result);
+    setAuthCookie(res, result.token);
+    res.status(200).json({ profile: result.profile });
   } catch (err: any) {
     console.error('Google Login Error:', err);
     if (err.message === 'PASSKEY_REQUIRED') {
@@ -285,4 +297,13 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
     }
     res.status(500).json({ error: 'Failed to reset password: ' + err.message });
   }
+}
+
+/**
+ * POST /api/auth/logout
+ * Public — clears the auth cookie
+ */
+export async function logout(req: Request, res: Response): Promise<void> {
+  res.clearCookie('access_token');
+  res.status(200).json({ message: 'Logged out successfully' });
 }

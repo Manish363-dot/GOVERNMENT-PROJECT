@@ -1,7 +1,9 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import * as trackingController from '../controllers/tracking.controller';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, requireAdmin } from '../middleware/auth';
 import { env } from '../config/env';
+import { validate } from '../middleware/validate';
+import { vehicleIdParamSchema } from '../schemas/tracking.schema';
 
 const router = Router();
 
@@ -26,8 +28,8 @@ router.post('/webhook', webhookApiKeyAuth, trackingController.receiveWebhook);
 router.get('/webhook', webhookApiKeyAuth, trackingController.receiveWebhook);
 
 // Authenticated: Live tracking data
-router.get('/live', authMiddleware, trackingController.getLive);
-router.get('/live/:vehicleId', authMiddleware, trackingController.getVehicleLive);
-router.get('/stats', authMiddleware, trackingController.getStats);
+router.get('/live', authMiddleware, requireAdmin, trackingController.getLive);
+router.get('/live/:vehicleId', authMiddleware, requireAdmin, validate(vehicleIdParamSchema), trackingController.getVehicleLive);
+router.get('/stats', authMiddleware, requireAdmin, trackingController.getStats);
 
 export default router;

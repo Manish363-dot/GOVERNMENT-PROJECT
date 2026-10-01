@@ -319,41 +319,6 @@ export function SignUpPage() {
                   </button>
                 </div>
               </div>
-            ) : isNewGoogleUser ? (
-              <div className="space-y-4">
-                <div className="mb-4">
-                  <h3 className="text-lg font-bold text-navy-900">Admin Passkey Required</h3>
-                  <p className="text-sm text-slate-500">Since this is a new Google account, please provide the admin passkey to complete registration.</p>
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="google-passkey" className="font-semibold text-slate-700">Admin Passkey</Label>
-                  <Input
-                    id="google-passkey"
-                    type="password"
-                    placeholder="Enter passkey"
-                    value={googlePasskey}
-                    onChange={(e) => setGooglePasskey(e.target.value)}
-                    className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11"
-                  />
-                </div>
-                <Button
-                  onClick={async () => {
-                    try {
-                      setLoading(true);
-                      await completeGoogleSignup(googlePasskey);
-                      navigate('/dashboard');
-                    } catch (err: any) {
-                      setError(err.message || 'Passkey verification failed');
-                    } finally {
-                      setLoading(false);
-                    }
-                  }}
-                  className="w-full bg-navy-900 hover:bg-navy-800 text-white h-12 text-sm font-bold uppercase transition-all shadow-md mt-2"
-                  disabled={loading || !googlePasskey}
-                >
-                  {loading ? 'Verifying...' : 'Complete Sign Up'}
-                </Button>
-              </div>
             ) : (
               /* ── STEP 1: REGISTRATION FORM ── */
               <div>
@@ -380,10 +345,8 @@ export function SignUpPage() {
                   <GoogleLogin
                     onSuccess={(credentialResponse) => {
                       if (credentialResponse.credential) {
-                        handleGoogleSuccess(credentialResponse.credential).catch(err => {
-                          if (err.message && !err.message.includes('passkey')) {
-                            setError(err.message);
-                          }
+                        handleGoogleSuccess(credentialResponse.credential, true).catch(err => {
+                          setError(err.message);
                         });
                       }
                     }}

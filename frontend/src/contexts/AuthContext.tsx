@@ -5,7 +5,6 @@ import { api } from '@/services/api';
 interface AuthContextType {
   user: Profile | null;
   profile: Profile | null;
-  session: { access_token: string } | null;
   loading: boolean;
   isNewGoogleUser: boolean;
   signIn: (email: string, password: string) => Promise<void>;
@@ -15,26 +14,19 @@ interface AuthContextType {
   completeGoogleSignup: (passkey: string) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  handleGoogleSuccess: (credential: string) => Promise<void>;
+  handleGoogleSuccess: (credential: string, isSignUp?: boolean) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [session, setSession] = useState<{ access_token: string } | null>(null);
   const [loading, setLoading] = useState(true);
   const [isNewGoogleUser, setIsNewGoogleUser] = useState(false);
   const [pendingGoogleToken, setPendingGoogleToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-      setSession({ access_token: token });
-      fetchProfile();
-    } else {
-      setLoading(false);
-    }
+    fetchProfile();
   }, []);
 
   let activeFetchPromise: Promise<void> | null = null;
@@ -52,9 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setIsNewGoogleUser(true);
         } else {
           console.error('Failed to fetch profile:', err);
-          // Invalid token, logout
-          localStorage.removeItem('access_token');
-          setSession(null);
+          // Invalid or missing token, clear profile
           setProfile(null);
         }
       } finally {
@@ -67,9 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function signIn(email: string, password: string) {
-    const { token, profile: newProfile } = await api.post<{ token: string; profile: Profile }>('/auth/login', { email, password });
-    localStorage.setItem('access_token', token);
-    setSession({ access_token: token });
+    const { profile: newProfile } = await api.post<{ profile: Profile }>('/auth/login', { email, password });
     setProfile(newProfile);
   }
 
@@ -91,18 +79,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function completeGoogleSignup(passkey: string) {
     if (!pendingGoogleToken) throw new Error("No pending google token");
-    const { token, profile: newProfile } = await api.post<{ token: string, profile: Profile }>('/auth/google-login', { idToken: pendingGoogleToken, passkey });
-    localStorage.setItem('access_token', token);
-    setSession({ access_token: token });
+    const { profile: newProfile } = await api.post<{ profile: Profile }>('/auth/google-login', { idToken: pendingGoogleToken, passkey });
     setProfile(newProfile);
     setIsNewGoogleUser(false);
     setPendingGoogleToken(null);
   }
 
   async function signOut() {
-    localStorage.removeItem('access_token');
+    await api.post('/auth/logout', {});
     setProfile(null);
-    setSession(null);
+    setIsNewGoogleUser(false);
+    setPendingGoogleToken(null);
   }
 
   async function resetPassword(email: string) {
@@ -110,17 +97,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (result && result.message) return;
   }
 
-  // A helper method to be called from the <GoogleLogin> component in SignInPage
-  const handleGoogleSuccess = async (credential: string) => {
+  const handleGoogleSuccess = async (credential: string, isSignUp: boolean = false) => {
     try {
-      const { token, profile: newProfile } = await api.post<{ token: string, profile: Profile }>('/auth/google-login', { idToken: credential });
-      localStorage.setItem('access_token', token);
-      setSession({ access_token: token });
+      const { profile: newProfile } = await api.post<{ profile: Profile }>('/auth/google-login', { idToken: credential });
       setProfile(newProfile);
     } catch (err: any) {
       if (err.message === 'New users must provide an admin passkey' || err.message?.includes('passkey')) {
-        setPendingGoogleToken(credential);
-        setIsNewGoogleUser(true);
+        if (isSignUp) {
+          setPendingGoogleToken(credential);
+          setIsNewGoogleUser(true);
+        } else {
+          throw new Error('Account not found. Only registered emails are allowed to login.');
+        }
       } else {
         throw err;
       }
@@ -132,7 +120,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user: profile,
         profile,
-        session,
         loading,
         isNewGoogleUser,
         signIn,
