@@ -96,6 +96,25 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
         return () => clearInterval(timer);
     }, [isOpen, mediaList]);
 
+    const nextImage = useCallback(() => {
+        setCurrentIndex((prev) => (prev + 1) % Math.max(1, mediaList.length));
+    }, [mediaList.length]);
+
+    const prevImage = useCallback(() => {
+        setCurrentIndex((prev) => (prev - 1 + mediaList.length) % Math.max(1, mediaList.length));
+    }, [mediaList.length]);
+
+    // Handle clicking a grid item
+    const handleGridItemClick = useCallback((src: string) => {
+        const carouselIdx = mediaList.indexOf(src);
+        if (carouselIdx !== -1) {
+            setCurrentIndex(carouselIdx);
+        }
+        if (scrollAreaRef.current) {
+            scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }, [mediaList]);
+
     // 3. Keyboard navigation & Body scroll lock
     useEffect(() => {
         if (!isOpen) return;
@@ -114,17 +133,9 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
             document.body.style.overflow = 'unset';
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, nextImage, prevImage]);
 
     if (!isOpen) return null;
-
-    const nextImage = useCallback(() => {
-        setCurrentIndex((prev) => (prev + 1) % mediaList.length);
-    }, [mediaList.length]);
-
-    const prevImage = useCallback(() => {
-        setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
-    }, [mediaList.length]);
 
     // Touch Swipe Handlers for mobile smoothness
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -138,19 +149,8 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
         else if (diff < -40) prevImage();
     };
 
-    const prevIndex = (currentIndex - 1 + mediaList.length) % mediaList.length;
-    const nextIndex = (currentIndex + 1) % mediaList.length;
-
-    // Handle clicking a grid item
-    const handleGridItemClick = useCallback((src: string) => {
-        const carouselIdx = mediaList.indexOf(src);
-        if (carouselIdx !== -1) {
-            setCurrentIndex(carouselIdx);
-        }
-        if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [mediaList]);
+    const prevIndex = (currentIndex - 1 + mediaList.length) % Math.max(1, mediaList.length);
+    const nextIndex = (currentIndex + 1) % Math.max(1, mediaList.length);
 
     return (
         <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
