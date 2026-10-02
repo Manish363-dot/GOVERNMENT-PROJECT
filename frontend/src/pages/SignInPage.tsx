@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Truck, Eye, EyeOff, AlertCircle, ShieldCheck, LockKeyhole, Building2, ArrowLeft } from 'lucide-react';
+import { Eye, EyeOff, AlertCircle, LockKeyhole, ArrowLeft } from 'lucide-react';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { GoogleLogin } from '@react-oauth/google';
 
@@ -16,8 +16,6 @@ export function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [googlePasskey, setGooglePasskey] = useState('');
-  const { completeGoogleSignup } = useAuth();
 
   // Redirect to dashboard if already logged in and not waiting for passkey
   useEffect(() => {

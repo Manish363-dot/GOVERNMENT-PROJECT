@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { 
   format, 
   startOfMonth, 
@@ -13,7 +13,7 @@ import {
   parseISO,
   getDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, ArrowRight, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -27,9 +27,10 @@ interface DailyWork {
   description: string | null;
 }
 
-export function DailyWorkSection() {
+export const DailyWorkSection = React.memo(() => {
   const { t } = useTranslation();
   const [works, setWorks] = useState<DailyWork[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedWork, setSelectedWork] = useState<DailyWork | null>(null);
@@ -39,23 +40,8 @@ export function DailyWorkSection() {
   const cardsPerView = 2;
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    fetchWorks();
-  }, []);
-
-  // Auto-play carousel
-  useEffect(() => {
-    if (works.length <= cardsPerView) return;
-    autoPlayRef.current = setInterval(() => {
-      setCarouselIndex(prev => {
-        const maxIndex = Math.max(0, works.length - cardsPerView);
-        return prev >= maxIndex ? 0 : prev + 1;
-      });
-    }, 4000);
-    return () => { if (autoPlayRef.current) clearInterval(autoPlayRef.current); };
-  }, [works]);
-
-  const fetchWorks = async () => {
+  const fetchWorks = useCallback(async () => {
+    setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/media/daily-work`);
       if (res.ok) {
@@ -72,10 +58,28 @@ export function DailyWorkSection() {
       }
     } catch (e) {
       console.error('Failed to fetch daily works', e);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, []);
 
-  const handleDateClick = (date: Date) => {
+  useEffect(() => {
+    fetchWorks();
+  }, [fetchWorks]);
+
+  // Auto-play carousel
+  useEffect(() => {
+    if (works.length <= cardsPerView) return;
+    autoPlayRef.current = setInterval(() => {
+      setCarouselIndex(prev => {
+        const maxIndex = Math.max(0, works.length - cardsPerView);
+        return prev >= maxIndex ? 0 : prev + 1;
+      });
+    }, 4000);
+    return () => { if (autoPlayRef.current) clearInterval(autoPlayRef.current); };
+  }, [works.length]);
+
+  const handleDateClick = useCallback((date: Date) => {
     setSelectedDate(date);
     const work = works.find(w => isSameDay(parseISO(w.date), date));
     if (work) {
@@ -84,37 +88,43 @@ export function DailyWorkSection() {
       const workIdx = works.indexOf(work);
       setCarouselIndex(Math.min(workIdx, Math.max(0, works.length - cardsPerView)));
     }
-  };
+  }, [works]);
 
-  const handleCardClick = (work: DailyWork) => {
+  const handleCardClick = useCallback((work: DailyWork) => {
     setSelectedWork(work);
     setSelectedDate(parseISO(work.date));
     setCurrentMonth(parseISO(work.date));
-  };
+  }, []);
 
-  const prevSlide = () => {
+  const prevSlide = useCallback(() => {
     setCarouselIndex(prev => Math.max(0, prev - 1));
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-  };
+  }, []);
 
-  const nextSlide = () => {
+  const nextSlide = useCallback(() => {
     const maxIndex = Math.max(0, works.length - cardsPerView);
     setCarouselIndex(prev => Math.min(maxIndex, prev + 1));
     if (autoPlayRef.current) clearInterval(autoPlayRef.current);
-  };
+  }, [works.length]);
 
-  const prevMonth = () => setCurrentMonth(subMonths(currentMonth, 1));
-  const nextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
+  const prevMonth = useCallback(() => setCurrentMonth(prev => subMonths(prev, 1)), []);
+  const nextMonth = useCallback(() => setCurrentMonth(prev => addMonths(prev, 1)), []);
 
   // Calendar
-  const monthStart = startOfMonth(currentMonth);
-  const monthEnd = endOfMonth(monthStart);
-  const calStart = startOfWeek(monthStart);
-  const calEnd = endOfWeek(monthEnd);
-  const days = eachDayOfInterval({ start: calStart, end: calEnd });
-  const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+  const { monthStart, days } = useMemo(() => {
+    const start = startOfMonth(currentMonth);
+    const end = endOfMonth(start);
+    const calStart = startOfWeek(start);
+    const calEnd = endOfWeek(end);
+    return {
+      monthStart: start,
+      days: eachDayOfInterval({ start: calStart, end: calEnd })
+    };
+  }, [currentMonth]);
 
-  const visibleCards = works.slice(carouselIndex, carouselIndex + cardsPerView);
+  const weekDays = useMemo(() => ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'], []);
+
+  const visibleCards = useMemo(() => works.slice(carouselIndex, carouselIndex + cardsPerView), [works, carouselIndex]);
 
   return (
     <section id="blogs" className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
@@ -140,7 +150,17 @@ export function DailyWorkSection() {
           {/* LEFT: Card Carousel */}
           <div className="w-full lg:w-[60%] p-5 sm:p-6 flex flex-col">
 
-            {works.length > 0 ? (
+            {isLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-[320px]">
+                {[1, 2].map((idx) => (
+                  <div key={idx} className="animate-pulse bg-slate-100 rounded-2xl w-full h-80 flex flex-col justify-end p-5 sm:p-6 border border-slate-200">
+                    <div className="h-4 w-28 bg-slate-200/80 rounded mb-3"></div>
+                    <div className="h-6 w-3/4 bg-slate-200/80 rounded mb-2"></div>
+                    <div className="h-6 w-1/2 bg-slate-200/80 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : works.length > 0 ? (
               <>
                 {/* Cards Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1 min-h-[320px]">
@@ -213,10 +233,6 @@ export function DailyWorkSection() {
                           <h3 className="text-base sm:text-lg font-bold text-white leading-snug line-clamp-2 drop-shadow-lg group-hover/card:text-amber-50 transition-colors duration-300">
                             {work.description || 'Daily work update details'}
                           </h3>
-                          <div className="flex items-center gap-1.5 text-blue-300 text-xs font-bold mt-3 opacity-0 translate-y-2 group-hover/card:opacity-100 group-hover/card:translate-y-0 transition-all duration-300">
-                            <span>{work.type === 'document' ? 'Open Document' : 'View Details'}</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </div>
                         </div>
                       </div>
                     );
@@ -369,4 +385,4 @@ export function DailyWorkSection() {
       </div>
     </section>
   );
-}
+});

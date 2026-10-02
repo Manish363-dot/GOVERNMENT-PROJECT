@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText, FileSpreadsheet, FileArchive, Headphones } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -22,7 +22,7 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
-export function MediaDailyWorkPage() {
+export const MediaDailyWorkPage = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -433,4 +433,4 @@ export function MediaDailyWorkPage() {
       )}
     </div>
   );
-}
+});

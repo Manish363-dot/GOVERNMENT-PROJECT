@@ -1,10 +1,26 @@
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, Mail, MapPin, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function ContactSection() {
+export const ContactSection = React.memo(() => {
   const { t } = useTranslation();
+  const [showMap, setShowMap] = React.useState(false);
+  const mapRef = React.useRef<HTMLDivElement>(null);
 
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setShowMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    if (mapRef.current) observer.observe(mapRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section id="contact" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
@@ -63,20 +79,31 @@ export function ContactSection() {
           </div>
 
           {/* Map Embed */}
-          <Card className="lg:col-span-2 border-slate-200 bg-white shadow-xs rounded-lg overflow-hidden flex flex-col min-h-[350px]">
-            <iframe
-              src="https://maps.google.com/maps?q=Zila%20Panchayat%20Office,%20Dharanaula,%20Almora,%20Uttarakhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
-              width="100%"
-              height="100%"
-              style={{ border: 0, flexGrow: 1 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Zila Panchayat Almora Location"
-            ></iframe>
+          <Card 
+            ref={mapRef}
+            className="lg:col-span-2 border-slate-200 bg-white shadow-xs rounded-lg overflow-hidden flex flex-col min-h-[350px] relative bg-slate-100"
+          >
+            {!showMap && (
+              <div className="absolute inset-0 flex items-center justify-center flex-col text-slate-400 gap-2">
+                <MapPin className="w-8 h-8 animate-bounce" />
+                <span className="text-sm font-semibold">Loading Map...</span>
+              </div>
+            )}
+            {showMap && (
+              <iframe
+                src="https://maps.google.com/maps?q=Zila%20Panchayat%20Office,%20Dharanaula,%20Almora,%20Uttarakhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0, flexGrow: 1, minHeight: '350px' }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Zila Panchayat Almora Location"
+              ></iframe>
+            )}
           </Card>
         </div>
       </div>
     </section>
   );
-}
+});

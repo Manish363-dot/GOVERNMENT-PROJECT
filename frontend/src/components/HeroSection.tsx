@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, MessageSquareWarning, BookOpen, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,20 @@ const CM_IMAGE_URL = `${S3_BUCKET}/portal-logos/CM.jpg`;
 const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.jpg`;
 const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
 
-export function HeroSection() {
+const OFFICIALS = [
+  {
+    id: 1,
+    name: "Shri Pushkar Singh Dhami",
+    designation: "Chief Minister, Uttarakhand",
+    image: CM_IMAGE_URL,
+    quote: "स्वच्छ उत्तराखण्ड, स्वस्थ उत्तराखण्ड"
+  },
+  { id: 2, name: "Madan Kaushik", designation: "Minister for Disaster Management and Rehabilitation of Uttarakhand", image: MK_IMAGE_URL, quote: "" },
+  { id: 3, name: "Hema Gaira", designation: "Chairman Zila Panchayat Almora", image: CH_IMAGE_URL, quote: "" },
+  { id: 4, name: "Rajesh Kumar", designation: "Apar Mukhya Adhikari (AMA)", image: null, quote: "" }
+];
+
+export const HeroSection = React.memo(() => {
   const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
@@ -41,6 +54,9 @@ export function HeroSection() {
 
     return () => clearInterval(timer);
   }, []);
+
+  const openBlogModal = useCallback(() => setIsBlogModalOpen(true), []);
+  const closeBlogModal = useCallback(() => setIsBlogModalOpen(false), []);
 
   return (
     <section className="relative bg-[#07182f] text-white border-b border-blue-600/30">
@@ -94,7 +110,7 @@ export function HeroSection() {
                 {t('hero.registerComplaint', 'Register Complaint')}
               </a>
             </Button>
-            <Button size="lg" className="w-full sm:w-auto bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 text-sm" onClick={() => setIsBlogModalOpen(true)}>
+            <Button size="lg" className="w-full sm:w-auto bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 text-sm" onClick={openBlogModal}>
               <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
               {t('hero.ourBlogs', 'Our Blogs')}
             </Button>
@@ -159,18 +175,7 @@ export function HeroSection() {
 
             {/* 4 Additional Sections */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              {[
-                {
-                  id: 1,
-                  name: "Shri Pushkar Singh Dhami",
-                  designation: "Chief Minister, Uttarakhand",
-                  image: CM_IMAGE_URL,
-                  quote: "स्वच्छ उत्तराखण्ड, स्वस्थ उत्तराखण्ड"
-                },
-                { id: 2, name: "Madan Kaushik", designation: "Minister for Disaster Management and Rehabilitation of Uttarakhand", image: MK_IMAGE_URL, quote: "" },
-                { id: 3, name: "Hema Gaira", designation: "Chairman Zila Panchayat Almora", image: CH_IMAGE_URL, quote: "" },
-                { id: 4, name: "Rajesh Kumar", designation: "Apar Mukhya Adhikari (AMA)", image: null, quote: "" }
-              ].map((official) => (
+              {OFFICIALS.map((official) => (
                 <div key={official.id} className="bg-white rounded-2xl shadow-xl border border-slate-200 p-3 sm:py-4 sm:px-5 flex flex-col items-center text-center transition-all hover:-translate-y-2 hover:shadow-2xl duration-300">
                   <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-slate-200 overflow-hidden bg-slate-50 mb-2 sm:mb-3 shadow-md">
                     {official.image ? (
@@ -197,7 +202,7 @@ export function HeroSection() {
 
         </div>
       </div>
-      <BlogGalleryModal isOpen={isBlogModalOpen} onClose={() => setIsBlogModalOpen(false)} />
+      <BlogGalleryModal isOpen={isBlogModalOpen} onClose={closeBlogModal} />
     </section>
   );
-}
+});

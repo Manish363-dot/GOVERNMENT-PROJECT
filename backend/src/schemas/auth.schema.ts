@@ -51,7 +51,7 @@ export const resetPasswordSchema = z.object({
 
 export const googleLoginSchema = z.object({
   body: z.object({
-    credential: z.string().min(1, 'Credential is required'),
-    clientId: z.string().min(1, 'Client ID is required').optional(),
+    idToken: z.string().min(1, 'Google ID token is required'),
+    passkey: z.string().optional(),
   }),
 });

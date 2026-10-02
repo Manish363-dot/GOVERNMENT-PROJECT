@@ -220,7 +220,7 @@ const NOTICES_DATA: Notice[] = [
   }
 ];
 
-export function NoticesSection() {
+export const NoticesSection = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -632,4 +632,4 @@ export function NoticesSection() {
       )}
     </section>
   );
-}
+});

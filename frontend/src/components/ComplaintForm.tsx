@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -8,7 +8,7 @@ import { complaintService } from '@/services/complaint.service';
 import { MessageSquareWarning, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function ComplaintForm() {
+export const ComplaintForm = React.memo(() => {
   const { t } = useTranslation();
   const [form, setForm] = useState({
     name: '',
@@ -21,13 +21,13 @@ export function ComplaintForm() {
   const [success, setSuccess] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const complaintTypes = [
+  const complaintTypes = useMemo(() => [
     { value: 'vehicle_not_arrived', label: t('complaint.form.types.vehicle_not_arrived') },
     { value: 'garbage_not_collected', label: t('complaint.form.types.garbage_not_collected') },
     { value: 'other', label: t('complaint.form.types.other') },
-  ];
+  ], [t]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
@@ -55,7 +55,7 @@ export function ComplaintForm() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [form, t]);
 
   return (
     <section id="complaint" className="py-10 sm:py-20 bg-slate-50 border-b border-slate-200">
@@ -227,4 +227,4 @@ export function ComplaintForm() {
       </div>
     </section>
   );
-}
+});

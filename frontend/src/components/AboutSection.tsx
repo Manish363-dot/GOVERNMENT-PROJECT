@@ -1,15 +1,16 @@
+import React, { useMemo } from 'react';
 import { Truck, MapPin, History, Shield, ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function AboutSection() {
+export const AboutSection = React.memo(() => {
   const { t } = useTranslation();
 
-  const capabilities = [
+  const capabilities = useMemo(() => [
     { icon: Truck, text: t('about.cap1') },
     { icon: MapPin, text: t('about.cap2') },
     { icon: History, text: t('about.cap3') },
     { icon: Shield, text: t('about.cap4') },
-  ];
+  ], [t]);
 
   return (
     <section id="about" className="pt-10 sm:pt-28 pb-12 sm:pb-20 bg-slate-50 border-b border-slate-200">
@@ -58,4 +59,4 @@ export function AboutSection() {
       </div>
     </section>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { vehicleService } from '@/services/vehicle.service';
 import { routeReplayService } from '@/services/routeReplayService';
@@ -11,15 +11,14 @@ import { TimelineSlider } from '@/components/routeReplay/TimelineSlider';
 import { PointDetailsModal } from '@/components/routeReplay/PointDetailsModal';
 import { RoutePerformanceSummary } from '@/components/routeReplay/RoutePerformanceSummary';
 import { EventsTimeline } from '@/components/routeReplay/EventsTimeline';
-import { MapLegendGuide } from '@/components/MapLegendGuide';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 
-import { PlaySquare, ShieldCheck, Search, Info, RotateCcw, Truck } from 'lucide-react';
+import { PlaySquare, ShieldCheck, Search, Info, Truck } from 'lucide-react';
 import { format } from 'date-fns';
 
-export function RouteReplayPage() {
+export const RouteReplayPage = React.memo(() => {
     const { t, i18n } = useTranslation();
     const isHi = i18n.language === 'hi';
     const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -357,4 +356,4 @@ export function RouteReplayPage() {
             ) : null}
         </div>
     );
-}
+});

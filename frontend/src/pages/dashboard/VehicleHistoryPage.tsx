@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -6,7 +6,6 @@ import 'leaflet/dist/leaflet.css';
 import { vehicleService } from '@/services/vehicle.service';
 import { historyService } from '@/services/history.service';
 import { EmptyState } from '@/components/EmptyState';
-import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -28,7 +27,7 @@ const endIcon = L.divIcon({
   iconAnchor: [10, 10],
 });
 
-export function VehicleHistoryPage() {
+export const VehicleHistoryPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -246,4 +245,4 @@ export function VehicleHistoryPage() {
       )}
     </div>
   );
-}
+});

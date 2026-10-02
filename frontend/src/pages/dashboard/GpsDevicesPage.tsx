@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { gpsDeviceService, GpsDevice } from '@/services/gpsDevice.service';
 import { EmptyState } from '@/components/EmptyState';
@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save } from 'lucide-react';
 import { format } from 'date-fns';
 
-export function GpsDevicesPage() {
+export const GpsDevicesPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
@@ -292,4 +292,4 @@ export function GpsDevicesPage() {
       )}
     </div>
   );
-}
+});

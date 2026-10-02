@@ -1,5 +1,5 @@
 import type { RouteReplayDataset, ReplayPoint, CollectionPoint, ReplayStop, RouteDeviation, WardBoundary, ReplayEvent, RoutePerformance } from '@/types/routeReplay';
-import { format, parseISO, addMinutes } from 'date-fns';
+import { format, addMinutes } from 'date-fns';
 
 /**
  * Clean Demo / Mock Data Generator for Route Replay.

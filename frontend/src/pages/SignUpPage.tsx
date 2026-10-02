@@ -7,13 +7,11 @@ import { Label } from '@/components/ui/label';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { GoogleLogin } from '@react-oauth/google';
 import {
-  Truck,
   Eye,
   EyeOff,
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
-  Building2,
   KeyRound,
   UserPlus,
   Mail,
@@ -43,9 +41,6 @@ export function SignUpPage() {
   const [verifyingOtp, setVerifyingOtp] = useState(false);
   const [resendingOtp, setResendingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
-
-  const [googlePasskey, setGooglePasskey] = useState('');
-  const { completeGoogleSignup } = useAuth();
 
   // Cooldown timer effect
   useEffect(() => {

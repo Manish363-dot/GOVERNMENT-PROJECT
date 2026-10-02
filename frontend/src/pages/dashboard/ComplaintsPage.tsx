@@ -1,19 +1,16 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { complaintService } from '@/services/complaint.service';
 import { useRealtime } from '@/hooks/useRealtime';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
 
-export function ComplaintsPage() {
+export const ComplaintsPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -308,4 +305,4 @@ export function ComplaintsPage() {
       )}
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FileText,
   ChevronLeft,
@@ -130,7 +130,7 @@ const BYLAWS: BylawDocument[] = [
     issuedByEn: 'MoEFCC, Govt. of India',
     issuedByHi: 'पर्यावरण, वन और जलवायु परिवर्तन मंत्रालय, भारत सरकार',
     descriptionEn: 'New central guidelines superseding the 2016 rules, emphasizing strict waste segregation, extended responsibilities, and heavy penalties.',
-    descriptionHi: '2016 के नियमों का स्थान लेने वाले नए केंद्रीय दिशा-निर्देश। इनमें कचरा पृथक्करण, विस्तारित जिम्मेदारियों और सख्त दंड पर जोर दिया गया है।',
+    descriptionHi: '2016 के नियमों का स्थान लेने वाले नए केंद्रीय दिशा-निर्देश। इनमें कचरा पृथक्करण, विस्तारित जिम्मेदारियों और सख्त दंड पर जोर दिया गया।',
     highlights: [
       {
         icon: 'recycle',
@@ -182,7 +182,7 @@ const getIcon = (type: IconType, className: string) => {
   }
 };
 
-export function DocumentsSection() {
+export const DocumentsSection = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -243,13 +243,13 @@ export function DocumentsSection() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [viewerDoc]);
 
-  const nextDoc = () => setActiveDocIndex((p) => (p + 1) % BYLAWS.length);
-  const prevDoc = () => setActiveDocIndex((p) => (p - 1 + BYLAWS.length) % BYLAWS.length);
+  const nextDoc = useCallback(() => setActiveDocIndex((p) => (p + 1) % BYLAWS.length), []);
+  const prevDoc = useCallback(() => setActiveDocIndex((p) => (p - 1 + BYLAWS.length) % BYLAWS.length), []);
   
-  const openViewer = (page: number) => {
+  const openViewer = useCallback((page: number) => {
     setViewerPage(page);
     setViewerDoc(doc);
-  };
+  }, [doc]);
 
   return (
     <section
@@ -559,4 +559,4 @@ export function DocumentsSection() {
       )}
     </section>
   );
-}
+});

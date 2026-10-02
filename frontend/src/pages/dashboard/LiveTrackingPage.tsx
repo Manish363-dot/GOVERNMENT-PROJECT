@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -6,12 +6,11 @@ import { cn } from '@/lib/utils';
 import { trackingService } from '@/services/tracking.service';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { GarbageTruckLoader } from '@/components/GarbageTruckLoader';
 import {
   MapPin, Truck, Radio, Clock, Gauge, ZoomIn, ZoomOut, Maximize2, Minimize2,
-  Search, Layers, Navigation, ShieldCheck, Activity, Expand
+  Search, ShieldCheck, Expand
 } from 'lucide-react';
 import type { VehicleCurrentLocation } from '@/types';
 import { format } from 'date-fns';
@@ -115,7 +114,7 @@ function MapControlsHandler({
 
 import { useTranslation } from 'react-i18next';
 
-export function LiveTrackingPage() {
+export const LiveTrackingPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
   const [locations, setLocations] = useState<VehicleCurrentLocation[]>([]);
@@ -606,4 +605,4 @@ export function LiveTrackingPage() {
       </div>
     </div>
   );
-}
+});

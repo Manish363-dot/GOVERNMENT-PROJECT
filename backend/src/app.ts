@@ -130,7 +130,12 @@ app.use('/api/auth/verify-reset-otp', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 app.use('/api/auth/resend-otp', authLimiter);
 app.use('/api/complaints', complaintLimiter);
-app.use('/api/media', uploadLimiter);
+app.use('/api/media', (req, res, next) => {
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+    return uploadLimiter(req, res, next);
+  }
+  next();
+});
 
 // Apply CSRF Protection to all API routes
 app.use('/api', csrfProtection);

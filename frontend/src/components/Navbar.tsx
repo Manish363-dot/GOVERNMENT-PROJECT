@@ -1,56 +1,74 @@
-import { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Truck, Menu, X, ShieldCheck, PhoneCall } from 'lucide-react';
+import { X, ShieldCheck, PhoneCall } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/contexts/AuthContext';
 
-export function Navbar() {
+export const Navbar = React.memo(() => {
   const { user, profile } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const { t } = useTranslation();
 
-  const navLinks = [
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 40);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navLinks = useMemo(() => [
     { name: t('nav.home'), href: '/' },
     { name: t('nav.about'), href: '/#about' },
     { name: t('nav.Notices'), href: '/#Notices' },
     { name: t('nav.documents'), href: '/#documents' },
     { name: t('nav.complaint'), href: '/#complaint' },
     { name: t('nav.contact'), href: '/#contact' },
-  ];
+  ], [t]);
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-xs">
-      {/* 1. Top-most 4 Logos Strip (2 Left, 2 Right) */}
-      <TopBarLogos variant="public" />
-
-      {/* 2. Official Government Strip */}
-      <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800">
-        <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2 font-medium">
-            <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-ukgreen-900/60 text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">
-              <ShieldCheck className="w-3 h-3 text-emerald-400" />
-              {t('nav.govBadgeHi')}
-            </span>
-            <span className="hidden md:inline text-slate-300">|</span>
-            <span className="hidden sm:inline text-slate-300">
-              {t('nav.govSubtitle')}
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-slate-300">
-            <div className="hidden lg:flex items-center gap-1.5 text-[11px]">
-              <PhoneCall className="w-3 h-3 text-amber-400" />
-              <span>{t('nav.helpline')}: <strong className="text-white">1800-185-1850</strong></span>
-            </div>
-            <LanguageSwitcher />
-          </div>
+    <>
+      {/* Top Bar - Non-Sticky (Smoothly hides on scroll) */}
+      <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
+        <div className="overflow-hidden bg-white">
+          {/* 1. Top-most 4 Logos Strip (2 Left, 2 Right) */}
+          <TopBarLogos variant="public" />
         </div>
       </div>
 
-      {/* Uttarakhand Flag/Accent Tricolor Bar */}
-      <div className="uk-tricolor-line" />
+      {/* Sticky Container */}
+      <header className="sticky top-0 z-50 flex flex-col">
+        {/* 2. Official Government Strip (Sticky) */}
+        <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800 shadow-sm">
+          <div className="max-w-[1600px] mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 font-medium">
+              <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-ukgreen-900/60 text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">
+                <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                {t('nav.govBadgeHi')}
+              </span>
+              <span className="hidden md:inline text-slate-300">|</span>
+              <span className="hidden sm:inline text-slate-300">
+                {t('nav.govSubtitle')}
+              </span>
+            </div>
+            <div className="flex items-center gap-4 text-slate-300">
+              <div className="hidden lg:flex items-center gap-1.5 text-[11px]">
+                <PhoneCall className="w-3 h-3 text-amber-400" />
+                <span>{t('nav.helpline')}: <strong className="text-white">1800-185-1850</strong></span>
+              </div>
+              <LanguageSwitcher />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Navbar - Sticky */}
+        <div className="bg-white border-b border-slate-200 shadow-xs">
+          {/* Uttarakhand Flag/Accent Tricolor Bar */}
+          <div className="uk-tricolor-line" />
 
       {/* Main Header Brand & Navigation */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-12">
@@ -158,6 +176,8 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      </div>
     </header>
+    </>
   );
-}
+});

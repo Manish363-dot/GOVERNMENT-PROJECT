@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Phone, Mail, MapPin, X, CheckCircle2, Building2 } from 'lucide-react';
 
@@ -40,13 +40,13 @@ const policies: Record<string, { titleEn: string; titleHi: string; lines: string
   }
 };
 
-export function Footer() {
+export const Footer = React.memo(() => {
   const { i18n } = useTranslation();
   const [activePolicy, setActivePolicy] = useState<string | null>(null);
   const [showDeveloperContact, setShowDeveloperContact] = useState(false);
   const isHi = i18n.language === 'hi';
 
-  const navLinks = [
+  const navLinks = React.useMemo(() => [
     { label: isHi ? 'मुख्य पृष्ठ' : 'Home', href: '/' },
     { label: isHi ? 'हमारे बारे में' : 'About Initiative', href: '/#about' },
     { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/#complaint' },
@@ -55,8 +55,7 @@ export function Footer() {
     { label: isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates', href: '/#notices' },
     {label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href:'/#documents'},
     {label: isHi ? 'दैनिक कार्य' : 'Daily Work', href:'/#blogs'}
-    
-  ];
+  ], [isHi]);
 
   return (
     <footer className="bg-navy-950 text-white font-sans">
@@ -195,13 +194,13 @@ export function Footer() {
           <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1.5 flex-wrap">
             <Building2 className="w-3 h-3 shrink-0 text-slate-600" />
             {isHi
-              ? 'वेबसाइट का विकास, डिज़ाइन एवं संधारण राष्ट्रीय सूचना विज्ञान केंद्र (NIC), भारत सरकार द्वारा किया गया है।'
-              : 'Designed, Developed & Hosted by Manish Paliwal,Deepak Bisht'}
+              ?'डिजाइन, डेवलपमेंट और होस्टिंग मनीष पालीवाल ,दीपक बिष्ट  के साथ ।'
+              : 'Design, Development & Hosting with Manish Paliwal,Deepak Bisht'}
             <button 
               onClick={() => setShowDeveloperContact(true)}
-              className="ml-1 text-slate-400 hover:text-amber-400 font-medium transition-colors"
+              className="ml-1 text-slate-600 hover:text-amber-400 font-medium transition-colors"
             >
-              (Contact Developers)
+              {isHi ? '(हमसे संपर्क करें)' : '(Contact Developers)'}
             </button>
           </p>
         </div>
@@ -348,4 +347,4 @@ export function Footer() {
       )}
     </footer>
   );
-}
+});

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { vehicleService } from '@/services/vehicle.service';
 import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/ui/badge';
@@ -6,14 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Truck, Plus, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Truck, Plus, Pencil, Trash2, X, Save, Radio } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Vehicle } from '@/types';
 import { gpsDeviceService, GpsDevice } from '@/services/gpsDevice.service';
-import { Radio } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-export function VehiclesPage() {
+export const VehiclesPage = React.memo(() => {
   const { t } = useTranslation();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -418,4 +417,4 @@ export function VehiclesPage() {
       )}
     </div>
   );
-}
+});

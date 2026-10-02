@@ -1,18 +1,14 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KPICard } from '@/components/KPICard';
-import {
-  Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck,
-  CheckCircle2, Activity, ArrowRight, Layers, Building2, AlertCircle
-} from 'lucide-react';
+import { Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck } from 'lucide-react';
 import { vehicleService } from '@/services/vehicle.service';
 import { trackingService } from '@/services/tracking.service';
 import { complaintService } from '@/services/complaint.service';
 import type { DashboardStats } from '@/types';
-import { format } from 'date-fns';
 import { GpsDevicesPage } from './GpsDevicesPage';
 
-export function DashboardPage() {
+export const DashboardPage = React.memo(() => {
   const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats>({
     totalVehicles: 0,
@@ -112,4 +108,4 @@ export function DashboardPage() {
       </div>
     </div>
   );
-}
+});

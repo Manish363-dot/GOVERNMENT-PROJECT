@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Truck, ShieldCheck, PhoneCall } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ShieldCheck, PhoneCall } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -8,12 +8,16 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Single Grid Item Component with progressive image loading & skeleton preview
-function GalleryGridItem({ src, index, onClick }: { src: string; index: number; onClick: () => void }) {
+const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; index: number; onClick: (src: string) => void }) => {
     const [isLoaded, setIsLoaded] = useState(false);
+
+    const handleClick = useCallback(() => {
+        onClick(src);
+    }, [onClick, src]);
 
     return (
         <div
-            onClick={onClick}
+            onClick={handleClick}
             style={{ contentVisibility: 'auto', containIntrinsicSize: '220px' }}
             className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-navy-950/80 border border-white/15 shadow-[0_8px_25px_rgba(0,0,0,0.4)] hover:border-amber-400/60 hover:scale-[1.02] hover:shadow-[0_12px_30px_rgba(0,0,0,0.6)] transition-all duration-300 cursor-pointer group transform-gpu"
         >
@@ -39,9 +43,9 @@ function GalleryGridItem({ src, index, onClick }: { src: string; index: number; 
             />
         </div>
     );
-}
+});
 
-export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -52,9 +56,11 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     // 1. Fetch Dynamic Media from API
     const [mediaList, setMediaList] = useState<string[]>([]);
     const [gridMedia, setGridMedia] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         const fetchMedia = async () => {
+            setIsLoading(true);
             try {
                 const res = await fetch(`${API_URL}/media/blog`);
                 if (res.ok) {
@@ -70,9 +76,13 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                 }
             } catch (err) {
                 console.error("Failed to fetch blog media:", err);
+            } finally {
+                setIsLoading(false);
             }
         };
-        fetchMedia();
+        if (isOpen) {
+            fetchMedia();
+        }
     }, [isOpen]);
 
     // 2. GUARANTEED CONTINUOUS AUTO-SLIDE EVERY 2 SECONDS
@@ -108,13 +118,13 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
 
     if (!isOpen) return null;
 
-    const nextImage = () => {
+    const nextImage = useCallback(() => {
         setCurrentIndex((prev) => (prev + 1) % mediaList.length);
-    };
+    }, [mediaList.length]);
 
-    const prevImage = () => {
+    const prevImage = useCallback(() => {
         setCurrentIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
-    };
+    }, [mediaList.length]);
 
     // Touch Swipe Handlers for mobile smoothness
     const handleTouchStart = (e: React.TouchEvent) => {
@@ -132,7 +142,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
     const nextIndex = (currentIndex + 1) % mediaList.length;
 
     // Handle clicking a grid item
-    const handleGridItemClick = (src: string) => {
+    const handleGridItemClick = useCallback((src: string) => {
         const carouselIdx = mediaList.indexOf(src);
         if (carouselIdx !== -1) {
             setCurrentIndex(carouselIdx);
@@ -140,7 +150,7 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
         if (scrollAreaRef.current) {
             scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' });
         }
-    };
+    }, [mediaList]);
 
     return (
         <div className="fixed inset-0 z-[9999] bg-black/75 backdrop-blur-md flex flex-col animate-in fade-in duration-300">
@@ -207,9 +217,14 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                             <span className="font-poppins font-extrabold text-navy-900 text-base sm:text-lg tracking-tight leading-tight">
                                 {t('nav.gallerySlogan')}
                             </span>
-                            <span className="text-[10px] font-bold text-ukgreen-800 tracking-[0.15em] uppercase mt-0.5">
-                                {t('nav.gallerySloganSub')}
-                            </span>
+                            <div className="w-full flex justify-between items-center text-[10px] font-bold text-ukgreen-800 tracking-normal uppercase mt-0.5">
+                                {t('nav.gallerySloganSub').split('•').map((part, index, array) => (
+                                    <React.Fragment key={index}>
+                                        <span>{part.trim()}</span>
+                                        {index < array.length - 1 && <span>•</span>}
+                                    </React.Fragment>
+                                ))}
+                            </div>
                         </div>
 
                         {/* Close button */}
@@ -289,7 +304,9 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
 
                         {/* Main Polaroid Frame */}
                         <div className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu flex items-center justify-center">
-                            {mediaList.length > 0 ? mediaList.map((imgSrc, idx) => (
+                            {isLoading ? (
+                                <div className="absolute inset-1.5 sm:inset-2 w-[calc(100%-12px)] sm:w-[calc(100%-16px)] h-[calc(100%-12px)] sm:h-[calc(100%-16px)] bg-slate-200/50 animate-pulse rounded-[2px]" />
+                            ) : mediaList.length > 0 ? mediaList.map((imgSrc, idx) => (
                                 <img
                                     key={imgSrc}
                                     loading="eager"
@@ -487,7 +504,11 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-                        {gridMedia.length > 0 ? gridMedia.map((img, idx) => (
+                        {isLoading ? (
+                            Array.from({ length: 8 }).map((_, idx) => (
+                                <div key={idx} className="aspect-[4/3] rounded-2xl bg-navy-950/80 border border-white/15 animate-pulse"></div>
+                            ))
+                        ) : gridMedia.length > 0 ? gridMedia.map((img, idx) => (
                             <GalleryGridItem
                                 key={img + idx}
                                 src={img}
@@ -578,4 +599,4 @@ export function BlogGalleryModal({ isOpen, onClose }: { isOpen: boolean; onClose
             </div>
         </div>
     );
-}
+});
