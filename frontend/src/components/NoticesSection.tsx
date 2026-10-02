@@ -39,12 +39,13 @@ export interface Notice {
   authorityHi: string;
 }
 
-const encodeImg = (filename: string) => `/assets/gallery/${encodeURIComponent(filename)}`;
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
 const NOTICES_DATA: Notice[] = [
   {
     id: 'notice-1',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.38.57 PM.jpeg'),
+    image: encodeImg('1790647197817-60806429.jpeg'),
     date: '28 Sep 2026',
     locationEn: 'Hawalbagh Block, Almora',
     locationHi: 'हवालबाग विकासखंड, अल्मोड़ा',
@@ -75,7 +76,7 @@ const NOTICES_DATA: Notice[] = [
   },
   {
     id: 'notice-2',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.38.59 PM.jpeg'),
+    image: encodeImg('1790648931238-10068149.jpeg'),
     date: '24 Sep 2026',
     locationEn: 'Central Waste Compactor Station, Almora',
     locationHi: 'केंद्रीय अपशिष्ट कंपैक्टर केंद्र, अल्मोड़ा',
@@ -104,7 +105,7 @@ const NOTICES_DATA: Notice[] = [
   },
   {
     id: 'notice-3',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.40.20 PM.jpeg'),
+    image: encodeImg('1790648931953-195645006.jpeg'),
     date: '20 Sep 2026',
     locationEn: 'Dadholi Ward & Village Roads',
     locationHi: 'दाधोली वार्ड एवं ग्रामीण मार्ग, अल्मोड़ा',
@@ -133,7 +134,7 @@ const NOTICES_DATA: Notice[] = [
   },
   {
     id: 'notice-4',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.41.00 PM.jpeg'),
+    image: encodeImg('1790648991473-976248359.jpeg'),
     date: '14 Sep 2026',
     locationEn: 'Rural Connectivity Corridors, Almora',
     locationHi: 'ग्रामीण संपर्क मार्ग एवं बाजार क्षेत्र, अल्मोड़ा',
@@ -162,7 +163,7 @@ const NOTICES_DATA: Notice[] = [
   },
   {
     id: 'notice-5',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.44.00 PM.jpeg'),
+    image: encodeImg('1790648931752-397379307.jpeg'),
     date: '08 Sep 2026',
     locationEn: 'District Control Room, Almora',
     locationHi: 'जिला नियंत्रण कक्ष, अल्मोड़ा',
@@ -191,7 +192,7 @@ const NOTICES_DATA: Notice[] = [
   },
   {
     id: 'notice-6',
-    image: encodeImg('WhatsApp Image 2026-09-14 at 6.44.08 PM.jpeg'),
+    image: encodeImg('1790648931904-641586205.jpeg'),
     date: '02 Sep 2026',
     locationEn: 'Paryavaran Mitra Seva Kendra',
     locationHi: 'पर्यावरण मित्र सेवा केंद्र, अल्मोड़ा',

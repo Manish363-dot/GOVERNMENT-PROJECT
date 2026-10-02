@@ -43,7 +43,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (err.message?.includes('404') || err.message?.includes('Profile not found')) {
           setIsNewGoogleUser(true);
         } else {
-          console.error('Failed to fetch profile:', err);
+          // Only log unexpected errors (ignore 401 Unauthorized which is expected when not logged in)
+          if (!err.message?.includes('401') && !err.message?.includes('Unauthorized')) {
+            console.error('Failed to fetch profile:', err);
+          }
           // Invalid or missing token, clear profile
           setProfile(null);
         }

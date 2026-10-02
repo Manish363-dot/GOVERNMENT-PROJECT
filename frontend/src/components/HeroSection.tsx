@@ -130,7 +130,7 @@ export const HeroSection = React.memo(() => {
           </div>
 
           {/* Dignitary Quote Card Banner & Additional Sections */}
-          <div className="mt-6 sm:mt-10 w-full max-w-7xl mx-auto px-2 sm:px-6 relative z-30 translate-y-[15%] sm:translate-y-[1%] -mb-4 sm:-mb-20">
+          <div className="mt-6 sm:mt-10 w-full max-w-7xl mx-auto px-2 sm:px-6 relative z-30 translate-y-2 sm:translate-y-[1%] mb-8 sm:-mb-20">
             {/* Main PM Card */}
             <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[110px] mb-4">
               {/* Dignitary Photo */}
@@ -174,10 +174,10 @@ export const HeroSection = React.memo(() => {
             </div>
 
             {/* 4 Additional Sections */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pb-4">
               {OFFICIALS.map((official) => (
                 <div key={official.id} className="bg-white rounded-2xl shadow-xl border border-slate-200 p-3 sm:py-4 sm:px-5 flex flex-col items-center text-center transition-all hover:-translate-y-2 hover:shadow-2xl duration-300">
-                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-slate-200 overflow-hidden bg-slate-50 mb-2 sm:mb-3 shadow-md">
+                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-slate-200 overflow-hidden bg-slate-50 mb-2 sm:mb-3 shadow-md shrink-0">
                     {official.image ? (
                       <img src={official.image} alt={official.name} className="w-full h-full object-cover object-top" />
                     ) : (
@@ -189,11 +189,11 @@ export const HeroSection = React.memo(() => {
                   
                   {/* Optional Quote Space */}
                   {official.quote ? (
-                    <p className="text-[10px] sm:text-[11px] text-slate-600 mt-2 sm:mt-3 italic border-t border-red-500 pt-2 w-full font-medium leading-tight">
+                    <p className="text-[10px] sm:text-[11px] text-slate-600 mt-2 sm:mt-3 italic border-t border-red-500 pt-2 w-full font-medium leading-tight shrink-0">
                       "{official.quote}"
                     </p>
                   ) : (
-                    <div className="mt-2 sm:mt-3 pt-2 w-full border-t border-red-500 min-h-[20px]"></div>
+                    <div className="mt-2 sm:mt-3 pt-2 w-full border-t border-red-500 min-h-[20px] shrink-0"></div>
                   )}
                 </div>
               ))}
