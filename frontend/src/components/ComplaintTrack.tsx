@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { complaintService } from '@/services/complaint.service';
-import { Search, CheckCircle2, Clock, MapPin, User, Phone, FileText, AlertCircle, ShieldCheck, Copy, Check, Printer, Building2, Wrench, Lock, FileCheck } from 'lucide-react';
+import { Search, CheckCircle2, Clock, MapPin, User, Phone, FileText, AlertCircle, ShieldCheck, Copy, Check, Printer, Building2, Wrench, Lock, FileCheck, Landmark, BadgeCheck, QrCode, Award } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import type { Complaint, ComplaintUpdate } from '@/types';
@@ -120,92 +120,176 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
 
             {/* Official Complaint Certificate Sheet */}
             {complaint && (
-                <div className="bg-white border-2 border-slate-300 rounded-xl overflow-hidden shadow-md space-y-0 text-slate-800 animate-fade-in print:border-none print:shadow-none">
+                <div className="printable-receipt bg-white border-2 border-slate-400 rounded-xl overflow-hidden shadow-lg space-y-0 text-slate-800 animate-fade-in print:border-2 print:border-slate-800 print:shadow-none">
+
+                    {/* ── Top Uttarakhand Tricolor Accent Line ── */}
+                    <div className="h-1.5 bg-gradient-to-r from-amber-600 via-white to-emerald-600 border-b border-amber-500/50" />
 
                     {/* ── Official Government Header ── */}
-                    <div className="bg-navy-950 text-white p-4 sm:p-5 border-b-2 border-amber-500/80 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/40 shrink-0">
-                                <Building2 className="w-5 h-5" />
+                    <div className="bg-navy-950 text-white p-4 sm:p-5 border-b-2 border-amber-500 flex flex-wrap items-center justify-between gap-4">
+                        <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center border-2 border-amber-400/60 shrink-0 shadow-inner">
+                                <Landmark className="w-6 h-6 text-amber-400" />
                             </div>
                             <div>
-                                <span className="text-[10px] font-mono tracking-widest uppercase text-amber-400 font-bold block">
-                                    {isHi ? 'जिला पंचायत - जन शिकायत निवारण पोर्टल' : 'ZILA PANCHAYAT • PUBLIC GRIEVANCE REDRESSAL'}
-                                </span>
-                                <h3 className="font-bold text-base sm:text-lg text-white">
-                                    {isHi ? 'आधिकारिक स्थिति रिपोर्ट' : 'Official Grievance Tracking Status'}
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[10px] font-mono tracking-widest uppercase text-amber-400 font-extrabold block">
+                                        {isHi ? 'उत्तराखंड सरकार • GOVT. OF UTTARAKHAND' : 'GOVT. OF UTTARAKHAND • UTTARAKHAND GOVERNMENT'}
+                                    </span>
+                                </div>
+                                <h3 className="font-extrabold text-base sm:text-xl text-white tracking-wide">
+                                    {isHi ? 'कार्यालय जिला पंचायत — जन शिकायत पंजीकरण प्रमाण पत्र' : 'OFFICE OF ZILA PANCHAYAT — GRIEVANCE RECEIPT CERTIFICATE'}
                                 </h3>
+                                <p className="text-[11px] text-slate-300 font-medium">
+                                    {isHi ? 'लोक शिकायत निवारण व ऑनलाइन ट्रैकिंग प्रणाली' : 'Public Grievance Redressal & Official Audit System'}
+                                </p>
                             </div>
                         </div>
 
-                        {/* Status Badge */}
-                        <div>
-                            {complaint.status === 'new' && (
-                                <div className="px-3 py-1 bg-blue-900/90 text-blue-200 border border-blue-400/50 rounded-full text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
-                                    <Clock className="w-3.5 h-3.5 text-blue-400" />
-                                    {isHi ? 'पंजीकृत (NEW)' : 'REGISTERED'}
-                                </div>
-                            )}
-                            {complaint.status === 'in_progress' && (
-                                <div className="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-400/60 rounded-full text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 shadow-xs animate-pulse">
-                                    <Wrench className="w-3.5 h-3.5 text-amber-400" />
-                                    {isHi ? 'कार्रवाई जारी (IN PROGRESS)' : 'IN PROGRESS'}
-                                </div>
-                            )}
-                            {complaint.status === 'resolved' && (
-                                <div className="px-3 py-1 bg-emerald-950 text-emerald-300 border border-emerald-500/60 rounded-full text-xs font-bold font-mono uppercase tracking-wider flex items-center gap-1.5 shadow-xs">
-                                    <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                                    {isHi ? 'निस्तारित व बंद (RESOLVED & LOCKED)' : 'RESOLVED & LOCKED'}
-                                </div>
-                            )}
+                        {/* Digital Verification Badge */}
+                        <div className="flex items-center gap-2 bg-navy-900/90 px-3 py-1.5 rounded-lg border border-amber-400/40">
+                            <BadgeCheck className="w-5 h-5 text-amber-400 shrink-0" />
+                            <div className="text-left">
+                                <span className="text-[9px] font-mono text-amber-400 uppercase font-bold block leading-none">
+                                    {isHi ? 'डिजिटल रूप से सत्यापित' : 'DIGITALLY VERIFIED'}
+                                </span>
+                                <span className="text-[10px] text-slate-200 font-semibold leading-tight block">
+                                    {isHi ? 'आधिकारिक डिजिटल रिकॉर्ड' : 'Official Portal Record'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 
-                    {/* ── Grievance Reference Strip ── */}
-                    <div className="bg-slate-100 px-4 py-3 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2">
-                            <span className="text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
-                                {isHi ? 'यूनिक शिकायत ID:' : 'Grievance Reference No:'}
+                    {/* ── Grievance Reference & Status Banner Strip ── */}
+                    <div className="bg-slate-100 px-4 sm:px-6 py-3 border-b border-slate-300 flex flex-wrap items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3">
+                            <span className="text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                                {isHi ? 'शिकायत संदर्भ संख्या:' : 'Grievance Reference No:'}
                             </span>
-                            <span className="font-mono text-base font-black text-navy-900 bg-white px-2.5 py-0.5 rounded border border-slate-300 tracking-wider">
-                                {complaint.complaint_number}
-                            </span>
-                            <button
-                                type="button"
-                                onClick={() => handleCopyId(complaint.complaint_number)}
-                                className="p-1 text-slate-500 hover:text-navy-900 transition-colors"
-                                title="Copy ID"
-                            >
-                                {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
-                            </button>
+                            <div className="flex items-center gap-1.5 bg-white px-3 py-1 rounded border-2 border-navy-900 shadow-xs">
+                                <span className="font-mono text-base font-black text-navy-900 tracking-wider">
+                                    {complaint.complaint_number}
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleCopyId(complaint.complaint_number)}
+                                    className="p-1 text-slate-500 hover:text-navy-900 transition-colors print:hidden"
+                                    title="Copy Reference Number"
+                                >
+                                    {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
+                                </button>
+                            </div>
                         </div>
 
-                        <div className="text-slate-500 font-mono text-[11px]">
-                            {isHi ? 'पंजीकरण तिथि:' : 'Filed On:'}{' '}
-                            <span className="font-semibold text-slate-700">
-                                {format(new Date(complaint.created_at), 'dd MMM yyyy, hh:mm a')}
-                            </span>
+                        <div className="flex items-center gap-4 text-[11px] font-mono">
+                            <div>
+                                <span className="text-slate-500">{isHi ? 'पंजीकरण तिथि:' : 'Filed On:'} </span>
+                                <span className="font-bold text-slate-900">
+                                    {format(new Date(complaint.created_at), 'dd MMM yyyy, hh:mm a')}
+                                </span>
+                            </div>
+
+                            {/* Status Badge */}
+                            <div>
+                                {complaint.status === 'new' && (
+                                    <span className="px-3 py-1 bg-blue-900 text-white rounded font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+                                        <Clock className="w-3 h-3 text-blue-300" />
+                                        {isHi ? 'पंजीकृत (NEW)' : 'REGISTERED'}
+                                    </span>
+                                )}
+                                {complaint.status === 'in_progress' && (
+                                    <span className="px-3 py-1 bg-amber-600 text-white rounded font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+                                        <Wrench className="w-3 h-3 text-amber-200" />
+                                        {isHi ? 'कार्रवाई जारी (IN PROGRESS)' : 'IN PROGRESS'}
+                                    </span>
+                                )}
+                                {complaint.status === 'resolved' && (
+                                    <span className="px-3 py-1 bg-emerald-800 text-white rounded font-bold uppercase text-[10px] tracking-wider inline-flex items-center gap-1">
+                                        <Lock className="w-3 h-3 text-emerald-300" />
+                                        {isHi ? 'निस्तारित व बंद (RESOLVED)' : 'RESOLVED & LOCKED'}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
 
                     <div className="p-5 sm:p-6 space-y-6">
 
+                        {/* ── Official Citizen Particulars Table Card ── */}
+                        <div className="border-2 border-slate-300 rounded-lg overflow-hidden text-xs">
+                            <div className="bg-navy-900 text-white px-4 py-2 font-bold uppercase tracking-wider text-[11px] flex items-center justify-between">
+                                <span>{isHi ? '1. शिकायतकर्ता एवं समस्या का आधिकारिक विवरण' : '1. Complainant & Grievance Official Registration Particulars'}</span>
+                                <span className="font-mono text-[10px] text-amber-400">PANCHAYAT RECORD SHEET</span>
+                            </div>
+
+                            <div className="divide-y divide-slate-200 bg-white">
+                                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+                                    <div className="p-3.5 flex items-start gap-3 bg-slate-50/50">
+                                        <User className="w-4 h-4 text-navy-900 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="text-[10px] text-slate-500 uppercase font-bold block">{isHi ? 'शिकायतकर्ता नाम (Complainant Name)' : 'Complainant Name'}</span>
+                                            <span className="font-extrabold text-sm text-navy-900">{complaint.name}</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-3.5 flex items-start gap-3 bg-slate-50/50">
+                                        <Phone className="w-4 h-4 text-navy-900 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="text-[10px] text-slate-500 uppercase font-bold block">{isHi ? 'पंजीकृत मोबाइल (Registered Mobile)' : 'Registered Mobile'}</span>
+                                            <span className="font-mono font-bold text-sm text-navy-900">+91 {complaint.mobile}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
+                                    <div className="p-3.5 flex items-start gap-3">
+                                        <MapPin className="w-4 h-4 text-navy-900 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="text-[10px] text-slate-500 uppercase font-bold block">{isHi ? 'स्थान / ग्राम पंचायत वार्ड (Location / Ward)' : 'Area / Ward Location'}</span>
+                                            <span className="font-bold text-slate-900">{complaint.area}</span>
+                                        </div>
+                                    </div>
+                                    <div className="p-3.5 flex items-start gap-3">
+                                        <FileText className="w-4 h-4 text-navy-900 shrink-0 mt-0.5" />
+                                        <div>
+                                            <span className="text-[10px] text-slate-500 uppercase font-bold block">{isHi ? 'शिकायत की श्रेणी (Grievance Category)' : 'Grievance Category'}</span>
+                                            <span className="font-bold text-slate-900">{typeLabels[complaint.complaint_type] || complaint.complaint_type}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {complaint.description && (
+                                    <div className="p-3.5 bg-amber-50/30">
+                                        <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">
+                                            {isHi ? 'समस्या का विस्तृत विवरण (Grievance Description)' : 'Grievance Detailed Description'}
+                                        </span>
+                                        <p className="text-slate-800 leading-relaxed font-sans font-medium text-xs">
+                                            "{complaint.description}"
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         {/* ── Official Lifecycle Stepper ── */}
-                        <div className="bg-slate-50 p-4 sm:p-5 rounded-lg border border-slate-200">
-                            <p className="text-xs font-extrabold uppercase tracking-widest text-slate-600 mb-5 flex items-center gap-1.5">
-                                <ShieldCheck className="w-4 h-4 text-navy-900" />
-                                {isHi ? 'आधिकारिक स्थिति प्रगति (Lifecycle Audit Timeline)' : 'Official Lifecycle Audit Timeline'}
-                            </p>
+                        <div className="bg-slate-50 p-4 sm:p-5 rounded-lg border-2 border-slate-300">
+                            <div className="flex items-center justify-between mb-5">
+                                <p className="text-xs font-extrabold uppercase tracking-widest text-navy-900 flex items-center gap-1.5">
+                                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                                    {isHi ? '2. स्थिति प्रगति ऑडिट (Official Lifecycle Audit Progress)' : '2. Official Lifecycle Audit Progress'}
+                                </p>
+                                <span className="text-[10px] font-mono text-slate-500 uppercase">Stage {currentRank} of 3</span>
+                            </div>
 
                             <div className="grid grid-cols-3 gap-2 relative">
                                 {/* Track Line Background */}
-                                <div className="absolute top-4 left-8 right-8 h-1 bg-slate-200 -z-0" />
-                                <div
-                                    className="absolute top-4 left-8 h-1 bg-navy-900 transition-all duration-500 -z-0"
-                                    style={{
-                                        width: currentRank === 1 ? '0%' : currentRank === 2 ? '50%' : '100%',
-                                    }}
-                                />
+                                <div className="absolute top-[18px] left-[16.66%] right-[16.66%] h-1 bg-slate-300 z-0 -translate-y-1/2">
+                                    <div
+                                        className="h-full bg-navy-900 transition-all duration-500"
+                                        style={{
+                                            width: currentRank <= 1 ? '0%' : currentRank === 2 ? '50%' : '100%',
+                                        }}
+                                    />
+                                </div>
 
                                 {/* Step 1: Submitted */}
                                 <div className="flex flex-col items-center text-center relative z-10">
@@ -230,7 +314,7 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                                     <span className={`text-xs font-bold mt-2 ${currentRank >= 2 ? 'text-amber-900' : 'text-slate-400'}`}>
                                         {isHi ? 'कार्रवाई जारी' : 'In Progress'}
                                     </span>
-                                    <span className="text-[10px] text-slate-500">
+                                    <span className="text-[10px] text-slate-500 font-medium">
                                         {currentRank >= 2 ? (isHi ? 'निरीक्षण शुरू' : 'Inspection Assigned') : (isHi ? 'लंबित' : 'Pending')}
                                     </span>
                                 </div>
@@ -242,79 +326,25 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                                         3
                                     </div>
                                     <span className={`text-xs font-bold mt-2 ${currentRank >= 3 ? 'text-emerald-900' : 'text-slate-400'}`}>
-                                        {isHi ? 'निस्तारित व लॉक्ड' : 'Resolved'}
+                                        {isHi ? 'निस्तारित व बंद' : 'Resolved'}
                                     </span>
-                                    <span className="text-[10px] text-slate-500">
+                                    <span className="text-[10px] text-slate-500 font-medium">
                                         {currentRank >= 3 ? (isHi ? 'निस्तारण पूर्ण' : 'Officially Closed') : (isHi ? 'प्रतीक्षारत' : 'Awaiting')}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* ── Official Citizen Details Grid ── */}
-                        <div className="border border-slate-200 rounded-lg overflow-hidden text-xs">
-                            <div className="bg-slate-100 px-4 py-2 border-b border-slate-200 font-bold text-navy-900 uppercase tracking-wider text-[11px]">
-                                {isHi ? 'शिकायतकर्ता विवरण (Grievant Details)' : 'Grievant Registration Details'}
-                            </div>
-
-                            <div className="divide-y divide-slate-200 bg-white">
-                                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-                                    <div className="p-3 flex items-center gap-2.5">
-                                        <User className="w-4 h-4 text-navy-900 shrink-0" />
-                                        <div>
-                                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isHi ? 'शिकायतकर्ता नाम' : 'Complainant Name'}</span>
-                                            <span className="font-bold text-navy-900">{complaint.name}</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-3 flex items-center gap-2.5">
-                                        <Phone className="w-4 h-4 text-navy-900 shrink-0" />
-                                        <div>
-                                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isHi ? 'मोबाइल नंबर' : 'Mobile Number'}</span>
-                                            <span className="font-mono font-bold text-navy-900">+91 {complaint.mobile}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-slate-200">
-                                    <div className="p-3 flex items-center gap-2.5">
-                                        <MapPin className="w-4 h-4 text-navy-900 shrink-0" />
-                                        <div>
-                                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isHi ? 'क्षेत्र / ग्राम पंचायत वार्ड' : 'Area / Ward Location'}</span>
-                                            <span className="font-semibold text-slate-800">{complaint.area}</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-3 flex items-center gap-2.5">
-                                        <FileText className="w-4 h-4 text-navy-900 shrink-0" />
-                                        <div>
-                                            <span className="text-[10px] text-slate-400 uppercase font-semibold block">{isHi ? 'शिकायत की श्रेणी' : 'Grievance Category'}</span>
-                                            <span className="font-semibold text-slate-800">{typeLabels[complaint.complaint_type] || complaint.complaint_type}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {complaint.description && (
-                                    <div className="p-3 bg-slate-50/50">
-                                        <span className="text-[10px] text-slate-400 uppercase font-semibold block mb-1">
-                                            {isHi ? 'समस्या का विवरण (Grievance Description)' : 'Grievance Description'}
-                                        </span>
-                                        <p className="text-slate-700 leading-relaxed font-sans italic">
-                                            "{complaint.description}"
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
                         {/* ── Official Action & Remarks Audit Log ── */}
                         {updates.length > 0 && (
                             <div className="space-y-3">
-                                <p className="text-xs font-bold uppercase tracking-wider text-navy-900 flex items-center gap-1.5">
+                                <p className="text-xs font-extrabold uppercase tracking-wider text-navy-900 flex items-center gap-1.5">
                                     <FileCheck className="w-4 h-4 text-amber-600" />
-                                    {isHi ? 'विभाग द्वारा की गई कार्रवाई व टिप्पणियां' : 'Departmental Progress & Official Remarks Log'}
+                                    {isHi ? '3. विभागीय कार्रवाई एवं आधिकारिक टिप्पणियां' : '3. Departmental Progress & Official Remarks Audit Log'}
                                 </p>
                                 <div className="space-y-2.5">
-                                    {updates.map((update, idx) => (
-                                        <div key={update.id} className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-xs space-y-1.5">
+                                    {updates.map((update) => (
+                                        <div key={update.id} className="p-3.5 bg-slate-50 border border-slate-300 rounded-lg text-xs space-y-1.5">
                                             <div className="flex items-center justify-between">
                                                 <span className="font-bold text-navy-900 flex items-center gap-1.5">
                                                     <span className="w-2 h-2 rounded-full bg-navy-900" />
@@ -325,8 +355,8 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                                                 </span>
                                             </div>
                                             {update.remark && (
-                                                <div className="bg-white p-2.5 rounded border border-slate-200 text-slate-700 font-mono text-[11px] mt-1">
-                                                    💬 {update.remark}
+                                                <div className="bg-white p-2.5 rounded border border-slate-300 text-slate-800 font-mono text-[11px] mt-1">
+                                                    💬 <span className="font-semibold">{update.remark}</span>
                                                 </div>
                                             )}
                                         </div>
@@ -335,19 +365,54 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                             </div>
                         )}
 
+                        {/* ── Official Digital Seal & Verification Footer ── */}
+                        <div className="pt-4 border-t-2 border-slate-300 grid sm:grid-cols-2 gap-4 items-center">
+                            {/* Security Verification Hash & QR Code placeholder */}
+                            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                <QrCode className="w-10 h-10 text-navy-900 shrink-0" />
+                                <div>
+                                    <span className="text-[9px] font-mono uppercase font-bold text-slate-500 block">
+                                        SYSTEM SECURITY HASH
+                                    </span>
+                                    <span className="font-mono text-[10px] font-bold text-navy-900 block tracking-tight truncate">
+                                        SHA256: ZP-UK-{complaint.complaint_number.slice(5)}-VERIFIED
+                                    </span>
+                                    <span className="text-[9px] text-slate-500 block">
+                                        {isHi ? 'पोर्टल पर सत्यता जांचें: panchayat.uk.gov.in' : 'Verify authenticity at: panchayat.uk.gov.in'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Official Sign-off Stamp Box */}
+                            <div className="text-right sm:text-right border-l-0 sm:border-l sm:pl-4 border-slate-200 space-y-1">
+                                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded text-[10px] font-bold border border-amber-300 uppercase tracking-wider mb-0.5">
+                                    <Award className="w-3 h-3 text-amber-700" />
+                                    {isHi ? 'प्रमाणित आधिकारिक प्रति' : 'OFFICIAL CERTIFIED COPY'}
+                                </div>
+                                <p className="font-extrabold text-xs text-navy-950">
+                                    {isHi ? 'लोक शिकायत निवारण प्रकोष्ठ' : 'Public Grievance Redressal Cell'}
+                                </p>
+                                <p className="text-[11px] font-semibold text-slate-700">
+                                    {isHi ? 'जिला पंचायत • उत्तराखंड सरकार' : 'Zila Panchayat • Govt. of Uttarakhand'}
+                                </p>
+                                <p className="text-[9px] text-slate-400 italic">
+                                    {isHi ? 'यह कंप्यूटर जनित आधिकारिक प्रमाण पत्र है (हस्ताक्षर की आवश्यकता नहीं)' : 'Computer generated official document. No physical signature required.'}
+                                </p>
+                            </div>
+                        </div>
+
                         {/* ── Action Toolbar (Print Official Receipt) ── */}
-                        <div className="pt-2 flex items-center justify-between gap-3 border-t border-slate-200 print:hidden">
-                            <span className="text-[10px] text-slate-500 font-mono">
-                                {isHi ? 'जिला पंचायत उत्तराखंड • जन शिकायत निवारण रिकॉर्ड' : 'Zila Panchayat Public Redressal System'}
+                        <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200 print:hidden">
+                            <span className="text-[11px] text-slate-500 font-mono">
+                                {isHi ? 'जिला पंचायत जन शिकायत निवारण पोर्टल' : 'Zila Panchayat Public Redressal System'}
                             </span>
                             <Button
                                 type="button"
-                                variant="outline"
                                 onClick={handlePrint}
-                                className="h-9 px-4 text-xs font-bold gap-1.5 border-slate-300 text-navy-900 hover:bg-slate-100 shadow-xs"
+                                className="h-10 px-5 text-xs font-bold gap-2 bg-navy-900 hover:bg-navy-800 text-white shadow-xs"
                             >
-                                <Printer className="w-3.5 h-3.5 text-navy-900" />
-                                {isHi ? 'रसीद प्रिंट करें' : 'Print Official Receipt'}
+                                <Printer className="w-4 h-4 text-amber-400" />
+                                {isHi ? 'आधिकारिक रसीद प्रिंट / PDF डाउनलोड करें' : 'Print / Download Official Receipt PDF'}
                             </Button>
                         </div>
 

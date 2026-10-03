@@ -59,14 +59,12 @@ export async function sendComplaintOtp(mobile: string) {
     devOtp: otp, // Always return devOtp since real SMS is disabled for now
   };
 }
-
 export async function createComplaint(complaint: {
   name: string;
   mobile: string;
   area: string;
   complaint_type: string;
   description?: string;
-  otp?: string;
 }) {
   const check = isValidRealWorldMobile(complaint.mobile);
   if (!check.valid) {
@@ -74,27 +72,6 @@ export async function createComplaint(complaint: {
   }
 
   const cleanMobile = complaint.mobile.replace(/\D/g, '');
-
-  // If OTP is provided, verify it
-  if (complaint.otp) {
-    const storedOtp = complaintOtpMap.get(cleanMobile);
-    if (!storedOtp) {
-      throw new Error('OTP not found or expired. Please click "Get OTP" first.');
-    }
-    if (Date.now() > storedOtp.expiresAt) {
-      complaintOtpMap.delete(cleanMobile);
-      throw new Error('OTP has expired. Please request a new OTP code.');
-    }
-    if (storedOtp.attempts >= 5) {
-      complaintOtpMap.delete(cleanMobile);
-      throw new Error('Too many invalid OTP attempts. Please request a new OTP.');
-    }
-    if (storedOtp.otp !== complaint.otp.trim()) {
-      storedOtp.attempts += 1;
-      throw new Error('Invalid OTP code. Please enter the correct 6-digit verification code.');
-    }
-    complaintOtpMap.delete(cleanMobile);
-  }
 
   try {
     // MED-10: Sanitize text inputs (strip HTML tags)

@@ -213,8 +213,8 @@ export const ComplaintForm = React.memo(() => {
                       size="sm"
                       onClick={() => handleCopyId(lastSubmitted.complaint_number)}
                       className={`h-7 px-2.5 text-[11px] gap-1 font-semibold transition-all ${copied
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700'
+                        ? 'bg-emerald-600 text-white border-emerald-600'
+                        : 'bg-white hover:bg-slate-100 border-slate-300 text-slate-700'
                         }`}
                     >
                       {copied ? (
@@ -281,8 +281,8 @@ export const ComplaintForm = React.memo(() => {
                   type="button"
                   onClick={() => setActiveTab('submit')}
                   className={`py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${activeTab === 'submit'
-                      ? 'bg-amber-500 text-navy-950 shadow-inner'
-                      : 'text-slate-300 hover:text-white hover:bg-navy-900'
+                    ? 'bg-amber-500 text-navy-950 shadow-inner'
+                    : 'text-slate-300 hover:text-white hover:bg-navy-900'
                     }`}
                 >
                   <Send className="w-3.5 h-3.5" />
@@ -293,8 +293,8 @@ export const ComplaintForm = React.memo(() => {
                   type="button"
                   onClick={() => setActiveTab('track')}
                   className={`py-3 px-4 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors ${activeTab === 'track'
-                      ? 'bg-amber-500 text-navy-950 shadow-inner'
-                      : 'text-slate-300 hover:text-white hover:bg-navy-900'
+                    ? 'bg-amber-500 text-navy-950 shadow-inner'
+                    : 'text-slate-300 hover:text-white hover:bg-navy-900'
                     }`}
                 >
                   <Search className="w-3.5 h-3.5" />

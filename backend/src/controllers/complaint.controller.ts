@@ -3,22 +3,8 @@ import { AuthenticatedRequest } from '../types';
 import * as complaintService from '../services/complaint.service';
 
 /**
- * POST /api/complaints/send-otp
- * Public — sends verification OTP to citizen mobile.
- */
-export async function sendOtp(req: Request, res: Response): Promise<void> {
-  try {
-    const { mobile } = req.body;
-    const result = await complaintService.sendComplaintOtp(mobile);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message || 'Failed to send OTP' });
-  }
-}
-
-/**
  * POST /api/complaints
- * Public — citizens can submit complaints with verified OTP.
+ * Public — citizens can submit complaints.
  */
 export async function create(req: Request, res: Response): Promise<void> {
   try {
