@@ -2,14 +2,23 @@ import { api } from './api';
 import { Complaint, ComplaintUpdate } from '@/types';
 
 export const complaintService = {
-  // Public: submit complaint
+  // Public: send OTP
+  sendOtp: (data: { mobile: string }) =>
+    api.post<{ success: boolean; message: string; devOtp?: string }>('/complaints/send-otp', data),
+
+  // Public: submit complaint with OTP
   create: (data: {
     name: string;
     mobile: string;
     area: string;
     complaint_type: string;
     description?: string;
+    otp?: string;
   }) => api.post<{ message: string; complaint_number: string; complaint: Complaint }>('/complaints', data),
+
+  // Public: track complaint
+  track: (trackingId: string) =>
+    api.get<{ complaint: Complaint; updates: ComplaintUpdate[] }>(`/complaints/track/${encodeURIComponent(trackingId.trim())}`),
 
   // Admin: get all complaints
   getAll: (status?: string) =>

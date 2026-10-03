@@ -33,16 +33,30 @@ export const ComplaintsPage = React.memo(() => {
   const [detailLoading, setDetailLoading] = useState(false);
   const [statusForm, setStatusForm] = useState({ status: '', remark: '' });
   const [updating, setUpdating] = useState(false);
+  const [updateError, setUpdateError] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchComplaints();
+    let isMounted = true;
+    setLoading(true);
+    fetchComplaints().finally(() => {
+      if (isMounted) setLoading(false);
+    });
+
+    const interval = setInterval(() => {
+      fetchComplaints();
+    }, 10000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, [filter]);
 
   // Realtime: new complaints
   useRealtime<{ type: string, new: Complaint }>('complaint_update', (payload) => {
     if (payload.type === 'INSERT' && payload.new) {
-      setComplaints((prev) => [payload.new, ...prev]);
+      setComplaints((prev) => [payload.new, ...prev.filter(c => c.id !== payload.new.id)]);
     } else if (payload.type === 'UPDATE' && payload.new) {
       setComplaints((prev) =>
         prev.map((c) => (c.id === payload.new.id ? payload.new : c))
@@ -51,20 +65,18 @@ export const ComplaintsPage = React.memo(() => {
   });
 
   async function fetchComplaints() {
-    setLoading(true);
     try {
       const data = await complaintService.getAll(filter !== 'all' ? filter : undefined);
       setComplaints(data.complaints);
     } catch (err) {
       console.error('Failed to fetch complaints:', err);
-    } finally {
-      setLoading(false);
     }
   }
 
   async function viewComplaint(complaint: Complaint) {
     setSelectedComplaint(complaint);
     setStatusForm({ status: complaint.status, remark: '' });
+    setUpdateError(null);
     setDetailLoading(true);
     if (window.innerWidth < 1024) {
       setTimeout(() => {
@@ -84,6 +96,7 @@ export const ComplaintsPage = React.memo(() => {
   async function handleUpdateStatus() {
     if (!selectedComplaint || !statusForm.status) return;
     setUpdating(true);
+    setUpdateError(null);
     try {
       await complaintService.updateStatus(selectedComplaint.id, statusForm);
       setSelectedComplaint({ ...selectedComplaint, status: statusForm.status as any });
@@ -91,8 +104,8 @@ export const ComplaintsPage = React.memo(() => {
       const data = await complaintService.getById(selectedComplaint.id);
       setUpdates(data.updates);
       setStatusForm({ ...statusForm, remark: '' });
-    } catch (err) {
-      console.error('Failed to update complaint:', err);
+    } catch (err: any) {
+      setUpdateError(err.message || 'Failed to update complaint status');
     } finally {
       setUpdating(false);
     }
@@ -247,31 +260,64 @@ export const ComplaintsPage = React.memo(() => {
 
                   {/* Update Status */}
                   <div className="px-4 py-3 space-y-2">
-                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-normal">Update Status</p>
-                    <select
-                      value={statusForm.status}
-                      onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
-                      className="w-full h-8 border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
-                    >
-                      <option value="new">New</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="resolved">Resolved</option>
-                    </select>
-                    <Textarea
-                      placeholder="Add official remark..."
-                      value={statusForm.remark}
-                      onChange={(e) => setStatusForm({ ...statusForm, remark: e.target.value })}
-                      rows={2}
-                      className="text-[11px] font-mono resize-none"
-                    />
-                    <button
-                      onClick={handleUpdateStatus}
-                      disabled={updating}
-                      className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-normal py-2 rounded-sm transition-colors"
-                    >
-                      <Save className="w-3 h-3" />
-                      {updating ? 'Updating...' : 'Update Status'}
-                    </button>
+                    <p className="text-[10px] font-bold text-[#0a1628] uppercase tracking-normal flex items-center justify-between">
+                      <span>Update Lifecycle Status</span>
+                      <span className="text-[9px] text-amber-700 font-semibold">(Forward-Only Progress)</span>
+                    </p>
+
+                    {updateError && (
+                      <div className="p-2 bg-red-50 border border-red-200 rounded text-red-800 text-[11px] font-medium">
+                        ⚠️ {updateError}
+                      </div>
+                    )}
+
+                    {selectedComplaint.status === 'resolved' ? (
+                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-emerald-900 text-xs">
+                        <p className="font-bold flex items-center gap-1.5 text-emerald-950">
+                          <span>🔒</span> Grievance Resolved & Locked
+                        </p>
+                        <p className="text-[10px] text-emerald-800 mt-1">
+                          This complaint has reached the final stage (Resolved) and cannot be modified or reverted to previous stages.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
+                        <select
+                          value={statusForm.status}
+                          onChange={(e) => setStatusForm({ ...statusForm, status: e.target.value })}
+                          className="w-full h-8 border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
+                        >
+                          {selectedComplaint.status === 'new' && (
+                            <>
+                              <option value="new">New (Current Stage)</option>
+                              <option value="in_progress">Advance to: In Progress ➔</option>
+                              <option value="resolved">Advance to: Resolved ➔</option>
+                            </>
+                          )}
+                          {selectedComplaint.status === 'in_progress' && (
+                            <>
+                              <option value="in_progress">In Progress (Current Stage)</option>
+                              <option value="resolved">Advance to: Resolved (Final Stage) ➔</option>
+                            </>
+                          )}
+                        </select>
+                        <Textarea
+                          placeholder="Add official remark / resolution notes..."
+                          value={statusForm.remark}
+                          onChange={(e) => setStatusForm({ ...statusForm, remark: e.target.value })}
+                          rows={2}
+                          className="text-[11px] font-mono resize-none"
+                        />
+                        <button
+                          onClick={handleUpdateStatus}
+                          disabled={updating || statusForm.status === selectedComplaint.status}
+                          className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-normal py-2 rounded-sm transition-colors"
+                        >
+                          <Save className="w-3 h-3" />
+                          {updating ? 'Updating...' : 'Update Status'}
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {/* Update history */}

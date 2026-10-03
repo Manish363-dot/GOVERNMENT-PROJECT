@@ -2,8 +2,9 @@ import { useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
-// Derive the base URL from API_URL by removing '/api' if it's there
-const BASE_URL = API_URL.replace(/\/api$/, '') || window.location.origin;
+const BASE_URL = API_URL.startsWith('http')
+  ? API_URL.replace(/\/api$/, '')
+  : window.location.origin;
 
 /**
  * Hook to subscribe to Socket.io events.
@@ -20,7 +21,7 @@ export function useRealtime<T>(
     // Initialize socket connection
     const socket = io(BASE_URL, {
       path: '/socket.io',
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
     });
 
     socketRef.current = socket;
