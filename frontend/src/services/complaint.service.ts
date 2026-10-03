@@ -6,14 +6,14 @@ export const complaintService = {
   sendOtp: (data: { mobile: string }) =>
     api.post<{ success: boolean; message: string; devOtp?: string }>('/complaints/send-otp', data),
 
-  // Public: submit complaint with OTP
+  // Public: submit complaint with OTP (required)
   create: (data: {
     name: string;
     mobile: string;
     area: string;
     complaint_type: string;
     description?: string;
-    otp?: string;
+    otp: string; // Required
   }) => api.post<{ message: string; complaint_number: string; complaint: Complaint }>('/complaints', data),
 
   // Public: track complaint

@@ -109,12 +109,23 @@ const complaintLimiter = rateLimit({
   message: { error: 'Too many complaints submitted. Please try again later.' },
 });
 
+// OTP send rate limit: max 10 requests per 15 minutes per IP (anti-SMS-bomb)
+const otpSendLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: parseInt(process.env.OTP_IP_RATE_LIMIT_MAX || '10'),
+  message: { error: 'Too many OTP requests from this device. Please try again in 15 minutes.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: false,
+});
+
 // Upload rate limit: 20 per hour per IP (expensive operation)
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   max: 20,
   message: { error: 'Too many files uploaded. Please try again later.' },
 });
+
 
 // Health check (exempt from CSRF and Rate Limiting)
 app.get('/api/health', (_req, res) => {
@@ -129,6 +140,7 @@ app.use('/api/auth/verify-otp', authLimiter);
 app.use('/api/auth/verify-reset-otp', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 app.use('/api/auth/resend-otp', authLimiter);
+app.use('/api/complaints/send-otp', otpSendLimiter); // Strict: anti-SMS-bomb per IP
 app.use('/api/complaints', complaintLimiter);
 app.use('/api/media', (req, res, next) => {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {

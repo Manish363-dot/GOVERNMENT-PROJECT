@@ -13,7 +13,7 @@ export const createComplaintSchema = z.object({
     area: z.string().min(2, 'Area/Location is required'),
     complaint_type: z.enum(['vehicle_not_arrived', 'garbage_not_collected', 'other']),
     description: z.string().optional(),
-    otp: z.string().optional(),
+    otp: z.string().length(4, 'OTP must be exactly 4 digits').regex(/^\d{4}$/, 'OTP must be 4 numeric digits'),
   }),
 });
 
