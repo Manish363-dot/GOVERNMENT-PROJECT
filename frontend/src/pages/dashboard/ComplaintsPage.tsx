@@ -43,13 +43,8 @@ export const ComplaintsPage = React.memo(() => {
       if (isMounted) setLoading(false);
     });
 
-    const interval = setInterval(() => {
-      fetchComplaints();
-    }, 10000);
-
     return () => {
       isMounted = false;
-      clearInterval(interval);
     };
   }, [filter]);
 

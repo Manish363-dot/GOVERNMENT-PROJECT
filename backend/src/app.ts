@@ -129,7 +129,12 @@ app.use('/api/auth/verify-otp', authLimiter);
 app.use('/api/auth/verify-reset-otp', authLimiter);
 app.use('/api/auth/reset-password', authLimiter);
 app.use('/api/auth/resend-otp', authLimiter);
-app.use('/api/complaints', complaintLimiter);
+app.use('/api/complaints', (req, res, next) => {
+  if (req.method === 'POST') {
+    return complaintLimiter(req, res, next);
+  }
+  next();
+});
 app.use('/api/media', (req, res, next) => {
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
     return uploadLimiter(req, res, next);

@@ -48,7 +48,9 @@ export async function getAll(req: Request, res: Response): Promise<void> {
     const status = req.query.status as string | undefined;
     const complaints = await complaintService.getAllComplaints(status);
     res.json({ complaints });
-  } catch (err) {
+  } catch (err: any) {
+    console.error('Controller getAll error:', err);
+    require('fs').writeFileSync('controller-getAll-error.log', String(err) + '\n' + err.stack);
     res.status(500).json({ error: 'Failed to fetch complaints' });
   }
 }

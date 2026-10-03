@@ -1,7 +1,6 @@
 import { prisma } from '../config/prisma';
 import { Complaint } from '@prisma/client';
 import crypto from 'crypto';
-import { sendRealSmsOtp } from './sms.service';
 
 export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason?: string } {
   const clean = mobile.replace(/\D/g, '');
@@ -54,15 +53,10 @@ export async function sendComplaintOtp(mobile: string) {
     attempts: 0,
   });
 
-  // Send Real SMS via SMS Gateway (Fast2SMS / Twilio) or Console Fallback
-  const smsResult = await sendRealSmsOtp(cleanMobile, otp);
-
   return {
     success: true,
-    message: smsResult.sent
-      ? `Verification SMS code sent to +91 ${cleanMobile}`
-      : `Verification OTP sent to +91 ${cleanMobile}`,
-    devOtp: smsResult.sent ? undefined : otp, // Hide devOtp when real SMS gateway is active!
+    message: `Verification OTP generated for +91 ${cleanMobile}`,
+    devOtp: otp, // Always return devOtp since real SMS is disabled for now
   };
 }
 
@@ -132,7 +126,9 @@ export async function getAllComplaints(status?: string) {
       where: status && status !== 'all' ? { status: status as any } : undefined,
       orderBy: { created_at: 'desc' }
     });
-  } catch (error) {
+  } catch (error: any) {
+    console.error('getAllComplaints error:', error);
+    require('fs').writeFileSync('getAllComplaints-error.log', String(error) + '\n' + error.stack);
     throw new Error('Failed to fetch complaints');
   }
 }

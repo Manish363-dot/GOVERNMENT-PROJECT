@@ -53,3 +53,28 @@ httpServer.listen(PORT, () => {
   └─────────────────────────────────────────────┘
   `);
 });
+
+// Graceful shutdown handling
+async function gracefulShutdown() {
+  console.log('\n[Server] Shutting down gracefully...');
+  
+  // Close HTTP server
+  httpServer.close(() => {
+    console.log('[Server] HTTP server closed.');
+  });
+  
+  // Disconnect Prisma
+  try {
+    const { prisma } = require('./config/prisma');
+    await prisma.$disconnect();
+    console.log('[Prisma] Disconnected from database.');
+  } catch (err) {
+    console.error('[Prisma] Error during disconnection:', err);
+  }
+  
+  process.exit(0);
+}
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
+process.on('SIGUSR2', gracefulShutdown); // For nodemon / tsx watch
