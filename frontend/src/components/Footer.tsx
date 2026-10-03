@@ -72,13 +72,24 @@ export const Footer = React.memo(() => {
             <ul className="grid grid-cols-2 gap-y-2.5 gap-x-4">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('/#') ? (
+                    <a
+                      href={link.href}
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
