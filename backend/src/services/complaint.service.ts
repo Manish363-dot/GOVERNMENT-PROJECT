@@ -1,8 +1,6 @@
 import { prisma } from '../config/prisma';
 import { Complaint } from '@prisma/client';
 import crypto from 'crypto';
-import { sendRealSmsOtp, sendConfirmationSms, validateMessageCentralOtp } from './sms.service';
-import { otpConfig } from '../config/env';
 
 export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason?: string } {
   const clean = mobile.replace(/\D/g, '');
@@ -36,101 +34,12 @@ export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason
   return { valid: true };
 }
 
-// ─── OTP Security Store ───────────────────────────────────────────────────────
-interface OtpRecord {
-  otp: string;
-  verificationId?: string; // Message Central Verification ID for remote OTP validation
-  expiresAt: number;       // OTP validity from env
-  attempts: number;        // Wrong OTP attempts
-  sentAt: number;          // When last OTP was sent (for resend cooldown)
-  sendCount: number;       // Total OTPs sent in current window
-  windowStart: number;     // Start of rate-limit window
-}
-
-// Per-mobile OTP records
-const complaintOtpMap = new Map<string, OtpRecord>();
-
-// Auto-cleanup expired OTP records every 10 minutes (memory hygiene)
-setInterval(() => {
-  const now = Date.now();
-  for (const [mobile, record] of complaintOtpMap.entries()) {
-    // Remove if OTP expired AND rate-limit window also expired
-    if (now > record.expiresAt && now > record.windowStart + otpConfig.rateWindowMs) {
-      complaintOtpMap.delete(mobile);
-    }
-  }
-}, 10 * 60 * 1000);
-
-export async function sendComplaintOtp(mobile: string) {
-  const check = isValidRealWorldMobile(mobile);
-  if (!check.valid) {
-    throw new Error(check.reason || 'Invalid mobile number');
-  }
-
-  const cleanMobile = mobile.replace(/\D/g, '');
-  const now = Date.now();
-  const existing = complaintOtpMap.get(cleanMobile);
-
-  // ── 1. Resend Cooldown: Must wait before requesting again ──
-  if (existing && existing.sentAt) {
-    const secondsSinceLast = Math.ceil((now - existing.sentAt) / 1000);
-    const waitSeconds = Math.ceil(otpConfig.resendCooldownMs / 1000) - secondsSinceLast;
-    if (waitSeconds > 0) {
-      throw new Error(
-        `OTP already sent. Please wait ${waitSeconds} second${waitSeconds !== 1 ? 's' : ''} before requesting again. / OTP पहले ही भेजा जा चुका है। ${waitSeconds} सेकंड बाद पुनः प्रयास करें।`
-      );
-    }
-  }
-
-  // ── 2. Hourly Rate Limit: Max OTPs per mobile per window ──
-  if (existing) {
-    const windowExpired = now > existing.windowStart + otpConfig.rateWindowMs;
-    if (!windowExpired && existing.sendCount >= otpConfig.maxPerHour) {
-      const resetInMins = Math.ceil((existing.windowStart + otpConfig.rateWindowMs - now) / 60000);
-      throw new Error(
-        `Too many OTP requests. Maximum ${otpConfig.maxPerHour} OTPs allowed per hour. Try again in ${resetInMins} minute${resetInMins !== 1 ? 's' : ''}. / प्रति घंटे अधिकतम ${otpConfig.maxPerHour} OTP अनुरोध की सीमा पार हो गई। ${resetInMins} मिनट बाद पुनः प्रयास करें।`
-      );
-    }
-  }
-
-  const otp = crypto.randomInt(1000, 9999).toString();
-
-  // Send Real SMS
-  const smsResult = await sendRealSmsOtp(cleanMobile, otp);
-
-  // ── Build updated record ──
-  const isNewWindow = !existing || now > existing.windowStart + otpConfig.rateWindowMs;
-  const updatedRecord: OtpRecord = {
-    otp,
-    verificationId: smsResult.verificationId,
-    expiresAt: now + otpConfig.expiryMs,
-    attempts: 0,
-    sentAt: now,
-    sendCount: isNewWindow ? 1 : (existing!.sendCount + 1),
-    windowStart: isNewWindow ? now : existing!.windowStart,
-  };
-
-  complaintOtpMap.set(cleanMobile, updatedRecord);
-
-  console.log(`📤 [OTP] Sending to +91 ${cleanMobile} | Attempt ${updatedRecord.sendCount}/${otpConfig.maxPerHour} this window | VerificationID: ${smsResult.verificationId || 'NONE'}`);
-
-  return {
-    success: true,
-    message: smsResult.sent
-      ? `Verification SMS sent to +91 ${cleanMobile}`
-      : `Verification OTP sent to +91 ${cleanMobile}`,
-    devOtp: smsResult.sent ? undefined : otp,
-    remainingResends: otpConfig.maxPerHour - updatedRecord.sendCount,
-  };
-}
-
 export async function createComplaint(complaint: {
   name: string;
   mobile: string;
   area: string;
   complaint_type: string;
   description?: string;
-  otp: string; // Required — OTP verification is mandatory
 }) {
   const check = isValidRealWorldMobile(complaint.mobile);
   if (!check.valid) {
@@ -138,40 +47,6 @@ export async function createComplaint(complaint: {
   }
 
   const cleanMobile = complaint.mobile.replace(/\D/g, '');
-
-  // OTP verification is MANDATORY
-  if (!complaint.otp || complaint.otp.trim().length !== 4) {
-    throw new Error('OTP is required. Please enter the 4-digit verification code sent to your mobile.');
-  }
-
-  const storedOtp = complaintOtpMap.get(cleanMobile);
-  if (!storedOtp) {
-    throw new Error('OTP not found or expired. Please click "Get OTP" first.');
-  }
-  if (Date.now() > storedOtp.expiresAt) {
-    complaintOtpMap.delete(cleanMobile);
-    throw new Error('OTP has expired. Please request a new OTP code.');
-  }
-  if (storedOtp.attempts >= otpConfig.maxWrongAttempts) {
-    complaintOtpMap.delete(cleanMobile);
-    throw new Error(`Too many wrong OTP attempts (${otpConfig.maxWrongAttempts} max). Please request a new OTP. / बहुत अधिक गलत OTP प्रयास। कृपया नया OTP मंगवाएं।`);
-  }
-
-  // Verify OTP — Use Message Central API if real SMS verificationId exists, else fallback to local code
-  if (storedOtp.verificationId) {
-    const valResult = await validateMessageCentralOtp(storedOtp.verificationId, complaint.otp.trim());
-    if (!valResult.valid) {
-      storedOtp.attempts += 1;
-      throw new Error('Invalid OTP code. Please enter the correct 4-digit verification code sent to your mobile.');
-    }
-  } else {
-    if (storedOtp.otp !== complaint.otp.trim()) {
-      storedOtp.attempts += 1;
-      throw new Error('Invalid OTP code. Please enter the correct 4-digit verification code.');
-    }
-  }
-
-  complaintOtpMap.delete(cleanMobile);
 
   try {
     // MED-10: Sanitize text inputs (strip HTML tags)
@@ -191,12 +66,6 @@ export async function createComplaint(complaint: {
         status: 'new' as any
       }
     });
-
-    // ── Send Confirmation SMS (non-blocking — doesn't delay response) ──
-    sendConfirmationSms(cleanMobile, complaintNumber, sanitize(complaint.name)).catch((err) => {
-      console.error('⚠️ Confirmation SMS failed (non-blocking):', err.message);
-    });
-
     return newComplaint;
   } catch (error) {
     throw new Error('Failed to register complaint');

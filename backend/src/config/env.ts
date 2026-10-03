@@ -14,21 +14,6 @@ const envSchema = z.object({
   TRACCAR_API_TOKEN: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:5175'),
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-
-  // ── SMS / OTP Gateway ──────────────────────────────────────────────────────
-  MESSAGE_CENTRAL_CUSTOMER_ID: z.string().optional(),
-  MESSAGE_CENTRAL_AUTH_TOKEN: z.string().optional(),
-  FAST2SMS_API_KEY: z.string().optional(),
-  TWILIO_ACCOUNT_SID: z.string().optional(),
-  TWILIO_AUTH_TOKEN: z.string().optional(),
-  TWILIO_PHONE_NUMBER: z.string().optional(),
-
-  // ── OTP Security Tuning (all optional — secure defaults applied) ───────────
-  OTP_EXPIRY_MINUTES: z.string().default('5'),           // How long OTP is valid
-  OTP_RESEND_COOLDOWN_SECONDS: z.string().default('60'), // Min wait between resends
-  OTP_MAX_PER_HOUR: z.string().default('5'),             // Max OTP requests per mobile per hour
-  OTP_MAX_WRONG_ATTEMPTS: z.string().default('5'),       // Max wrong guesses before lockout
-  OTP_RATE_WINDOW_MINUTES: z.string().default('60'),     // Rate-limit window duration
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -40,16 +25,6 @@ if (!parsed.success) {
 }
 
 export const env = parsed.data;
-
-// ── OTP Security constants (parsed from env, with safe defaults) ─────────────
-export const otpConfig = {
-  expiryMs: parseInt(env.OTP_EXPIRY_MINUTES) * 60 * 1000,
-  resendCooldownMs: parseInt(env.OTP_RESEND_COOLDOWN_SECONDS) * 1000,
-  maxPerHour: parseInt(env.OTP_MAX_PER_HOUR),
-  maxWrongAttempts: parseInt(env.OTP_MAX_WRONG_ATTEMPTS),
-  rateWindowMs: parseInt(env.OTP_RATE_WINDOW_MINUTES) * 60 * 1000,
-};
-
 
 /**
  * Parse FRONTEND_URL into an array of allowed origins.

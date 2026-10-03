@@ -2,12 +2,11 @@ import { Router } from 'express';
 import * as complaintController from '../controllers/complaint.controller';
 import { authMiddleware, requireAdmin } from '../middleware/auth';
 import { validate } from '../middleware/validate';
-import { sendOtpSchema, createComplaintSchema, updateStatusSchema, getByIdSchema } from '../schemas/complaint.schema';
+import { createComplaintSchema, updateStatusSchema, getByIdSchema } from '../schemas/complaint.schema';
 
 const router = Router();
 
-// Public: Submit & Track complaint & OTP (no auth)
-router.post('/send-otp', validate(sendOtpSchema), complaintController.sendOtp);
+// Public: Submit & Track complaint (no auth)
 router.post('/', validate(createComplaintSchema), complaintController.create);
 router.get('/track/:trackingId', complaintController.track);
 
