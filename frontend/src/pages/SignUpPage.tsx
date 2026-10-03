@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { GoogleLogin } from '@react-oauth/google';
+import { useTranslation } from 'react-i18next';
 import {
   Eye,
   EyeOff,
@@ -23,6 +24,9 @@ import {
 export function SignUpPage() {
   const { user, profile, isNewGoogleUser, signUp, verifyOtp, resendOtp, handleGoogleSuccess } = useAuth();
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
+
   const [form, setForm] = useState({
     full_name: '',
     email: '',
@@ -63,15 +67,15 @@ export function SignUpPage() {
     setSuccess('');
 
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match. Please re-enter.');
+      setError(isHi ? 'पासवर्ड मेल नहीं खाते। कृपया पुनः दर्ज करें।' : 'Passwords do not match. Please re-enter.');
       return;
     }
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters long.');
+      setError(isHi ? 'पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।' : 'Password must be at least 6 characters long.');
       return;
     }
     if (!form.passkey.trim()) {
-      setError('Admin Passkey is mandatory for registration.');
+      setError(isHi ? 'पंजीकरण के लिए एडमिन पासकी अनिवार्य है।' : 'Admin Passkey is mandatory for registration.');
       return;
     }
 
@@ -86,14 +90,14 @@ export function SignUpPage() {
 
       if (res.requiresOtp) {
         setOtpStep(true);
-        setSuccess(`Verification code sent to ${form.email}. Please check your inbox.`);
+        setSuccess(isHi ? `सत्यापन कोड ${form.email} को भेजा गया है। कृपया अपना इनबॉक्स जांचें।` : `Verification code sent to ${form.email}. Please check your inbox.`);
         setResendCooldown(60);
       } else {
-        setSuccess(res.message || 'Account registered successfully!');
+        setSuccess(res.message || (isHi ? 'खाता सफलतापूर्वक पंजीकृत हो गया!' : 'Account registered successfully!'));
         setTimeout(() => navigate('/signin'), 2000);
       }
     } catch (err: any) {
-      setError(err.message || 'Registration failed. Please check your credentials.');
+      setError(err.message || (isHi ? 'पंजीकरण विफल रहा। कृपया अपना विवरण जांचें।' : 'Registration failed. Please check your credentials.'));
     } finally {
       setLoading(false);
     }
@@ -102,7 +106,7 @@ export function SignUpPage() {
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (otp.trim().length !== 6) {
-      setError('Please enter the complete 6-digit code');
+      setError(isHi ? 'कृपया पूरा 6 अंकों का कोड दर्ज करें' : 'Please enter the complete 6-digit code');
       return;
     }
 
@@ -110,10 +114,10 @@ export function SignUpPage() {
     setVerifyingOtp(true);
     try {
       const message = await verifyOtp(form.email, otp.trim());
-      setSuccess(message || 'Account verified and activated successfully! Redirecting to login...');
+      setSuccess(message || (isHi ? 'खाता सफलतापूर्वक सत्यापित और सक्रिय हो गया! लॉगिन पर रीडायरेक्ट कर रहे हैं...' : 'Account verified and activated successfully! Redirecting to login...'));
       setTimeout(() => navigate('/signin'), 2000);
     } catch (err: any) {
-      setError(err.message || 'Invalid or expired verification code');
+      setError(err.message || (isHi ? 'अमान्य या समाप्त हो चुका सत्यापन कोड' : 'Invalid or expired verification code'));
     } finally {
       setVerifyingOtp(false);
     }
@@ -125,10 +129,10 @@ export function SignUpPage() {
     setResendingOtp(true);
     try {
       const message = await resendOtp(form.email);
-      setSuccess(message || 'A new verification code has been sent to your email.');
+      setSuccess(message || (isHi ? 'आपके ईमेल पर एक नया सत्यापन कोड भेजा गया है।' : 'A new verification code has been sent to your email.'));
       setResendCooldown(60);
     } catch (err: any) {
-      setError(err.message || 'Failed to resend code');
+      setError(err.message || (isHi ? 'कोड पुनः भेजने में विफल' : 'Failed to resend code'));
     } finally {
       setResendingOtp(false);
     }
@@ -145,6 +149,31 @@ export function SignUpPage() {
           <div className="flex-1 bg-uksaffron-600" />
         </div>
       </header>
+
+      {/* Floating Warning Banner */}
+      <div className="bg-red-600 text-white text-sm font-medium py-1.5 overflow-hidden w-full flex">
+        <style>{`
+          @keyframes scroll-text {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .scrolling-wrapper {
+            display: flex;
+            white-space: nowrap;
+            width: max-content;
+            animation: scroll-text 40s linear infinite;
+          }
+          .scrolling-wrapper:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+        <div className="scrolling-wrapper">
+          <span className="pr-16">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+        </div>
+      </div>
 
       {/* ── Main Content ── */}
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
@@ -165,26 +194,26 @@ export function SignUpPage() {
                 <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <h1 className="text-2xl font-bold font-poppins leading-tight mb-1">
-                Department Of Zila Panchayat Almora
+                {isHi ? 'जिला पंचायत अल्मोड़ा' : 'Department Of Zila Panchayat Almora'}
               </h1>
   
               <div className="mt-8 space-y-4">
                 <div className="flex items-start gap-3">
                   <UserPlus className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    New official registration for authorized Zila Panchayat administrative staff only.
+                    {isHi ? 'केवल अधिकृत जिला पंचायत प्रशासनिक कर्मचारियों के लिए नया आधिकारिक पंजीकरण।' : 'New official registration for authorized Zila Panchayat administrative staff only.'}
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    An Admin Passkey is required — issued by the department head before registration.
+                    {isHi ? 'एक व्यवस्थापक पासकी आवश्यक है — पंजीकरण से पहले विभाग प्रमुख द्वारा जारी की जाती है।' : 'An Admin Passkey is required — issued by the department head before registration.'}
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <Mail className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                   <p className="text-sm text-slate-300 leading-relaxed">
-                    Mandatory Email Verification ensures only genuine, registered Google / official mailboxes are approved.
+                    {isHi ? 'अनिवार्य ईमेल सत्यापन सुनिश्चित करता है कि केवल वास्तविक, पंजीकृत आधिकारिक मेलबॉक्स ही स्वीकृत हैं।' : 'Mandatory Email Verification ensures only genuine, registered official mailboxes are approved.'}
                   </p>
                 </div>
               </div>
@@ -192,8 +221,8 @@ export function SignUpPage() {
 
             {/* Bottom badge */}
             <div className="relative z-10 pt-12">
-              <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">NIC Cloud Gateway</p>
-              <p className="text-[10px] text-slate-500 mt-1">256-Bit SSL Encrypted · Govt. of Uttarakhand</p>
+              <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">{isHi ? 'NIC क्लाउड गेटवे' : 'NIC Cloud Gateway'}</p>
+              <p className="text-[10px] text-slate-500 mt-1">{isHi ? '256-बिट SSL एन्क्रिप्टेड · उत्तराखंड सरकार' : '256-Bit SSL Encrypted · Govt. of Uttarakhand'}</p>
             </div>
           </div>
 
@@ -206,7 +235,7 @@ export function SignUpPage() {
               className="absolute top-6 right-6 lg:left-6 lg:right-auto text-slate-400 hover:text-navy-900 flex items-center gap-1.5 text-sm font-medium transition-colors z-10 bg-white/80 p-2 rounded-md lg:bg-transparent lg:p-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Back to Home</span>
+              <span className="hidden sm:inline">{isHi ? 'मुख्य पृष्ठ पर लौटें' : 'Back to Home'}</span>
             </Link>
 
             {/* Mobile header */}
@@ -215,8 +244,8 @@ export function SignUpPage() {
                 <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-full h-full object-contain" />
               </div>
               <div>
-                <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">Zila Panchayat</h1>
-                <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">Registration Portal</p>
+                <h1 className="text-lg font-bold font-poppins text-navy-900 leading-none">{isHi ? 'जिला पंचायत' : 'Zila Panchayat'}</h1>
+                <p className="text-xs text-slate-500 mt-1 uppercase tracking-wide">{isHi ? 'पंजीकरण पोर्टल' : 'Registration Portal'}</p>
               </div>
             </div>
 
@@ -241,11 +270,13 @@ export function SignUpPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <Mail className="w-6 h-6 text-navy-800" />
                     <h2 className="text-2xl font-extrabold text-navy-900 uppercase tracking-wide">
-                      Verify Your Gmail
+                      {isHi ? 'अपना ईमेल सत्यापित करें' : 'Verify Your Email'}
                     </h2>
                   </div>
                   <p className="text-sm text-slate-600 leading-relaxed mt-2">
-                    We sent a 6-digit verification code to <strong className="text-navy-900 font-semibold">{form.email}</strong>. Please enter the code below to confirm this is your real, active mailbox.
+                    {isHi ? 'हमने एक 6-अंकीय सत्यापन कोड भेजा है: ' : 'We sent a 6-digit verification code to '}
+                    <strong className="text-navy-900 font-semibold">{form.email}</strong>. 
+                    {isHi ? ' कृपया पुष्टि करने के लिए नीचे कोड दर्ज करें।' : ' Please enter the code below to confirm.'}
                   </p>
                   <div className="flex mt-3 h-[3px] w-20 rounded overflow-hidden">
                     <div className="flex-1 bg-ukgreen-600" />
@@ -257,7 +288,7 @@ export function SignUpPage() {
                 <form onSubmit={handleVerifyOtp} className="space-y-5">
                   <div className="space-y-2">
                     <Label htmlFor="signup-otp" className="font-semibold text-slate-700 text-xs uppercase tracking-wider block">
-                      6-Digit Verification Code
+                      {isHi ? '6-अंकीय सत्यापन कोड' : '6-Digit Verification Code'}
                     </Label>
                     <Input
                       id="signup-otp"
@@ -270,7 +301,7 @@ export function SignUpPage() {
                       autoFocus
                       required
                     />
-                    <p className="text-xs text-slate-500">Code is valid for 15 minutes.</p>
+                    <p className="text-xs text-slate-500">{isHi ? 'कोड 15 मिनट के लिए वैध है।' : 'Code is valid for 15 minutes.'}</p>
                   </div>
 
                   <Button
@@ -281,10 +312,10 @@ export function SignUpPage() {
                     {verifyingOtp ? (
                       <span className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        Verifying Code...
+                        {isHi ? 'कोड सत्यापित किया जा रहा है...' : 'Verifying Code...'}
                       </span>
                     ) : (
-                      'Verify & Activate Official Account'
+                      isHi ? 'सत्यापित करें और आधिकारिक खाता सक्रिय करें' : 'Verify & Activate Official Account'
                     )}
                   </Button>
                 </form>
@@ -300,7 +331,7 @@ export function SignUpPage() {
                     className="flex items-center gap-1.5 text-slate-600 hover:text-navy-900 font-semibold"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    Edit Details
+                    {isHi ? 'विवरण संपादित करें' : 'Edit Details'}
                   </button>
 
                   <button
@@ -310,7 +341,9 @@ export function SignUpPage() {
                     className="flex items-center gap-1.5 text-navy-800 hover:underline font-bold disabled:text-slate-400 disabled:no-underline"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${resendingOtp ? 'animate-spin' : ''}`} />
-                    {resendCooldown > 0 ? `Resend Code (${resendCooldown}s)` : 'Resend Code'}
+                    {resendCooldown > 0 
+                      ? (isHi ? `कोड पुनः भेजें (${resendCooldown}s)` : `Resend Code (${resendCooldown}s)`)
+                      : (isHi ? 'कोड पुनः भेजें' : 'Resend Code')}
                   </button>
                 </div>
               </div>
@@ -322,11 +355,11 @@ export function SignUpPage() {
                   <div className="flex items-center gap-2 mb-1">
                     <UserPlus className="w-5 h-5 text-navy-800" />
                     <h2 className="text-2xl font-extrabold text-navy-900 uppercase tracking-wide">
-                      New Official Registration
+                      {isHi ? 'नया आधिकारिक पंजीकरण' : 'New Official Registration'}
                     </h2>
                   </div>
                   <p className="text-sm text-slate-500 font-medium">
-                    Complete the form below to request administrative access.
+                    {isHi ? 'प्रशासनिक पहुंच का अनुरोध करने के लिए नीचे दिया गया फॉर्म भरें।' : 'Complete the form below to request administrative access.'}
                   </p>
                   {/* Tricolor accent line */}
                   <div className="flex mt-3 h-[3px] w-20 rounded overflow-hidden">
@@ -346,7 +379,7 @@ export function SignUpPage() {
                       }
                     }}
                     onError={() => {
-                      setError('Google Sign Up failed');
+                      setError(isHi ? 'Google साइन अप विफल' : 'Google Sign Up failed');
                     }}
                     text="signup_with"
                   />
@@ -357,7 +390,9 @@ export function SignUpPage() {
                     <span className="w-full border-t border-slate-300" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-slate-500 font-medium">Or register with email</span>
+                    <span className="bg-white px-2 text-slate-500 font-medium">
+                      {isHi ? 'या ईमेल से पंजीकरण करें' : 'Or register with email'}
+                    </span>
                   </div>
                 </div>
 
@@ -366,11 +401,11 @@ export function SignUpPage() {
                   {/* Full Name */}
                   <div className="space-y-1.5">
                     <Label htmlFor="signup-full-name" className="font-semibold text-slate-700">
-                      Full Name (as per official records)
+                      {isHi ? 'पूरा नाम (आधिकारिक रिकॉर्ड के अनुसार)' : 'Full Name (as per official records)'}
                     </Label>
                     <Input
                       id="signup-full-name"
-                      placeholder="e.g. Rajesh Kumar Sharma"
+                      placeholder={isHi ? 'उदा. राजेश कुमार शर्मा' : 'e.g. Rajesh Kumar Sharma'}
                       value={form.full_name}
                       onChange={(e) => setForm({ ...form, full_name: e.target.value })}
                       className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11"
@@ -381,12 +416,12 @@ export function SignUpPage() {
                   {/* Official Email */}
                   <div className="space-y-1.5">
                     <Label htmlFor="signup-email" className="font-semibold text-slate-700">
-                      Official Email ID (Valid Gmail or Gov ID)
+                      {isHi ? 'आधिकारिक ईमेल आईडी (वैध जीमेल या सरकारी आईडी)' : 'Official Email ID (Valid Gmail or Gov ID)'}
                     </Label>
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="admin@gmail.com"
+                      placeholder="admin@uk.gov.in"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11"
@@ -398,13 +433,13 @@ export function SignUpPage() {
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
                       <Label htmlFor="signup-password" className="font-semibold text-slate-700">
-                        Set Password
+                        {isHi ? 'पासवर्ड सेट करें' : 'Set Password'}
                       </Label>
                       <div className="relative">
                         <Input
                           id="signup-password"
                           type={showPassword ? 'text' : 'password'}
-                          placeholder="Min. 6 characters"
+                          placeholder={isHi ? 'न्यूनतम 6 अक्षर' : 'Min. 6 characters'}
                           value={form.password}
                           onChange={(e) => setForm({ ...form, password: e.target.value })}
                           className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11 pr-10"
@@ -421,13 +456,13 @@ export function SignUpPage() {
                     </div>
                     <div className="space-y-1.5">
                       <Label htmlFor="signup-confirm" className="font-semibold text-slate-700">
-                        Confirm Password
+                        {isHi ? 'पासवर्ड की पुष्टि करें' : 'Confirm Password'}
                       </Label>
                       <div className="relative">
                         <Input
                           id="signup-confirm"
                           type={showPassword ? 'text' : 'password'}
-                          placeholder="Re-enter password"
+                          placeholder={isHi ? 'पासवर्ड फिर से दर्ज करें' : 'Re-enter password'}
                           value={form.confirmPassword}
                           onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
                           className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11 pr-10"
@@ -448,14 +483,14 @@ export function SignUpPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="signup-passkey" className="font-semibold text-slate-700 flex items-center gap-1.5">
                       <KeyRound className="w-3.5 h-3.5 text-navy-700" />
-                      Admin Passkey
-                      <span className="ml-1 text-xs font-normal text-slate-400">(Mandatory)</span>
+                      {isHi ? 'व्यवस्थापक पासकी' : 'Admin Passkey'}
+                      <span className="ml-1 text-xs font-normal text-slate-400">{isHi ? '(अनिवार्य)' : '(Mandatory)'}</span>
                     </Label>
                     <div className="relative">
                       <Input
                         id="signup-passkey"
                         type={showPasskey ? 'text' : 'password'}
-                        placeholder="Enter passkey issued by department head"
+                        placeholder={isHi ? 'विभाग प्रमुख द्वारा जारी पासकी दर्ज करें' : 'Enter passkey issued by department head'}
                         value={form.passkey}
                         onChange={(e) => setForm({ ...form, passkey: e.target.value })}
                         className="bg-slate-50 border-slate-300 focus-visible:ring-navy-800 h-11 pr-10"
@@ -471,7 +506,7 @@ export function SignUpPage() {
                     </div>
                     <p className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                       <ShieldCheck className="w-3 h-3 text-ukgreen-600" />
-                      This passkey is provided by your Zila Panchayat administrator.
+                      {isHi ? 'यह पासकी आपके जिला पंचायत व्यवस्थापक द्वारा प्रदान की जाती है।' : 'This passkey is provided by your Zila Panchayat administrator.'}
                     </p>
                   </div>
 
@@ -484,18 +519,19 @@ export function SignUpPage() {
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Validating Credentials...
+                        {isHi ? 'प्रमाण-पत्र सत्यापित किए जा रहे हैं...' : 'Validating Credentials...'}
                       </span>
                     ) : (
-                      'Request Verification Code'
+                      isHi ? 'सत्यापन कोड का अनुरोध करें' : 'Request Verification Code'
                     )}
                   </Button>
                 </form>
 
                 <p className="text-sm text-center text-slate-500 mt-6 font-medium">
-                  Already have an account?{' '}
+                  {isHi ? 'क्या आपके पास पहले से खाता है?' : 'Already have an account?'}
+                  {' '}
                   <Link to="/signin" className="text-navy-800 font-bold hover:underline">
-                    Authorized Login
+                    {isHi ? 'अधिकृत लॉगिन' : 'Authorized Login'}
                   </Link>
                 </p>
               </div>
@@ -507,11 +543,7 @@ export function SignUpPage() {
       {/* ── Official Footer ── */}
       <footer className="bg-white border-t border-slate-200 py-4 px-6 mt-auto">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-medium text-slate-500">
-          <p>© {new Date().getFullYear()} Government of Uttarakhand. All rights reserved.</p>
-          <div className="flex items-center gap-4">
-            <a href="#" className="hover:text-navy-800 transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-navy-800 transition-colors">Terms of Use</a>
-          </div>
+          <p>© {new Date().getFullYear()} {isHi ? 'उत्तराखंड सरकार। सर्वाधिकार सुरक्षित।' : 'Government of Uttarakhand. All rights reserved.'}</p>
         </div>
       </footer>
     </div>
