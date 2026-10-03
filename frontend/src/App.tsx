@@ -15,7 +15,10 @@ const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.H
 const SignUpPage = lazy(() => import('@/pages/SignUpPage').then(m => ({ default: m.SignUpPage })));
 const SignInPage = lazy(() => import('@/pages/SignInPage').then(m => ({ default: m.SignInPage })));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
-const SecurityPolicyPage = lazy(() => import('@/pages/SecurityPolicyPage').then(m => ({ default: m.SecurityPolicyPage })));
+const TermsOfUsePage = lazy(() => import('@/pages/TermsOfUsePage').then(m => ({ default: m.TermsOfUsePage })));
+const AboutWebsitePage = lazy(() => import('@/pages/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
+const WebsitePolicyPage = lazy(() => import('@/pages/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
+const SiteMapPage = lazy(() => import('@/pages/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
 
 // Dashboard Lazy Pages
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -43,7 +46,10 @@ function App() {
             {/* Public routes */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomePage />} />
-              <Route path="/security-policy" element={<SecurityPolicyPage />} />
+              <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+              <Route path="/about-website" element={<AboutWebsitePage />} />
+              <Route path="/website-policy" element={<WebsitePolicyPage />} />
+              <Route path="/sitemap" element={<SiteMapPage />} />
             </Route>
 
             {/* Auth routes (no layout) */}

@@ -1,48 +1,10 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Phone, Mail, MapPin, X, CheckCircle2, Building2 } from 'lucide-react';
-
-const policies: Record<string, { titleEn: string; titleHi: string; lines: string[] }> = {
-  terms: {
-    titleEn: "Terms of Use",
-    titleHi: "उपयोग की शर्तें",
-    lines: [
-      "This portal is the official digital service of District Panchayat Almora, Govt. of Uttarakhand.",
-      "Citizens must provide authentic information when registering waste collection complaints.",
-      "False or spam complaints may result in suspension of citizen service access."
-    ]
-  },
-  privacy: {
-    titleEn: "Privacy Policy",
-    titleHi: "गोपनीयता नीति",
-    lines: [
-      "Personal details collected during complaint registration are used solely for grievance resolution.",
-      "No citizen data is sold or disclosed to third-party commercial entities.",
-      "GPS telemetry collected from sanitation vehicles is used exclusively for service optimization."
-    ]
-  },
-  disclaimer: {
-    titleEn: "Disclaimer",
-    titleHi: "अस्वीकरण",
-    lines: [
-      "While every effort is made to ensure accuracy of live GPS tracking, temporary satellite fluctuations may affect real-time telemetry in high-altitude terrain.",
-      "For urgent waste collection emergencies, please call the Toll-Free Helpline: 1800-185-1850."
-    ]
-  },
-  accessibility: {
-    titleEn: "Accessibility",
-    titleHi: "सुगम्यता",
-    lines: [
-      "This portal is designed to comply with GIGW and WCAG 2.1 AA accessibility standards.",
-      "Features include bilingual support (Hindi/English), scalable typography, and keyboard navigation.",
-      "For feedback, write to: safai@zilapanchayat.uk.gov.in"
-    ]
-  }
-};
-
+import { PANCHAYATI_RAJ_LOGO_URL } from './TopBarLogos';
 export const Footer = React.memo(() => {
   const { i18n } = useTranslation();
-  const [activePolicy, setActivePolicy] = useState<string | null>(null);
   const [showDeveloperContact, setShowDeveloperContact] = useState(false);
   const isHi = i18n.language === 'hi';
 
@@ -66,7 +28,7 @@ export const Footer = React.memo(() => {
       <div className="border-b border-navy-800 bg-navy-900/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
-            <img src="/assets/app-logo.png" alt="Zila Panchayat Logo" className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-300 shrink-0" />
+            <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Logo" className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-300 shrink-0" />
             <div>
               <p className="text-[10px] font-semibold text-amber-400 uppercase tracking-widest leading-none">
                 {isHi ? 'उत्तराखंड सरकार • पंचायती राज विभाग' : 'Govt. of Uttarakhand • Panchayati Raj Department'}
@@ -110,13 +72,24 @@ export const Footer = React.memo(() => {
             <ul className="grid grid-cols-2 gap-y-2.5 gap-x-4">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
-                    href={link.href}
-                    className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
-                  >
-                    <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('/#') ? (
+                    <a
+                      href={link.href}
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={link.href}
+                      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                    >
+                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -161,27 +134,41 @@ export const Footer = React.memo(() => {
       <div className="border-t border-navy-900 bg-navy-900/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
-            <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wide">
-              {isHi ? 'वेबसाइट नीतियां:' : 'Website Policies:'}
-            </span>
-            {Object.keys(policies).map((key, idx, arr) => (
-              <span key={key} className="flex items-center gap-3">
-                <button
-                  onClick={() => setActivePolicy(key)}
-                  className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
-                >
-                  {isHi ? policies[key].titleHi : policies[key].titleEn}
-                </button>
-                <span className="text-navy-700 text-[10px]">|</span>
-              </span>
-            ))}
             <span className="flex items-center gap-3">
-              <a 
-                href="/security-policy" 
+              <Link
+                to="/about-website"
                 className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
               >
-                {isHi ? 'सुरक्षा नीति' : 'Security Policy'}
-              </a>
+                {isHi ? 'इस पोर्टल के बारे में' : 'About This Website'}
+              </Link>
+              <span className="text-navy-700 text-[10px]">|</span>
+            </span>
+            <span className="flex items-center gap-3">
+              <Link
+                to="/terms-of-use"
+                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+              >
+                {isHi ? 'उपयोग की शर्तें' : 'Terms of Use'}
+              </Link>
+              <span className="text-navy-700 text-[10px]">|</span>
+            </span>
+            <span className="flex items-center gap-3">
+              <Link
+                to="/website-policy"
+                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+              >
+                {isHi ? 'वेबसाइट नीति' : 'Website Policy'}
+              </Link>
+              <span className="text-navy-700 text-[10px]">|</span>
+            </span>
+            <span className="flex items-center gap-3">
+              <Link
+                to="/sitemap"
+                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+              >
+                {isHi ? 'साइट मैप' : 'Site Map'}
+              </Link>
+              <span className="text-navy-700 text-[10px]">|</span>
             </span>
           </div>
           <p className="text-[10px] text-slate-500 shrink-0">
@@ -189,13 +176,13 @@ export const Footer = React.memo(() => {
           </p>
         </div>
 
-        {/* NIC Credit & Copyright */}
+        {/*Developer Programme */}
         <div className="border-t border-navy-900 py-2 text-center">
           <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1.5 flex-wrap">
             <Building2 className="w-3 h-3 shrink-0 text-slate-600" />
             {isHi
               ?'डिजाइन, डेवलपमेंट और होस्टिंग मनीष पालीवाल ,दीपक बिष्ट  के साथ ।'
-              : 'Design, Development & Hosting with Manish Paliwal,Deepak Bisht'}
+              : 'Design, Development, Hosting and Managed by Department Of Zila Panchayat Almora, Uttarakhand'}
             <button 
               onClick={() => setShowDeveloperContact(true)}
               className="ml-1 text-slate-600 hover:text-amber-400 font-medium transition-colors"
@@ -206,50 +193,6 @@ export const Footer = React.memo(() => {
         </div>
       </div>
 
-      {/* Policy Modal */}
-      {activePolicy && policies[activePolicy] && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
-          <div className="bg-white text-slate-800 rounded-lg shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col overflow-hidden border border-slate-200">
-            {/* Modal Header */}
-            <div className="bg-navy-900 text-white px-5 py-3.5 flex items-center justify-between">
-              <h3 className="font-poppins font-bold text-sm flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
-                {isHi ? policies[activePolicy].titleHi : policies[activePolicy].titleEn}
-              </h3>
-              <button
-                onClick={() => setActivePolicy(null)}
-                className="p-1 rounded hover:bg-navy-800 text-slate-300 hover:text-white transition-colors"
-              >
-                <X className="w-4 h-4 text-amber-400" />
-              </button>
-            </div>
-            <div className="uk-tricolor-line" />
-
-            {/* Modal Body */}
-            <div className="p-5 overflow-y-auto space-y-3 text-xs leading-relaxed">
-              <p className="text-[11px] text-amber-700 font-semibold border-b border-slate-100 pb-2">
-                {isHi ? 'जिला पंचायत अल्मोड़ा — उत्तराखंड सरकार' : 'District Panchayat Almora — Government of Uttarakhand'}
-              </p>
-              {policies[activePolicy].lines.map((line, i) => (
-                <div key={i} className="flex items-start gap-2.5 bg-slate-50 border border-slate-200 rounded p-3">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                  <p className="text-slate-700">{line}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="bg-slate-50 border-t border-slate-200 px-5 py-3 flex justify-end">
-              <button
-                onClick={() => setActivePolicy(null)}
-                className="px-4 py-1.5 bg-navy-900 hover:bg-navy-800 text-white text-xs font-bold rounded transition-colors"
-              >
-                {isHi ? 'बंद करें' : 'Close'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Developer Contact Modal */}
       {showDeveloperContact && (
