@@ -19,6 +19,13 @@ async function apiCall<T>(
   });
 
   if (!response.ok) {
+    if (typeof window !== 'undefined') {
+      if (response.status === 503 && window.location.pathname !== '/maintenance') {
+        window.location.href = '/maintenance';
+      } else if (response.status >= 500 && window.location.pathname !== '/500') {
+        window.location.href = '/500';
+      }
+    }
     const error = await response.json().catch(() => ({ error: 'Network error' }));
     const err: any = new Error(error.error || `Request failed: ${response.status}`);
     err.status = response.status;
@@ -39,6 +46,13 @@ export const api = {
       credentials: 'include',
     });
     if (!response.ok) {
+      if (typeof window !== 'undefined') {
+        if (response.status === 503 && window.location.pathname !== '/maintenance') {
+          window.location.href = '/maintenance';
+        } else if (response.status >= 500 && window.location.pathname !== '/500') {
+          window.location.href = '/500';
+        }
+      }
       const error = await response.json().catch(() => ({ error: 'Upload failed' }));
       throw new Error(error.error || `Upload failed: ${response.status}`);
     }

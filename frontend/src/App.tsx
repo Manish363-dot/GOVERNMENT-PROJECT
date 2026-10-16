@@ -27,6 +27,9 @@ const StaffDirectoryPage = lazy(() => import('@/pages/StaffDirectoryPage').then(
 const BylawsPage = lazy(() => import('@/pages/BylawsPage').then(m => ({ default: m.BylawsPage })));
 const CleanlinessBylawsPage = lazy(() => import('@/pages/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
 const SwmRulesPage = lazy(() => import('@/pages/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
+const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const ServerErrorPage = lazy(() => import('@/pages/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
+const MaintenancePage = lazy(() => import('@/pages/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
 
 // Dashboard Lazy Pages
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -43,7 +46,19 @@ const PageLoader = () => (
   </div>
 );
 
+const isMaintenanceMode = import.meta.env.VITE_MAINTENANCE_MODE === 'true';
+
 function App() {
+  if (isMaintenanceMode) {
+    return (
+      <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
+          <MaintenancePage />
+        </Suspense>
+      </BrowserRouter>
+    );
+  }
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -73,7 +88,17 @@ function App() {
               <Route path="/swm-rules-2026" element={<SwmRulesPage />} />
               <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
               <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
+
             </Route>
+
+            {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}
+            <Route path="/500" element={<ServerErrorPage />} />
+            <Route path="/error" element={<ServerErrorPage />} />
+            <Route path="/maintenance" element={<MaintenancePage />} />
+            <Route path="/under-maintenance" element={<MaintenancePage />} />
+
+            {/* 404 Not Found Catch-All Route */}
+            <Route path="*" element={<NotFoundPage />} />
 
             {/* Auth routes (no layout) */}
             <Route path="/signup" element={<SignUpPage />} />
