@@ -15,7 +15,13 @@ export const GpsDevicesPage = React.memo(() => {
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ device_identifier: '', device_type: 'mobile_app' });
+  const [form, setForm] = useState({
+    device_name: '',
+    device_identifier: '',
+    imei: '',
+    sim_number: '',
+    device_type: 'hardwired',
+  });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
@@ -37,7 +43,13 @@ export const GpsDevicesPage = React.memo(() => {
   }
 
   function openAddForm() {
-    setForm({ device_identifier: '', device_type: 'mobile_app' });
+    setForm({
+      device_name: '',
+      device_identifier: '',
+      imei: '',
+      sim_number: '',
+      device_type: 'hardwired',
+    });
     setError('');
     setShowForm(true);
   }
@@ -47,7 +59,12 @@ export const GpsDevicesPage = React.memo(() => {
     setError('');
     setSaving(true);
     try {
-      await gpsDeviceService.create(form);
+      const payload = {
+        ...form,
+        device_identifier: form.device_identifier.trim() || form.imei.trim(),
+        imei: form.imei.trim() || form.device_identifier.trim(),
+      };
+      await gpsDeviceService.create(payload);
       setShowForm(false);
       fetchDevices();
     } catch (err: any) {
@@ -68,8 +85,8 @@ export const GpsDevicesPage = React.memo(() => {
   }
 
   const deviceTypeLabels: Record<string, string> = {
-    mobile_app: isHi ? 'मोबाइल ऐप (ट्रैकर क्लाइंट)' : 'Mobile App (Traccar Client)',
     hardwired: isHi ? 'हार्डवायर्ड जीपीएस उपकरण' : 'Hardwired GPS',
+    mobile_app: isHi ? 'मोबाइल ऐप (ट्रैकर क्लाइंट)' : 'Mobile App (Traccar Client)',
     obd2: isHi ? 'ओबीडी-II ट्रैकर' : 'OBD-II Tracker',
     other: isHi ? 'अन्य' : 'Other',
   };
@@ -116,13 +133,54 @@ export const GpsDevicesPage = React.memo(() => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-4 grid sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="p-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
-                {t('admin.devices.deviceIdentifier')} *
+                {isHi ? 'उपकरण का नाम' : 'Device Name'}
               </Label>
               <Input
-                placeholder="e.g. 123456"
+                placeholder="e.g. TRUCK2 GPS"
+                value={form.device_name}
+                onChange={(e) => setForm({ ...form, device_name: e.target.value })}
+                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
+                {isHi ? 'आईएमईआई नंबर (IMEI)' : 'IMEI Number'} *
+              </Label>
+              <Input
+                placeholder="e.g. 869925074843044"
+                value={form.imei}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setForm({
+                    ...form,
+                    imei: val,
+                    device_identifier: form.device_identifier === '' || form.device_identifier === form.imei ? val : form.device_identifier,
+                  });
+                }}
+                required
+                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
+                {isHi ? 'सिम कार्ड नंबर (SIM No.)' : 'SIM Card Number'}
+              </Label>
+              <Input
+                placeholder="e.g. 5754218528440"
+                value={form.sim_number}
+                onChange={(e) => setForm({ ...form, sim_number: e.target.value })}
+                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
+                {t('admin.devices.deviceIdentifier')} (Traccar ID) *
+              </Label>
+              <Input
+                placeholder="e.g. 869925074843044"
                 value={form.device_identifier}
                 onChange={(e) => setForm({ ...form, device_identifier: e.target.value })}
                 required
@@ -138,13 +196,13 @@ export const GpsDevicesPage = React.memo(() => {
                 onChange={(e) => setForm({ ...form, device_type: e.target.value })}
                 className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
               >
-                <option value="mobile_app">{deviceTypeLabels.mobile_app}</option>
                 <option value="hardwired">{deviceTypeLabels.hardwired}</option>
+                <option value="mobile_app">{deviceTypeLabels.mobile_app}</option>
                 <option value="obd2">{deviceTypeLabels.obd2}</option>
                 <option value="other">{deviceTypeLabels.other}</option>
               </select>
             </div>
-            <div className="sm:col-span-2 flex gap-2 pt-1 border-t border-slate-200">
+            <div className="sm:col-span-2 lg:col-span-3 flex gap-2 pt-1 border-t border-slate-200">
               <button
                 type="submit"
                 disabled={saving}
@@ -199,6 +257,15 @@ export const GpsDevicesPage = React.memo(() => {
                     {t('admin.devices.deviceIdentifier')}
                   </th>
                   <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
+                    IMEI
+                  </th>
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
+                    {isHi ? 'सिम नंबर' : 'SIM No.'}
+                  </th>
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
+                    {isHi ? 'आवंटित वाहन' : 'Assigned Vehicle'}
+                  </th>
+                  <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
                     {isHi ? 'प्रकार' : 'Type'}
                   </th>
                   <th className="text-left px-4 py-2 text-[12px] font-bold text-slate-600 uppercase tracking-normal">
@@ -215,13 +282,42 @@ export const GpsDevicesPage = React.memo(() => {
               <tbody className="divide-y divide-slate-200">
                 {devices.map((device) => (
                   <tr key={device.id} className="hover:bg-[#f7f9fc] transition-colors">
-                    <td className="px-4 py-2.5 font-mono text-[11px] font-bold text-[#1a3a6b]">
-                      {device.device_identifier}
+                    <td className="px-4 py-2.5">
+                      <div className="font-mono text-[11px] font-bold text-[#1a3a6b]">
+                        {device.device_identifier}
+                      </div>
+                      {device.device_name && (
+                        <div className="text-[10px] text-slate-500 font-sans font-medium">
+                          {device.device_name}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono text-[11px] text-slate-700">
+                      {device.imei || device.device_identifier}
+                    </td>
+                    <td className="px-4 py-2.5 font-mono text-[11px] text-emerald-700 font-semibold">
+                      {device.sim_number || (
+                        <span className="text-slate-400 font-sans italic text-[10px]">
+                          {isHi ? 'दर्ज नहीं' : 'Not set'}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-2.5">
+                      {device.assigned_vehicle ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                          {device.assigned_vehicle.vehicle_number}
+                          {device.assigned_vehicle.vehicle_name ? ` (${device.assigned_vehicle.vehicle_name})` : ''}
+                        </span>
+                      ) : (
+                        <span className="text-[10px] text-amber-600 font-semibold italic">
+                          {isHi ? 'अनआवंटित' : 'Unassigned'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-2.5 text-[11px] text-slate-600">
                       <div className="flex items-center gap-1.5">
-                        {device.device_type === 'mobile_app' ? <Smartphone className="w-3 h-3" /> : <Cpu className="w-3 h-3" />}
-                        {deviceTypeLabels[device.device_type]}
+                        {device.device_type === 'mobile_app' ? <Smartphone className="w-3 h-3 text-slate-400" /> : <Cpu className="w-3 h-3 text-slate-400" />}
+                        <span>{deviceTypeLabels[device.device_type || 'hardwired'] || device.device_type}</span>
                       </div>
                     </td>
                     <td className="px-4 py-2.5">
@@ -236,6 +332,7 @@ export const GpsDevicesPage = React.memo(() => {
                       <button
                         onClick={() => handleDelete(device.id)}
                         className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
+                        title={isHi ? 'हटाएं' : 'Delete'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -254,23 +351,38 @@ export const GpsDevicesPage = React.memo(() => {
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.devices.deviceIdentifier')}</p>
                     <p className="font-mono text-sm font-bold text-[#1a3a6b] break-all">{device.device_identifier}</p>
+                    {device.device_name && <p className="text-xs text-slate-500 font-medium">{device.device_name}</p>}
                   </div>
                   <Badge variant={device.status === 'active' ? 'success' : 'secondary'} className="shrink-0">
                     {device.status === 'active' ? (isHi ? 'सक्रिय' : 'Active') : (isHi ? 'निष्क्रिय' : 'Inactive')}
                   </Badge>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-3 pt-1">
+
+                <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{isHi ? 'प्रकार' : 'Type'}</p>
-                    <div className="flex items-center gap-1.5 text-[12px] text-slate-700">
-                      {device.device_type === 'mobile_app' ? <Smartphone className="w-3.5 h-3.5 text-slate-400" /> : <Cpu className="w-3.5 h-3.5 text-slate-400" />}
-                      <span className="truncate">{deviceTypeLabels[device.device_type]}</span>
-                    </div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">IMEI:</span>
+                    <span className="font-mono font-semibold text-slate-700">{device.imei || device.device_identifier}</span>
                   </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{isHi ? 'अंतिम देखा गया' : 'Last Seen'}</p>
-                    <div className="text-[11px] text-slate-600 font-mono">
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{isHi ? 'सिम नंबर:' : 'SIM Number:'}</span>
+                    <span className="font-mono font-semibold text-emerald-700">{device.sim_number || '—'}</span>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{isHi ? 'आवंटित वाहन:' : 'Assigned Vehicle:'}</span>
+                    {device.assigned_vehicle ? (
+                      <span className="inline-block mt-0.5 font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                        {device.assigned_vehicle.vehicle_number} {device.assigned_vehicle.vehicle_name ? `(${device.assigned_vehicle.vehicle_name})` : ''}
+                      </span>
+                    ) : (
+                      <span className="text-amber-600 font-semibold italic">{isHi ? 'अनआवंटित' : 'Unassigned'}</span>
+                    )}
+                  </div>
+                  <div className="col-span-2 flex items-center justify-between pt-1">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-700">
+                      {device.device_type === 'mobile_app' ? <Smartphone className="w-3.5 h-3.5 text-slate-400" /> : <Cpu className="w-3.5 h-3.5 text-slate-400" />}
+                      <span className="truncate">{deviceTypeLabels[device.device_type || 'hardwired'] || device.device_type}</span>
+                    </div>
+                    <div className="text-right text-[11px] text-slate-500 font-mono">
                       {device.last_seen_at ? format(new Date(device.last_seen_at), 'dd MMM yyyy HH:mm') : (isHi ? 'कभी नहीं' : 'Never')}
                     </div>
                   </div>

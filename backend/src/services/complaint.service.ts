@@ -1,6 +1,7 @@
 import { prisma } from '../config/prisma';
 import { Complaint } from '@prisma/client';
 import crypto from 'crypto';
+import * as whatsappService from './whatsapp.service';
 
 export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason?: string } {
   const clean = mobile.replace(/\D/g, '');
@@ -35,7 +36,7 @@ export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason
 }
 
 // Memory map for active complaint OTPs
-const complaintOtpMap = new Map<string, { otp: string; expiresAt: number; attempts: number }>();
+const complaintOtpMap = new Map<string, { otp: string; expiresAt: number; attempts: number; verified?: boolean }>();
 
 export async function sendComplaintOtp(mobile: string) {
   const check = isValidRealWorldMobile(mobile);
@@ -51,12 +52,51 @@ export async function sendComplaintOtp(mobile: string) {
     otp,
     expiresAt,
     attempts: 0,
+    verified: false,
   });
+
+  // Dispatch OTP to Citizen via WhatsApp Cloud API
+  const waResult = await whatsappService.sendWhatsAppOtp(cleanMobile, otp);
 
   return {
     success: true,
-    message: `Verification OTP generated for +91 ${cleanMobile}`,
-    devOtp: otp, // Always return devOtp since real SMS is disabled for now
+    message: waResult.success 
+      ? `सत्यापन कोड (OTP) आपके WhatsApp नंबर +91 ${cleanMobile} पर भेज दिया गया है।`
+      : `सत्यापन कोड (OTP) उत्पन्न किया गया (+91 ${cleanMobile})`,
+    whatsappSent: waResult.success,
+    devOtp: waResult.success ? undefined : otp, // Only fallback on screen if WhatsApp delivery was not successful
+  };
+}
+
+export async function verifyComplaintOtp(mobile: string, otp: string) {
+  const cleanMobile = mobile.replace(/\D/g, '');
+  const record = complaintOtpMap.get(cleanMobile);
+
+  if (!record) {
+    throw new Error('कोई सक्रिय OTP नहीं मिला। कृपया पुनः OTP भेजें (No active OTP found. Please request a new one).');
+  }
+
+  if (Date.now() > record.expiresAt) {
+    complaintOtpMap.delete(cleanMobile);
+    throw new Error('OTP की समय सीमा समाप्त हो गई है (OTP has expired. Please request a new code).');
+  }
+
+  if (record.attempts >= 5) {
+    complaintOtpMap.delete(cleanMobile);
+    throw new Error('अत्यधिक गलत प्रयास। कृपया 5 मिनट बाद नया OTP प्राप्त करें (Too many attempts).');
+  }
+
+  if (record.otp.trim() !== otp.trim()) {
+    record.attempts += 1;
+    throw new Error(`गलत OTP दर्ज किया गया है (${5 - record.attempts} प्रयास शेष)।`);
+  }
+
+  // Mark as verified for this mobile session
+  record.verified = true;
+
+  return {
+    success: true,
+    message: 'मोबाइल नंबर WhatsApp द्वारा सफलतापूर्वक सत्यापित किया गया (Mobile verified successfully).',
   };
 }
 export async function createComplaint(complaint: {
@@ -65,6 +105,7 @@ export async function createComplaint(complaint: {
   area: string;
   complaint_type: string;
   description?: string;
+  attachment_url?: string | null;
 }) {
   const check = isValidRealWorldMobile(complaint.mobile);
   if (!check.valid) {
@@ -88,9 +129,21 @@ export async function createComplaint(complaint: {
         complaint_number: complaintNumber,
         complaint_type: complaint.complaint_type as any,
         description: complaint.description ? sanitize(complaint.description) : null,
+        attachment_url: complaint.attachment_url ? sanitize(complaint.attachment_url) : null,
         status: 'new' as any
-      }
+      } as any
     });
+
+    // Asynchronously send WhatsApp confirmation receipt to citizen
+    whatsappService.sendWhatsAppComplaintReceipt(cleanMobile, {
+      complaintNumber: newComplaint.complaint_number,
+      citizenName: newComplaint.name,
+      area: newComplaint.area,
+      complaintType: newComplaint.complaint_type,
+    }).catch((err) => {
+      console.warn('⚠️ [WhatsApp] Failed to dispatch complaint receipt:', err.message);
+    });
+
     return newComplaint;
   } catch (error) {
     throw new Error('Failed to register complaint');
@@ -99,10 +152,21 @@ export async function createComplaint(complaint: {
 
 export async function getAllComplaints(status?: string) {
   try {
-    return await prisma.complaint.findMany({
-      where: status && status !== 'all' ? { status: status as any } : undefined,
-      orderBy: { created_at: 'desc' }
-    });
+    let sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false`;
+    const params: any[] = [];
+
+    if (status === 'archived') {
+      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = true`;
+    } else if (status === 'confirmed') {
+      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false AND "user_confirmed" = true`;
+    } else if (status && status !== 'all') {
+      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false AND "status"::text = $1`;
+      params.push(status);
+    }
+
+    sql += ` ORDER BY "created_at" DESC`;
+
+    return await prisma.$queryRawUnsafe<any[]>(sql, ...params);
   } catch (error: any) {
     console.error('getAllComplaints error:', error);
     require('fs').writeFileSync('getAllComplaints-error.log', String(error) + '\n' + error.stack);
@@ -112,19 +176,19 @@ export async function getAllComplaints(status?: string) {
 
 export async function getComplaintById(id: string) {
   try {
-    const complaint = await prisma.complaint.findUnique({
-      where: { id },
-      include: {
-        updates: {
-          orderBy: { updated_at: 'desc' }
-        }
-      }
-    });
-    if (!complaint) return null;
+    const list = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT * FROM "Complaint" WHERE "id" = $1 LIMIT 1
+    `, id);
 
-    // Separate updates to match old structure slightly
-    const { updates, ...complaintData } = complaint;
-    return { complaint: complaintData, updates };
+    if (!list || list.length === 0) return null;
+    const complaint = list[0];
+
+    const updates = await prisma.complaintUpdate.findMany({
+      where: { complaint_id: id },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return { complaint, updates };
   } catch (error) {
     return null;
   }
@@ -133,26 +197,64 @@ export async function getComplaintById(id: string) {
 export async function trackComplaint(trackingId: string) {
   try {
     const cleanQuery = trackingId.trim();
-    const complaint = await prisma.complaint.findFirst({
-      where: {
-        OR: [
-          { complaint_number: { equals: cleanQuery, mode: 'insensitive' } },
-          { mobile: cleanQuery }
-        ]
-      },
-      include: {
-        updates: {
-          orderBy: { updated_at: 'desc' }
-        }
+    const list = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT * FROM "Complaint"
+      WHERE UPPER("complaint_number") = UPPER($1) OR "mobile" = $1
+      ORDER BY "created_at" DESC
+      LIMIT 1
+    `, cleanQuery);
+
+    if (!list || list.length === 0) return null;
+    const complaint = list[0];
+
+    const updates = await prisma.complaintUpdate.findMany({
+      where: { complaint_id: complaint.id },
+      orderBy: { updated_at: 'desc' }
+    });
+
+    return { complaint, updates };
+  } catch (error) {
+    return null;
+  }
+}
+
+export async function confirmComplaintResolution(identifier: string) {
+  try {
+    const cleanId = identifier.trim();
+    const existingList = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT * FROM "Complaint"
+      WHERE "id" = $1 OR UPPER("complaint_number") = UPPER($1)
+      LIMIT 1
+    `, cleanId);
+
+    const existing = existingList[0];
+    if (!existing) {
+      throw new Error('Complaint not found');
+    }
+
+    if (existing.status !== 'resolved') {
+      throw new Error('Only complaints marked as RESOLVED by administration can be confirmed by citizens.');
+    }
+
+    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
+      UPDATE "Complaint"
+      SET "user_confirmed" = true, "user_confirmed_at" = NOW()
+      WHERE "id" = $1
+      RETURNING *
+    `, existing.id);
+
+    await prisma.complaintUpdate.create({
+      data: {
+        complaint_id: existing.id,
+        status: 'resolved' as any,
+        remark: 'नागरिक द्वारा समाधान की पुष्टि की गई (Citizen Confirmed Resolution)',
+        updated_by: null
       }
     });
 
-    if (!complaint) return null;
-
-    const { updates, ...complaintData } = complaint;
-    return { complaint: complaintData, updates };
-  } catch (error) {
-    return null;
+    return updatedList[0];
+  } catch (err: any) {
+    throw new Error(err.message || 'Failed to confirm resolution');
   }
 }
 
@@ -169,74 +271,157 @@ export async function updateComplaintStatus(
       resolved: 3
     };
 
-    return await prisma.$transaction(async (tx) => {
-      const existing = await tx.complaint.findUnique({
-        where: { id: complaintId }
-      });
+    const existingList = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT * FROM "Complaint" WHERE "id" = $1 LIMIT 1
+    `, complaintId);
 
-      if (!existing) {
-        throw new Error('Complaint not found');
+    const existing = existingList[0];
+    if (!existing) {
+      throw new Error('Complaint not found');
+    }
+
+    if (existing.status === 'resolved') {
+      throw new Error('Complaint is already RESOLVED and locked. Resolved complaints cannot be modified or reverted.');
+    }
+
+    const currentRank = statusRank[existing.status] || 1;
+    const targetRank = statusRank[status] || 1;
+
+    if (targetRank <= currentRank) {
+      throw new Error(`Cannot revert complaint status from '${existing.status}' back to '${status}'. Status can only progress forward (New → In Progress → Resolved).`);
+    }
+
+    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
+      UPDATE "Complaint"
+      SET "status" = $1::"ComplaintStatus"
+      WHERE "id" = $2
+      RETURNING *
+    `, status, complaintId);
+
+    await prisma.complaintUpdate.create({
+      data: {
+        complaint_id: complaintId,
+        status: status as any,
+        remark,
+        updated_by: updatedBy
       }
-
-      if (existing.status === 'resolved') {
-        throw new Error('Complaint is already RESOLVED and locked. Resolved complaints cannot be modified or reverted.');
-      }
-
-      const currentRank = statusRank[existing.status] || 1;
-      const targetRank = statusRank[status] || 1;
-
-      if (targetRank <= currentRank) {
-        throw new Error(`Cannot revert complaint status from '${existing.status}' back to '${status}'. Status can only progress forward (New → In Progress → Resolved).`);
-      }
-
-      const complaint = await tx.complaint.update({
-        where: { id: complaintId },
-        data: { status: status as any }
-      });
-
-      await tx.complaintUpdate.create({
-        data: {
-          complaint_id: complaintId,
-          status: status as any,
-          remark,
-          updated_by: updatedBy
-        }
-      });
-
-      return complaint;
     });
+
+    const updatedComplaint = updatedList[0];
+
+    // Asynchronously send WhatsApp status update alert to citizen
+    whatsappService.sendWhatsAppStatusUpdate(existing.mobile, {
+      complaintNumber: existing.complaint_number,
+      citizenName: existing.name,
+      newStatus: status as any,
+      remark,
+    }).catch((err) => {
+      console.warn('⚠️ [WhatsApp] Failed to dispatch status update notification:', err.message);
+    });
+
+    return updatedComplaint;
   } catch (error: any) {
     throw new Error(error.message || 'Failed to update complaint');
   }
 }
 
-export async function getComplaintCounts() {
+export async function archiveComplaint(id: string, isArchived: boolean = true) {
   try {
-    const counts = await prisma.complaint.groupBy({
-      by: ['status'],
-      _count: true
+    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
+      UPDATE "Complaint"
+      SET "is_archived" = $1, "archived_at" = (CASE WHEN $1 THEN NOW() ELSE NULL END)
+      WHERE "id" = $2
+      RETURNING *
+    `, isArchived, id);
+
+    const updated = updatedList[0];
+
+    await prisma.complaintUpdate.create({
+      data: {
+        complaint_id: id,
+        status: updated.status as any,
+        remark: isArchived 
+          ? 'शिकायत को सुरक्षित अभिलेख हेतु आर्काइव किया गया (Complaint Safely Archived)' 
+          : 'शिकायत को सक्रिय रजिस्टर में पुनर्स्थापित किया गया (Complaint Restored)',
+        updated_by: null
+      }
     });
 
+    return updated;
+  } catch (error: any) {
+    throw new Error('Failed to archive complaint');
+  }
+}
+
+export async function deleteComplaint(id: string) {
+  try {
+    await prisma.$queryRawUnsafe(`
+      DELETE FROM "ComplaintUpdate" WHERE "complaint_id" = $1
+    `, id);
+    await prisma.$queryRawUnsafe(`
+      DELETE FROM "Complaint" WHERE "id" = $1
+    `, id);
+    return { success: true };
+  } catch (error: any) {
+    throw new Error('Failed to delete complaint');
+  }
+}
+
+export async function getComplaintCounts() {
+  try {
+    const activeCounts = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT "status"::text AS status, COUNT(*)::int AS count
+      FROM "Complaint"
+      WHERE "is_archived" = false
+      GROUP BY "status"
+    `);
+
     let total = 0, newC = 0, in_progress = 0, resolved = 0;
-    for (const c of counts) {
-      total += c._count;
-      if (c.status === 'new') newC = c._count;
-      if (c.status === 'in_progress') in_progress = c._count;
-      if (c.status === 'resolved') resolved = c._count;
+    for (const c of activeCounts) {
+      total += Number(c.count);
+      if (c.status === 'new') newC = Number(c.count);
+      if (c.status === 'in_progress') in_progress = Number(c.count);
+      if (c.status === 'resolved') resolved = Number(c.count);
     }
 
-    return { total, new: newC, in_progress, resolved };
+    const confirmedRes = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COUNT(*)::int AS count 
+      FROM "Complaint" 
+      WHERE "user_confirmed" = true AND "is_archived" = false
+    `);
+    const confirmedCount = Number(confirmedRes[0]?.count || 0);
+
+    const archivedRes = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COUNT(*)::int AS count 
+      FROM "Complaint" 
+      WHERE "is_archived" = true
+    `);
+    const archivedCount = Number(archivedRes[0]?.count || 0);
+
+    return { 
+      total, 
+      new: newC, 
+      in_progress, 
+      resolved, 
+      confirmed: confirmedCount,
+      archived: archivedCount 
+    };
   } catch (error) {
-    return { total: 0, new: 0, in_progress: 0, resolved: 0 };
+    return { total: 0, new: 0, in_progress: 0, resolved: 0, confirmed: 0, archived: 0 };
   }
 }
 
 export async function getNewComplaintCount(): Promise<number> {
   try {
-    return await prisma.complaint.count({
-      where: { status: 'new' }
-    });
+    const res = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT COUNT(*)::int AS count 
+      FROM "Complaint" 
+      WHERE "status"::text = 'new' AND "is_archived" = false
+    `);
+    return Number(res[0]?.count || 0);
   } catch (error) {
     return 0;
   }
 }
+
+

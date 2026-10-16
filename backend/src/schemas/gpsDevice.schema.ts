@@ -5,6 +5,7 @@ export const createDeviceSchema = z.object({
     device_name: z.string().optional(),
     device_identifier: z.string().min(1, 'Device identifier is required'),
     imei: z.string().optional(),
+    sim_number: z.string().optional(),
   }),
 });
 
@@ -16,6 +17,7 @@ export const updateDeviceSchema = z.object({
     device_name: z.string().optional(),
     device_identifier: z.string().optional(),
     imei: z.string().optional(),
+    sim_number: z.string().optional(),
   }),
 });
 

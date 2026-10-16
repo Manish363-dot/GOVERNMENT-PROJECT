@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   ChevronLeft, 
@@ -297,12 +298,6 @@ export const NoticesSection = React.memo(() => {
             <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 leading-tight">
               {isHi ? 'स्वच्छता सूचनाएं, आदेश एवं सार्वजनिक अपडेट' : 'Government Notices & Sanitation Updates'}
             </h2>
-
-            <p className="text-slate-600 mt-2 text-sm sm:text-base max-w-3xl">
-              {isHi 
-                ? 'ठोस अपशिष्ट प्रबंधन, डोर-टू-डोर कचरा संग्रहण, मार्ग समय-सारिणी एवं जनहित में जारी आधिकारिक निर्देश व सूचनाएं।'
-                : 'Official circulars, solid waste management bylaws, collection timetables, and public advisories issued by Zila Panchayat Almora.'}
-            </p>
           </div>
 
           {/* Slider Controls (Prev / Next Buttons) */}
@@ -327,34 +322,8 @@ export const NoticesSection = React.memo(() => {
           </div>
         </div>
 
-        {/* 1. Official Alert / Urgent Ticker Banner */}
-        <div className="mb-8 rounded-xl bg-gradient-to-r from-navy-900 via-navy-800 to-navy-900 text-white p-3.5 sm:p-4 shadow-sm border border-navy-700 flex flex-col sm:flex-row sm:items-center gap-3">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="flex h-2.5 w-2.5 relative">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
-            </span>
-            <span className="bg-red-500/20 text-red-300 border border-red-500/40 text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-              {isHi ? 'नवीनतम शासनादेश' : 'Flash Update'}
-            </span>
-          </div>
 
-          <div className="overflow-hidden text-xs sm:text-sm text-slate-200 flex-1 font-medium leading-relaxed">
-            {isHi 
-              ? 'जनपद अल्मोड़ा के समस्त ग्राम पंचायतों व वार्डों में गीला व सूखा कचरा पृथक्करण अनिवार्य। उल्लंघन पर नियमानुसार अर्थदंड लागू। समय से वाहन में ही कचरा दें।'
-              : 'Mandatory source segregation of wet & dry waste across all 11 development blocks of Almora. Unsegregated garbage will not be collected by GPS tippers.'}
-          </div>
-
-          <button 
-            onClick={() => setActiveModalNotice(NOTICES_DATA[0])}
-            className="inline-flex items-center gap-1.5 text-xs text-amber-300 hover:text-amber-200 font-semibold underline underline-offset-4 shrink-0 transition-colors cursor-pointer"
-          >
-            <span>{isHi ? 'आदेश पढ़ें' : 'Read Order'}</span>
-            <ArrowUpRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        {/* 2. Slider / Carousel Container */}
+        {/* 1. Slider / Carousel Container */}
         <div 
           className="relative overflow-hidden -mx-2 px-2 py-2"
           onMouseEnter={() => { if (autoPlayRef.current) clearInterval(autoPlayRef.current); }}
@@ -451,21 +420,6 @@ export const NoticesSection = React.memo(() => {
                       </div>
                     </div>
                   </div>
-                </div>
-
-                {/* Card Footer Actions */}
-                <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
-                  <span className="text-[11px] text-slate-500 font-medium">
-                    {isHi ? 'उत्तराखंड शासन' : 'Govt of Uttarakhand'}
-                  </span>
-
-                  <button
-                    onClick={() => setActiveModalNotice(notice)}
-                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-navy-900 hover:text-navy-700 transition-colors px-2.5 py-1.5 rounded-md hover:bg-slate-200/70 cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5 text-navy-700" />
-                    <span>{isHi ? 'विवरण देखें' : 'View Details'}</span>
-                  </button>
                 </div>
               </div>
             ))}
@@ -618,14 +572,14 @@ export const NoticesSection = React.memo(() => {
                 >
                   {isHi ? 'बंद करें' : 'Close'}
                 </Button>
-                <a
-                  href="#complaint"
+                <Link
+                  to="/complaint"
                   onClick={() => setActiveModalNotice(null)}
                   className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-navy-900 text-white hover:bg-navy-800 text-xs font-semibold transition-colors"
                 >
                   <span>{isHi ? 'शिकायत करें' : 'Lodge Grievance'}</span>
                   <ChevronRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
             </div>
           </div>

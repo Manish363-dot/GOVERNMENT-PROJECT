@@ -3,6 +3,9 @@
     "nav": {
       "home": "होम",
       "about": "हमारे बारे में",
+      "ourInitiative": "हमारी पहल",
+      "visionMission": "विज़न और मिशन",
+      "staffInfo": "अधिकारी एवं कर्मचारी विवरण",
       "complaint": "शिकायत",
       "contact": "संपर्क करें",
       "notices": "सूचनाएं एवं अपडेट",
@@ -14,7 +17,7 @@
       "adminLogin": "एडमिन लॉगिन",
       "adminSignUp": "एडमिन साइन अप",
       "signIn": "साइन इन",
-      "brandName": "डिपार्टमेंट ऑफ़ जिला पंचायत अल्मोड़ा",
+      "brandName": "जिला पंचायत विभाग अल्मोड़ा",
       "brandTagline": "स्मार्ट कचरा संग्रहण ट्रैकिंग प्रणाली",
       "govBadge": "उत्तराखंड सरकार",
       "govBadgeHi": "उत्तराखंड शासन",
@@ -45,6 +48,8 @@
       "liveTracking": "लाइव ट्रैकिंग",
       "registerComplaint": "शिकायत दर्ज करें",
       "ourBlogs": "हमारे ब्लॉग्स",
+      "pledgedCountText": "नागरिकों ने शपथ ली",
+      "takePledge": "शपथ लें",
       "stats": {
         "tracked": "ट्रैक किए गए वाहन",
         "citizens": "नागरिकों को सेवा दी गई",

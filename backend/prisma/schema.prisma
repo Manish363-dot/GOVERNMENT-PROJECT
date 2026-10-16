@@ -98,6 +98,7 @@ model GpsDevice {
   device_name       String?
   device_identifier String       @unique
   imei              String?
+  sim_number        String?
   status            DeviceStatus
   last_seen_at      DateTime?
   created_at        DateTime     @default(now())
@@ -157,9 +158,14 @@ model Complaint {
   mobile           String
   area             String
   complaint_type   ComplaintType
-  description      String?
-  status           ComplaintStatus
-  created_at       DateTime        @default(now())
+  description       String?
+  attachment_url    String?
+  user_confirmed    Boolean         @default(false)
+  user_confirmed_at DateTime?
+  is_archived       Boolean         @default(false)
+  archived_at       DateTime?
+  status            ComplaintStatus
+  created_at        DateTime        @default(now())
 
   updates ComplaintUpdate[]
 }

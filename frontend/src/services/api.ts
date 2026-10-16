@@ -20,7 +20,9 @@ async function apiCall<T>(
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Network error' }));
-    throw new Error(error.error || `Request failed: ${response.status}`);
+    const err: any = new Error(error.error || `Request failed: ${response.status}`);
+    err.status = response.status;
+    throw err;
   }
 
   return response.json();
@@ -30,6 +32,18 @@ export const api = {
   get: <T>(endpoint: string) => apiCall<T>(endpoint),
   post: <T>(endpoint: string, data: any) =>
     apiCall<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
+  upload: async <T>(endpoint: string, formData: FormData): Promise<T> => {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Upload failed' }));
+      throw new Error(error.error || `Upload failed: ${response.status}`);
+    }
+    return response.json();
+  },
   put: <T>(endpoint: string, data: any) =>
     apiCall<T>(endpoint, { method: 'PUT', body: JSON.stringify(data) }),
   delete: <T>(endpoint: string) =>

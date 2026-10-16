@@ -28,7 +28,12 @@ export async function getLiveLocations(): Promise<any[]> {
 export async function getVehicleLiveLocation(vehicleId: string) {
   try {
     return await prisma.vehicleCurrentLocation.findUnique({
-      where: { vehicle_id: vehicleId }
+      where: { vehicle_id: vehicleId },
+      include: {
+        vehicle: {
+          select: { id: true, vehicle_number: true, vehicle_name: true, vehicle_type: true, status: true }
+        }
+      }
     });
   } catch (error) {
     return null;

@@ -44,7 +44,7 @@ export function TopHeader() {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-slate-300 shadow-sm flex flex-col w-full">
       {/* Top Logos Strip */}
-      <TopBarLogos variant="dashboard" className="border-b border-slate-200 bg-white flex" />
+      <TopBarLogos variant="dashboard" className="border-b border-slate-200 flex" />
 
       {/* Main Header Bar */}
       <div className="flex items-center justify-between h-14 px-3 sm:px-6 bg-navy-900 border-b border-navy-800">

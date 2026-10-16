@@ -139,9 +139,6 @@ export const DailyWorkSection = React.memo(() => {
           <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
             {t('dailyWork.title', 'Our Daily Operations & Blogs')}
           </h2>
-          <p className="text-slate-600 max-w-xl text-left text-sm sm:text-base">
-            {t('dailyWork.subtitle', 'Explore our daily sanitation activities, field work images, and community initiatives updated regularly.')}
-          </p>
         </div>
 
         {/* Main Content: Carousel + Calendar */}

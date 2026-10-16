@@ -6,7 +6,8 @@ import { EmptyState } from '@/components/EmptyState';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save, Paperclip, ExternalLink, Image as ImageIcon, Archive, Trash2, RotateCcw, BadgeCheck, CheckCircle2, Maximize2 } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
 
@@ -34,6 +35,7 @@ export const ComplaintsPage = React.memo(() => {
   const [statusForm, setStatusForm] = useState({ status: '', remark: '' });
   const [updating, setUpdating] = useState(false);
   const [updateError, setUpdateError] = useState<string | null>(null);
+  const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -106,11 +108,45 @@ export const ComplaintsPage = React.memo(() => {
     }
   }
 
+  async function handleArchive(isArchived: boolean = true) {
+    if (!selectedComplaint) return;
+    const msg = isArchived
+      ? (isHi ? 'क्या आप इस शिकायत को सुरक्षित रूप से आर्काइव करना चाहते हैं? यह सक्रिय सूची से हट जाएगी, लेकिन सरकारी ऑडिट अभिलेख सुरक्षित रहेंगे।' : 'Are you sure you want to archive this complaint? It will be moved out of the active register while preserving official audit records.')
+      : (isHi ? 'क्या आप इस शिकायत को पुनः सक्रिय रजिस्टर में पुनर्स्थापित करना चाहते हैं?' : 'Are you sure you want to restore this complaint to the active register?');
+    if (!window.confirm(msg)) return;
+
+    try {
+      await complaintService.archive(selectedComplaint.id, isArchived);
+      setSelectedComplaint(null);
+      fetchComplaints();
+    } catch (err: any) {
+      alert(err.message || 'Failed to archive complaint');
+    }
+  }
+
+  async function handleDeletePermanently() {
+    if (!selectedComplaint) return;
+    const msg = isHi
+      ? '⚠️ स्थायी रूप से हटाने की पुष्टि करें: क्या आप सचमुच इस शिकायत को हमेशा के लिए हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती।'
+      : '⚠️ Permanent Deletion: Are you sure you want to permanently delete this complaint? This action cannot be undone.';
+    if (!window.confirm(msg)) return;
+
+    try {
+      await complaintService.delete(selectedComplaint.id);
+      setSelectedComplaint(null);
+      fetchComplaints();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete complaint');
+    }
+  }
+
   const filterTabs = [
-    { key: 'all', label: isHi ? 'सभी शिकायतें' : 'All Grievances' },
+    { key: 'all', label: isHi ? 'सभी सक्रिय' : 'All Active' },
     { key: 'new', label: isHi ? 'नया / खुला' : 'New' },
     { key: 'in_progress', label: isHi ? 'प्रगति पर' : 'In Progress' },
     { key: 'resolved', label: isHi ? 'निस्तारित' : 'Resolved' },
+    { key: 'confirmed', label: isHi ? 'नागरिक द्वारा पुष्ट' : 'User Confirmed' },
+    { key: 'archived', label: isHi ? 'आर्काइव्ड (सुरक्षित)' : 'Archived' },
   ];
 
   return (
@@ -184,9 +220,29 @@ export const ComplaintsPage = React.memo(() => {
                       </span>
                       <span className="text-[14px] font-semibold text-[#0a1628]">{complaint.name}</span>
                     </div>
-                    <Badge variant={complaint.status as any}>
-                      {statusLabels[complaint.status]}
-                    </Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Badge variant={complaint.status as any}>
+                        {statusLabels[complaint.status]}
+                      </Badge>
+                      {complaint.user_confirmed && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 rounded shadow-2xs">
+                          <BadgeCheck className="w-2.5 h-2.5 text-emerald-600" />
+                          <span>User Confirmed</span>
+                        </span>
+                      )}
+                      {complaint.is_archived && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-300 px-1.5 py-0.5 rounded">
+                          <Archive className="w-2.5 h-2.5 text-slate-500" />
+                          <span>Archived</span>
+                        </span>
+                      )}
+                      {complaint.attachment_url && (
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-800 bg-blue-50 border border-blue-200 px-1.5 py-0.5 rounded">
+                          <Paperclip className="w-2.5 h-2.5" />
+                          <span>Evidence</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[14px] text-slate-500 font-mono">
                     <span className="flex items-center gap-1">
@@ -248,10 +304,55 @@ export const ComplaintsPage = React.memo(() => {
                     {selectedComplaint.description && (
                       <>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-normal mb-1 mt-2">Description</p>
-                        <p className="text-[11px] text-slate-700">{selectedComplaint.description}</p>
+                        <p className="text-[11px] text-slate-700 whitespace-pre-line">{selectedComplaint.description}</p>
                       </>
                     )}
                   </div>
+
+                  {/* Attached Evidence (AWS S3) - Inline Display */}
+                  {selectedComplaint.attachment_url && (
+                    <div className="px-4 py-3 bg-white border-t border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <p className="text-[10px] font-bold text-navy-950 uppercase tracking-normal flex items-center gap-1.5">
+                          <Paperclip className="w-3.5 h-3.5 text-[#1a3a6b]" />
+                          <span>Attached Evidence (संलग्न साक्ष्य)</span>
+                        </p>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-900 border border-blue-200">
+                          {/\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(selectedComplaint.attachment_url)
+                            ? 'Photo Proof'
+                            : 'PDF Document'}
+                        </span>
+                      </div>
+
+                      {/\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(selectedComplaint.attachment_url) ? (
+                        <div className="mt-2 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 relative group p-2">
+                          <img
+                            src={selectedComplaint.attachment_url}
+                            alt="Attached complaint proof"
+                            className="w-full max-h-72 object-contain bg-slate-100 rounded mx-auto"
+                            loading="lazy"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setEnlargedImage(selectedComplaint.attachment_url!)}
+                            className="absolute bottom-4 right-4 bg-navy-950/85 hover:bg-navy-900 text-white text-[11px] font-bold px-2.5 py-1.5 rounded-md shadow flex items-center gap-1 transition-all cursor-pointer backdrop-blur-xs"
+                            title="Zoom In"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                            <span>Zoom In</span>
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-2 rounded-lg border border-slate-200 overflow-hidden bg-white shadow-xs">
+                          <iframe
+                            src={selectedComplaint.attachment_url}
+                            className="w-full h-80 border-none"
+                            title="Complaint PDF Document"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Update Status */}
                   <div className="px-4 py-3 space-y-2">
@@ -300,20 +401,103 @@ export const ComplaintsPage = React.memo(() => {
                           placeholder="Add official remark / resolution notes..."
                           value={statusForm.remark}
                           onChange={(e) => setStatusForm({ ...statusForm, remark: e.target.value })}
+                          className="min-h-[50px] text-[11px] font-mono border-slate-300 focus:border-[#1a3a6b] rounded-sm"
                           rows={2}
-                          className="text-[11px] font-mono resize-none"
                         />
                         <button
                           onClick={handleUpdateStatus}
-                          disabled={updating || statusForm.status === selectedComplaint.status}
-                          className="w-full flex items-center justify-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-bold uppercase tracking-normal py-2 rounded-sm transition-colors"
+                          disabled={updating || !statusForm.status || statusForm.status === selectedComplaint.status}
+                          className="w-full py-1.5 bg-[#1a3a6b] hover:bg-[#0a1628] text-white text-[11px] font-bold uppercase tracking-normal disabled:opacity-40 disabled:cursor-not-allowed transition-colors rounded-sm flex items-center justify-center gap-1"
                         >
                           <Save className="w-3 h-3" />
-                          {updating ? 'Updating...' : 'Update Status'}
+                          <span>{updating ? 'Saving...' : 'Save Lifecycle Update'}</span>
                         </button>
                       </>
                     )}
                   </div>
+
+                  {/* ── Citizen Confirmation Indicator ── */}
+                  {selectedComplaint.user_confirmed && (
+                    <div className="px-4 py-3 bg-emerald-50/80 border-t border-emerald-200">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                          <BadgeCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                          <div>
+                            <p className="text-xs font-bold text-emerald-950">
+                              {isHi ? '✓ नागरिक द्वारा समस्या समाधान की पुष्टि की गई' : '✓ Resolution Confirmed by Citizen'}
+                            </p>
+                            <p className="text-[10px] text-emerald-700 font-mono">
+                              {selectedComplaint.user_confirmed_at 
+                                ? format(new Date(selectedComplaint.user_confirmed_at), 'dd MMM yyyy, hh:mm a') 
+                                : 'Verified by Citizen'}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="bg-emerald-600 text-white font-extrabold text-[10px] px-2 py-0.5 rounded uppercase shadow-2xs">
+                          User Confirmed
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* ── Administrative Action Bar (Archive & Delete) ── */}
+                  {(selectedComplaint.user_confirmed || selectedComplaint.is_archived) && (
+                    <div className="px-4 py-3 bg-slate-50 border-t border-slate-200 space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-bold text-navy-950 uppercase tracking-normal">
+                          {isHi ? 'प्रशासनिक कार्रवाई (Admin Record Actions)' : 'Administrative Record Actions'}
+                        </p>
+                        {selectedComplaint.user_confirmed && !selectedComplaint.is_archived && (
+                          <span className="text-[10px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded">
+                            Action Enabled
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {selectedComplaint.is_archived ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleArchive(false)}
+                            className="h-8 text-xs bg-navy-900 hover:bg-navy-800 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'सक्रिय सूची में पुनर्स्थापित करें' : 'Restore to Active'}</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => handleArchive(true)}
+                            className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                            title="Safe Government Archive — keeps audit logs intact"
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'आर्काइव करें (सुरक्षित)' : 'Archive (Safe)'}</span>
+                          </Button>
+                        )}
+
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          onClick={handleDeletePermanently}
+                          className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                          title="Permanently remove from database"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isHi ? 'स्थायी रूप से हटाएं (Delete)' : 'Delete Permanently'}</span>
+                        </Button>
+                      </div>
+
+                      <p className="text-[10px] text-slate-500 leading-tight">
+                        {isHi 
+                          ? '💡 सुरक्षा सुझाव: स्थायी डिलीट करने के बजाय आर्काइव करना अधिक सुरक्षित है, जिससे भविष्य के सरकारी ऑडिट हेतु संपूर्ण इतिहास सुरक्षित रहता है।' 
+                          : '💡 Security note: Archiving is recommended over permanent deletion to maintain official records for government audit trails.'}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Update history */}
                   {updates.length > 0 && (
@@ -341,6 +525,41 @@ export const ComplaintsPage = React.memo(() => {
                 <p className="text-[11px] font-mono text-slate-500">Select a complaint from the register to view details</p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Inline Lightbox Modal (Same page, no new tab) */}
+      {enlargedImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setEnlargedImage(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 bg-navy-950 text-white flex items-center justify-between">
+              <span className="text-xs font-bold flex items-center gap-2">
+                <Paperclip className="w-4 h-4 text-amber-400" />
+                <span>Uploaded Complaint Evidence (High Resolution)</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setEnlargedImage(null)}
+                className="p-1 rounded hover:bg-white/20 text-white transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-3 overflow-auto bg-slate-900/10 flex items-center justify-center">
+              <img
+                src={enlargedImage}
+                alt="Full size complaint attachment"
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded shadow-md"
+              />
+            </div>
           </div>
         </div>
       )}

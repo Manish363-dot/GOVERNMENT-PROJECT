@@ -81,6 +81,11 @@ export interface Complaint {
   area: string;
   complaint_type: ComplaintType;
   description: string | null;
+  attachment_url?: string | null;
+  user_confirmed?: boolean;
+  user_confirmed_at?: string | null;
+  is_archived?: boolean;
+  archived_at?: string | null;
   status: ComplaintStatus;
   created_at: string;
 }

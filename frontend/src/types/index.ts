@@ -32,9 +32,15 @@ export interface GpsDevice {
   device_name: string | null;
   device_identifier: string;
   imei: string | null;
+  sim_number?: string | null;
   status: DeviceStatus;
   last_seen_at: string | null;
   created_at: string;
+  assigned_vehicle?: {
+    id: string;
+    vehicle_number: string;
+    vehicle_name: string | null;
+  } | null;
 }
 
 export interface VehicleGpsAssignment {
@@ -90,6 +96,11 @@ export interface Complaint {
   area: string;
   complaint_type: ComplaintType;
   description: string | null;
+  attachment_url?: string | null;
+  user_confirmed?: boolean;
+  user_confirmed_at?: string | null;
+  is_archived?: boolean;
+  archived_at?: string | null;
   status: ComplaintStatus;
   created_at: string;
 }

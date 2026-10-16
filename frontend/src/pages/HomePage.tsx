@@ -1,10 +1,9 @@
 import React from 'react';
 import { HeroSection } from '@/components/HeroSection';
-import { ComplaintForm } from '@/components/ComplaintForm';
 import { AboutSection } from '@/components/AboutSection';
+import { WasteSegregationSection } from '@/components/WasteSegregationSection';
+import { SwachhataPledgeSection } from '@/components/SwachhataPledgeSection';
 import { NoticesSection } from '@/components/NoticesSection';
-import { DocumentsSection } from '@/components/DocumentsSection';
-import { ContactSection } from '@/components/ContactSection';
 import { DailyWorkSection } from '@/components/DailyWorkSection';
 
 export const HomePage = React.memo(() => {
@@ -12,11 +11,10 @@ export const HomePage = React.memo(() => {
     <>
       <HeroSection />
       <AboutSection />
+      <WasteSegregationSection />
       <NoticesSection />
-      <DocumentsSection />
       <DailyWorkSection />
-      <ComplaintForm />
-      <ContactSection />
+      <SwachhataPledgeSection />
     </>
   );
 });

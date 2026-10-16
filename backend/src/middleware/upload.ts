@@ -53,3 +53,36 @@ export const uploadMedia = multer({
     fileSize: 50 * 1024 * 1024, // 50MB max limit to accommodate videos
   }
 });
+
+const complaintAllowedMimeTypes = [
+  'image/jpeg',
+  'image/png',
+  'image/jpg',
+  'application/pdf'
+];
+
+export const uploadComplaintAttachment = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.AWS_S3_BUCKET_NAME || 'zila-panchayat-images',
+    contentType: multerS3.AUTO_CONTENT_TYPE,
+    metadata: function (req: any, file: any, cb: any) {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: function (req: any, file: any, cb: any) {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, 'complaints/' + uniqueSuffix + path.extname(file.originalname));
+    }
+  }),
+  fileFilter: (req: any, file: any, cb: any) => {
+    if (complaintAllowedMimeTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only JPG, PNG, JPEG, and PDF files are allowed for complaints.'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB limit
+  }
+});
+

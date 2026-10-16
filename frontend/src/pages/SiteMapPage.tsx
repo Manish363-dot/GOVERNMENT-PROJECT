@@ -34,10 +34,11 @@ export function SiteMapPage() {
   const sectionLinks = [
     { nameEn: 'About Us Section', nameHi: 'हमारे बारे में (अनुभाग)', path: '/#about' },
     { nameEn: 'Notices Section', nameHi: 'सूचनाएं (अनुभाग)', path: '/#notices' },
-    { nameEn: 'Documents Section', nameHi: 'दस्तावेज़ (अनुभाग)', path: '/#documents' },
+    { nameEn: 'Cleanliness Bylaws 2023', nameHi: 'स्वच्छता उपविधियाँ (2023)', path: '/cleanliness-bylaws' },
+    { nameEn: 'Solid Waste Management Rules 2026', nameHi: 'ठोस अपशिष्ट प्रबंधन नियम (2026)', path: '/swm-rules-2026' },
     { nameEn: 'Daily Work / Blogs', nameHi: 'दैनिक कार्य / ब्लॉग', path: '/#blogs' },
-    { nameEn: 'Complaint Form', nameHi: 'शिकायत फॉर्म', path: '/#complaint' },
-    { nameEn: 'Contact Us', nameHi: 'संपर्क करें', path: '/#contact' },
+    { nameEn: 'Public Grievance Portal', nameHi: 'जन शिकायत पोर्टल', path: '/complaint' },
+    { nameEn: 'Contact Us', nameHi: 'संपर्क करें', path: '/contact' },
   ];
 
   return (

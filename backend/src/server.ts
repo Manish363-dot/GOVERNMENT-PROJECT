@@ -2,6 +2,7 @@ import app from './app';
 import { env, isOriginAllowed } from './config/env';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { millitrackSyncService, setSocketIoInstance } from './services/millitrack.service';
 
 const PORT = parseInt(env.PORT, 10);
 
@@ -24,6 +25,7 @@ export const io = new Server(httpServer, {
 
 // Store io instance on Express app for access in controllers
 app.set('io', io);
+setSocketIoInstance(io);
 
 io.on('connection', (socket) => {
   console.log(`[Socket.io] Client connected: ${socket.id}`);
@@ -52,11 +54,15 @@ httpServer.listen(PORT, () => {
   │                                             │
   └─────────────────────────────────────────────┘
   `);
+
+  // Start automated MilliTrack live GPS sync (every 4 seconds for fast live tracking)
+  millitrackSyncService.startSync(4000);
 });
 
 // Graceful shutdown handling
 async function gracefulShutdown() {
   console.log('\n[Server] Shutting down gracefully...');
+  millitrackSyncService.stopSync();
   
   // Close HTTP server
   httpServer.close(() => {

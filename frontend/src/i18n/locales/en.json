@@ -3,6 +3,9 @@
     "nav": {
       "home": "Home",
       "about": "About",
+      "ourInitiative": "Our Initiative",
+      "visionMission": "Our Vision & Mission",
+      "staffInfo": "Staff & Officers Directory",
       "complaint": "Complaint",
       "contact": "Contact",
       "notices": "Notices & Updates",
@@ -15,7 +18,6 @@
       "adminSignUp": "Admin Sign Up",
       "signIn": "Sign In",
       "brandName": "Department Of Zila Panchayat Almora",
-      "brandTagline": "Smart Waste Collection Tracking System",
       "govBadge": "Government of Uttarakhand",
       "govBadgeHi": "उत्तराखंड शासन",
       "govSubtitle": "Government of Uttarakhand • Zila Panchayat Digital Services",
@@ -45,6 +47,8 @@
       "liveTracking": "Live Tracking",
       "registerComplaint": "Register Complaint",
       "ourBlogs": "Our Blogs",
+      "pledgedCountText": "Citizens Pledged",
+      "takePledge": "Take Pledge",
       "stats": {
         "tracked": "Vehicles Tracked",
         "citizens": "Citizens Served",

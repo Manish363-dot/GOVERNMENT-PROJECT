@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { complaintService } from '@/services/complaint.service';
-import { Search, CheckCircle2, Clock, MapPin, User, Phone, FileText, AlertCircle, ShieldCheck, Copy, Check, Printer, Building2, Wrench, Lock, FileCheck, Landmark, BadgeCheck, QrCode, Award } from 'lucide-react';
+import { Search, CheckCircle2, Clock, MapPin, User, Phone, FileText, AlertCircle, ShieldCheck, Copy, Check, Building2, Wrench, Lock, FileCheck, Landmark, BadgeCheck, Paperclip, ExternalLink, Maximize2, X, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import type { Complaint, ComplaintUpdate } from '@/types';
@@ -23,6 +22,9 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
     const [searched, setSearched] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
+    const [confirming, setConfirming] = useState(false);
+    const [confirmSuccess, setConfirmSuccess] = useState(false);
+    const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
 
     const statusLabels: Record<string, string> = {
         new: isHi ? 'पंजीकृत (नया)' : 'Submitted',
@@ -58,14 +60,30 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
         }
     }, [query, isHi]);
 
+    const handleConfirmResolution = async () => {
+        if (!complaint) return;
+        setConfirming(true);
+        try {
+            await complaintService.confirmResolution(complaint.complaint_number);
+            setComplaint(prev => prev ? { 
+                ...prev, 
+                user_confirmed: true, 
+                user_confirmed_at: new Date().toISOString() 
+            } : null);
+            setConfirmSuccess(true);
+            const refreshed = await complaintService.track(complaint.complaint_number);
+            setUpdates(refreshed.updates || []);
+        } catch (err: any) {
+            alert(err.message || 'पुष्टि करने में विफल। पुनः प्रयास करें।');
+        } finally {
+            setConfirming(false);
+        }
+    };
+
     const handleCopyId = useCallback((id: string) => {
         navigator.clipboard.writeText(id);
         setCopied(true);
         setTimeout(() => setCopied(false), 2500);
-    }, []);
-
-    const handlePrint = useCallback(() => {
-        window.print();
     }, []);
 
     const getStageRank = (status?: string) => {
@@ -118,47 +136,95 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                 </div>
             )}
 
+            {/* ── Citizen Resolution Confirmation Card / Popup ── */}
+            {complaint && complaint.status === 'resolved' && !complaint.user_confirmed && (
+                <div className="bg-gradient-to-br from-emerald-50 via-white to-teal-50 border-2 border-emerald-400 rounded-2xl p-5 sm:p-6 shadow-xl animate-fade-in relative overflow-hidden mb-6">
+                    <div className="absolute top-0 right-0 -mt-4 -mr-4 w-32 h-32 bg-emerald-200/40 rounded-full blur-2xl pointer-events-none" />
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-5 relative z-10">
+                        <div className="flex items-start gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                                <CheckCircle2 className="w-7 h-7" />
+                            </div>
+                            <div>
+                                <div className="flex items-center gap-2.5 flex-wrap">
+                                    <h3 className="font-extrabold text-base sm:text-lg text-emerald-950 leading-tight">
+                                        {isHi ? 'आपकी शिकायत का समाधान हो गया है!' : 'Your complaint has been resolved!'}
+                                    </h3>
+                                    <span className="bg-emerald-600 text-white text-[11px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-wider shadow-xs">
+                                        Resolved
+                                    </span>
+                                </div>
+
+                                <p className="text-xs sm:text-sm text-emerald-900 mt-1.5 leading-relaxed font-medium">
+                                    {isHi 
+                                        ? 'प्रशासन द्वारा आपकी शिकायत का निस्तारण कर दिया गया है। कृपया पुष्टि करें कि आपकी समस्या हल हो गई है।' 
+                                        : 'The administration has resolved your grievance. Please confirm that your issue has been successfully resolved.'}
+                                </p>
+
+                                <div className="mt-2.5 text-xs font-mono text-emerald-950 bg-white/90 inline-block px-3 py-1 rounded-lg border border-emerald-300 shadow-2xs">
+                                    <span className="text-slate-500 font-bold mr-1">Complaint ID:</span>
+                                    <span className="font-extrabold text-emerald-900">{complaint.complaint_number}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="shrink-0 sm:self-center w-full sm:w-auto">
+                            <Button
+                                type="button"
+                                onClick={handleConfirmResolution}
+                                disabled={confirming}
+                                className="w-full sm:w-auto h-12 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-lg hover:shadow-emerald-600/30 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                                {confirming ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        <span>{isHi ? 'पुष्टि दर्ज की जा रही है...' : 'Confirming...'}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Check className="w-4 h-4 stroke-[3]" />
+                                        <span>{isHi ? 'हाँ, मेरी समस्या हल हो गई है' : 'Yes, my issue is resolved'}</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Citizen Confirmed Banner ── */}
+            {complaint && complaint.user_confirmed && (
+                <div className="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 sm:p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-emerald-950 shadow-xs animate-fade-in">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                            <BadgeCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-extrabold text-emerald-950">
+                                {isHi ? '✓ नागरिक द्वारा समाधान की पुष्टि की जा चुकी है' : '✓ Resolution Confirmed by Citizen'}
+                            </p>
+                            <p className="text-xs text-emerald-800">
+                                {isHi 
+                                    ? 'आपने पुष्टि कर दी है कि आपकी समस्या का संतोषजनक समाधान हो गया है।' 
+                                    : 'You have confirmed that your issue has been satisfactorily resolved.'}
+                            </p>
+                        </div>
+                    </div>
+                    {complaint.user_confirmed_at && (
+                        <div className="text-right shrink-0">
+                            <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">Confirmed At:</span>
+                            <span className="text-xs font-mono font-bold text-emerald-900">
+                                {format(new Date(complaint.user_confirmed_at), 'dd MMM yyyy, hh:mm a')}
+                            </span>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Official Complaint Certificate Sheet */}
             {complaint && (
                 <div className="printable-receipt bg-white border-2 border-slate-400 rounded-xl overflow-hidden shadow-lg space-y-0 text-slate-800 animate-fade-in print:border-2 print:border-slate-800 print:shadow-none">
-
-                    {/* ── Top Uttarakhand Tricolor Accent Line ── */}
-                    <div className="h-1.5 bg-gradient-to-r from-amber-600 via-white to-emerald-600 border-b border-amber-500/50" />
-
-                    {/* ── Official Government Header ── */}
-                    <div className="bg-navy-950 text-white p-4 sm:p-5 border-b-2 border-amber-500 flex flex-wrap items-center justify-between gap-4">
-                        <div className="flex items-center gap-3.5">
-                            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center border-2 border-amber-400/60 shrink-0 shadow-inner">
-                                <Landmark className="w-6 h-6 text-amber-400" />
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[10px] font-mono tracking-widest uppercase text-amber-400 font-extrabold block">
-                                        {isHi ? 'उत्तराखंड सरकार • GOVT. OF UTTARAKHAND' : 'GOVT. OF UTTARAKHAND • UTTARAKHAND GOVERNMENT'}
-                                    </span>
-                                </div>
-                                <h3 className="font-extrabold text-base sm:text-xl text-white tracking-wide">
-                                    {isHi ? 'कार्यालय जिला पंचायत — जन शिकायत पंजीकरण प्रमाण पत्र' : 'OFFICE OF ZILA PANCHAYAT — GRIEVANCE RECEIPT CERTIFICATE'}
-                                </h3>
-                                <p className="text-[11px] text-slate-300 font-medium">
-                                    {isHi ? 'लोक शिकायत निवारण व ऑनलाइन ट्रैकिंग प्रणाली' : 'Public Grievance Redressal & Official Audit System'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* Digital Verification Badge */}
-                        <div className="flex items-center gap-2 bg-navy-900/90 px-3 py-1.5 rounded-lg border border-amber-400/40">
-                            <BadgeCheck className="w-5 h-5 text-amber-400 shrink-0" />
-                            <div className="text-left">
-                                <span className="text-[9px] font-mono text-amber-400 uppercase font-bold block leading-none">
-                                    {isHi ? 'डिजिटल रूप से सत्यापित' : 'DIGITALLY VERIFIED'}
-                                </span>
-                                <span className="text-[10px] text-slate-200 font-semibold leading-tight block">
-                                    {isHi ? 'आधिकारिक डिजिटल रिकॉर्ड' : 'Official Portal Record'}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
 
                     {/* ── Grievance Reference & Status Banner Strip ── */}
                     <div className="bg-slate-100 px-4 sm:px-6 py-3 border-b border-slate-300 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -262,9 +328,60 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                                         <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">
                                             {isHi ? 'समस्या का विस्तृत विवरण (Grievance Description)' : 'Grievance Detailed Description'}
                                         </span>
-                                        <p className="text-slate-800 leading-relaxed font-sans font-medium text-xs">
+                                        <p className="text-slate-800 leading-relaxed font-sans font-medium text-xs whitespace-pre-line">
                                             "{complaint.description}"
                                         </p>
+                                    </div>
+                                )}
+
+                                {complaint.attachment_url && (
+                                    <div className="p-4 bg-slate-50 border-t border-slate-200">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-2">
+                                                <Paperclip className="w-4 h-4 text-navy-900 shrink-0" />
+                                                <span className="text-xs font-bold text-navy-950 uppercase tracking-wide">
+                                                    {isHi ? 'संलग्न साक्ष्य / दस्तावेज' : 'Uploaded Evidence'}
+                                                </span>
+                                            </div>
+                                            <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 border border-blue-200">
+                                                {/\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(complaint.attachment_url)
+                                                    ? (isHi ? 'तस्वीर साक्ष्य (Photo Proof)' : 'Photo Proof')
+                                                    : (isHi ? 'पीडीएफ दस्तावेज (PDF Document)' : 'PDF Document')}
+                                            </span>
+                                        </div>
+
+                                        {/\.(jpg|jpeg|png|webp|gif)($|\?)/i.test(complaint.attachment_url) ? (
+                                            <div className="rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-xs p-2">
+                                                <div className="relative group flex items-center justify-center bg-slate-100/70 rounded-md p-2 min-h-[220px]">
+                                                    <img
+                                                        src={complaint.attachment_url}
+                                                        alt="Complaint Attachment"
+                                                        className="max-h-[380px] w-auto max-w-full object-contain rounded shadow-xs"
+                                                        loading="lazy"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEnlargedImage(complaint.attachment_url!)}
+                                                        className="absolute bottom-3 right-3 bg-navy-950/85 hover:bg-navy-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-md shadow-md flex items-center gap-1.5 transition-all cursor-pointer backdrop-blur-xs"
+                                                        title={isHi ? 'बड़ा करके देखें' : 'View Full Image'}
+                                                    >
+                                                        <Maximize2 className="w-3.5 h-3.5" />
+                                                        <span>{isHi ? 'बड़ा देखें' : 'Zoom In'}</span>
+                                                    </button>
+                                                </div>
+                                                <p className="text-[11px] text-slate-500 text-center font-medium mt-1.5">
+                                                    {isHi ? 'नागरिक द्वारा शिकायत के साथ संलग्न की गई तस्वीर' : 'Citizen-uploaded photo evidence for this complaint'}
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="rounded-lg border-2 border-slate-200 overflow-hidden bg-white shadow-xs">
+                                                <iframe
+                                                    src={complaint.attachment_url}
+                                                    className="w-full h-[450px] border-none"
+                                                    title="Complaint PDF Document"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -365,57 +482,41 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                             </div>
                         )}
 
-                        {/* ── Official Digital Seal & Verification Footer ── */}
-                        <div className="pt-4 border-t-2 border-slate-300 grid sm:grid-cols-2 gap-4 items-center">
-                            {/* Security Verification Hash & QR Code placeholder */}
-                            <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                <QrCode className="w-10 h-10 text-navy-900 shrink-0" />
-                                <div>
-                                    <span className="text-[9px] font-mono uppercase font-bold text-slate-500 block">
-                                        SYSTEM SECURITY HASH
-                                    </span>
-                                    <span className="font-mono text-[10px] font-bold text-navy-900 block tracking-tight truncate">
-                                        SHA256: ZP-UK-{complaint.complaint_number.slice(5)}-VERIFIED
-                                    </span>
-                                    <span className="text-[9px] text-slate-500 block">
-                                        {isHi ? 'पोर्टल पर सत्यता जांचें: panchayat.uk.gov.in' : 'Verify authenticity at: panchayat.uk.gov.in'}
-                                    </span>
-                                </div>
-                            </div>
+                    </div>
+                </div>
+            )}
 
-                            {/* Official Sign-off Stamp Box */}
-                            <div className="text-right sm:text-right border-l-0 sm:border-l sm:pl-4 border-slate-200 space-y-1">
-                                <div className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 text-amber-900 rounded text-[10px] font-bold border border-amber-300 uppercase tracking-wider mb-0.5">
-                                    <Award className="w-3 h-3 text-amber-700" />
-                                    {isHi ? 'प्रमाणित आधिकारिक प्रति' : 'OFFICIAL CERTIFIED COPY'}
-                                </div>
-                                <p className="font-extrabold text-xs text-navy-950">
-                                    {isHi ? 'लोक शिकायत निवारण प्रकोष्ठ' : 'Public Grievance Redressal Cell'}
-                                </p>
-                                <p className="text-[11px] font-semibold text-slate-700">
-                                    {isHi ? 'जिला पंचायत • उत्तराखंड सरकार' : 'Zila Panchayat • Govt. of Uttarakhand'}
-                                </p>
-                                <p className="text-[9px] text-slate-400 italic">
-                                    {isHi ? 'यह कंप्यूटर जनित आधिकारिक प्रमाण पत्र है (हस्ताक्षर की आवश्यकता नहीं)' : 'Computer generated official document. No physical signature required.'}
-                                </p>
-                            </div>
-                        </div>
-
-                        {/* ── Action Toolbar (Print Official Receipt) ── */}
-                        <div className="pt-3 flex items-center justify-between gap-3 border-t border-slate-200 print:hidden">
-                            <span className="text-[11px] text-slate-500 font-mono">
-                                {isHi ? 'जिला पंचायत जन शिकायत निवारण पोर्टल' : 'Zila Panchayat Public Redressal System'}
+            {/* Inline Lightbox Modal (Same page, no new tab) */}
+            {enlargedImage && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+                    onClick={() => setEnlargedImage(null)}
+                >
+                    <div
+                        className="relative max-w-4xl max-h-[90vh] bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-700"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="px-4 py-3 bg-navy-950 text-white flex items-center justify-between">
+                            <span className="text-xs font-bold flex items-center gap-2">
+                                <Paperclip className="w-4 h-4 text-amber-400" />
+                                {isHi ? 'संलग्न साक्ष्य (उच्च गुणवत्ता दृश्य)' : 'Uploaded Evidence (High Resolution)'}
                             </span>
-                            <Button
+                            <button
                                 type="button"
-                                onClick={handlePrint}
-                                className="h-10 px-5 text-xs font-bold gap-2 bg-navy-900 hover:bg-navy-800 text-white shadow-xs"
+                                onClick={() => setEnlargedImage(null)}
+                                className="p-1 rounded hover:bg-white/20 text-white transition-colors cursor-pointer"
+                                aria-label="Close"
                             >
-                                <Printer className="w-4 h-4 text-amber-400" />
-                                {isHi ? 'आधिकारिक रसीद प्रिंट / PDF डाउनलोड करें' : 'Print / Download Official Receipt PDF'}
-                            </Button>
+                                <X className="w-5 h-5" />
+                            </button>
                         </div>
-
+                        <div className="p-3 overflow-auto bg-slate-900/10 flex items-center justify-center">
+                            <img
+                                src={enlargedImage}
+                                alt="Full size attachment"
+                                className="max-h-[75vh] w-auto max-w-full object-contain rounded shadow-md"
+                            />
+                        </div>
                     </div>
                 </div>
             )}

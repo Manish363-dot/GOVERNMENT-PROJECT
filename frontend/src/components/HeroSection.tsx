@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, MessageSquareWarning, BookOpen, User } from 'lucide-react';
+import { ShieldCheck, Award, BookOpen, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { usePledgeCount } from '@/hooks/usePledgeCount';
 
 import { BlogGalleryModal } from './BlogGalleryModal';
 
@@ -18,25 +20,49 @@ const DIGNITARY_IMAGE_URL = `${S3_BUCKET}/portal-logos/image5.jpg`;
 const CM_IMAGE_URL = `${S3_BUCKET}/portal-logos/CM.jpg`;
 const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.jpg`;
 const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
+const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
 
 const OFFICIALS = [
   {
     id: 1,
-    name: "Shri Pushkar Singh Dhami",
-    designation: "Chief Minister, Uttarakhand",
+    name: "Sh. Pushkar Singh Dhami",
+    designation: "Hon'ble Chief Minister of Uttarakhand",
     image: CM_IMAGE_URL,
-    quote: "स्वच्छ उत्तराखण्ड, स्वस्थ उत्तराखण्ड"
   },
-  { id: 2, name: "Madan Kaushik", designation: "Minister for Disaster Management and Rehabilitation of Uttarakhand", image: MK_IMAGE_URL, quote: "" },
-  { id: 3, name: "Hema Gaira", designation: "Chairman Zila Panchayat Almora", image: CH_IMAGE_URL, quote: "" },
-  { id: 4, name: "Rajesh Kumar", designation: "Apar Mukhya Adhikari (AMA)", image: null, quote: "" }
+  {
+    id: 2,
+    name: "Sh. Madan Kaushik",
+    designation: "Hon'ble Panchayati Raj Minister, Uttarakhand",
+    image: MK_IMAGE_URL,
+  },
+  {
+    id: 3,
+    name: "Smt. Hema Gaira",
+    designation: "Chairperson, Zila Panchayat Almora",
+    image: CH_IMAGE_URL,
+  },
+  {
+    id: 4,
+    name: "Sh. Rajesh Kumar",
+    designation: "Apar Mukhya Adhikari (AMA), Almora",
+    image: AMA_IMAGE_URL,
+  },
 ];
 
 export const HeroSection = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
+  const { count } = usePledgeCount();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+
+  const scrollToPledge = useCallback(() => {
+    const pledgeElement = document.getElementById('pledge');
+    if (pledgeElement) {
+      pledgeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, []);
 
   // Preload background images and dignitary image
   useEffect(() => {
@@ -78,14 +104,6 @@ export const HeroSection = React.memo(() => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 sm:pt-20 pb-0">
         {/* Main Hero Content - Centered */}
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center animate-fade-in">
-          {/* Official Badge */}
-          <div className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-md rounded-full px-4 py-1.5 mb-6 border border-white/25 shadow-md">
-            <ShieldCheck className="w-4 h-4 text-emerald-300" />
-            <span className="text-xs font-semibold text-emerald-100 tracking-wide">
-              उत्तराखंड शासन • Zila Panchayat Safai Portal
-            </span>
-          </div>
-
           <h1 className="font-poppins text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight text-white max-w-4xl mx-auto drop-shadow-md">
             <span className="block text-white">
               {t('hero.titleLine1', 'District Panchayat Almora')}
@@ -104,12 +122,32 @@ export const HeroSection = React.memo(() => {
 
           {/* Buttons: Full-width stacked on mobile, inline on sm+ */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto bg-red-600 hover:bg-emerald-700 text-white font-semibold shadow-lg border border-emerald-500/30 px-6 h-12 text-sm" asChild>
-              <a href="#complaint" className="flex items-center justify-center">
-                <MessageSquareWarning className="w-4.5 h-4.5 mr-2 text-white" />
-                {t('hero.registerComplaint', 'Register Complaint')}
-              </a>
+            {/* Real-time Swachhata Pledge Counter CTA Button */}
+            <Button
+              size="lg"
+              onClick={scrollToPledge}
+              className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:to-teal-700 text-white font-semibold shadow-xl border border-emerald-400/40 px-5 sm:px-6 h-12 text-sm transition-all duration-300 transform hover:-translate-y-0.5 group cursor-pointer"
+            >
+              <div className="flex items-center justify-center gap-2">
+                {/* Live Pulse Beacon */}
+                <Award className="w-4.5 h-4.5 text-amber-300 shrink-0 group-hover:rotate-12 transition-transform" />
+
+                {/* Counter & Action */}
+                <div className="flex items-center gap-1.5 font-medium">
+                  <span className="font-extrabold text-amber-300 text-base sm:text-lg tracking-tight font-mono">
+                    {count.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-white text-xs sm:text-sm font-semibold">
+                    {isHi ? 'नागरिकों ने शपथ ली' : (count === 1 ? 'Citizen Pledged' : 'Citizens Pledged')}
+                  </span>
+                  <span className="hidden md:inline-block text-emerald-200/60 font-light">•</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-amber-200 bg-emerald-950/60 group-hover:bg-emerald-950 px-2 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap">
+                    {isHi ? 'शपथ लें →' : 'Take Pledge →'}
+                  </span>
+                </div>
+              </div>
             </Button>
+
             <Button size="lg" className="w-full sm:w-auto bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 text-sm" onClick={openBlogModal}>
               <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
               {t('hero.ourBlogs', 'Our Blogs')}
@@ -173,28 +211,37 @@ export const HeroSection = React.memo(() => {
               </div>
             </div>
 
-            {/* 4 Additional Sections */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 pb-4">
+            {/* 4 Officials Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 pb-4 items-stretch">
               {OFFICIALS.map((official) => (
-                <div key={official.id} className="bg-white rounded-2xl shadow-xl border border-slate-200 p-3 sm:py-4 sm:px-5 flex flex-col items-center text-center transition-all hover:-translate-y-2 hover:shadow-2xl duration-300">
-                  <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full border border-slate-200 overflow-hidden bg-slate-50 mb-2 sm:mb-3 shadow-md shrink-0">
+                <div
+                  key={official.id}
+                  className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-5 sm:p-6 flex flex-col items-center text-center justify-start h-full transition-all hover:-translate-y-1.5 hover:shadow-xl duration-300"
+                >
+                  {/* Circular Avatar with soft white ring & shadow */}
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-slate-50 ring-4 ring-white shadow-md mb-4 shrink-0">
                     {official.image ? (
-                      <img src={official.image} alt={official.name} className="w-full h-full object-cover object-top" />
+                      <img
+                        src={official.image}
+                        alt={official.name}
+                        className="w-full h-full object-cover object-top"
+                      />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-[10px] sm:text-xs font-medium">Image {official.id}</div>
+                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">
+                        Image {official.id}
+                      </div>
                     )}
                   </div>
-                  <h4 className="text-sm sm:text-base font-bold text-slate-800 leading-tight">{official.name}</h4>
-                  <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5 font-semibold">{official.designation}</p>
-                  
-                  {/* Optional Quote Space */}
-                  {official.quote ? (
-                    <p className="text-[10px] sm:text-[11px] text-slate-600 mt-2 sm:mt-3 italic border-t border-red-500 pt-2 w-full font-medium leading-tight shrink-0">
-                      "{official.quote}"
-                    </p>
-                  ) : (
-                    <div className="mt-2 sm:mt-3 pt-2 w-full border-t border-red-500 min-h-[20px] shrink-0"></div>
-                  )}
+
+                  {/* Dignitary Name */}
+                  <h4 className="text-sm sm:text-base md:text-[17px] font-bold text-slate-900 leading-snug mb-1">
+                    {official.name}
+                  </h4>
+
+                  {/* Designation */}
+                  <p className="text-xs sm:text-[13px] md:text-sm text-slate-500 font-normal leading-relaxed">
+                    {official.designation}
+                  </p>
                 </div>
               ))}
             </div>

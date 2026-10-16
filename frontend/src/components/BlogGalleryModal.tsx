@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, ShieldCheck, PhoneCall } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ShieldCheck, PhoneCall, Maximize2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -8,12 +8,12 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // Single Grid Item Component with progressive image loading & skeleton preview
-const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; index: number; onClick: (src: string) => void }) => {
+const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; index: number; onClick: (index: number) => void }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     const handleClick = useCallback(() => {
-        onClick(src);
-    }, [onClick, src]);
+        onClick(index);
+    }, [onClick, index]);
 
     return (
         <div
@@ -23,6 +23,13 @@ const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; inde
         >
             {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-transparent to-transparent opacity-60 z-10 pointer-events-none"></div>
+
+            {/* Hover Expand Icon Badge */}
+            <div className="absolute inset-0 bg-navy-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center z-20 pointer-events-none">
+                <div className="p-2.5 bg-black/60 backdrop-blur-md rounded-full text-amber-300 border border-amber-400/40 shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                    <Maximize2 className="w-5 h-5" />
+                </div>
+            </div>
 
             {/* Skeleton Pulse during initial decode */}
             {!isLoaded && (
@@ -48,10 +55,12 @@ const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; inde
 export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
     const { t } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-    // Touch Swipe Ref
+    // Touch Swipe Refs
     const touchStartX = useRef(0);
+    const touchLightboxStartX = useRef(0);
 
     // 1. Fetch Dynamic Media from API
     const [mediaList, setMediaList] = useState<string[]>([]);
@@ -104,16 +113,34 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
         setCurrentIndex((prev) => (prev - 1 + mediaList.length) % Math.max(1, mediaList.length));
     }, [mediaList.length]);
 
-    // Handle clicking a grid item
-    const handleGridItemClick = useCallback((src: string) => {
-        const carouselIdx = mediaList.indexOf(src);
-        if (carouselIdx !== -1) {
-            setCurrentIndex(carouselIdx);
+    // Handle clicking a grid item -> Open in full-screen large view
+    const handleGridItemClick = useCallback((index: number) => {
+        setLightboxImageIndex(index);
+    }, []);
+
+    const nextLightboxImage = useCallback(() => {
+        if (gridMedia.length === 0) return;
+        setLightboxImageIndex((prev) => (prev !== null ? (prev + 1) % gridMedia.length : 0));
+    }, [gridMedia.length]);
+
+    const prevLightboxImage = useCallback(() => {
+        if (gridMedia.length === 0) return;
+        setLightboxImageIndex((prev) => (prev !== null ? (prev - 1 + gridMedia.length) % gridMedia.length : 0));
+    }, [gridMedia.length]);
+
+    const handleLightboxTouchStart = (e: React.TouchEvent) => {
+        touchLightboxStartX.current = e.targetTouches[0].clientX;
+    };
+
+    const handleLightboxTouchEnd = (e: React.TouchEvent) => {
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchLightboxStartX.current - touchEndX;
+        if (diff > 40) {
+            nextLightboxImage();
+        } else if (diff < -40) {
+            prevLightboxImage();
         }
-        if (scrollAreaRef.current) {
-            scrollAreaRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    }, [mediaList]);
+    };
 
     // 3. Keyboard navigation & Body scroll lock
     useEffect(() => {
@@ -122,6 +149,13 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
         document.body.style.overflow = 'hidden';
 
         const handleKeyDown = (e: KeyboardEvent) => {
+            if (lightboxImageIndex !== null) {
+                if (e.key === 'ArrowRight') nextLightboxImage();
+                else if (e.key === 'ArrowLeft') prevLightboxImage();
+                else if (e.key === 'Escape') setLightboxImageIndex(null);
+                return;
+            }
+
             if (e.key === 'ArrowRight') nextImage();
             if (e.key === 'ArrowLeft') prevImage();
             if (e.key === 'Escape') onClose();
@@ -133,7 +167,14 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
             document.body.style.overflow = 'unset';
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isOpen, onClose, nextImage, prevImage]);
+    }, [isOpen, onClose, nextImage, prevImage, lightboxImageIndex, nextLightboxImage, prevLightboxImage]);
+
+    // Reset lightbox when modal is closed
+    useEffect(() => {
+        if (!isOpen) {
+            setLightboxImageIndex(null);
+        }
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -303,7 +344,15 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                         <div className="absolute inset-0 bg-black/10 translate-y-3 blur-xl rounded-md transition-all duration-500"></div>
 
                         {/* Main Polaroid Frame */}
-                        <div className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu flex items-center justify-center">
+                        <div 
+                            onClick={() => mediaList.length > 0 && setLightboxImageIndex(currentIndex)}
+                            className="relative w-full aspect-[4/3] p-1.5 sm:p-2 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/80 rounded-md overflow-hidden transform-gpu flex items-center justify-center cursor-pointer group/polaroid"
+                            title="बड़ी स्क्रीन में देखें / Click to view fullscreen"
+                        >
+                            {/* Hover Zoom Hint */}
+                            <div className="absolute top-3 right-3 z-20 p-1.5 sm:p-2 bg-black/60 backdrop-blur-md rounded-full text-amber-300 opacity-0 group-hover/polaroid:opacity-100 transition-opacity duration-300 shadow-md pointer-events-none">
+                                <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                            </div>
                             {isLoading ? (
                                 <div className="absolute inset-1.5 sm:inset-2 w-[calc(100%-12px)] sm:w-[calc(100%-16px)] h-[calc(100%-12px)] sm:h-[calc(100%-16px)] bg-slate-200/50 animate-pulse rounded-[2px]" />
                             ) : mediaList.length > 0 ? mediaList.map((imgSrc, idx) => (
@@ -338,18 +387,6 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                     </button>
                 </div>
 
-                {/* Editorial Caption Area */}
-                <div className="w-full max-w-3xl mx-auto flex flex-col items-center justify-center text-center px-4 mt-6 sm:mt-8 mb-6 z-10 relative">
-                    <div className="text-white font-semibold text-base sm:text-lg font-poppins drop-shadow-md">
-                        स्वच्छता अभियान — अल्मोड़ा
-                    </div>
-                    <div className="text-slate-200 text-xs sm:text-sm font-medium mt-1 drop-shadow-md">
-                        Community Cleanliness Initiative
-                    </div>
-                    <div className="inline-flex items-center justify-center gap-1.5 mt-3 px-4 py-1.5 bg-white/90 backdrop-blur-sm border border-slate-200/50 rounded-full shadow-sm text-[11px] sm:text-xs font-semibold text-slate-700 tracking-wider">
-                        {mediaList.length > 0 ? `${String(currentIndex + 1).padStart(2, '0')} / ${mediaList.length}` : '00 / 00'}
-                    </div>
-                </div>
 
                 {/* ── Official Government Quote & Ministers Banner ── */}
                 <div className="w-full max-w-7xl mx-auto px-2 sm:px-6 mt-4 mb-10">
@@ -392,11 +429,6 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                                 {/* Quote Text Content */}
                                 <div className="flex-1 flex flex-col justify-between text-center sm:text-left text-white h-full py-1">
                                     <div>
-                                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] sm:text-[11px] font-extrabold tracking-widest uppercase mb-3 shadow-inner">
-                                            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
-                                            SWACHH BHARAT MISSION URBAN 2.0
-                                        </div>
-
                                         <p className="text-slate-100 text-base sm:text-lg md:text-xl font-semibold leading-relaxed tracking-wide drop-shadow-md font-poppins">
                                             “The goal of the{' '}
                                             <span className="text-amber-300 font-bold underline decoration-amber-400/40 underline-offset-4">
@@ -513,7 +545,7 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                                 key={img + idx}
                                 src={img}
                                 index={idx}
-                                onClick={() => handleGridItemClick(img)}
+                                onClick={() => handleGridItemClick(idx)}
                             />
                         )) : (
                             <div className="col-span-full py-10 text-center text-slate-400 font-medium">
@@ -522,81 +554,77 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                         )}
                     </div>
                 </div>
+            </div>
 
-                {/* ── Executive Work Summary & Impact Overview Section ── */}
-                <div className="w-full max-w-7xl mx-auto mb-20 px-2 sm:px-6">
-                    <div className="w-full p-6 sm:p-8 rounded-3xl bg-navy-900/80 backdrop-blur-xl border border-white/15 shadow-[0_15px_45px_rgba(0,0,0,0.5)] relative overflow-hidden">
-                        {/* Top Tricolor Accent Line */}
-                        <div
-                            className="absolute top-0 left-0 right-0 h-1"
-                            style={{ background: 'linear-gradient(90deg, #FF9933 0%, #FFFFFF 50%, #138808 100%)' }}
-                        ></div>
-
-                        {/* Heading */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 border-b border-white/10 pb-4">
-                            <div>
-                                <h4 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight drop-shadow font-poppins">
-                                    {t('nav.gallerySummaryTitle')}
-                                </h4>
-                                <p className="text-amber-400 text-xs font-semibold tracking-wider uppercase mt-1">
-                                    {t('nav.gallerySummarySub')}
-                                </p>
-                            </div>
-                            <span className="px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold tracking-wide">
-                                📸 {t('nav.gallerySummaryBadge')}
+            {/* ── High-Definition Fullscreen Lightbox Modal ── */}
+            {lightboxImageIndex !== null && gridMedia[lightboxImageIndex] && (
+                <div 
+                    className="fixed inset-0 z-[10000] bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-6 animate-in fade-in duration-200 select-none"
+                    onClick={() => setLightboxImageIndex(null)}
+                    onTouchStart={handleLightboxTouchStart}
+                    onTouchEnd={handleLightboxTouchEnd}
+                >
+                    {/* Top Control Bar */}
+                    <div 
+                        className="w-full max-w-7xl mx-auto flex items-center justify-between z-20 pb-3 border-b border-white/10"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center gap-3">
+                            <span className="text-amber-400 font-bold text-xs sm:text-sm tracking-wide font-mono bg-white/10 px-3 py-1 rounded-full border border-white/15">
+                                {lightboxImageIndex + 1} / {gridMedia.length}
+                            </span>
+                            <span className="text-white text-xs sm:text-sm font-semibold hidden sm:inline-block">
+                                जिला पंचायत अल्मोड़ा • मीडिया संग्रह
                             </span>
                         </div>
 
-                        {/* 3 Key Gallery Highlights */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                            {/* Highlight 1 */}
-                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition-all duration-300 flex items-start gap-3.5">
-                                <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300 font-bold shrink-0 text-sm">
-                                    🚛
-                                </div>
-                                <div>
-                                    <h5 className="text-white font-bold text-sm mb-1">{t('nav.galleryHighlight1Title')}</h5>
-                                    <p className="text-slate-300 text-xs leading-relaxed">
-                                        {t('nav.galleryHighlight1Desc')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Highlight 2 */}
-                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition-all duration-300 flex items-start gap-3.5">
-                                <div className="w-9 h-9 rounded-xl bg-green-500/20 border border-green-400/30 flex items-center justify-center text-green-300 font-bold shrink-0 text-sm">
-                                    🧹
-                                </div>
-                                <div>
-                                    <h5 className="text-white font-bold text-sm mb-1">{t('nav.galleryHighlight2Title')}</h5>
-                                    <p className="text-slate-300 text-xs leading-relaxed">
-                                        {t('nav.galleryHighlight2Desc')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            {/* Highlight 3 */}
-                            <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-amber-400/40 transition-all duration-300 flex items-start gap-3.5">
-                                <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-blue-300 font-bold shrink-0 text-sm">
-                                    🏔️
-                                </div>
-                                <div>
-                                    <h5 className="text-white font-bold text-sm mb-1">{t('nav.galleryHighlight3Title')}</h5>
-                                    <p className="text-slate-300 text-xs leading-relaxed">
-                                        {t('nav.galleryHighlight3Desc')}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Subtext */}
-                        <div className="mt-5 pt-3.5 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-slate-400 gap-2">
-                            <span>{t('nav.galleryFooterLeft')}</span>
-                            <span className="font-semibold text-amber-300">{t('nav.gallerySlogan')}</span>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setLightboxImageIndex(null)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-red-600 text-white transition-all cursor-pointer border border-white/20 text-xs sm:text-sm font-semibold group shadow-md"
+                            aria-label="Close fullscreen view"
+                        >
+                            <X className="w-4 h-4 sm:w-5 sm:h-5 group-hover:rotate-90 transition-transform duration-300" />
+                            <span>बंद करें</span>
+                        </button>
                     </div>
+
+                    {/* Centered Image Viewport with Previous / Next Arrows */}
+                    <div 
+                        className="relative flex-1 flex items-center justify-center my-3 overflow-hidden"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Prev Button */}
+                        <button
+                            type="button"
+                            onClick={prevLightboxImage}
+                            className="absolute left-1 sm:left-4 md:left-8 z-30 p-2.5 sm:p-3.5 rounded-full bg-black/60 hover:bg-black/90 text-white hover:text-amber-300 border border-white/20 hover:border-amber-400 transition-all shadow-2xl cursor-pointer"
+                            aria-label="Previous photo"
+                        >
+                            <ChevronLeft className="w-6 h-6 sm:w-8 sm:h-8" />
+                        </button>
+
+                        {/* Large Image */}
+                        <img
+                            key={gridMedia[lightboxImageIndex]}
+                            src={gridMedia[lightboxImageIndex]}
+                            alt={`Fullscreen photo ${lightboxImageIndex + 1}`}
+                            className="max-w-[94vw] max-h-[76vh] w-auto h-auto object-contain rounded-2xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] border border-white/20 animate-in zoom-in-95 duration-200"
+                        />
+
+                        {/* Next Button */}
+                        <button
+                            type="button"
+                            onClick={nextLightboxImage}
+                            className="absolute right-1 sm:right-4 md:right-8 z-30 p-2.5 sm:p-3.5 rounded-full bg-black/60 hover:bg-black/90 text-white hover:text-amber-300 border border-white/20 hover:border-amber-400 transition-all shadow-2xl cursor-pointer"
+                            aria-label="Next photo"
+                        >
+                            <ChevronRight className="w-6 h-6 sm:w-8 sm:h-8" />
+                        </button>
+                    </div>
+
                 </div>
-            </div>
+            )}
         </div>
     );
 });

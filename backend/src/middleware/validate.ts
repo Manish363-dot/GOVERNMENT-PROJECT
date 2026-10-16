@@ -13,9 +13,23 @@ export function validate(schema: AnyZodObject) {
         query: req.query,
         params: req.params,
       });
-      req.body = validatedData.body;
-      req.query = validatedData.query as any;
-      req.params = validatedData.params as any;
+      if (validatedData.body !== undefined) {
+        req.body = validatedData.body;
+      }
+      if (validatedData.query !== undefined) {
+        try {
+          req.query = validatedData.query as any;
+        } catch {
+          Object.assign(req.query, validatedData.query);
+        }
+      }
+      if (validatedData.params !== undefined) {
+        try {
+          req.params = validatedData.params as any;
+        } catch {
+          Object.assign(req.params, validatedData.params);
+        }
+      }
       next();
     } catch (err) {
       if (err instanceof ZodError) {

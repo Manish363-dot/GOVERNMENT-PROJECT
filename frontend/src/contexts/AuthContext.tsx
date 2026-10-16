@@ -40,14 +40,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(profile);
         setIsNewGoogleUser(false); 
       } catch (err: any) {
-        if (err.message?.includes('404') || err.message?.includes('Profile not found')) {
+        if (err.status === 404 || err.message?.includes('404') || err.message?.includes('Profile not found')) {
           setIsNewGoogleUser(true);
+        } else if (
+          err.status === 401 ||
+          err.message?.includes('401') ||
+          err.message?.includes('Unauthorized') ||
+          err.message?.includes('Missing or invalid authentication token')
+        ) {
+          // Expected for guest visitors who are not logged in as admin
+          setProfile(null);
         } else {
-          // Only log unexpected errors (ignore 401 Unauthorized which is expected when not logged in)
-          if (!err.message?.includes('401') && !err.message?.includes('Unauthorized')) {
-            console.error('Failed to fetch profile:', err);
-          }
-          // Invalid or missing token, clear profile
+          // Only log genuine unexpected network or 500 errors
+          console.error('Failed to fetch profile:', err);
           setProfile(null);
         }
       } finally {

@@ -1,27 +1,53 @@
 import { prisma } from '../config/prisma';
 import { GpsDevice, VehicleGpsAssignment } from '@prisma/client';
 
-export async function getAllDevices(): Promise<GpsDevice[]> {
+export async function getAllDevices(): Promise<any[]> {
   try {
     const devices = await prisma.gpsDevice.findMany({
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
+      include: {
+        vehicleAssignments: {
+          where: { is_active: true },
+          include: { vehicle: true },
+        },
+      },
     });
     
     const now = Date.now();
     return devices.map(d => {
-      if (!d.last_seen_at) return { ...d, status: 'inactive' };
-      const isOffline = (now - d.last_seen_at.getTime()) > 5 * 60 * 1000;
-      return { ...d, status: isOffline ? 'inactive' : 'active' };
+      const activeVehicle = d.vehicleAssignments?.[0]?.vehicle || null;
+      let status = d.status;
+      if (!d.last_seen_at) {
+        status = 'inactive';
+      } else {
+        const isOffline = (now - d.last_seen_at.getTime()) > 5 * 60 * 1000;
+        status = isOffline ? 'inactive' : 'active';
+      }
+      return {
+        ...d,
+        status,
+        assigned_vehicle: activeVehicle ? {
+          id: activeVehicle.id,
+          vehicle_number: activeVehicle.vehicle_number,
+          vehicle_name: activeVehicle.vehicle_name,
+        } : null,
+      };
     });
   } catch (error) {
     throw new Error('Failed to fetch GPS devices');
   }
 }
 
-export async function getDeviceById(id: string): Promise<GpsDevice | null> {
+export async function getDeviceById(id: string): Promise<any | null> {
   try {
     return await prisma.gpsDevice.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        vehicleAssignments: {
+          where: { is_active: true },
+          include: { vehicle: true },
+        },
+      },
     });
   } catch (error) {
     return null;
@@ -32,13 +58,15 @@ export async function createDevice(device: {
   device_name?: string;
   device_identifier: string;
   imei?: string;
+  sim_number?: string;
 }): Promise<GpsDevice> {
   try {
     return await prisma.gpsDevice.create({
       data: {
         device_name: device.device_name || null,
         device_identifier: device.device_identifier,
-        imei: device.imei || null,
+        imei: device.imei || device.device_identifier,
+        sim_number: device.sim_number || null,
         status: 'inactive'
       }
     });
@@ -52,7 +80,7 @@ export async function createDevice(device: {
 
 export async function updateDevice(
   id: string,
-  updates: Partial<Pick<GpsDevice, 'device_name' | 'device_identifier' | 'imei' | 'status'>>
+  updates: Partial<Pick<GpsDevice, 'device_name' | 'device_identifier' | 'imei' | 'sim_number' | 'status'>>
 ): Promise<GpsDevice> {
   try {
     return await prisma.gpsDevice.update({

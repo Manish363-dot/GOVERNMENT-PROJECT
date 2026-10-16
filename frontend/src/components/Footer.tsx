@@ -10,13 +10,14 @@ export const Footer = React.memo(() => {
 
   const navLinks = React.useMemo(() => [
     { label: isHi ? 'मुख्य पृष्ठ' : 'Home', href: '/' },
-    { label: isHi ? 'हमारे बारे में' : 'About Initiative', href: '/#about' },
-    { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/#complaint' },
-    { label: isHi ? 'संपर्क करें' : 'Contact Us', href: '/#contact' },
-    { label: isHi ? 'एडमिन लॉगिन' : 'Admin Login', href: '/signin' },
-    { label: isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates', href: '/#notices' },
-    {label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href:'/#documents'},
-    {label: isHi ? 'दैनिक कार्य' : 'Daily Work', href:'/#blogs'}
+    { label: isHi ? 'हमारी पहल' : 'Our Initiative', href: '/our-initiative' },
+    { label: isHi ? 'विज़न और मिशन' : 'Vision & Mission', href: '/vision-mission' },
+    { label: isHi ? 'अधिकारी विवरण' : 'Staff Directory', href: '/staff-directory' },
+    { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/complaint' },
+    { label: isHi ? 'संपर्क करें' : 'Contact Us', href: '/contact' },
+    { label: isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates', href: '/#Notices' },
+    { label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href: '/bylaws' },
+    { label: isHi ? 'दैनिक कार्य' : 'Daily Work', href: '/#blogs' },
   ], [isHi]);
 
   return (
@@ -67,7 +68,7 @@ export const Footer = React.memo(() => {
           {/* Col 2: Quick Navigation */}
           <div>
             <h4 className="text-xs font-bold text-amber-400 uppercase tracking-widest border-b border-navy-800 pb-2 mb-4">
-              {isHi ? 'त्वरित लिंक' : 'Quick Navigation'}
+              {isHi ? 'त्वरित लिंक' : 'Quick Links'}
             </h4>
             <ul className="grid grid-cols-2 gap-y-2.5 gap-x-4">
               {navLinks.map((link) => (

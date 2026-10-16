@@ -32,7 +32,7 @@ interface Highlight {
   descHi: string;
 }
 
-interface BylawDocument {
+export interface BylawDocument {
   id: string;
   pages: string[];
   pdfUrl?: string;
@@ -51,7 +51,7 @@ interface BylawDocument {
 
 const S3_BASE = import.meta.env.VITE_AWS_S3_BUCKET_URL || '';
 
-const BYLAWS: BylawDocument[] = [
+export const BYLAWS: BylawDocument[] = [
   {
     id: 'bylaw-swm-2023',
     pages: [
@@ -182,11 +182,55 @@ const getIcon = (type: IconType, className: string) => {
   }
 };
 
-export const DocumentsSection = React.memo(() => {
+export interface DocumentsSectionProps {
+  initialDocId?: string;
+  isStandalonePage?: boolean;
+  onDocChange?: (docId: string) => void;
+  singleDocId?: 'cleanliness' | 'rules-2026' | 'bylaw-swm-2023' | 'rules-swm-2026' | string;
+  hideHeaderTitle?: boolean;
+}
+
+export const DocumentsSection = React.memo<DocumentsSectionProps>(({
+  initialDocId,
+  isStandalonePage = false,
+  onDocChange,
+  singleDocId,
+  hideHeaderTitle = false,
+}) => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
-  const [activeDocIndex, setActiveDocIndex] = useState(0);
+  const isSingleMode = Boolean(singleDocId);
+
+  const resolveDocIndex = useCallback((id?: string) => {
+    if (!id) return 0;
+    const clean = id.toLowerCase();
+    if (clean.includes('clean') || clean.includes('2023') || clean === 'bylaw-swm-2023') return 0;
+    if (clean.includes('rule') || clean.includes('2026') || clean.includes('swm') || clean === 'rules-swm-2026') return 1;
+    const idx = BYLAWS.findIndex(d => d.id === id);
+    return idx >= 0 ? idx : 0;
+  }, []);
+
+  const [activeDocIndex, setActiveDocIndex] = useState(() => {
+    if (singleDocId) return resolveDocIndex(singleDocId);
+    return resolveDocIndex(initialDocId);
+  });
+
+  useEffect(() => {
+    if (singleDocId) {
+      setActiveDocIndex(resolveDocIndex(singleDocId));
+    } else if (initialDocId) {
+      setActiveDocIndex(resolveDocIndex(initialDocId));
+    }
+  }, [singleDocId, initialDocId, resolveDocIndex]);
+
+  const selectDoc = (idx: number) => {
+    setActiveDocIndex(idx);
+    if (onDocChange && BYLAWS[idx]) {
+      onDocChange(BYLAWS[idx].id);
+    }
+  };
+
   const doc = BYLAWS[activeDocIndex];
 
   // Viewer state
@@ -243,8 +287,8 @@ export const DocumentsSection = React.memo(() => {
     return () => window.removeEventListener('keydown', handleKey);
   }, [viewerDoc]);
 
-  const nextDoc = useCallback(() => setActiveDocIndex((p) => (p + 1) % BYLAWS.length), []);
-  const prevDoc = useCallback(() => setActiveDocIndex((p) => (p - 1 + BYLAWS.length) % BYLAWS.length), []);
+  const nextDoc = useCallback(() => selectDoc((activeDocIndex + 1) % BYLAWS.length), [activeDocIndex]);
+  const prevDoc = useCallback(() => selectDoc((activeDocIndex - 1 + BYLAWS.length) % BYLAWS.length), [activeDocIndex]);
   
   const openViewer = useCallback((page: number) => {
     setViewerPage(page);
@@ -254,49 +298,79 @@ export const DocumentsSection = React.memo(() => {
   return (
     <section
       id="documents"
-      className="relative pt-12 sm:pt-20 pb-16 sm:pb-24 bg-gradient-to-b from-slate-50 to-white overflow-hidden"
+      className={`relative ${isStandalonePage ? 'pt-6 sm:pt-10 pb-16 sm:pb-24' : 'pt-12 sm:pt-20 pb-16 sm:pb-24'} bg-gradient-to-b from-slate-50 to-white overflow-hidden`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header & Controls */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
-          <div className="text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-purple-200 text-purple-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-purple-200">
-              <Scale className="w-3.5 h-3.5 text-purple-900" />
-              <span>{isHi ? 'शासकीय उपविधि एवं नियम' : 'Official Bylaws & Rules'}</span>
-            </div>
-            <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 leading-tight">
-              {isHi ? 'महत्वपूर्ण नियम व दस्तावेज़' : 'Key Provisions & Documents'}
-            </h2>
-          </div>
+        {(!hideHeaderTitle || (!isSingleMode && BYLAWS.length > 1)) && (
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-6">
+            {!hideHeaderTitle && (
+              <div className="text-left">
+                <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 leading-tight">
+                  {isHi ? 'महत्वपूर्ण नियम व दस्तावेज़' : 'Key Provisions & Documents'}
+                </h2>
+              </div>
+            )}
 
-          {/* Slider Controls */}
-          <div className="flex items-center gap-3 shrink-0">
-            <button 
-              onClick={prevDoc}
-              className="w-12 h-12 rounded-full border border-slate-300 flex items-center justify-center text-navy-900 hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-all shadow-sm cursor-pointer"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
-            <div className="flex gap-1.5 px-2">
-              {BYLAWS.map((_, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setActiveDocIndex(idx)}
-                  className={`h-2 rounded-full transition-all duration-300 ${
-                    idx === activeDocIndex ? 'w-8 bg-amber-400' : 'w-2 bg-slate-300 hover:bg-slate-400'
-                  }`}
-                />
-              ))}
-            </div>
-            <button 
-              onClick={nextDoc}
-              className="w-12 h-12 rounded-full border border-slate-300 flex items-center justify-center text-navy-900 hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-all shadow-sm cursor-pointer"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
+            {/* Slider Controls - Hidden in single doc mode */}
+            {!isSingleMode && BYLAWS.length > 1 && (
+              <div className="flex items-center gap-3 shrink-0">
+                <button 
+                  onClick={prevDoc}
+                  className="w-12 h-12 rounded-full border border-slate-300 flex items-center justify-center text-navy-900 hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-all shadow-sm cursor-pointer"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <div className="flex gap-1.5 px-2">
+                  {BYLAWS.map((_, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => selectDoc(idx)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        idx === activeDocIndex ? 'w-8 bg-amber-400' : 'w-2 bg-slate-300 hover:bg-slate-400'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <button 
+                  onClick={nextDoc}
+                  className="w-12 h-12 rounded-full border border-slate-300 flex items-center justify-center text-navy-900 hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-all shadow-sm cursor-pointer"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
+
+        {/* Quick Document Selection Tabs - Hidden in single doc mode */}
+        {!isSingleMode && BYLAWS.length > 1 && (
+          <div className="flex flex-wrap items-center gap-2.5 mb-8">
+            {BYLAWS.map((bDoc, idx) => {
+              const isActive = idx === activeDocIndex;
+              return (
+                <button
+                  key={bDoc.id}
+                  type="button"
+                  onClick={() => selectDoc(idx)}
+                  className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2.5 cursor-pointer ${
+                    isActive
+                      ? 'bg-navy-900 text-white shadow-md ring-2 ring-amber-400'
+                      : 'bg-white text-slate-700 hover:bg-slate-100 hover:text-navy-900 border border-slate-200 shadow-2xs'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${idx === 0 ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span>
+                    {idx === 0 
+                      ? (isHi ? 'स्वच्छता उपविधियाँ (2023)' : 'Cleanliness Bylaws — 2023') 
+                      : (isHi ? 'ठोस अपशिष्ट प्रबंधन नियम, 2026' : 'Solid Waste Management Rules 2026')}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {/* Carousel Content */}
         <div className="relative">

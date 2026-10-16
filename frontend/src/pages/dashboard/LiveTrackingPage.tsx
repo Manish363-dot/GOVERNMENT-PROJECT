@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -7,70 +7,87 @@ import { trackingService } from '@/services/tracking.service';
 import { useRealtime } from '@/hooks/useRealtime';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { GarbageTruckLoader } from '@/components/GarbageTruckLoader';
 import {
   MapPin, Truck, Radio, Clock, Gauge, ZoomIn, ZoomOut, Maximize2, Minimize2,
-  Search, ShieldCheck, Expand
+  Search, ShieldCheck, Expand, Activity
 } from 'lucide-react';
 import type { VehicleCurrentLocation } from '@/types';
 import { format } from 'date-fns';
+import { useTranslation } from 'react-i18next';
 
-// Map Tile Layers Configuration
+// Clean Map Tile Layers (Google Maps and Satellite View)
 const TILE_LAYERS = {
-  streets: {
-    name: 'Gov Standard',
-    url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+  google: {
+    name: 'Google Maps',
+    url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+    subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google Maps',
   },
   satellite: {
     name: 'Satellite View',
-    url: 'https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',
-    attribution: '&copy; Google Maps',
-  },
-  topo: {
-    name: 'Terrain View',
-    url: 'https://mt1.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',
+    url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google Maps',
   },
 };
 
 // Custom high-contrast Leaflet SVG vehicle markers
-const createCustomMarker = (status: string, vehicleNumber: string) => {
-  const colorMap: Record<string, { bg: string; border: string; pulse: boolean }> = {
-    moving: { bg: '#10B981', border: '#047857', pulse: true },
-    idle: { bg: '#F59E0B', border: '#B45309', pulse: false },
-    offline: { bg: '#64748B', border: '#334155', pulse: false },
-  };
-
-  const style = colorMap[status] || colorMap.offline;
+// If MilliTrack reports speed > 0: marker glows with pulsing green radar and heading arrow
+// If MilliTrack reports speed === 0: marker stays stable in parked/idle state
+const createCustomMarker = (
+  status: string,
+  vehicleNumber: string,
+  heading: number = 0,
+  speed: number = 0,
+  isSelected: boolean = false
+) => {
+  const isMoving = status === 'moving' && speed > 0;
+  const isIdle = status === 'idle' || speed === 0;
+  const themeBg = isMoving ? '#10B981' : isIdle ? '#F59E0B' : '#64748B';
+  const ringBg = isMoving ? 'rgba(16, 185, 129, 0.45)' : 'transparent';
 
   return L.divIcon({
-    className: 'custom-vehicle-marker',
+    className: 'custom-vehicle-marker-wrapper',
     html: `
-      <div style="position:relative; display:flex; flex-direction:column; align-items:center;">
-        <div style="background:#0b1b36; color:#ffffff; font-family:sans-serif; font-size:10px; font-weight:700; padding:2px 6px; border-radius:4px; border:1px solid #1d4ed8; white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,0.4); margin-bottom:3px;">
-          ${vehicleNumber}
+      <div style="position:relative; display:flex; flex-direction:column; align-items:center; user-select:none; pointer-events:auto; cursor:pointer;">
+        <!-- Vehicle Plate & Speed Badge -->
+        <div style="background:#081325; color:#ffffff; font-family:ui-monospace, SFMono-Regular, monospace; font-size:10px; font-weight:800; padding:2px 7px; border-radius:5px; border:${isSelected ? '2px solid #fbbf24' : '1px solid #2563eb'}; white-space:nowrap; box-shadow:0 3px 8px rgba(0,0,0,0.5); display:flex; align-items:center; gap:4px; margin-bottom:4px; transform:${isSelected ? 'scale(1.08)' : 'scale(1)'}; transition:all 0.2s ease;">
+          <span>${vehicleNumber}</span>
+          <span style="color:${isMoving ? '#34d399' : '#fbbf24'}; font-weight:700;">
+            • ${isMoving ? `${speed.toFixed(0)} km/h` : 'Parked'}
+          </span>
         </div>
-        <div style="width:34px; height:34px; border-radius:50%; background:${style.bg}; border:3px solid #ffffff; box-shadow:0 4px 10px rgba(0,0,0,0.35); display:flex; align-items:center; justify-content:center;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+
+        <!-- Live Radar Wave: Appears ONLY when vehicle is genuinely moving in MilliTrack -->
+        ${isMoving ? `
+          <div class="live-radar-ping" style="position:absolute; top:20px; width:44px; height:44px; border-radius:50%; background:${ringBg}; pointer-events:none; z-index:1;"></div>
+        ` : ''}
+
+        <!-- Vehicle Body with Directional Orientation from MilliTrack course -->
+        <div style="position:relative; z-index:2; width:38px; height:38px; border-radius:50%; background:${themeBg}; border:3px solid #ffffff; box-shadow:0 4px 12px rgba(0,0,0,0.45); display:flex; align-items:center; justify-content:center; transform:rotate(${heading}deg); transition:transform 0.4s ease-out;">
+          <!-- Front Heading Triangle Pointer (points in travel direction when moving) -->
+          ${isMoving ? `
+            <div style="position:absolute; top:-7px; width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:7px solid #fbbf24; filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));"></div>
+          ` : ''}
+          
+          <!-- Garbage Truck Icon -->
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate(-${heading}deg);">
             <path d="M10 17h4V5H2v12h3"/><path d="M20 17h2v-3.34a4 4 0 0 0-1.17-2.83L19 9h-5"/><circle cx="7.5" cy="17.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>
           </svg>
         </div>
       </div>
     `,
-    iconSize: [80, 56],
-    iconAnchor: [40, 56],
-    popupAnchor: [0, -50],
+    iconSize: [120, 64],
+    iconAnchor: [60, 48],
+    popupAnchor: [0, -48],
   });
 };
 
 // Map Controller Component for zoom, flyTo, fitBounds and smooth trackpad/wheel page scroll
 function MapControlsHandler({
   selectedVehicle,
-  locations,
 }: {
   selectedVehicle: VehicleCurrentLocation | null;
-  locations: VehicleCurrentLocation[];
 }) {
   const map = useMap();
 
@@ -90,48 +107,113 @@ function MapControlsHandler({
           map.zoomOut();
         }
       }
-      // Otherwise allow native webpage scrolling!
     };
 
     container.addEventListener('wheel', handleWheel, { passive: false });
-
     return () => {
       container.removeEventListener('wheel', handleWheel);
     };
   }, [map]);
 
+  // Handle vehicle focus
   useEffect(() => {
     if (selectedVehicle) {
-      map.flyTo([selectedVehicle.latitude, selectedVehicle.longitude], 16, {
+      map.flyTo([selectedVehicle.latitude, selectedVehicle.longitude], 15, {
         animate: true,
-        duration: 1.2,
+        duration: 1.0,
       });
     }
-  }, [selectedVehicle, map]);
+  }, [selectedVehicle?.latitude, selectedVehicle?.longitude, map]);
 
   return null;
 }
 
-import { useTranslation } from 'react-i18next';
-
 export const LiveTrackingPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
+
   const [locations, setLocations] = useState<VehicleCurrentLocation[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [showLoader, setShowLoader] = useState(true);
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleCurrentLocation | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [currentLayer, setCurrentLayer] = useState<'streets' | 'satellite' | 'topo'>('streets');
+  const [currentLayer, setCurrentLayer] = useState<keyof typeof TILE_LAYERS>('google');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<Date>(new Date());
+
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const initialFitDoneRef = useRef(false);
 
-  // Default center set to Uttarakhand (Dehradun / District Center)
-  const defaultCenter: [number, number] = [30.3165, 78.0322];
+  // Default Center: Almora District
+  const defaultCenter: [number, number] = [29.6139, 79.6200];
 
+  // Fetch real locations from backend (which syncs from MilliTrack)
+  // Fetch real locations from backend (which syncs from MilliTrack)
+  const fetchLocations = useCallback(async () => {
+    try {
+      const data = await trackingService.getLive();
+      if (data.locations && data.locations.length > 0) {
+        setLocations((prev) => {
+          if (prev.length === 0) return data.locations;
+
+          // Check if any vehicle actually changed coordinates, speed, or status
+          let hasActualChange = false;
+          const merged = data.locations.map((newLoc) => {
+            const oldLoc = prev.find((p) => p.vehicle_id === newLoc.vehicle_id);
+            if (!oldLoc) {
+              hasActualChange = true;
+              return newLoc;
+            }
+
+            const isLatChanged = Math.abs(oldLoc.latitude - newLoc.latitude) > 0.00005;
+            const isLngChanged = Math.abs(oldLoc.longitude - newLoc.longitude) > 0.00005;
+            const isSpeedChanged = Math.abs((oldLoc.speed || 0) - (newLoc.speed || 0)) > 1;
+            const isStatusChanged = oldLoc.status !== newLoc.status;
+
+            if (isLatChanged || isLngChanged || isSpeedChanged || isStatusChanged) {
+              hasActualChange = true;
+              return {
+                ...oldLoc,
+                ...newLoc,
+                vehicle: newLoc.vehicle || oldLoc.vehicle,
+              };
+            }
+
+            // Return identical reference to prevent card re-renders
+            return oldLoc;
+          });
+
+          if (!hasActualChange && prev.length === data.locations.length) {
+            return prev; // Skip React re-render completely!
+          }
+
+          return merged;
+        });
+
+        // Initial fit bounds to encompass all real MilliTrack vehicles
+        if (!initialFitDoneRef.current && mapRef.current && data.locations.length > 0) {
+          const validCoords = data.locations
+            .filter((l) => l.latitude && l.longitude && l.latitude > 20 && l.longitude > 70)
+            .map((l) => [l.latitude, l.longitude] as [number, number]);
+
+          if (validCoords.length > 0) {
+            const bounds = L.latLngBounds(validCoords);
+            mapRef.current.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+            initialFitDoneRef.current = true;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Realtime live location fetch:', err);
+    }
+  }, []);
+
+  // Initial load + Gentle Background Polling (15s)
   useEffect(() => {
     fetchLocations();
+
+    const pollInterval = setInterval(() => {
+      fetchLocations();
+    }, 15000);
 
     const handleFullscreenChange = () => {
       const isFull = !!document.fullscreenElement;
@@ -145,9 +227,49 @@ export const LiveTrackingPage = React.memo(() => {
 
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => {
+      clearInterval(pollInterval);
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
     };
-  }, []);
+  }, [fetchLocations]);
+
+  // Realtime WebSocket subscription from backend MilliTrack events
+  useRealtime<{ type: string; new: VehicleCurrentLocation }>(
+    'location_update',
+    (payload) => {
+      const updatedLoc = ((payload as any).new || payload) as VehicleCurrentLocation;
+      if (updatedLoc && updatedLoc.vehicle_id) {
+        setLocations((prev) => {
+          const idx = prev.findIndex((l) => l.vehicle_id === updatedLoc.vehicle_id);
+          if (idx >= 0) {
+            const old = prev[idx];
+            const isLatChanged = Math.abs(old.latitude - updatedLoc.latitude) > 0.00005;
+            const isLngChanged = Math.abs(old.longitude - updatedLoc.longitude) > 0.00005;
+            const isSpeedChanged = Math.abs((old.speed || 0) - (updatedLoc.speed || 0)) > 1;
+            const isStatusChanged = old.status !== updatedLoc.status;
+
+            if (!isLatChanged && !isLngChanged && !isSpeedChanged && !isStatusChanged) {
+              return prev; // No motion: skip re-rendering!
+            }
+
+            const updatedList = [...prev];
+            updatedList[idx] = {
+              ...old,
+              ...updatedLoc,
+              vehicle: updatedLoc.vehicle || old.vehicle,
+            };
+            return updatedList;
+          }
+          return [...prev, updatedLoc];
+        });
+
+        // Sync selected vehicle if currently focused
+        if (selectedVehicle && selectedVehicle.vehicle_id === updatedLoc.vehicle_id) {
+          setSelectedVehicle((prev) => (prev ? { ...prev, ...updatedLoc, vehicle: updatedLoc.vehicle || prev.vehicle } : null));
+        }
+      }
+    },
+    'live_locations'
+  );
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
@@ -161,59 +283,6 @@ export const LiveTrackingPage = React.memo(() => {
     }
   };
 
-  // Realtime vehicle tracking subscription
-  useRealtime<{ type: string, new: VehicleCurrentLocation }>('location_update', (payload) => {
-    if (payload.new) {
-      setLocations((prev) => {
-        const idx = prev.findIndex((l) => l.vehicle_id === (payload.new as any).vehicle_id);
-        if (idx >= 0) {
-          const updated = [...prev];
-          updated[idx] = payload.new as VehicleCurrentLocation;
-          return updated;
-        }
-        return [...prev, payload.new as VehicleCurrentLocation];
-      });
-    }
-  });
-
-  async function fetchLocations() {
-    try {
-      const data = await trackingService.getLive();
-      if (data.locations && data.locations.length > 0) {
-        setLocations(data.locations);
-      } else {
-        // Only 1 explicit test vehicle for demo/testing fallback
-        const singleTestVehicle: VehicleCurrentLocation[] = [
-          {
-            id: 'loc-test-1',
-            vehicle_id: 'v-test-1',
-            gps_device_id: null,
-            latitude: 29.5892,
-            longitude: 79.6467,
-            speed: 18.5,
-            heading: 45,
-            status: 'moving',
-            updated_at: new Date().toISOString(),
-            vehicle: {
-              id: 'v-test-1',
-              vehicle_number: 'UK-01-TEST-01',
-              vehicle_name: 'Testing Demo Vehicle (Safai Truck)',
-              vehicle_type: 'truck',
-              status: 'moving',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          }
-        ];
-        setLocations(singleTestVehicle);
-      }
-    } catch (err) {
-      console.error('Failed to fetch live locations:', err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   // Filtered vehicles list
   const filteredLocations = locations.filter((loc) => {
     const vNum = (loc as any).vehicle?.vehicle_number || '';
@@ -224,8 +293,8 @@ export const LiveTrackingPage = React.memo(() => {
     );
   });
 
-  const movingCount = locations.filter((l) => l.status === 'moving').length;
-  const idleCount = locations.filter((l) => l.status === 'idle').length;
+  const movingCount = locations.filter((l) => l.status === 'moving' && (l.speed || 0) > 0).length;
+  const idleCount = locations.filter((l) => l.status === 'idle' || (l.speed || 0) === 0).length;
   const offlineCount = locations.filter((l) => l.status === 'offline').length;
 
   const handleZoomIn = () => {
@@ -238,106 +307,102 @@ export const LiveTrackingPage = React.memo(() => {
 
   const handleRecenterAll = () => {
     if (mapRef.current && locations.length > 0) {
-      const bounds = L.latLngBounds(locations.map((l) => [l.latitude, l.longitude]));
-      mapRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
-    } else if (mapRef.current) {
-      mapRef.current.setView(defaultCenter, 11);
+      const validCoords = locations
+        .filter((l) => l.latitude && l.longitude && l.latitude > 20 && l.longitude > 70)
+        .map((l) => [l.latitude, l.longitude] as [number, number]);
+
+      if (validCoords.length > 0) {
+        const bounds = L.latLngBounds(validCoords);
+        mapRef.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+        return;
+      }
+    }
+    if (mapRef.current) {
+      mapRef.current.setView(defaultCenter, 13);
     }
   };
 
-  // Show truck loading animation while data loads OR animation still playing
-  if (showLoader) {
-    return (
-      <div className="animate-fade-in space-y-5">
-        {/* Page header stays visible during load */}
-        <div className="flex flex-col gap-1 pb-4 border-b border-slate-200">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded border border-emerald-200 uppercase tracking-wider w-fit">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            उत्तराखंड शासन • GIS Live Command Portal
-          </span>
-          <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
-            Live Vehicle Telematics &amp; GPS Console
-          </h1>
-          <p className="text-xs text-slate-500 font-medium">
-            Real-time District Waste Collection Vehicle Tracking, Speed Metrics &amp; Route Auditing
-          </p>
-        </div>
-        <GarbageTruckLoader
-          onComplete={() => {
-            setShowLoader(false);
-          }}
-        />
-      </div>
-    );
-  }
-
   return (
-    <div className="animate-fade-in space-y-5">
+    <div className="animate-fade-in space-y-4">
       {/* Official Government Page Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 pb-3 border-b border-slate-200">
         <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              उत्तराखंड शासन • District Panchayat Almora
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              <Activity className="w-3 h-3 text-emerald-600 animate-pulse" />
+              MilliTrack GPS Live • Connected
+            </span>
+          </div>
           <h1 className="font-poppins text-xl sm:text-2xl font-bold text-navy-900 tracking-tight">
             {t('admin.tracking.title')}
           </h1>
+          <p className="text-xs text-slate-500 font-medium hidden sm:block">
+            Real MilliTrack Hardware GPS Telematics Console — Real-time positions, speed &amp; status
+          </p>
         </div>
 
         {/* Telematics Quick Summary Cards */}
         <div className="grid grid-cols-3 lg:flex lg:items-center gap-2 lg:gap-3 w-full lg:w-auto">
-          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+          <div className="bg-white border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <div>
-              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.moving')}</span>
               <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{movingCount}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+          <div className="bg-white border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
             <div>
-              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.idle')}</span>
               <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{idleCount}</span>
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-lg px-2 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
+          <div className="bg-white border border-slate-200 rounded-lg px-2.5 sm:px-3 py-1.5 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2 shadow-xs text-center sm:text-left">
             <div className="w-2.5 h-2.5 rounded-full bg-slate-400 shrink-0" />
             <div>
-              <span className="text-[10px] sm:text-[14px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-500 uppercase font-bold block leading-none">{t('admin.tracking.offline')}</span>
               <span className="text-[13px] sm:text-sm font-bold text-navy-900 leading-none">{offlineCount}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-4 gap-5 items-start">
+      <div className="grid lg:grid-cols-4 gap-4 items-start">
         {/* Main GIS Map Console */}
         <div
           ref={mapContainerRef}
           className={cn(
             "lg:col-span-3 bg-white rounded-xl border border-slate-300 overflow-hidden shadow-md relative flex flex-col transition-all duration-200",
-            isFullscreen ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none border-none" : "h-[75vh] sm:h-[460px] lg:h-[600px]"
+            isFullscreen ? "fixed inset-0 z-[9999] h-screen w-screen rounded-none border-none" : "h-[75vh] sm:h-[500px] lg:h-[620px]"
           )}
         >
-          {/* Official Top GIS Bar */}
-          <div className="bg-[#081325] text-white px-3 sm:px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-2 z-20 border-b border-slate-800">
+          {/* Clean, Uncluttered Top Map Bar */}
+          <div className="bg-[#081325] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 z-20 border-b border-slate-800">
             <div className="flex items-center gap-2">
               <Radio className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
-              <span className="font-poppins text-xs font-bold uppercase tracking-normal text-slate-100">
-                {isHi ? 'जिला पंचायत GIS टेलीमैटिक्स मैप' : 'Zila Panchayat GIS Telematics Map'}
+              <span className="font-poppins text-xs font-bold uppercase tracking-wide text-slate-100">
+                {isHi ? 'MilliTrack लाइव जीपीएस मैप' : 'MilliTrack Live GPS Map'}
               </span>
             </div>
 
-            {/* Map Layer Controls & Fullscreen Button */}
-            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5 sm:pb-0">
-              <span className="text-[11px] font-mono text-slate-300 hidden md:inline mr-1 shrink-0">Layer:</span>
+            {/* Clean Map Layer Controls (OpenStreetMap & Satellite View) & Fullscreen Button */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline mr-1 shrink-0">Map:</span>
               {(Object.keys(TILE_LAYERS) as Array<keyof typeof TILE_LAYERS>).map((layerKey) => (
                 <button
                   key={layerKey}
                   onClick={() => setCurrentLayer(layerKey)}
-                  className={`px-2 py-1 sm:px-2.5 text-[10px] sm:text-[11px] font-semibold rounded transition-all shrink-0 ${currentLayer === layerKey
-                    ? 'bg-emerald-700 text-white shadow-xs'
-                    : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700'
-                    }`}
+                  className={`px-2.5 py-1 text-[11px] font-semibold rounded transition-all shrink-0 ${
+                    currentLayer === layerKey
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700'
+                  }`}
                 >
                   {TILE_LAYERS[layerKey].name}
                 </button>
@@ -346,7 +411,7 @@ export const LiveTrackingPage = React.memo(() => {
               <button
                 onClick={toggleFullscreen}
                 title={isFullscreen ? "Exit Fullscreen Mode" : "Expand to Fullscreen Map"}
-                className="ml-auto sm:ml-2 px-2 py-1 sm:px-2.5 text-[10px] sm:text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1.5 shadow-xs transition-colors shrink-0"
+                className="ml-1 px-2.5 py-1 text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1 shadow-xs transition-colors shrink-0"
               >
                 {isFullscreen ? (
                   <>
@@ -366,8 +431,8 @@ export const LiveTrackingPage = React.memo(() => {
           {/* Interactive Leaflet Map Canvas */}
           <div className="relative flex-1 w-full h-full">
             <MapContainer
-              center={locations.length > 0 ? [locations[0].latitude, locations[0].longitude] : defaultCenter}
-              zoom={12}
+              center={defaultCenter}
+              zoom={13}
               className="h-full w-full"
               zoomControl={false}
               ref={mapRef}
@@ -376,49 +441,79 @@ export const LiveTrackingPage = React.memo(() => {
               dragging={true}
               doubleClickZoom={true}
               attributionControl={false}
+              preferCanvas={true}
             >
               <TileLayer
                 attribution={TILE_LAYERS[currentLayer].attribution}
                 url={TILE_LAYERS[currentLayer].url}
+                subdomains={TILE_LAYERS[currentLayer].subdomains}
               />
               <MapControlsHandler
                 selectedVehicle={selectedVehicle}
-                locations={locations}
               />
 
-              {/* Single Vehicle Isolation: If selectedVehicle exists, render ONLY that vehicle on map */}
+              {/* Real Vehicle Leaflet Markers from MilliTrack */}
               {(selectedVehicle ? [selectedVehicle] : locations).map((loc) => {
                 const vNumber = (loc as any).vehicle?.vehicle_number || 'Vehicle';
+                const isSelected = selectedVehicle?.vehicle_id === loc.vehicle_id;
+                const speed = loc.speed || 0;
+                const heading = loc.heading || 0;
+
                 return (
                   <Marker
                     key={loc.vehicle_id}
                     position={[loc.latitude, loc.longitude]}
-                    icon={createCustomMarker(loc.status, vNumber)}
+                    icon={createCustomMarker(
+                      loc.status,
+                      vNumber,
+                      heading,
+                      speed,
+                      isSelected
+                    )}
                     eventHandlers={{
-                      click: () => setSelectedVehicle(loc),
+                      click: () => {
+                        setSelectedVehicle(loc);
+                      },
                     }}
                   >
                     <Popup className="gov-map-popup">
-                      <div className="p-2 min-w-[200px] font-inter text-xs">
-                        <div className="bg-navy-950 text-white px-2.5 py-1 rounded font-mono font-bold text-xs mb-2 flex items-center justify-between">
+                      <div className="p-2 min-w-[220px] font-inter text-xs">
+                        <div className="bg-navy-950 text-white px-2.5 py-1.5 rounded font-mono font-bold text-xs mb-2 flex items-center justify-between border-b border-navy-800">
                           <span>{vNumber}</span>
-                          <span className="text-[10px] font-semibold uppercase text-emerald-400">{loc.status}</span>
+                          <span
+                            className={cn(
+                              "text-[10px] font-bold uppercase px-1.5 py-0.5 rounded",
+                              speed > 0 ? "bg-emerald-800 text-emerald-200" : "bg-amber-800 text-amber-200"
+                            )}
+                          >
+                            {speed > 0 ? 'Moving' : 'Parked'}
+                          </span>
                         </div>
                         <div className="space-y-1 text-slate-700">
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Speed:</span>
-                            <span className="font-bold text-navy-900">{loc.speed?.toFixed(1) || 0} km/h</span>
+                            <span className="text-slate-500">Live Speed:</span>
+                            <span className="font-bold text-navy-900 font-mono text-emerald-700">
+                              {speed > 0 ? `${speed.toFixed(1)} km/h` : '0 km/h (Stationary)'}
+                            </span>
                           </p>
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Latitude:</span>
-                            <span className="font-mono text-slate-700">{loc.latitude.toFixed(5)}</span>
+                            <span className="text-slate-500">Heading:</span>
+                            <span className="font-mono text-slate-700">{heading}°</span>
                           </p>
                           <p className="flex justify-between">
-                            <span className="text-slate-500">Longitude:</span>
-                            <span className="font-mono text-slate-700">{loc.longitude.toFixed(5)}</span>
+                            <span className="text-slate-500">Vehicle Name:</span>
+                            <span className="font-bold text-slate-800 text-[11px] truncate max-w-[130px]">
+                              {(loc as any).vehicle?.vehicle_name || 'Safai Truck'}
+                            </span>
+                          </p>
+                          <p className="flex justify-between">
+                            <span className="text-slate-500">GPS Coords:</span>
+                            <span className="font-mono text-[11px] text-slate-600">
+                              {loc.latitude.toFixed(5)}, {loc.longitude.toFixed(5)}
+                            </span>
                           </p>
                           <p className="flex justify-between border-t border-slate-200 pt-1 mt-1 text-[11px] text-slate-500">
-                            <span>Last Ping:</span>
+                            <span>MilliTrack Ping:</span>
                             <span>{format(new Date(loc.updated_at), 'HH:mm:ss')}</span>
                           </p>
                         </div>
@@ -432,18 +527,24 @@ export const LiveTrackingPage = React.memo(() => {
             {/* Single Vehicle Isolation Banner */}
             {selectedVehicle && (
               <div className="absolute top-4 left-4 z-[400] bg-navy-950/95 text-white border border-navy-700 rounded-lg px-3.5 py-2 shadow-xl flex items-center gap-3 backdrop-blur-xs font-mono text-xs">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+                <div className={cn(
+                  "w-2.5 h-2.5 rounded-full shrink-0",
+                  (selectedVehicle.speed || 0) > 0 ? "bg-emerald-400 animate-ping" : "bg-amber-400"
+                )} />
                 <div>
-                  <span className="text-[10px] text-slate-300 font-bold uppercase block">Focused Isolation Tracking</span>
+                  <span className="text-[10px] text-slate-300 font-bold uppercase block">Focused Tracking</span>
                   <span className="font-bold text-amber-400">
-                    {(selectedVehicle as any).vehicle?.vehicle_number || 'Selected Vehicle'} ONLY
+                    {(selectedVehicle as any).vehicle?.vehicle_number || 'Selected Vehicle'}
+                  </span>
+                  <span className="text-[11px] text-emerald-400 ml-2 font-bold">
+                    {(selectedVehicle.speed || 0) > 0 ? `${(selectedVehicle.speed || 0).toFixed(0)} km/h` : 'Parked'}
                   </span>
                 </div>
                 <button
                   onClick={() => setSelectedVehicle(null)}
                   className="ml-2 px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded text-[10px] uppercase transition-colors"
                 >
-                  Show All Vehicles
+                  Show All Fleet
                 </button>
               </div>
             )}
@@ -491,7 +592,7 @@ export const LiveTrackingPage = React.memo(() => {
         </div>
 
         {/* Vehicle Fleet Panel */}
-        <div className="bg-white rounded-xl border border-slate-300 p-4 shadow-sm flex flex-col h-[460px]">
+        <div className="bg-white rounded-xl border border-slate-300 p-4 shadow-sm flex flex-col h-[500px] lg:h-[620px]">
           {/* Panel Header & Search */}
           <div className="pb-3 mb-3 border-b border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
@@ -499,7 +600,7 @@ export const LiveTrackingPage = React.memo(() => {
                 <Truck className="w-4 h-4 text-emerald-600" />
                 Active Fleet List
               </h3>
-              <span className="text-[14px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+              <span className="text-[13px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
                 {filteredLocations.length} / {locations.length}
               </span>
             </div>
@@ -524,25 +625,41 @@ export const LiveTrackingPage = React.memo(() => {
                 const vNumber = (loc as any).vehicle?.vehicle_number || 'Vehicle';
                 const vName = (loc as any).vehicle?.vehicle_name;
                 const isSelected = selectedVehicle?.vehicle_id === loc.vehicle_id;
+                const speed = loc.speed || 0;
+                const isMoving = speed > 0;
 
                 return (
                   <button
                     key={loc.vehicle_id}
-                    onClick={() => setSelectedVehicle(loc)}
-                    className={`w-full text-left p-3 rounded-lg border transition-all duration-150 relative ${isSelected
-                      ? 'border-emerald-600 bg-emerald-50/60 shadow-xs'
-                      : 'border-slate-200 bg-white hover:border-emerald-400 hover:bg-slate-50'
-                      }`}
+                    onClick={() => {
+                      setSelectedVehicle(loc);
+                    }}
+                    className={`w-full text-left p-3 rounded-lg border transition-all duration-150 relative ${
+                      isSelected
+                        ? 'border-emerald-600 bg-emerald-50/70 shadow-xs'
+                        : 'border-slate-200 bg-white hover:border-emerald-400 hover:bg-slate-50'
+                    }`}
                   >
                     {isSelected && (
-                      <div className="absolute left-0 top-2 bottom-2 w-1 bg-emerald-600 rounded-r-md" />
+                      <div className="absolute left-0 top-2 bottom-2 w-1.5 bg-emerald-600 rounded-r-md" />
                     )}
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-mono font-bold text-xs text-navy-900">
-                        {vNumber}
-                      </span>
-                      <Badge variant={loc.status as any} className="text-[10px]">
-                        {loc.status}
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className={cn(
+                            "w-2 h-2 rounded-full shrink-0",
+                            isMoving ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
+                          )}
+                        />
+                        <span className="font-mono font-bold text-xs text-navy-900">
+                          {vNumber}
+                        </span>
+                      </div>
+                      <Badge
+                        variant={isMoving ? 'moving' : 'idle'}
+                        className="text-[10px] uppercase font-bold"
+                      >
+                        {isMoving ? 'Moving' : 'Parked'}
                       </Badge>
                     </div>
 
@@ -550,14 +667,22 @@ export const LiveTrackingPage = React.memo(() => {
                       <p className="text-xs text-slate-600 font-medium mb-1 truncate">{vName}</p>
                     )}
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1 border-t border-slate-100">
-                      <span className="flex items-center gap-1">
+                    <div className="text-[10px] text-slate-400 font-mono mb-1 truncate flex items-center gap-1">
+                      <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                      <span>GPS: {loc.latitude.toFixed(4)}, {loc.longitude.toFixed(4)}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-1.5 border-t border-slate-100">
+                      <span className={cn(
+                        "flex items-center gap-1 font-bold",
+                        isMoving ? "text-emerald-700" : "text-amber-700"
+                      )}>
                         <Gauge className="w-3 h-3 text-slate-400" />
-                        {loc.speed?.toFixed(0) || 0} km/h
+                        {isMoving ? `${speed.toFixed(0)} km/h` : '0 km/h (Parked)'}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-slate-400" />
-                        {format(new Date(loc.updated_at), 'HH:mm')}
+                        {format(new Date(loc.updated_at), 'HH:mm:ss')}
                       </span>
                     </div>
                   </button>
@@ -571,7 +696,10 @@ export const LiveTrackingPage = React.memo(() => {
             <div className="mt-3 pt-3 border-t bg-navy-950 text-white p-3 rounded-lg border border-navy-800 shadow-md font-mono space-y-2">
               <div className="flex items-center justify-between border-b border-navy-800 pb-2">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <div className={cn(
+                    "w-2 h-2 rounded-full",
+                    (selectedVehicle.speed || 0) > 0 ? "bg-emerald-400 animate-ping" : "bg-amber-400"
+                  )} />
                   <span className="text-xs font-bold text-amber-400">
                     {(selectedVehicle as any).vehicle?.vehicle_number}
                   </span>
@@ -580,24 +708,28 @@ export const LiveTrackingPage = React.memo(() => {
                   onClick={() => setSelectedVehicle(null)}
                   className="text-[10px] font-bold text-slate-300 hover:text-white bg-navy-800 hover:bg-navy-700 px-2 py-0.5 rounded uppercase transition-colors"
                 >
-                  Show All Fleet
+                  All
                 </button>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-[11px]">
                 <div>
-                  <span className="text-slate-400 text-[10px] uppercase block">Speed Metric</span>
-                  <span className="font-bold text-emerald-400">{selectedVehicle.speed?.toFixed(1) || 0} km/h</span>
+                  <span className="text-slate-400 text-[10px] uppercase block">MilliTrack Speed</span>
+                  <span className="font-bold text-emerald-400 font-mono">
+                    {(selectedVehicle.speed || 0) > 0 ? `${(selectedVehicle.speed || 0).toFixed(1)} km/h` : '0 km/h (Parked)'}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 text-[10px] uppercase block">Device Status</span>
-                  <span className="font-bold text-slate-200 uppercase">{selectedVehicle.status}</span>
+                  <span className="text-slate-400 text-[10px] uppercase block">Heading</span>
+                  <span className="font-bold text-amber-300 font-mono">
+                    {selectedVehicle.heading || 0}°
+                  </span>
                 </div>
               </div>
 
               <div className="pt-1 border-t border-navy-800 text-[10px] text-slate-400 space-y-0.5">
                 <p className="truncate">GPS: {selectedVehicle.latitude.toFixed(5)}, {selectedVehicle.longitude.toFixed(5)}</p>
-                <p>Last Ping: {format(new Date(selectedVehicle.updated_at), 'yyyy-MM-dd HH:mm:ss')}</p>
+                <p>MilliTrack Ping: {format(new Date(selectedVehicle.updated_at), 'yyyy-MM-dd HH:mm:ss')}</p>
               </div>
             </div>
           )}

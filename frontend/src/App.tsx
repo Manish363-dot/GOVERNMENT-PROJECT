@@ -19,6 +19,14 @@ const TermsOfUsePage = lazy(() => import('@/pages/TermsOfUsePage').then(m => ({ 
 const AboutWebsitePage = lazy(() => import('@/pages/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
 const WebsitePolicyPage = lazy(() => import('@/pages/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
 const SiteMapPage = lazy(() => import('@/pages/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
+const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const ComplaintPage = lazy(() => import('@/pages/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
+const OurInitiativePage = lazy(() => import('@/pages/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
+const VisionMissionPage = lazy(() => import('@/pages/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
+const StaffDirectoryPage = lazy(() => import('@/pages/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
+const BylawsPage = lazy(() => import('@/pages/BylawsPage').then(m => ({ default: m.BylawsPage })));
+const CleanlinessBylawsPage = lazy(() => import('@/pages/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
+const SwmRulesPage = lazy(() => import('@/pages/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
 
 // Dashboard Lazy Pages
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -46,10 +54,25 @@ function App() {
             {/* Public routes */}
             <Route element={<PublicLayout />}>
               <Route path="/" element={<HomePage />} />
+              <Route path="/our-initiative" element={<OurInitiativePage />} />
+              <Route path="/initiative" element={<OurInitiativePage />} />
+              <Route path="/vision-mission" element={<VisionMissionPage />} />
+              <Route path="/staff-directory" element={<StaffDirectoryPage />} />
+              <Route path="/staff-info" element={<StaffDirectoryPage />} />
               <Route path="/terms-of-use" element={<TermsOfUsePage />} />
               <Route path="/about-website" element={<AboutWebsitePage />} />
               <Route path="/website-policy" element={<WebsitePolicyPage />} />
               <Route path="/sitemap" element={<SiteMapPage />} />
+              <Route path="/contact" element={<ContactPage />} />
+              <Route path="/complaint" element={<ComplaintPage />} />
+              <Route path="/complaints" element={<ComplaintPage />} />
+              <Route path="/bylaws" element={<CleanlinessBylawsPage />} />
+              <Route path="/cleanliness-bylaws" element={<CleanlinessBylawsPage />} />
+              <Route path="/bylaws/cleanliness" element={<CleanlinessBylawsPage />} />
+              <Route path="/rules" element={<SwmRulesPage />} />
+              <Route path="/swm-rules-2026" element={<SwmRulesPage />} />
+              <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
+              <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
             </Route>
 
             {/* Auth routes (no layout) */}

@@ -15,6 +15,8 @@ import trackingRoutes from './routes/tracking.routes';
 import historyRoutes from './routes/history.routes';
 import complaintRoutes from './routes/complaint.routes';
 import mediaRoutes from './routes/media.routes';
+import contactRoutes from './routes/contact.routes';
+import pledgeRoutes from './routes/pledge.routes';
 
 const app = express();
 
@@ -153,6 +155,8 @@ app.use('/api/tracking', trackingRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/media', mediaRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/pledge', pledgeRoutes);
 
 // 404 handler
 app.use((_req, res) => {
