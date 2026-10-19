@@ -8,6 +8,7 @@ import { Toaster } from 'sonner';
 
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
+import { RouteSEO } from '@/components/RouteSEO';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
@@ -64,6 +65,7 @@ function App() {
       <BrowserRouter>
         <AuthRedirectHandler />
         <GooglePasskeyModal />
+        <RouteSEO />
         <Suspense fallback={<PageLoader />}>
           <Routes>
             {/* Public routes */}
@@ -79,8 +81,20 @@ function App() {
               <Route path="/website-policy" element={<WebsitePolicyPage />} />
               <Route path="/sitemap" element={<SiteMapPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/notices" element={<HomePage />} />
+              <Route path="/notices-and-updates" element={<HomePage />} />
+              <Route path="/pledge" element={<HomePage />} />
+              <Route path="/swachhata-pledge" element={<HomePage />} />
+              <Route path="/daily-work" element={<HomePage />} />
+              <Route path="/dailywork" element={<HomePage />} />
+              <Route path="/waste-protocol" element={<HomePage />} />
+              <Route path="/waste-segregation" element={<HomePage />} />
               <Route path="/complaint" element={<ComplaintPage />} />
               <Route path="/complaints" element={<ComplaintPage />} />
+              <Route path="/complaint/register" element={<ComplaintPage />} />
+              <Route path="/complaints/register" element={<ComplaintPage />} />
+              <Route path="/complaint/track" element={<ComplaintPage />} />
+              <Route path="/complaints/track" element={<ComplaintPage />} />
               <Route path="/bylaws" element={<CleanlinessBylawsPage />} />
               <Route path="/cleanliness-bylaws" element={<CleanlinessBylawsPage />} />
               <Route path="/bylaws/cleanliness" element={<CleanlinessBylawsPage />} />

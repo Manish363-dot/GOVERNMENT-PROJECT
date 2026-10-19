@@ -106,6 +106,8 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
             }}
             className={`${imgHeight} w-auto max-w-[24px] min-[360px]:max-w-[28px] min-[440px]:max-w-[36px] sm:max-w-[50px] md:max-w-[65px] lg:max-w-[90px] xl:max-w-[115px] object-contain select-none pointer-events-none transition-all drop-shadow-xs`}
             draggable={false}
+            loading="eager"
+            decoding="async"
           />
         ) : (
           <div className={`flex items-center gap-1 ${imgHeight}`}>

@@ -19,12 +19,16 @@ export function NotFoundPage() {
         
         {/* ── 404 Thieves Stealing Page Illustration ── */}
         <div className="w-full flex justify-center mb-4 sm:mb-6">
-          <img
-            src="/assets/404-thieves.jpg"
-            alt="404 Page Not Found - Thieves stealing webpage"
-            className="w-full h-auto max-h-[48vh] sm:max-h-[55vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
-            loading="eager"
-          />
+          <picture>
+            <source srcSet="/assets/404-thieves.webp" type="image/webp" />
+            <img
+              src="/assets/404-thieves.jpg"
+              alt="404 Page Not Found - Thieves stealing webpage"
+              className="w-full h-auto max-h-[48vh] sm:max-h-[55vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
+              loading="eager"
+              decoding="async"
+            />
+          </picture>
         </div>
 
         {/* ── Headline ── */}

@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { TopHeader } from '@/components/TopHeader';
+import { BackToTop } from '@/components/BackToTop';
 
 export function DashboardLayout() {
   return (
@@ -8,6 +9,7 @@ export function DashboardLayout() {
       <main className="flex-1 w-full p-2.5 sm:p-6 overflow-x-hidden">
         <Outlet />
       </main>
+      <BackToTop />
     </div>
   );
 }

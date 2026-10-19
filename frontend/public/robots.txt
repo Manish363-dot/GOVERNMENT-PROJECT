@@ -1,0 +1,38 @@
+# robots.txt for Zila Panchayat Almora - Sanitation & Waste Management Portal
+# https://almora-swachhata.uk.gov.in
+
+User-agent: *
+Allow: /
+Allow: /notices
+Allow: /pledge
+Allow: /daily-work
+Allow: /waste-protocol
+Allow: /complaints
+Allow: /complaints/register
+Allow: /complaints/track
+Allow: /staff-directory
+Allow: /cleanliness-bylaws
+Allow: /swm-rules-2026
+Allow: /our-initiative
+Allow: /vision-mission
+Allow: /contact
+Allow: /about-website
+Allow: /website-policy
+Allow: /terms-of-use
+Allow: /sitemap
+
+# Disallow private admin dashboard and authentication pages
+Disallow: /dashboard/
+Disallow: /signin
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /api/
+
+# Googlebot rules
+User-agent: Googlebot
+Allow: /
+Disallow: /dashboard/
+Disallow: /api/
+
+# Official Sitemap location
+Sitemap: https://almora-swachhata.uk.gov.in/sitemap.xml

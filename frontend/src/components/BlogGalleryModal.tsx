@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, ShieldCheck, PhoneCall, Maximize2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ShieldCheck, PhoneCall, Maximize2, ChevronDown, ChevronUp } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -53,7 +53,7 @@ const GalleryGridItem = React.memo(({ src, index, onClick }: { src: string; inde
 });
 
 export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [currentIndex, setCurrentIndex] = useState(0);
     const [lightboxImageIndex, setLightboxImageIndex] = useState<number | null>(null);
     const scrollAreaRef = useRef<HTMLDivElement>(null);
@@ -66,6 +66,12 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
     const [mediaList, setMediaList] = useState<string[]>([]);
     const [gridMedia, setGridMedia] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [showAllGrid, setShowAllGrid] = useState(false);
+    const GRID_LIMIT = 8;
+
+    const displayedGridMedia = useMemo(() => {
+        return showAllGrid ? gridMedia : gridMedia.slice(0, GRID_LIMIT);
+    }, [showAllGrid, gridMedia]);
 
     useEffect(() => {
         const fetchMedia = async () => {
@@ -540,7 +546,7 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                             Array.from({ length: 8 }).map((_, idx) => (
                                 <div key={idx} className="aspect-[4/3] rounded-2xl bg-navy-950/80 border border-white/15 animate-pulse"></div>
                             ))
-                        ) : gridMedia.length > 0 ? gridMedia.map((img, idx) => (
+                        ) : displayedGridMedia.length > 0 ? displayedGridMedia.map((img, idx) => (
                             <GalleryGridItem
                                 key={img + idx}
                                 src={img}
@@ -553,6 +559,34 @@ export const BlogGalleryModal = React.memo(({ isOpen, onClose }: { isOpen: boole
                             </div>
                         )}
                     </div>
+
+                    {/* View All Button for Public Media Gallery */}
+                    {!isLoading && gridMedia.length > GRID_LIMIT && (
+                        <div className="flex flex-col items-center justify-center mt-8 gap-2.5">
+                            <button
+                                type="button"
+                                onClick={() => setShowAllGrid(!showAllGrid)}
+                                className="group px-6 py-3 rounded-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:via-amber-400 hover:to-amber-500 text-navy-950 font-bold text-sm shadow-[0_4px_20px_rgba(245,158,11,0.35)] hover:shadow-[0_6px_25px_rgba(245,158,11,0.5)] transition-all duration-300 flex items-center gap-2 cursor-pointer active:scale-95"
+                            >
+                                {showAllGrid ? (
+                                    <>
+                                        <ChevronUp className="w-4 h-4 transition-transform group-hover:-translate-y-0.5" />
+                                        <span>{i18n.language === 'hi' ? 'कम फोटो देखें' : 'Show Less Photos'}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <ChevronDown className="w-4 h-4 transition-transform group-hover:translate-y-0.5" />
+                                        <span>{i18n.language === 'hi' ? `सभी फोटो देखें (${gridMedia.length})` : `View All Photos (${gridMedia.length})`}</span>
+                                    </>
+                                )}
+                            </button>
+                            <p className="text-xs text-amber-200/80 font-mono tracking-wide">
+                                {showAllGrid 
+                                    ? (i18n.language === 'hi' ? `सभी ${gridMedia.length} फोटो प्रदर्शित` : `Showing all ${gridMedia.length} photos`)
+                                    : (i18n.language === 'hi' ? `प्रारंभिक ${GRID_LIMIT} / ${gridMedia.length} फोटो प्रदर्शित (${gridMedia.length - GRID_LIMIT} अन्य उपलब्ध)` : `Showing 8 of ${gridMedia.length} photos (${gridMedia.length - GRID_LIMIT} more available)`)}
+                            </p>
+                        </div>
+                    )}
                 </div>
             </div>
 

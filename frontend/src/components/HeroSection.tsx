@@ -225,6 +225,8 @@ export const HeroSection = React.memo(() => {
                         src={official.image}
                         alt={official.name}
                         className="w-full h-full object-cover object-top"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">

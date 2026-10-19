@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save } from 'lucide-react';
+import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
 
 export const GpsDevicesPage = React.memo(() => {
@@ -15,6 +15,7 @@ export const GpsDevicesPage = React.memo(() => {
   const [devices, setDevices] = useState<GpsDevice[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     device_name: '',
     device_identifier: '',
@@ -24,6 +25,11 @@ export const GpsDevicesPage = React.memo(() => {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+
+  function toggleExpand(id: string) {
+    setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
+  }
 
   const isHi = i18n.language === 'hi';
 
@@ -43,12 +49,26 @@ export const GpsDevicesPage = React.memo(() => {
   }
 
   function openAddForm() {
+    setEditingId(null);
     setForm({
       device_name: '',
       device_identifier: '',
       imei: '',
       sim_number: '',
       device_type: 'hardwired',
+    });
+    setError('');
+    setShowForm(true);
+  }
+
+  function openEditForm(device: GpsDevice) {
+    setEditingId(device.id);
+    setForm({
+      device_name: device.device_name || '',
+      device_identifier: device.device_identifier || '',
+      imei: device.imei || '',
+      sim_number: device.sim_number || '',
+      device_type: device.device_type || 'hardwired',
     });
     setError('');
     setShowForm(true);
@@ -64,11 +84,16 @@ export const GpsDevicesPage = React.memo(() => {
         device_identifier: form.device_identifier.trim() || form.imei.trim(),
         imei: form.imei.trim() || form.device_identifier.trim(),
       };
-      await gpsDeviceService.create(payload);
+      if (editingId) {
+        await gpsDeviceService.update(editingId, payload);
+      } else {
+        await gpsDeviceService.create(payload);
+      }
       setShowForm(false);
+      setEditingId(null);
       fetchDevices();
     } catch (err: any) {
-      setError(err.message || 'Failed to add device');
+      setError(err.message || 'Failed to save device');
     } finally {
       setSaving(false);
     }
@@ -120,9 +145,9 @@ export const GpsDevicesPage = React.memo(() => {
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
             <p className="text-[12px] font-bold text-[#0a1628] uppercase tracking-normal">
-              {t('admin.devices.registerDevice')}
+              {editingId ? (isHi ? 'उपकरण विवरण संपादित करें' : 'Edit GPS Device') : t('admin.devices.registerDevice')}
             </p>
-            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700 transition-colors">
+            <button onClick={() => { setShowForm(false); setEditingId(null); }} className="text-slate-400 hover:text-slate-700 transition-colors">
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -184,7 +209,7 @@ export const GpsDevicesPage = React.memo(() => {
                 value={form.device_identifier}
                 onChange={(e) => setForm({ ...form, device_identifier: e.target.value })}
                 required
-                className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
+                className="h-f8 text-[11px] font-mono border-slate-300 rounded-sm"
               />
             </div>
             <div className="space-y-1.5">
@@ -209,11 +234,15 @@ export const GpsDevicesPage = React.memo(() => {
                 className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
               >
                 <Save className="w-3 h-3" />
-                {saving ? (isHi ? 'पंजीकृत हो रहा है...' : 'Registering...') : (isHi ? 'उपकरण जोड़ें' : 'Register Device')}
+                {saving
+                  ? (isHi ? 'सहेज रहे हैं...' : 'Saving...')
+                  : editingId
+                  ? (isHi ? 'अपडेट सहेजें' : 'Save Changes')
+                  : (isHi ? 'उपकरण जोड़ें' : 'Register Device')}
               </button>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={() => { setShowForm(false); setEditingId(null); }}
                 className="border border-slate-300 text-slate-600 hover:bg-slate-50 text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
               >
                 {isHi ? 'रद्द करें' : 'Cancel'}
@@ -321,14 +350,26 @@ export const GpsDevicesPage = React.memo(() => {
                       </div>
                     </td>
                     <td className="px-4 py-2.5">
-                      <Badge variant={device.status === 'active' ? 'success' : 'secondary'}>
-                        {device.status === 'active' ? (isHi ? 'सक्रिय' : 'Active') : (isHi ? 'निष्क्रिय' : 'Inactive')}
-                      </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className={`inline-block w-2 h-2 rounded-full shrink-0 ${device.status === 'active' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                        <Badge variant={device.status === 'active' ? 'success' : 'secondary'} className="text-[10px] tracking-wide font-bold">
+                          {device.status === 'active'
+                            ? (isHi ? 'सक्रिय' : 'Active')
+                            : (isHi ? 'निष्क्रिय' : 'Inactive')}
+                        </Badge>
+                      </div>
                     </td>
                     <td className="px-4 py-2.5 text-[11px] text-slate-500 font-mono">
                       {device.last_seen_at ? format(new Date(device.last_seen_at), 'dd MMM yyyy HH:mm') : (isHi ? 'कभी नहीं' : 'Never')}
                     </td>
-                    <td className="px-4 py-2.5 text-right">
+                    <td className="px-4 py-2.5 text-right space-x-1">
+                      <button
+                        onClick={() => openEditForm(device)}
+                        className="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-sm transition-colors"
+                        title={isHi ? 'संपादित करें' : 'Edit'}
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
                       <button
                         onClick={() => handleDelete(device.id)}
                         className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
@@ -343,62 +384,137 @@ export const GpsDevicesPage = React.memo(() => {
             </table>
           </div>
 
-          {/* Mobile Card View */}
+          {/* Mobile Card View with View More Expandable Section */}
           <div className="md:hidden flex flex-col divide-y divide-slate-200">
-            {devices.map((device) => (
-              <div key={device.id} className="p-4 space-y-3 bg-white">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.devices.deviceIdentifier')}</p>
-                    <p className="font-mono text-sm font-bold text-[#1a3a6b] break-all">{device.device_identifier}</p>
-                    {device.device_name && <p className="text-xs text-slate-500 font-medium">{device.device_name}</p>}
+            {devices.map((device) => {
+              const isExpanded = Boolean(expandedIds[device.id]);
+              return (
+                <div key={device.id} className="p-3.5 space-y-2.5 bg-white transition-all">
+                  {/* Compact Header: Name/Identifier + Status Badge */}
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5">
+                        <Radio className="w-3.5 h-3.5 text-blue-900 shrink-0" />
+                        <p className="font-bold text-sm text-[#0a1628] truncate">
+                          {device.device_name || device.device_identifier}
+                        </p>
+                      </div>
+                      <p className="font-mono text-[11px] text-slate-500 font-medium pl-5 truncate">
+                        ID: {device.device_identifier}
+                      </p>
+                    </div>
+                    <Badge variant={device.status === 'active' ? 'success' : 'secondary'} className="shrink-0 text-[10px] font-bold">
+                      {device.status === 'active'
+                        ? (isHi ? '🟢 सक्रिय' : 'Active')
+                        : (isHi ? '⚪ निष्क्रिय' : 'Inactive')}
+                    </Badge>
                   </div>
-                  <Badge variant={device.status === 'active' ? 'success' : 'secondary'} className="shrink-0">
-                    {device.status === 'active' ? (isHi ? 'सक्रिय' : 'Active') : (isHi ? 'निष्क्रिय' : 'Inactive')}
-                  </Badge>
-                </div>
 
-                <div className="grid grid-cols-2 gap-2.5 text-xs pt-1">
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">IMEI:</span>
-                    <span className="font-mono font-semibold text-slate-700">{device.imei || device.device_identifier}</span>
-                  </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{isHi ? 'सिम नंबर:' : 'SIM Number:'}</span>
-                    <span className="font-mono font-semibold text-emerald-700">{device.sim_number || '—'}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-[10px] text-slate-400 uppercase font-bold block">{isHi ? 'आवंटित वाहन:' : 'Assigned Vehicle:'}</span>
-                    {device.assigned_vehicle ? (
-                      <span className="inline-block mt-0.5 font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                        {device.assigned_vehicle.vehicle_number} {device.assigned_vehicle.vehicle_name ? `(${device.assigned_vehicle.vehicle_name})` : ''}
+                  {/* Compact Row: Assigned Vehicle + View More Button */}
+                  <div className="flex items-center justify-between gap-2 text-xs pt-0.5">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider shrink-0">
+                        {isHi ? 'वाहन:' : 'Vehicle:'}
                       </span>
-                    ) : (
-                      <span className="text-amber-600 font-semibold italic">{isHi ? 'अनआवंटित' : 'Unassigned'}</span>
-                    )}
-                  </div>
-                  <div className="col-span-2 flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-1.5 text-xs text-slate-700">
-                      {device.device_type === 'mobile_app' ? <Smartphone className="w-3.5 h-3.5 text-slate-400" /> : <Cpu className="w-3.5 h-3.5 text-slate-400" />}
-                      <span className="truncate">{deviceTypeLabels[device.device_type || 'hardwired'] || device.device_type}</span>
+                      {device.assigned_vehicle ? (
+                        <span className="font-mono font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded text-[11px] border border-blue-200 truncate">
+                          {device.assigned_vehicle.vehicle_number}
+                          {device.assigned_vehicle.vehicle_name ? ` (${device.assigned_vehicle.vehicle_name})` : ''}
+                        </span>
+                      ) : (
+                        <span className="text-amber-600 font-semibold italic text-[11px]">
+                          {isHi ? 'अनआवंटित' : 'Unassigned'}
+                        </span>
+                      )}
                     </div>
-                    <div className="text-right text-[11px] text-slate-500 font-mono">
-                      {device.last_seen_at ? format(new Date(device.last_seen_at), 'dd MMM yyyy HH:mm') : (isHi ? 'कभी नहीं' : 'Never')}
-                    </div>
-                  </div>
-                </div>
 
-                <div className="pt-3 border-t border-slate-100 flex justify-end">
-                  <button
-                    onClick={() => handleDelete(device.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded transition-colors text-[11px] font-bold uppercase tracking-normal"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    {isHi ? 'हटाएं' : 'Delete'}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => toggleExpand(device.id)}
+                      className="flex items-center gap-1 text-[11px] font-bold text-[#1a3a6b] hover:text-blue-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-2.5 py-1 rounded-sm transition-colors shrink-0"
+                    >
+                      <span>
+                        {isExpanded
+                          ? (isHi ? 'कम देखें' : 'View Less')
+                          : (isHi ? 'और देखें' : 'View More')}
+                      </span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-3.5 h-3.5" />
+                      ) : (
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Expandable Details Section */}
+                  {isExpanded && (
+                    <div className="pt-2 border-t border-slate-100 space-y-2.5 animate-fade-in">
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded border border-slate-200">
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">
+                            IMEI:
+                          </span>
+                          <span className="font-mono font-semibold text-slate-800 text-[11px] break-all">
+                            {device.imei || device.device_identifier}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">
+                            {isHi ? 'सिम नंबर:' : 'SIM Number:'}
+                          </span>
+                          <span className="font-mono font-semibold text-emerald-700 text-[11px]">
+                            {device.sim_number || (isHi ? 'दर्ज नहीं' : 'Not set')}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">
+                            {isHi ? 'प्रकार:' : 'Type:'}
+                          </span>
+                          <div className="flex items-center gap-1 text-slate-700 text-[11px] font-medium pt-0.5">
+                            {device.device_type === 'mobile_app' ? (
+                              <Smartphone className="w-3 h-3 text-slate-400" />
+                            ) : (
+                              <Cpu className="w-3 h-3 text-slate-400" />
+                            )}
+                            <span className="truncate">
+                              {deviceTypeLabels[device.device_type || 'hardwired'] || device.device_type}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-slate-500 uppercase font-bold block">
+                            {isHi ? 'अंतिम देखा गया:' : 'Last Seen:'}
+                          </span>
+                          <span className="text-[11px] text-slate-600 font-mono">
+                            {device.last_seen_at
+                              ? format(new Date(device.last_seen_at), 'dd MMM HH:mm')
+                              : (isHi ? 'कभी नहीं' : 'Never')}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons inside expanded area */}
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <button
+                          onClick={() => openEditForm(device)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded text-[11px] font-bold uppercase tracking-normal transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          {isHi ? 'संपादित करें' : 'Edit'}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(device.id)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded text-[11px] font-bold uppercase tracking-normal transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          {isHi ? 'हटाएं' : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

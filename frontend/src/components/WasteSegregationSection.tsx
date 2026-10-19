@@ -175,7 +175,8 @@ export const WasteSegregationSection = React.memo(() => {
     : bins.filter(b => b.id === activeTab);
 
   return (
-    <section id="waste-segregation" className="py-16 sm:py-20 bg-slate-100/80 border-b border-slate-200 scroll-mt-20">
+    <section id="waste-protocol" className="py-16 sm:py-20 bg-slate-100/80 border-b border-slate-200 scroll-mt-20">
+      <div id="waste-segregation" className="absolute -top-16 left-0 h-1 w-1 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Section Header */}
@@ -215,6 +216,8 @@ export const WasteSegregationSection = React.memo(() => {
                       src={bin.dustbinImg}
                       alt={bin.name}
                       className="object-contain drop-shadow-xl w-full h-full"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                 </div>
@@ -234,6 +237,8 @@ export const WasteSegregationSection = React.memo(() => {
                       src={bin.exampleImg}
                       alt={bin.exampleAlt}
                       className="object-cover w-full h-full"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
                   </div>

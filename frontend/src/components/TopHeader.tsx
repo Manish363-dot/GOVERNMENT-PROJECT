@@ -170,10 +170,9 @@ export function TopHeader() {
                         isActive ? 'text-amber-400' : 'text-slate-400'
                       )}
                     />
-                    <div className="flex gap-2 items-center">
-                      <span className="tracking-wide uppercase text-[11px]">{isHi ? item.labelHi : item.label}</span>
-                      <span className="text-[10px] text-slate-400 font-normal">| {isHi ? item.label : item.labelHi}</span>
-                    </div>
+                    <span className="tracking-wide uppercase text-xs font-semibold">
+                      {isHi ? item.labelHi : item.label}
+                    </span>
                   </>
                 )}
               </NavLink>

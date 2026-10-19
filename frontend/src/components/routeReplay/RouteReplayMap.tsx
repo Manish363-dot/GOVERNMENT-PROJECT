@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, Polyline, Marker, Popup, Polygon, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -15,6 +15,8 @@ interface RouteReplayMapProps {
     onToggleFollowTruck: () => void;
     isFullscreen: boolean;
     onToggleFullscreen: () => void;
+    /** When fullscreen, render playback controls inside map overlay */
+    fullscreenControls?: React.ReactNode;
 }
 
 // Leaflet map controller for auto-centering
@@ -25,6 +27,21 @@ function MapRecenter({ center, zoom, follow }: { center: [number, number]; zoom?
             map.panTo(center, { animate: true, duration: 0.3 });
         }
     }, [center, follow, map]);
+    return null;
+}
+
+// Component to invalidate map size after fullscreen changes
+function MapResizeHandler({ isFullscreen }: { isFullscreen: boolean }) {
+    const map = useMap();
+    useEffect(() => {
+        // Give the DOM a moment to settle, then force Leaflet to recalculate
+        const timers = [
+            setTimeout(() => map.invalidateSize({ animate: false }), 50),
+            setTimeout(() => map.invalidateSize({ animate: false }), 200),
+            setTimeout(() => map.invalidateSize({ animate: false }), 500),
+        ];
+        return () => timers.forEach(clearTimeout);
+    }, [isFullscreen, map]);
     return null;
 }
 
@@ -114,9 +131,11 @@ export function RouteReplayMap({
     onToggleFollowTruck,
     isFullscreen,
     onToggleFullscreen,
+    fullscreenControls,
 }: RouteReplayMapProps) {
     const { i18n } = useTranslation();
     const isHi = i18n.language === 'hi';
+    const containerRef = useRef<HTMLDivElement>(null);
     const currentPoint = dataset.points[currentPointIndex] || dataset.points[0];
     const routeCoords = dataset.points.map((p) => [p.latitude, p.longitude] as [number, number]);
 
@@ -125,15 +144,65 @@ export function RouteReplayMap({
         ? [currentPoint.latitude, currentPoint.longitude]
         : [29.5892, 79.6467];
 
+    // Use native Fullscreen API for proper fullscreen
+    const handleToggleFullscreen = useCallback(() => {
+        if (!containerRef.current) {
+            onToggleFullscreen();
+            return;
+        }
+
+        if (!document.fullscreenElement) {
+            containerRef.current.requestFullscreen().then(() => {
+                if (!isFullscreen) onToggleFullscreen();
+            }).catch(() => {
+                // Fallback: just toggle state for CSS-based fullscreen
+                onToggleFullscreen();
+            });
+        } else {
+            document.exitFullscreen().then(() => {
+                if (isFullscreen) onToggleFullscreen();
+            }).catch(() => {
+                onToggleFullscreen();
+            });
+        }
+    }, [isFullscreen, onToggleFullscreen]);
+
+    // Sync state when user presses Escape to exit native fullscreen
+    useEffect(() => {
+        function onFsChange() {
+            if (!document.fullscreenElement && isFullscreen) {
+                onToggleFullscreen();
+            }
+        }
+        document.addEventListener('fullscreenchange', onFsChange);
+        return () => document.removeEventListener('fullscreenchange', onFsChange);
+    }, [isFullscreen, onToggleFullscreen]);
+
+    // ESC key handler as fallback for CSS-based fullscreen
+    useEffect(() => {
+        if (!isFullscreen) return;
+        function onKeyDown(e: KeyboardEvent) {
+            if (e.key === 'Escape' && isFullscreen && !document.fullscreenElement) {
+                onToggleFullscreen();
+            }
+        }
+        window.addEventListener('keydown', onKeyDown);
+        return () => window.removeEventListener('keydown', onKeyDown);
+    }, [isFullscreen, onToggleFullscreen]);
+
     return (
         <div
+            ref={containerRef}
             className={cn(
-                'relative bg-white rounded-xl border border-slate-300 overflow-hidden shadow-md flex flex-col transition-all duration-200',
-                isFullscreen ? 'fixed inset-0 z-[9999] h-screen w-screen rounded-none border-none' : 'h-[520px] lg:h-[700px] w-full'
+                'relative bg-navy-950 overflow-hidden flex flex-col transition-all duration-200',
+                isFullscreen
+                    ? 'fixed inset-0 z-[9999] rounded-none border-none'
+                    : 'h-[520px] lg:h-[700px] w-full rounded-xl border border-slate-300 shadow-md'
             )}
+            style={isFullscreen ? { width: '100vw', height: '100vh' } : undefined}
         >
             {/* Top Map Header Strip */}
-            <div className="bg-navy-950 text-white px-3 sm:px-4 py-2 flex items-center justify-between z-20 border-b border-navy-800">
+            <div className="bg-navy-950 text-white px-3 sm:px-4 py-2 flex items-center justify-between z-20 border-b border-navy-800 shrink-0">
                 <div className="flex items-center gap-2">
                     <Radio className="w-4 h-4 text-emerald-400 animate-pulse" />
                     <span className="font-poppins text-xs font-bold uppercase tracking-wider text-slate-100 truncate">
@@ -157,7 +226,7 @@ export function RouteReplayMap({
 
                     {/* Fullscreen Toggle */}
                     <button
-                        onClick={onToggleFullscreen}
+                        onClick={handleToggleFullscreen}
                         className="px-2.5 py-1 text-[11px] font-bold rounded bg-amber-600 hover:bg-amber-500 text-white flex items-center gap-1 shadow-xs transition-colors"
                         title={isFullscreen ? (isHi ? 'फुलस्क्रीन से बाहर निकलें' : 'Exit Fullscreen') : (isHi ? 'फुलस्क्रीन मानचित्र' : 'Fullscreen Map')}
                     >
@@ -167,9 +236,9 @@ export function RouteReplayMap({
                 </div>
             </div>
 
-            {/* Main Map */}
-            <div className="flex-1 w-full h-full relative z-10">
-                <MapContainer center={mapCenter} zoom={14} className="h-full w-full" zoomControl={false} attributionControl={false}>
+            {/* Main Map — flex-1 + min-h-0 forces it to fill remaining space without overflowing */}
+            <div className="flex-1 min-h-0 w-full relative z-10">
+                <MapContainer center={mapCenter} zoom={14} className="absolute inset-0" zoomControl={false} attributionControl={false}>
                     <TileLayer
                         attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
                         url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -177,6 +246,9 @@ export function RouteReplayMap({
 
                     {/* Camera recenter helper */}
                     <MapRecenter center={mapCenter} follow={followTruck} />
+
+                    {/* Resize handler — forces Leaflet to recalculate size on fullscreen toggle */}
+                    <MapResizeHandler isFullscreen={isFullscreen} />
 
                     {/* Ward Boundaries Polygons */}
                     {dataset.wardBoundaries.map((ward) => (
@@ -340,7 +412,10 @@ export function RouteReplayMap({
             </div>
 
             {/* Floating Legend / Quick Status Bar overlay */}
-            <div className="absolute bottom-3 left-3 z-[1000] bg-white/95 backdrop-blur-xs border border-slate-300 rounded-lg px-3 py-1.5 shadow-md hidden sm:flex items-center gap-3 text-[11px] font-mono">
+            <div className={cn(
+                'absolute left-3 z-[1000] bg-white/95 backdrop-blur-xs border border-slate-300 rounded-lg px-3 py-1.5 shadow-md hidden sm:flex items-center gap-3 text-[11px] font-mono',
+                isFullscreen ? 'bottom-[140px]' : 'bottom-3'
+            )}>
                 <span className="flex items-center gap-1 text-slate-700">
                     <span className="w-3 h-1 bg-blue-600 rounded-full inline-block" /> {isHi ? 'मुख्य मार्ग' : 'Master Route'}
                 </span>
@@ -354,6 +429,15 @@ export function RouteReplayMap({
                     <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse inline-block" /> {isHi ? 'अनपेक्षित ठहराव' : 'Unexpected Stop'}
                 </span>
             </div>
+
+            {/* Fullscreen Playback Controls — anchored at the absolute bottom */}
+            {isFullscreen && fullscreenControls && (
+                <div className="absolute bottom-0 left-0 right-0 z-[1001] bg-gradient-to-t from-navy-950/95 via-navy-950/80 to-transparent pt-6 pb-3 px-3 sm:px-6">
+                    <div className="max-w-4xl mx-auto space-y-2">
+                        {fullscreenControls}
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

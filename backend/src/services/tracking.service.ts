@@ -52,13 +52,24 @@ export async function getLiveVehicleCount(): Promise<number> {
 }
 
 export async function getOnlineDeviceCount(): Promise<number> {
-  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+  const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
   try {
     return await prisma.gpsDevice.count({
-      where: { 
-        status: 'active',
-        last_seen_at: { gte: fiveMinutesAgo }
-      }
+      where: {
+        OR: [
+          {
+            status: 'active',
+            last_seen_at: { gte: tenMinutesAgo },
+          },
+          {
+            currentLocations: {
+              some: {
+                updated_at: { gte: tenMinutesAgo },
+              },
+            },
+          },
+        ],
+      },
     });
   } catch (error) {
     return 0;

@@ -17,12 +17,16 @@ export function ServerErrorPage() {
         
         {/* ── Big & Prominent Robot & Server 500 Illustration ── */}
         <div className="w-full flex justify-center mb-4 sm:mb-6">
-          <img
-            src="/assets/500-robot.jpg"
-            alt="500 Internal Server Error - Robot unplugged server"
-            className="w-full h-auto max-h-[48vh] sm:max-h-[54vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
-            loading="eager"
-          />
+          <picture>
+            <source srcSet="/assets/500-robot.webp" type="image/webp" />
+            <img
+              src="/assets/500-robot.jpg"
+              alt="500 Internal Server Error - Robot unplugged server"
+              className="w-full h-auto max-h-[48vh] sm:max-h-[54vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
+              loading="eager"
+              decoding="async"
+            />
+          </picture>
         </div>
 
         {/* ── Headline ── */}
