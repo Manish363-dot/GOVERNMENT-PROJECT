@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
 import { HeroSection } from '@/components/HeroSection';
-import { AboutSection } from '@/components/AboutSection';
-import { WasteSegregationSection } from '@/components/WasteSegregationSection';
-import { SwachhataPledgeSection } from '@/components/SwachhataPledgeSection';
-import { NoticesSection } from '@/components/NoticesSection';
-import { DailyWorkSection } from '@/components/DailyWorkSection';
+
+// Lazy load all below-fold sections — reduces initial bundle size
+const AboutSection = lazy(() => import('@/components/AboutSection').then(m => ({ default: m.AboutSection })));
+const WasteSegregationSection = lazy(() => import('@/components/WasteSegregationSection').then(m => ({ default: m.WasteSegregationSection })));
+const NoticesSection = lazy(() => import('@/components/NoticesSection').then(m => ({ default: m.NoticesSection })));
+const DailyWorkSection = lazy(() => import('@/components/DailyWorkSection').then(m => ({ default: m.DailyWorkSection })));
+const SwachhataPledgeSection = lazy(() => import('@/components/SwachhataPledgeSection').then(m => ({ default: m.SwachhataPledgeSection })));
 
 export const HomePage = React.memo(() => {
   const location = useLocation();
@@ -37,11 +39,13 @@ export const HomePage = React.memo(() => {
   return (
     <>
       <HeroSection />
-      <AboutSection />
-      <WasteSegregationSection />
-      <NoticesSection />
-      <DailyWorkSection />
-      <SwachhataPledgeSection />
+      <Suspense fallback={<div className="h-32" />}>
+        <AboutSection />
+        <WasteSegregationSection />
+        <NoticesSection />
+        <DailyWorkSection />
+        <SwachhataPledgeSection />
+      </Suspense>
     </>
   );
 });
