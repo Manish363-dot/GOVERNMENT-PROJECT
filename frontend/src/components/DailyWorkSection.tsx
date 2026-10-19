@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isSameDay, 
-  addMonths, 
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
   subMonths,
   parseISO,
   getDay
@@ -35,10 +35,20 @@ export const DailyWorkSection = React.memo(() => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedWork, setSelectedWork] = useState<DailyWork | null>(null);
 
-  // Carousel state — show 2 cards at a time
+  // Carousel state — responsive: 1 card on mobile, 2 on sm+
   const [carouselIndex, setCarouselIndex] = useState(0);
-  const cardsPerView = 2;
+  const [cardsPerView, setCardsPerView] = useState(2);
   const autoPlayRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Update cardsPerView based on window width
+  useEffect(() => {
+    const updateCardsPerView = () => {
+      setCardsPerView(window.innerWidth < 640 ? 1 : 2);
+    };
+    updateCardsPerView();
+    window.addEventListener('resize', updateCardsPerView);
+    return () => window.removeEventListener('resize', updateCardsPerView);
+  }, []);
 
   const fetchWorks = useCallback(async () => {
     setIsLoading(true);
@@ -168,9 +178,9 @@ export const DailyWorkSection = React.memo(() => {
                         key={work.id}
                         onClick={() => handleCardClick(work)}
                         className={cn(
-                          "group/card relative h-80 w-full overflow-hidden border-0 rounded-2xl cursor-pointer transition-all duration-300 shadow-md",
-                          isActive 
-                            ? "ring-2 ring-blue-500 shadow-xl shadow-blue-500/20" 
+                          "group/card relative h-64 sm:h-80 w-full overflow-hidden border-0 rounded-2xl cursor-pointer transition-all duration-300 shadow-md",
+                          isActive
+                            ? "ring-2 ring-blue-500 shadow-xl shadow-blue-500/20"
                             : "hover:shadow-2xl"
                         )}
                       >
@@ -211,7 +221,7 @@ export const DailyWorkSection = React.memo(() => {
                             </p>
                           </div>
                         </div>
-                        
+
                         {/* Status Icon (Top Right) */}
                         {work.type === 'document' && (
                           <div className="absolute top-4 right-4 z-10">
@@ -243,8 +253,8 @@ export const DailyWorkSection = React.memo(() => {
                     disabled={carouselIndex === 0}
                     className={cn(
                       "w-9 h-9 rounded-full flex items-center justify-center border transition-all",
-                      carouselIndex === 0 
-                        ? "border-slate-200 text-slate-300 cursor-not-allowed" 
+                      carouselIndex === 0
+                        ? "border-slate-200 text-slate-300 cursor-not-allowed"
                         : "border-slate-300 text-slate-600 hover:bg-navy-900 hover:text-white hover:border-navy-900"
                     )}
                   >
@@ -259,8 +269,8 @@ export const DailyWorkSection = React.memo(() => {
                         onClick={() => setCarouselIndex(i)}
                         className={cn(
                           "transition-all duration-300 rounded-full",
-                          i === carouselIndex 
-                            ? "w-6 h-2 bg-blue-600" 
+                          i === carouselIndex
+                            ? "w-6 h-2 bg-blue-600"
                             : "w-2 h-2 bg-slate-300 hover:bg-slate-400"
                         )}
                       />
@@ -291,10 +301,10 @@ export const DailyWorkSection = React.memo(() => {
 
           {/* RIGHT: Calendar */}
           <div className="w-full lg:w-[40%] bg-gradient-to-b from-sky-50/80 to-blue-50/50 lg:border-l border-t lg:border-t-0 border-slate-200 p-5 sm:p-6 flex flex-col">
-            
+
             {/* Month Header */}
             <div className="flex items-center justify-between mb-5">
-              <button 
+              <button
                 onClick={prevMonth}
                 className="w-8 h-8 rounded-md flex items-center justify-center text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200"
               >
@@ -303,7 +313,7 @@ export const DailyWorkSection = React.memo(() => {
               <h3 className="text-base font-extrabold text-navy-900 uppercase tracking-wider">
                 {format(currentMonth, 'MMMM yyyy')}
               </h3>
-              <button 
+              <button
                 onClick={nextMonth}
                 className="w-8 h-8 rounded-md flex items-center justify-center text-blue-700 hover:bg-blue-100 transition-colors border border-blue-200"
               >
@@ -314,8 +324,8 @@ export const DailyWorkSection = React.memo(() => {
             {/* Weekday Headers */}
             <div className="grid grid-cols-7 mb-1">
               {weekDays.map((day, i) => (
-                <div 
-                  key={day} 
+                <div
+                  key={day}
                   className={cn(
                     "text-center text-[11px] font-bold tracking-wider py-2.5 border-b-2",
                     i === 0 ? "text-red-500 border-red-200" : "text-slate-500 border-slate-200"

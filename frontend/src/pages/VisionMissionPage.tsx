@@ -127,7 +127,7 @@ export function VisionMissionPage() {
 
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
             <div className="max-w-3xl">
-              <h1 className="text-3xl sm:text-[2.6rem] font-extrabold text-white tracking-tight leading-tight mb-3 font-poppins">
+              <h1 className="text-2xl sm:text-[2.6rem] font-extrabold text-white tracking-tight leading-tight mb-3 font-poppins">
                 {isHi ? 'हमारा विज़न एवं मिशन' : 'Vision & Mission Statement'}
               </h1>
               <p className="text-slate-300 text-sm sm:text-[15px] leading-relaxed">
@@ -338,13 +338,10 @@ export function VisionMissionPage() {
           </div>
 
           {/* Timeline grid */}
-          <div className="p-6 grid md:grid-cols-3 gap-0 md:divide-x divide-slate-200 border-t border-slate-100">
+          <div className="p-4 sm:p-6 grid md:grid-cols-3 gap-0 md:divide-x divide-slate-200 border-t border-slate-100">
             {strategicMilestones.map((ms, idx) => (
-              <div key={idx} className="flex flex-col px-5 py-4 first:pl-0 last:pr-0 relative">
-                {/* Connector line on mobile */}
-                {idx < 2 && (
-                  <div className="absolute bottom-0 left-6 right-6 h-px bg-slate-200 md:hidden" />
-                )}
+              <div key={idx} className="flex flex-col px-4 sm:px-5 py-4 first:pt-4 md:first:pl-0 md:last:pr-0 relative border-b md:border-b-0 border-slate-200 last:border-b-0">
+                {/* Connector line on mobile - now using border-b on the container instead */}
 
                 {/* Phase badge */}
                 <div className="flex items-center gap-2 mb-3">

@@ -7,7 +7,7 @@ import { usePledgeCount } from '@/hooks/usePledgeCount';
 
 import { BlogGalleryModal } from './BlogGalleryModal';
 
-const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg','image6.jpeg'];
+const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image6.jpeg'];
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
 
@@ -170,7 +170,7 @@ export const HeroSection = React.memo(() => {
           {/* Dignitary Quote Card Banner & Additional Sections */}
           <div className="mt-6 sm:mt-10 w-full max-w-7xl mx-auto px-2 sm:px-6 relative z-30 translate-y-2 sm:translate-y-[1%] mb-8 sm:-mb-20">
             {/* Main PM Card */}
-            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[110px] mb-4">
+            <div className="relative bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200/90 p-4 sm:py-5 sm:px-6 sm:pl-28 md:pl-32 flex flex-col sm:flex-row items-center gap-3 sm:gap-0 min-h-[100px] mb-4">
               {/* Dignitary Photo */}
               <div className="sm:absolute -top-8 sm:top-1/2 sm:-translate-y-1/2 sm:-left-8 md:-left-10 w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-100 shrink-0 select-none mx-auto sm:mx-0">
                 {!img5Error ? (
@@ -212,14 +212,14 @@ export const HeroSection = React.memo(() => {
             </div>
 
             {/* 4 Officials Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-5 pb-4 items-stretch">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 pb-4 items-stretch">
               {OFFICIALS.map((official) => (
                 <div
                   key={official.id}
-                  className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-5 sm:p-6 flex flex-col items-center text-center justify-start h-full transition-all hover:-translate-y-1.5 hover:shadow-xl duration-300"
+                  className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-3 sm:p-5 md:p-6 flex flex-col items-center text-center justify-start h-full transition-all hover:-translate-y-1.5 hover:shadow-xl duration-300"
                 >
                   {/* Circular Avatar with soft white ring & shadow */}
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden bg-slate-50 ring-4 ring-white shadow-md mb-4 shrink-0">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-slate-50 ring-2 sm:ring-4 ring-white shadow-md mb-2 sm:mb-4 shrink-0">
                     {official.image ? (
                       <img
                         src={official.image}
@@ -234,12 +234,12 @@ export const HeroSection = React.memo(() => {
                   </div>
 
                   {/* Dignitary Name */}
-                  <h4 className="text-sm sm:text-base md:text-[17px] font-bold text-slate-900 leading-snug mb-1">
+                  <h4 className="text-[11px] sm:text-sm md:text-[15px] lg:text-[17px] font-bold text-slate-900 leading-snug mb-1">
                     {official.name}
                   </h4>
 
                   {/* Designation */}
-                  <p className="text-xs sm:text-[13px] md:text-sm text-slate-500 font-normal leading-relaxed">
+                  <p className="text-[10px] sm:text-xs md:text-[13px] text-slate-500 font-normal leading-relaxed">
                     {official.designation}
                   </p>
                 </div>

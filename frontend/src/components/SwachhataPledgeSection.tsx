@@ -1,11 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Award, 
-  Download, 
-  Share2, 
-  Sparkles, 
-  ShieldCheck, 
+import {
+  Award,
+  Download,
+  Share2,
+  Sparkles,
+  ShieldCheck,
   RefreshCw,
   CheckCircle2
 } from 'lucide-react';
@@ -290,9 +290,9 @@ export const SwachhataPledgeSection = React.memo(() => {
   };
 
   return (
-    <section id="pledge" className="py-16 sm:py-20 bg-white border-b border-slate-200 scroll-mt-20">
+    <section id="pledge" className="py-12 sm:py-20 bg-white border-b border-slate-200 scroll-mt-20 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-left max-w-3xl mb-10 sm:mb-14">
           <div className="flex flex-wrap items-center gap-2.5 mb-3">
@@ -308,8 +308,8 @@ export const SwachhataPledgeSection = React.memo(() => {
         </div>
 
         {/* 2-Column Grid: Form & Live Certificate Preview */}
-        <div className="grid lg:grid-cols-12 gap-8 items-start">
-          
+        <div className="grid lg:grid-cols-12 gap-6 sm:gap-8 items-start">
+
           {/* Form Column (5 Cols) */}
           <div className="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
@@ -410,7 +410,7 @@ export const SwachhataPledgeSection = React.memo(() => {
 
           {/* Certificate Preview Column (7 Cols) */}
           <div className="lg:col-span-7 flex flex-col items-center">
-            <div 
+            <div
               ref={certRef}
               className="w-full bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 text-white rounded-2xl border-4 border-amber-500/80 p-5 sm:p-7 shadow-xl relative overflow-hidden"
             >
@@ -421,7 +421,7 @@ export const SwachhataPledgeSection = React.memo(() => {
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-white to-emerald-600" />
 
               <div className="relative z-10 text-center">
-                
+
                 {/* ── Official Centered Panchayati Raj Logo & Heading in One Line ── */}
                 <div className="flex items-center justify-center gap-3 sm:gap-4.5 mb-5 pb-4 border-b border-slate-700/60">
                   {/* Round White Background Logo */}
@@ -453,8 +453,8 @@ export const SwachhataPledgeSection = React.memo(() => {
                 </p>
 
                 {/* Citizen Name on Certificate */}
-                <div className="py-2 px-6 my-2 inline-block border-b-2 border-amber-400 max-w-full">
-                  <span className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-amber-300 break-words">
+                <div className="py-2 px-4 sm:px-6 my-2 inline-block border-b-2 border-amber-400 max-w-full w-full">
+                  <span className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-amber-300 break-words block text-center">
                     {citizenName ? citizenName.toUpperCase() : 'YOUR NAME HERE'}
                   </span>
                 </div>
