@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- 1. Home Page -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/" />
+  </url>
+
+  <!-- 2. Notices & Updates -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/notices</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/notices" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/notices" />
+  </url>
+
+  <!-- 3. Swachhata Pledge & E-Certificate -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/pledge</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/pledge" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/pledge" />
+  </url>
+
+  <!-- 4. Daily Work Operations & Logs -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/daily-work</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/daily-work" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/daily-work" />
+  </url>
+
+  <!-- 5. Waste Source Segregation Protocol (4-Bin Rule) -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/waste-protocol</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/waste-protocol" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/waste-protocol" />
+  </url>
+
+  <!-- 3. Citizen Grievance Portal -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/complaints</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/complaints" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/complaints" />
+  </url>
+
+  <!-- 4. Do Complaint (File Grievance Online) -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/complaints/register</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/complaints/register" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/complaints/register" />
+  </url>
+
+  <!-- 5. Track Complaint Status -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/complaints/track</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/complaints/track" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/complaints/track" />
+  </url>
+
+  <!-- 6. Staff & Officers Directory -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/staff-directory</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/staff-directory" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/staff-directory" />
+  </url>
+
+  <!-- 7. Cleanliness By-laws -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/cleanliness-bylaws</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/cleanliness-bylaws" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/cleanliness-bylaws" />
+  </url>
+
+  <!-- 8. Solid Waste Management Rules 2026 -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/swm-rules-2026</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/swm-rules-2026" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/swm-rules-2026" />
+  </url>
+
+  <!-- 9. Our Initiatives -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/our-initiative</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/our-initiative" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/our-initiative" />
+  </url>
+
+  <!-- 10. Vision & Mission -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/vision-mission</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/vision-mission" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/vision-mission" />
+  </url>
+
+  <!-- 11. Contact Us & Official Helplines -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/contact</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="hi" href="https://almora-swachhata.uk.gov.in/contact" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://almora-swachhata.uk.gov.in/contact" />
+  </url>
+
+  <!-- 12. About Website -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/about-website</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- 13. Website Policies -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/website-policy</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <!-- 14. Terms of Use -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/terms-of-use</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 15. Site Map -->
+  <url>
+    <loc>https://almora-swachhata.uk.gov.in/sitemap</loc>
+    <lastmod>2026-10-18</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+</urlset>

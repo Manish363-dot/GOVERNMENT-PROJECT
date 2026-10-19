@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import { env, isOriginAllowed } from './config/env';
 import { errorHandler } from './middleware/errorHandler';
@@ -80,6 +81,9 @@ const corsOptions: cors.CorsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// HTTP Response Compression (Gzip / Deflate for fast JSON & asset delivery)
+app.use(compression());
 
 // Body parsing
 app.use(express.json({ limit: '10mb' }));

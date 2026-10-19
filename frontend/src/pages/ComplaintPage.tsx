@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { 
   Headphones, 
@@ -11,10 +11,12 @@ import { ComplaintForm } from '@/components/ComplaintForm';
 export function ComplaintPage() {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Read ?tab=track or ?tab=submit from URL
-  const currentTab = (searchParams.get('tab') === 'track' ? 'track' : 'submit') as 'submit' | 'track';
+  // Read ?tab=track or /track from URL
+  const isTrack = location.pathname.endsWith('/track') || searchParams.get('tab') === 'track';
+  const currentTab = isTrack ? 'track' : 'submit';
 
   useEffect(() => {
     window.scrollTo(0, 0);

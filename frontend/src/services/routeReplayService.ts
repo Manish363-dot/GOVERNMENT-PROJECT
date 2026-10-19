@@ -1,14 +1,12 @@
 import { historyService } from './history.service';
-import { generateMockRouteReplayData } from './routeReplayMock';
 import type { RouteReplayDataset, ReplayPoint, ReplayEvent, RoutePerformance } from '@/types/routeReplay';
 import type { Vehicle, VehicleLocationHistory } from '@/types';
 import { format, parseISO } from 'date-fns';
 
 export const routeReplayService = {
     /**
-     * Fetch or construct Route Replay dataset.
-     * If vehicle is the designated Test Vehicle ('v-test-demo'), returns simulation test data.
-     * For all real vehicles, strictly queries database records; if 0 points, returns empty dataset.
+     * Fetch Route Replay dataset from real production GPS history in database.
+     * Strictly queries database records; if 0 points exist, returns clean empty dataset.
      */
     async getReplayDataset(
         vehicleId: string,
@@ -17,20 +15,8 @@ export const routeReplayService = {
         endTime: string = '12:00',
         vehicleInfo?: Vehicle
     ): Promise<RouteReplayDataset> {
-        const vehicleNumber = vehicleInfo?.vehicle_number || 'UK-01-XX-1001';
-        const vehicleName = vehicleInfo?.vehicle_name || 'Safai Vehicle';
-
-        // 1. Explicit Testing Demo Vehicle check
-        if (vehicleId === 'v-test-demo' || vehicleNumber.toUpperCase().includes('TEST')) {
-            return generateMockRouteReplayData(
-                vehicleId,
-                'UK-01-TEST-01',
-                'Testing Demo Vehicle (Safai Truck)',
-                date,
-                startTime,
-                endTime
-            );
-        }
+        const vehicleNumber = vehicleInfo?.vehicle_number || 'Vehicle';
+        const vehicleName = vehicleInfo?.vehicle_name || '';
 
         // 2. Real Vehicles: Query DB strictly without mock fallback
         try {

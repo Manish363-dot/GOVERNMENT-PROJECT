@@ -10,6 +10,7 @@ export async function getAllDevices(): Promise<any[]> {
           where: { is_active: true },
           include: { vehicle: true },
         },
+        currentLocations: true,
       },
     });
     
@@ -17,15 +18,22 @@ export async function getAllDevices(): Promise<any[]> {
     return devices.map(d => {
       const activeVehicle = d.vehicleAssignments?.[0]?.vehicle || null;
       let status = d.status;
-      if (!d.last_seen_at) {
-        status = 'inactive';
-      } else {
-        const isOffline = (now - d.last_seen_at.getTime()) > 5 * 60 * 1000;
-        status = isOffline ? 'inactive' : 'active';
-      }
+
+      const lastSeenTime = d.last_seen_at ? new Date(d.last_seen_at).getTime() : 0;
+      const latestLocationTime = d.currentLocations?.[0]?.updated_at
+        ? new Date(d.currentLocations[0].updated_at).getTime()
+        : 0;
+      const effectiveLastSeen = Math.max(lastSeenTime, latestLocationTime);
+
+      const isOnline = Boolean(effectiveLastSeen && (now - effectiveLastSeen) <= 10 * 60 * 1000);
+      const isIgnitionOn = isOnline && d.status === 'active';
+      status = isIgnitionOn ? 'active' : 'inactive';
+
       return {
         ...d,
         status,
+        ignition: isIgnitionOn,
+        last_seen_at: effectiveLastSeen ? new Date(effectiveLastSeen) : d.last_seen_at,
         assigned_vehicle: activeVehicle ? {
           id: activeVehicle.id,
           vehicle_number: activeVehicle.vehicle_number,
@@ -40,15 +48,43 @@ export async function getAllDevices(): Promise<any[]> {
 
 export async function getDeviceById(id: string): Promise<any | null> {
   try {
-    return await prisma.gpsDevice.findUnique({
+    const d = await prisma.gpsDevice.findUnique({
       where: { id },
       include: {
         vehicleAssignments: {
           where: { is_active: true },
           include: { vehicle: true },
         },
+        currentLocations: true,
       },
     });
+
+    if (!d) return null;
+
+    const now = Date.now();
+    const activeVehicle = d.vehicleAssignments?.[0]?.vehicle || null;
+
+    const lastSeenTime = d.last_seen_at ? new Date(d.last_seen_at).getTime() : 0;
+    const latestLocationTime = d.currentLocations?.[0]?.updated_at
+      ? new Date(d.currentLocations[0].updated_at).getTime()
+      : 0;
+    const effectiveLastSeen = Math.max(lastSeenTime, latestLocationTime);
+
+    const isOnline = Boolean(effectiveLastSeen && (now - effectiveLastSeen) <= 10 * 60 * 1000);
+    const isIgnitionOn = isOnline && d.status === 'active';
+    const status = isIgnitionOn ? 'active' : 'inactive';
+
+    return {
+      ...d,
+      status,
+      ignition: isIgnitionOn,
+      last_seen_at: effectiveLastSeen ? new Date(effectiveLastSeen) : d.last_seen_at,
+      assigned_vehicle: activeVehicle ? {
+        id: activeVehicle.id,
+        vehicle_number: activeVehicle.vehicle_number,
+        vehicle_name: activeVehicle.vehicle_name,
+      } : null,
+    };
   } catch (error) {
     return null;
   }

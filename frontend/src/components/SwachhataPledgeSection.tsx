@@ -11,6 +11,10 @@ import {
 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const PLEDGE_LOGO_S3_URL = `${S3_BUCKET}/portal-logos/logo2.png`;
+const FALLBACK_LOGO_URL = '/assets/logos/logo2.png';
+
 export const SwachhataPledgeSection = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
@@ -71,8 +75,11 @@ export const SwachhataPledgeSection = React.memo(() => {
     canvas.width = 1200;
     canvas.height = 800;
 
-    // Preload local logo (Panchayati Raj only)
-    const imgPanchayat = await loadImage('/assets/logos/logo2.png');
+    // Preload logo from AWS S3 (with fallback to local)
+    let imgPanchayat = await loadImage(PLEDGE_LOGO_S3_URL);
+    if (!imgPanchayat) {
+      imgPanchayat = await loadImage(FALLBACK_LOGO_URL);
+    }
 
     // 1. Background gradient & frame
     const bgGradient = ctx.createLinearGradient(0, 0, 1200, 800);
@@ -298,7 +305,7 @@ export const SwachhataPledgeSection = React.memo(() => {
           <div className="flex flex-wrap items-center gap-2.5 mb-3">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider border border-amber-300 shadow-xs">
               <Award className="w-3.5 h-3.5 text-amber-700" />
-              {isHi ? 'नागरिक सहभागिता • Citizen Swachhata Pledge' : 'Citizen Engagement • Swachhata Pledge'}
+              {isHi ? 'नागरिक सहभागिता' : 'Citizen Engagement'}
             </div>
           </div>
 
@@ -427,7 +434,10 @@ export const SwachhataPledgeSection = React.memo(() => {
                   {/* Round White Background Logo */}
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white p-2 shadow-xl border-2 border-amber-400 flex items-center justify-center shrink-0">
                     <img
-                      src="/assets/logos/logo2.png"
+                      src={PLEDGE_LOGO_S3_URL}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = FALLBACK_LOGO_URL;
+                      }}
                       alt={isHi ? 'पंचायती राज लोगो' : 'Panchayati Raj Logo'}
                       className="w-full h-full object-contain"
                     />

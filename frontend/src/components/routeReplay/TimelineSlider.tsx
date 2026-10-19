@@ -6,26 +6,42 @@ interface TimelineSliderProps {
     dataset: RouteReplayDataset;
     currentIndex: number;
     onSeekIndex: (index: number) => void;
+    /** 'default' = white card; 'overlay' = transparent glass for fullscreen overlay */
+    variant?: 'default' | 'overlay';
 }
 
-export function TimelineSlider({ dataset, currentIndex, onSeekIndex }: TimelineSliderProps) {
+export function TimelineSlider({ dataset, currentIndex, onSeekIndex, variant = 'default' }: TimelineSliderProps) {
     const { i18n } = useTranslation();
     const isHi = i18n.language === 'hi';
     const totalPoints = dataset.points.length;
     const currentPoint = dataset.points[currentIndex];
+    const isOverlay = variant === 'overlay';
 
     const startTimeStr = dataset.points[0]?.timeStr || dataset.startTime;
     const endTimeStr = dataset.points[totalPoints - 1]?.timeStr || dataset.endTime;
 
     return (
-        <div className="bg-white border border-slate-300 rounded-xl p-4 shadow-md space-y-2">
+        <div className={cn(
+            'rounded-xl p-4 space-y-2',
+            isOverlay
+                ? 'bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl'
+                : 'bg-white border border-slate-300 shadow-md'
+        )}>
             {/* Top Labels */}
-            <div className="flex items-center justify-between text-xs font-mono text-slate-600 font-bold">
+            <div className={cn(
+                'flex items-center justify-between text-xs font-mono font-bold',
+                isOverlay ? 'text-slate-300' : 'text-slate-600'
+            )}>
                 <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
                     {isHi ? 'प्रारंभ:' : 'Start:'} {startTimeStr}
                 </span>
-                <span className="bg-amber-100 text-amber-900 px-2 py-0.5 rounded border border-amber-300 font-bold">
+                <span className={cn(
+                    'px-2 py-0.5 rounded border font-bold',
+                    isOverlay
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+                        : 'bg-amber-100 text-amber-900 border-amber-300'
+                )}>
                     {isHi ? 'सक्रिय:' : 'Active:'} {currentPoint?.timeStr || '--:--'} ({currentPoint?.speed || 0} {isHi ? 'किमी/घं' : 'km/h'})
                 </span>
                 <span className="flex items-center gap-1">
@@ -67,15 +83,21 @@ export function TimelineSlider({ dataset, currentIndex, onSeekIndex }: TimelineS
                     max={Math.max(0, totalPoints - 1)}
                     value={currentIndex}
                     onChange={(e) => onSeekIndex(parseInt(e.target.value, 10))}
-                    className="w-full h-3 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-navy-900 focus:outline-none relative z-20"
+                    className={cn(
+                        'w-full h-3 rounded-lg appearance-none cursor-pointer focus:outline-none relative z-20',
+                        isOverlay ? 'bg-white/20 accent-amber-400' : 'bg-slate-200 accent-navy-900'
+                    )}
                 />
             </div>
 
             {/* Visual Timeline Marker Labels */}
-            <div className="flex justify-between items-center text-[10px] font-mono text-slate-400">
+            <div className={cn(
+                'flex justify-between items-center text-[10px] font-mono',
+                isOverlay ? 'text-slate-400' : 'text-slate-400'
+            )}>
                 <span>06:00 AM ──</span>
                 <span>08:00 AM ──</span>
-                <span className="font-bold text-navy-900">10:00 AM ──</span>
+                <span className={cn('font-bold', isOverlay ? 'text-white' : 'text-navy-900')}>10:00 AM ──</span>
                 <span>12:00 PM</span>
             </div>
         </div>

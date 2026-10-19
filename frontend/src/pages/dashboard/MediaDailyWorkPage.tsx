@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Calendar, Video, FileText, ChevronDown, ChevronUp, Eye, X } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -32,6 +32,8 @@ export const MediaDailyWorkPage = React.memo(() => {
   const [blogMedia, setBlogMedia] = useState<any[]>([]);
   const [blogFiles, setBlogFiles] = useState<File[]>([]);
   const [blogUploading, setBlogUploading] = useState(false);
+  const [showAllBlogMedia, setShowAllBlogMedia] = useState(false);
+  const BLOG_MEDIA_LIMIT = 8;
 
   // Daily Work State
   const [dailyWorks, setDailyWorks] = useState<any[]>([]);
@@ -39,6 +41,25 @@ export const MediaDailyWorkPage = React.memo(() => {
   const [dailyDate, setDailyDate] = useState('');
   const [dailyDesc, setDailyDesc] = useState('');
   const [dailyUploading, setDailyUploading] = useState(false);
+  const [showAllDailyWorks, setShowAllDailyWorks] = useState(false);
+  const DAILY_LIMIT = 5;
+
+  // Fullscreen Preview State
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
+  // Close lightbox on ESC
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && previewImage) {
+        setPreviewImage(null);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [previewImage]);
+
+  const displayedBlogMedia = showAllBlogMedia ? blogMedia : blogMedia.slice(0, BLOG_MEDIA_LIMIT);
+  const displayedDailyWorks = showAllDailyWorks ? dailyWorks : dailyWorks.slice(0, DAILY_LIMIT);
 
   useEffect(() => {
     fetchBlogMedia();
@@ -266,7 +287,7 @@ export const MediaDailyWorkPage = React.memo(() => {
           </Card>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {blogMedia.map((media) => (
+            {displayedBlogMedia.map((media) => (
               <div key={media.id} className="relative group rounded-lg overflow-hidden border border-slate-200 bg-white aspect-square flex items-center justify-center">
                 {media.type === 'video' ? (
                   <video src={media.url} className="w-full h-full object-cover" controls />
@@ -276,7 +297,18 @@ export const MediaDailyWorkPage = React.memo(() => {
                     <a href={media.url} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline">{isHi ? 'फ़ाइल देखें' : 'View File'}</a>
                   </div>
                 ) : (
-                  <img src={media.url} alt="Blog media" className="w-full h-full object-cover" />
+                  <div 
+                    className="w-full h-full relative cursor-pointer group/img"
+                    onClick={() => setPreviewImage(media.url)}
+                    title={isHi ? 'बड़ा देखें' : 'View full size'}
+                  >
+                    <img src={media.url} alt="Blog media" className="w-full h-full object-cover transition-transform duration-300 group-hover/img:scale-105" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                      <div className="p-2 bg-navy-950/75 rounded-full text-white backdrop-blur-xs shadow-md">
+                        <Eye className="w-4 h-4" />
+                      </div>
+                    </div>
+                  </div>
                 )}
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -308,6 +340,47 @@ export const MediaDailyWorkPage = React.memo(() => {
               </div>
             )}
           </div>
+
+          {/* ── View All Bar for Blog Media (जब 8 से अधिक मीडिया फाइलें हों) ── */}
+          {blogMedia.length > BLOG_MEDIA_LIMIT && (
+            <div className="bg-[#f0f4f9] border border-slate-300 rounded-lg px-4 py-3 flex items-center justify-between flex-wrap gap-3 shadow-xs">
+              <div className="text-xs sm:text-sm text-slate-700 font-mono flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-[#1a3a6b]" />
+                {showAllBlogMedia ? (
+                  <span>
+                    {isHi ? `सभी ${blogMedia.length} मीडिया फाइलें प्रदर्शित` : `Showing all ${blogMedia.length} media items`}
+                  </span>
+                ) : (
+                  <span>
+                    {isHi ? `प्रारंभिक ${BLOG_MEDIA_LIMIT} / ${blogMedia.length} मीडिया फाइलें प्रदर्शित` : `Showing top ${BLOG_MEDIA_LIMIT} of ${blogMedia.length} media items`}
+                    <span className="text-slate-500 ml-1">
+                      ({isHi ? `${blogMedia.length - BLOG_MEDIA_LIMIT} अन्य उपलब्ध` : `${blogMedia.length - BLOG_MEDIA_LIMIT} more`})
+                    </span>
+                  </span>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAllBlogMedia(!showAllBlogMedia)}
+                className="h-8 px-4 text-xs font-bold bg-white text-[#1a3a6b] hover:bg-[#1a3a6b] hover:text-white border-slate-300 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                {showAllBlogMedia ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    <span>{isHi ? 'कम देखें' : 'Show Less'}</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    <span>{isHi ? `सभी देखें (${blogMedia.length})` : `View All (${blogMedia.length})`}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -374,7 +447,7 @@ export const MediaDailyWorkPage = React.memo(() => {
           </Card>
 
           <div className="space-y-4">
-            {dailyWorks.map((work) => (
+            {displayedDailyWorks.map((work) => (
               <Card key={work.id}>
                 <CardContent className="p-4 flex flex-col sm:flex-row gap-4 items-start sm:items-center">
                   <div className="w-32 h-24 rounded bg-slate-100 overflow-hidden shrink-0">
@@ -387,7 +460,12 @@ export const MediaDailyWorkPage = React.memo(() => {
                         <FileText className="w-8 h-8 text-slate-400" />
                       </div>
                     ) : (
-                      <img src={work.url} alt="Daily work" className="w-full h-full object-cover" />
+                      <img 
+                        src={work.url} 
+                        alt="Daily work" 
+                        className="w-full h-full object-cover cursor-pointer hover:scale-105 transition-transform duration-300" 
+                        onClick={() => setPreviewImage(work.url)}
+                      />
                     )}
                   </div>
                   <div className="flex-1 space-y-1">
@@ -428,6 +506,82 @@ export const MediaDailyWorkPage = React.memo(() => {
                 {isHi ? 'अभी तक कोई दैनिक कार्य प्रविष्टियां नहीं हैं।' : 'No daily work entries yet.'}
               </div>
             )}
+          </div>
+
+          {/* ── View All Bar for Daily Works (जब 5 से अधिक दैनिक कार्य हों) ── */}
+          {dailyWorks.length > DAILY_LIMIT && (
+            <div className="bg-[#f0f4f9] border border-slate-300 rounded-lg px-4 py-3 flex items-center justify-between flex-wrap gap-3 shadow-xs">
+              <div className="text-xs sm:text-sm text-slate-700 font-mono flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-emerald-600" />
+                {showAllDailyWorks ? (
+                  <span>
+                    {isHi ? `सभी ${dailyWorks.length} दैनिक कार्य प्रदर्शित` : `Showing all ${dailyWorks.length} daily works`}
+                  </span>
+                ) : (
+                  <span>
+                    {isHi ? `प्रारंभिक ${DAILY_LIMIT} / ${dailyWorks.length} दैनिक कार्य प्रदर्शित` : `Showing top ${DAILY_LIMIT} of ${dailyWorks.length} daily works`}
+                    <span className="text-slate-500 ml-1">
+                      ({isHi ? `${dailyWorks.length - DAILY_LIMIT} अन्य उपलब्ध` : `${dailyWorks.length - DAILY_LIMIT} more`})
+                    </span>
+                  </span>
+                )}
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={() => setShowAllDailyWorks(!showAllDailyWorks)}
+                className="h-8 px-4 text-xs font-bold bg-white text-emerald-700 hover:bg-emerald-700 hover:text-white border-slate-300 shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                {showAllDailyWorks ? (
+                  <>
+                    <ChevronUp className="w-4 h-4" />
+                    <span>{isHi ? 'कम देखें' : 'Show Less'}</span>
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="w-4 h-4" />
+                    <span>{isHi ? `सभी देखें (${dailyWorks.length})` : `View All (${dailyWorks.length})`}</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Lightbox Image Modal for High Resolution Preview ── */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] bg-white rounded-xl overflow-hidden shadow-2xl flex flex-col border border-slate-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="px-4 py-3 bg-navy-950 text-white flex items-center justify-between">
+              <span className="text-xs font-bold flex items-center gap-2">
+                <ImageIcon className="w-4 h-4 text-amber-400" />
+                <span>{isHi ? 'मीडिया पूर्वावलोकन (हाई रेजोल्यूशन)' : 'Media Preview (High Resolution)'}</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="p-1 rounded hover:bg-white/20 text-white transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-3 overflow-auto bg-slate-900/10 flex items-center justify-center">
+              <img
+                src={previewImage}
+                alt="Full size media preview"
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded shadow-md"
+              />
+            </div>
           </div>
         </div>
       )}

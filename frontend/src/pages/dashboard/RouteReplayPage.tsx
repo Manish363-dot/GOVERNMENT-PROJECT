@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 
 import { PlaySquare, ShieldCheck, Search, Info, Truck } from 'lucide-react';
 import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export const RouteReplayPage = React.memo(() => {
     const { t, i18n } = useTranslation();
@@ -41,28 +42,19 @@ export const RouteReplayPage = React.memo(() => {
     // Modal inspection state
     const [inspectedPoint, setInspectedPoint] = useState<ReplayPoint | null>(null);
 
-    const TEST_VEHICLE: Vehicle = {
-        id: 'v-test-demo',
-        vehicle_number: 'UK-01-TEST-01',
-        vehicle_name: 'Testing Demo Vehicle (Safai Truck)',
-        vehicle_type: 'truck',
-        status: 'moving',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-    };
-
     // Initial fetch of vehicles list
     useEffect(() => {
         async function loadVehicles() {
             try {
                 const data = await vehicleService.getAll();
-                const list = [TEST_VEHICLE, ...(data.vehicles || [])];
+                const list = data.vehicles || [];
                 setVehicles(list);
-                setSelectedVehicleId(TEST_VEHICLE.id);
+                if (list.length > 0) {
+                    setSelectedVehicleId(list[0].id);
+                }
             } catch (err) {
                 console.error('Failed to load vehicles:', err);
-                setVehicles([TEST_VEHICLE]);
-                setSelectedVehicleId(TEST_VEHICLE.id);
+                setVehicles([]);
             } finally {
                 setVehiclesLoading(false);
             }
@@ -173,15 +165,8 @@ export const RouteReplayPage = React.memo(() => {
                             <h1 className="font-poppins text-sm sm:text-base font-bold text-white tracking-normal uppercase">
                                 {t('admin.replay.title')}
                             </h1>
-                            <p className="text-[11px] text-slate-300 font-mono">
-                                {isHi ? 'उत्तराखंड जिला पंचायत • ऐतिहासिक यात्रा पथ एवं ऑडिट प्लेबैक' : 'Uttarakhand Zila Panchayat • Historical Trajectory & Audit Playback'}
-                            </p>
                         </div>
                     </div>
-                    <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded border border-emerald-800 uppercase">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        {isHi ? 'सत्यापित जीआईएस ऑडिट' : 'Verified GIS Audit'}
-                    </span>
                 </div>
 
                 {/* Search & Selection Controls Panel */}
@@ -198,11 +183,17 @@ export const RouteReplayPage = React.memo(() => {
                                     onChange={(e) => setSelectedVehicleId(e.target.value)}
                                     className="flex h-10 w-full rounded border border-slate-300 bg-white px-3 text-xs font-bold text-navy-900 focus:border-navy-900 focus:outline-none"
                                 >
-                                    {vehicles.map((v) => (
-                                        <option key={v.id} value={v.id}>
-                                            {v.vehicle_number} {v.vehicle_name ? `(${v.vehicle_name})` : ''}
+                                    {vehicles.length === 0 ? (
+                                        <option value="">
+                                            {isHi ? 'कोई वाहन उपलब्ध नहीं है' : 'No vehicles found'}
                                         </option>
-                                    ))}
+                                    ) : (
+                                        vehicles.map((v) => (
+                                            <option key={v.id} value={v.id}>
+                                                {v.vehicle_number} {v.vehicle_name ? `(${v.vehicle_name})` : ''}
+                                            </option>
+                                        ))
+                                    )}
                                 </select>
                             )}
                         </div>
@@ -255,21 +246,6 @@ export const RouteReplayPage = React.memo(() => {
                     </div>
                 </div>
             </div>
-
-            {/* Demo Data Notice Banner */}
-            {dataset?.isDemoData && (
-                <div className="bg-amber-50 border border-amber-300 text-amber-900 px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-xs font-mono text-xs">
-                    <Info className="w-5 h-5 text-amber-700 shrink-0" />
-                    <div className="flex-1">
-                        <span className="font-bold uppercase tracking-normal text-amber-950 block">
-                            {isHi ? 'सिमुलेशन डेमो परत सक्रिय' : 'Simulation Demo Layer Active'}
-                        </span>
-                        <span className="text-[11px] text-amber-800">
-                            {isHi ? 'इस समयावधि के लिए कोई लाइव हार्डवेयर डेटा नहीं मिला। परीक्षण हेतु यथार्थवादी जिला अपशिष्ट संग्रहण रूट प्रदर्शित किया जा रहा है।' : 'No live hardware transmissions logged for this timeframe. Displaying realistic district waste collection route dataset for testing & evaluation.'}
-                        </span>
-                    </div>
-                </div>
-            )}
 
             {/* Main Console Split Grid Layout */}
             {loading ? (
@@ -335,7 +311,10 @@ export const RouteReplayPage = React.memo(() => {
                     </div>
 
                     {/* RIGHT PANEL: Interactive High-Fidelity Route Replay Map */}
-                    <div className="lg:col-span-7 order-1 lg:order-2 sticky top-4">
+                    <div className={cn(
+                        'order-1 lg:order-2',
+                        isFullscreen ? 'fixed inset-0 z-[9998]' : 'lg:col-span-7 sticky top-4'
+                    )}>
                         <RouteReplayMap
                             dataset={dataset}
                             currentPointIndex={currentPointIndex}
@@ -344,6 +323,31 @@ export const RouteReplayPage = React.memo(() => {
                             onToggleFollowTruck={() => setFollowTruck(!followTruck)}
                             isFullscreen={isFullscreen}
                             onToggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+                            fullscreenControls={
+                                <>
+                                    {/* Compact Playback Controls for fullscreen */}
+                                    <PlaybackControls
+                                        isPlaying={isPlaying}
+                                        onTogglePlay={handleTogglePlay}
+                                        onRestart={handleRestart}
+                                        speedMultiplier={speedMultiplier}
+                                        onChangeSpeed={(spd) => setSpeedMultiplier(spd)}
+                                        currentTimeStr={currentPoint?.timeStr || dataset.startTime}
+                                        currentIndex={currentPointIndex}
+                                        totalPoints={dataset.points.length}
+                                        onStepBack={handleStepBack}
+                                        onStepForward={handleStepForward}
+                                        variant="overlay"
+                                    />
+                                    {/* Timeline Slider */}
+                                    <TimelineSlider
+                                        dataset={dataset}
+                                        currentIndex={currentPointIndex}
+                                        onSeekIndex={handleSeekIndex}
+                                        variant="overlay"
+                                    />
+                                </>
+                            }
                         />
                     </div>
 

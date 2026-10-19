@@ -108,6 +108,7 @@ export interface GpsPositionPayload {
   speed?: number;
   heading?: number;
   timestamp?: string;
+  ignition?: boolean;
 }
 
 export interface TraccarWebhookPayload {

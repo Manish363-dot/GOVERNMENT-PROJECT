@@ -155,14 +155,30 @@ class MillitrackSyncService {
         const dev = devices.find((d) => d.id === pos.deviceId);
         if (!dev || !dev.uniqueId) continue;
 
+        // Parse speed from MilliTrack (knots -> km/h)
+        let rawSpeed = Number(pos.speed) || 0;
+
+        // Check MilliTrack's internal motion detection and status
+        const isMotionFalse = pos.attributes && pos.attributes.motion === false;
+        const isStoppedStatus = pos.attributes?.currentStatus === 'STOPPED';
+
+        // If MilliTrack's server-side telemetry explicitly marks the device as not in motion or stopped,
+        // clamp rawSpeed to 0 to prevent GPS multipath / Doppler jitter from reporting false movement.
+        if (isMotionFalse || isStoppedStatus) {
+          rawSpeed = 0;
+        }
+
+        const calculatedSpeed = Math.round(rawSpeed * 1.852);
+
         // Process position into database with smart delta filtering
         const result = await gpsService.processGpsPosition({
           device_identifier: dev.uniqueId,
           latitude: pos.latitude,
           longitude: pos.longitude,
-          speed: Math.round((pos.speed || 0) * 1.852), // convert knots to km/h
+          speed: calculatedSpeed,
           heading: pos.course || 0,
           timestamp: pos.fixTime || pos.deviceTime || new Date().toISOString(),
+          ignition: pos.attributes?.ignition !== undefined ? Boolean(pos.attributes.ignition) : undefined,
         });
 
         if (!result.success) {
@@ -179,7 +195,6 @@ class MillitrackSyncService {
             type: 'UPDATE',
             new: result.location,
           });
-          ioInstance.to('live_locations').emit('location_update', result.location);
         }
       }
     } catch (err: any) {

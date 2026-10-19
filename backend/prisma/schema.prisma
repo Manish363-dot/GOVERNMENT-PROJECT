@@ -64,6 +64,8 @@ model PendingRegistration {
   expiresAt DateTime
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 model PendingPasswordReset {
@@ -75,6 +77,8 @@ model PendingPasswordReset {
   attempts      Int      @default(0)
   verifiedToken String?
   createdAt     DateTime @default(now())
+
+  @@index([expiresAt])
 }
 
 // ── Vehicle & GPS Models ───────────────────────────────────────
@@ -91,6 +95,8 @@ model Vehicle {
   gpsAssignments   VehicleGpsAssignment[]
   currentLocations VehicleCurrentLocation[]
   locationHistory  VehicleLocationHistory[]
+
+  @@index([status])
 }
 
 model GpsDevice {
@@ -106,6 +112,8 @@ model GpsDevice {
   vehicleAssignments VehicleGpsAssignment[]
   currentLocations   VehicleCurrentLocation[]
   locationHistory    VehicleLocationHistory[]
+
+  @@index([status, last_seen_at])
 }
 
 model VehicleGpsAssignment {
@@ -118,6 +126,9 @@ model VehicleGpsAssignment {
 
   vehicle   Vehicle   @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
   gpsDevice GpsDevice @relation(fields: [gps_device_id], references: [id], onDelete: Cascade)
+
+  @@index([gps_device_id, is_active])
+  @@index([vehicle_id, is_active])
 }
 
 model VehicleCurrentLocation {
@@ -133,6 +144,9 @@ model VehicleCurrentLocation {
 
   vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
   gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id], onDelete: SetNull)
+
+  @@index([updated_at])
+  @@index([status])
 }
 
 model VehicleLocationHistory {
@@ -147,6 +161,9 @@ model VehicleLocationHistory {
 
   vehicle   Vehicle    @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
   gpsDevice GpsDevice? @relation(fields: [gps_device_id], references: [id], onDelete: SetNull)
+
+  @@index([vehicle_id, recorded_at])
+  @@index([recorded_at])
 }
 
 // ── Complaint Models ───────────────────────────────────────────
@@ -168,6 +185,11 @@ model Complaint {
   created_at        DateTime        @default(now())
 
   updates ComplaintUpdate[]
+
+  @@index([is_archived, status, created_at])
+  @@index([mobile])
+  @@index([is_archived, user_confirmed])
+  @@index([created_at])
 }
 
 model ComplaintUpdate {
@@ -180,6 +202,8 @@ model ComplaintUpdate {
 
   complaint Complaint @relation(fields: [complaint_id], references: [id], onDelete: Cascade)
   updater   Profile?  @relation(fields: [updated_by], references: [id], onDelete: SetNull)
+
+  @@index([complaint_id, updated_at])
 }
 
 // ── Media & Daily Work Models ──────────────────────────────────
@@ -198,4 +222,7 @@ model DailyWork {
   date        DateTime @db.Date
   description String?
   created_at  DateTime @default(now())
+
+  @@index([date])
+  @@index([created_at])
 }

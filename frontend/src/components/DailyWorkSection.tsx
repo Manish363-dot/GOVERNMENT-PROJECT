@@ -137,7 +137,9 @@ export const DailyWorkSection = React.memo(() => {
   const visibleCards = useMemo(() => works.slice(carouselIndex, carouselIndex + cardsPerView), [works, carouselIndex]);
 
   return (
-    <section id="blogs" className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden">
+    <section id="daily-work" className="py-12 md:py-16 bg-gradient-to-b from-slate-50 to-white relative overflow-hidden scroll-mt-16">
+      <div id="blogs" className="absolute -top-16 left-0 h-1 w-1 pointer-events-none" />
+      <div id="dailywork" className="absolute -top-16 left-0 h-1 w-1 pointer-events-none" />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
 
         {/* Section Heading */}
@@ -204,6 +206,7 @@ export const DailyWorkSection = React.memo(() => {
                             alt="Daily Work"
                             className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-500 group-hover/card:scale-110"
                             loading="lazy"
+                            decoding="async"
                           />
                         )}
 

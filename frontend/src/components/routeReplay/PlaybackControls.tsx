@@ -13,6 +13,8 @@ interface PlaybackControlsProps {
     totalPoints: number;
     onStepBack: () => void;
     onStepForward: () => void;
+    /** 'default' = white card; 'overlay' = transparent glass for fullscreen overlay */
+    variant?: 'default' | 'overlay';
 }
 
 const SPEED_OPTIONS = [0.5, 1, 2, 4, 8];
@@ -28,13 +30,20 @@ export function PlaybackControls({
     totalPoints,
     onStepBack,
     onStepForward,
+    variant = 'default',
 }: PlaybackControlsProps) {
     const { i18n } = useTranslation();
     const isHi = i18n.language === 'hi';
     const progressPercent = totalPoints > 0 ? Math.round(((currentIndex + 1) / totalPoints) * 100) : 0;
+    const isOverlay = variant === 'overlay';
 
     return (
-        <div className="bg-white border border-slate-300 rounded-xl p-3 shadow-sm space-y-3 font-mono">
+        <div className={cn(
+            'rounded-xl p-3 space-y-3 font-mono',
+            isOverlay
+                ? 'bg-white/10 backdrop-blur-md border border-white/20 shadow-2xl'
+                : 'bg-white border border-slate-300 shadow-sm'
+        )}>
             {/* Top Row: Playback Action Buttons & Live Clock */}
             <div className="flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
                 {/* Buttons Group */}
@@ -43,7 +52,12 @@ export function PlaybackControls({
                     <button
                         onClick={onRestart}
                         title={isHi ? 'पुनः प्रारंभ करें' : 'Restart Replay'}
-                        className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
+                        className={cn(
+                            'w-8 h-8 rounded-lg flex items-center justify-center transition-colors border shadow-xs',
+                            isOverlay
+                                ? 'bg-white/15 hover:bg-white/25 text-white border-white/20'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                        )}
                     >
                         <RotateCcw className="w-3.5 h-3.5" />
                     </button>
@@ -53,7 +67,12 @@ export function PlaybackControls({
                         onClick={onStepBack}
                         disabled={currentIndex <= 0}
                         title={isHi ? 'पीछे जाएं' : 'Step Back'}
-                        className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
+                        className={cn(
+                            'w-8 h-8 rounded-lg disabled:opacity-30 flex items-center justify-center transition-colors border shadow-xs',
+                            isOverlay
+                                ? 'bg-white/15 hover:bg-white/25 text-white border-white/20'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                        )}
                     >
                         <SkipBack className="w-3.5 h-3.5" />
                     </button>
@@ -86,7 +105,12 @@ export function PlaybackControls({
                         onClick={onStepForward}
                         disabled={currentIndex >= totalPoints - 1}
                         title={isHi ? 'आगे बढ़ाएं' : 'Step Forward'}
-                        className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-30 text-slate-700 flex items-center justify-center transition-colors border border-slate-200 shadow-xs"
+                        className={cn(
+                            'w-8 h-8 rounded-lg disabled:opacity-30 flex items-center justify-center transition-colors border shadow-xs',
+                            isOverlay
+                                ? 'bg-white/15 hover:bg-white/25 text-white border-white/20'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-200'
+                        )}
                     >
                         <SkipForward className="w-3.5 h-3.5" />
                     </button>
@@ -108,9 +132,15 @@ export function PlaybackControls({
             </div>
 
             {/* Bottom Row: Speed Multipliers Bar */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-1.5 text-slate-600">
-                    <Gauge className="w-3.5 h-3.5 text-slate-500" />
+            <div className={cn(
+                'pt-2 border-t flex items-center justify-between',
+                isOverlay ? 'border-white/15' : 'border-slate-100'
+            )}>
+                <div className={cn(
+                    'flex items-center gap-1.5',
+                    isOverlay ? 'text-slate-300' : 'text-slate-600'
+                )}>
+                    <Gauge className="w-3.5 h-3.5" />
                     <span className="text-[11px] font-bold uppercase tracking-wider">{isHi ? 'प्लेबैक गति' : 'Playback Speed'}</span>
                 </div>
 
@@ -123,7 +153,9 @@ export function PlaybackControls({
                                 'px-2 py-0.5 rounded text-[10px] font-bold transition-all',
                                 speedMultiplier === speed
                                     ? 'bg-navy-900 text-amber-400 border border-amber-400/40 shadow-xs'
-                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-navy-900'
+                                    : isOverlay
+                                        ? 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-navy-900'
                             )}
                         >
                             {speed}x
@@ -134,3 +166,4 @@ export function PlaybackControls({
         </div>
     );
 }
+
