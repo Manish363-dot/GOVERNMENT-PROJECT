@@ -15,29 +15,29 @@ const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-pancha
 
 export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.png`;
 
-// 4 Default logo slots
+// 4 Default logo slots with descriptive official titles for accessibility (Lighthouse WCAG)
 const DEFAULT_LOGOS: TopBarLogoItem[] = [
   {
     id: 'logo-1',
-    title: 'Logo 1 (Left)',
+    title: 'उत्तराखंड शासन आधिकारिक राजचिह्न (Emblem of Uttarakhand)',
     file_name: 'logo1.png',
     sort_order: 1,
   },
   {
     id: 'logo-2',
-    title: 'Logo 2 (Left)',
+    title: 'स्वच्छ भारत मिशन ग्रामीण (Swachh Bharat Mission)',
     file_name: 'logo5.png',
     sort_order: 2,
   },
   {
     id: 'logo-3',
-    title: 'Logo 3 (Right)',
+    title: 'कार्यालय जिला पंचायत अल्मोड़ा (Zila Panchayat Almora)',
     file_name: 'logo3.png',
     sort_order: 3,
   },
   {
     id: 'logo-4',
-    title: 'Logo 4 (Right)',
+    title: 'डिजिटल इंडिया एवं स्वच्छ देवभूमि (Digital India)',
     file_name: 'logo4.png',
     sort_order: 4,
   },
@@ -96,6 +96,8 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
           <img
             src={primaryUrl}
             alt={logo.title || `Logo ${logo.sort_order}`}
+            width={48}
+            height={48}
             onError={(e) => {
               const target = e.currentTarget;
               if (logo.file_name && !target.src.includes(`/assets/logos/${logo.file_name}`)) {
@@ -211,11 +213,11 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
           >
             {/* Top Tagline (Yellow / Amber) */}
             <div className="flex items-center justify-center gap-1 sm:gap-2 mb-0.5">
-              <span className="h-[1px] w-2 sm:w-4 bg-gradient-to-r from-transparent to-amber-500" />
-              <span className="font-hind font-bold text-amber-700 text-[8px] min-[360px]:text-[9px] min-[420px]:text-[10px] sm:text-xs tracking-wider whitespace-nowrap">
+              <span className="h-[1px] w-2 sm:w-4 bg-gradient-to-r from-transparent to-amber-600" />
+              <span className="font-hind font-bold text-amber-900 text-[8px] min-[360px]:text-[9px] min-[420px]:text-[10px] sm:text-xs tracking-wider whitespace-nowrap">
                 {isHi ? 'गांव का विकास, प्रदेश का विकास' : 'Village Progress, State Progress'}
               </span>
-              <span className="h-[1px] w-2 sm:w-4 bg-gradient-to-l from-transparent to-amber-500" />
+              <span className="h-[1px] w-2 sm:w-4 bg-gradient-to-l from-transparent to-amber-600" />
             </div>
 
             {/* Main Slogan: सशक्त पंचायत, विकसित उत्तराखंड 🍃 */}

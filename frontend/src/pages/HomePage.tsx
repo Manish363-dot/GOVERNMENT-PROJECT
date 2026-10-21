@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { HeroSection } from '@/components/HeroSection';
 
 // Lazy load all below-fold sections — reduces initial bundle size
+const LiveQuotesSection = lazy(() => import('@/components/LiveQuotesSection').then(m => ({ default: m.LiveQuotesSection })));
 const AboutSection = lazy(() => import('@/components/AboutSection').then(m => ({ default: m.AboutSection })));
 const WasteSegregationSection = lazy(() => import('@/components/WasteSegregationSection').then(m => ({ default: m.WasteSegregationSection })));
 const NoticesSection = lazy(() => import('@/components/NoticesSection').then(m => ({ default: m.NoticesSection })));
@@ -41,6 +42,7 @@ export const HomePage = React.memo(() => {
       <HeroSection />
       <Suspense fallback={<div className="h-32" />}>
         <AboutSection />
+        <LiveQuotesSection />
         <WasteSegregationSection />
         <NoticesSection />
         <DailyWorkSection />
@@ -49,3 +51,4 @@ export const HomePage = React.memo(() => {
     </>
   );
 });
+

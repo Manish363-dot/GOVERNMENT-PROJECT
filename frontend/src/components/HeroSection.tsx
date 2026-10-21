@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Award, BookOpen, User } from 'lucide-react';
+import { ShieldCheck, Award, BookOpen, User, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 
@@ -56,6 +56,29 @@ export const HeroSection = React.memo(() => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
   const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
+  const [isAlmoraRolling, setIsAlmoraRolling] = useState(false);
+  const rollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleAlmoraClick = useCallback(() => {
+    if (rollTimeoutRef.current) {
+      clearTimeout(rollTimeoutRef.current);
+    }
+    setIsAlmoraRolling(false);
+    requestAnimationFrame(() => {
+      setIsAlmoraRolling(true);
+      rollTimeoutRef.current = setTimeout(() => {
+        setIsAlmoraRolling(false);
+      }, 950);
+    });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (rollTimeoutRef.current) {
+        clearTimeout(rollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const scrollToPledge = useCallback(() => {
     const pledgeElement = document.getElementById('pledge');
@@ -64,12 +87,25 @@ export const HeroSection = React.memo(() => {
     }
   }, []);
 
-  // Preload background images and dignitary image
+  // Prioritized image loading: load primary hero image and dignitary first,
+  // then defer the rest of the carousel slides to avoid initial network contention
   useEffect(() => {
-    [...HERO_IMAGES, DIGNITARY_IMAGE_URL].forEach((url) => {
-      const img = new Image();
-      img.src = url;
-    });
+    // 1. Immediate priority: First hero slide and dignitary
+    const img1 = new Image();
+    img1.src = HERO_IMAGES[0];
+
+    const imgDignitary = new Image();
+    imgDignitary.src = DIGNITARY_IMAGE_URL;
+
+    // 2. Defer background images for upcoming slides after initial render
+    const deferTimer = setTimeout(() => {
+      HERO_IMAGES.slice(1).forEach((url) => {
+        const img = new Image();
+        img.src = url;
+      });
+    }, 2500);
+
+    return () => clearTimeout(deferTimer);
   }, []);
 
   // Smooth automatic transition every 5 seconds
@@ -106,7 +142,73 @@ export const HeroSection = React.memo(() => {
         <div className="max-w-4xl mx-auto text-center flex flex-col items-center animate-fade-in">
           <h1 className="font-poppins text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6 tracking-tight text-white max-w-4xl mx-auto drop-shadow-md">
             <span className="block text-white">
-              {t('hero.titleLine1', 'District Panchayat Almora')}
+              {isHi ? (
+                <>
+                  जिला पंचायत{' '}
+                  <span 
+                    onClick={handleAlmoraClick}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleAlmoraClick();
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Click to roll Almora text"
+                    className={`almora-roll-box relative ${isAlmoraRolling ? 'is-rolling' : ''} px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-yellow-400/20 border border-yellow-400/50 text-white backdrop-blur-xs shadow-xs mx-1 cursor-pointer select-none`}
+                    title="अल्मोड़ा • Click to Roll"
+                  >
+                    {['अ', 'ल्मो', 'ड़ा'].map((part, idx) => (
+                      <span
+                        key={idx}
+                        className="almora-roll-letter"
+                        style={{ animationDelay: `${idx * 60}ms` }}
+                      >
+                        {part}
+                      </span>
+                    ))}
+                    {/* Top right sparkle icon (simple & static, non-blinking) */}
+                    <Sparkles 
+                      className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 drop-shadow-xs pointer-events-none" 
+                      aria-hidden="true" 
+                    />
+                  </span>
+                </>
+              ) : (
+                <>
+                  District Panchayat{' '}
+                  <span 
+                    onClick={handleAlmoraClick}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleAlmoraClick();
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Click to roll Almora text"
+                    className={`almora-roll-box relative ${isAlmoraRolling ? 'is-rolling' : ''} px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-yellow-400/20 border border-yellow-400/50 text-white backdrop-blur-xs shadow-xs mx-1 cursor-pointer select-none`}
+                    title="Click to Roll"
+                  >
+                    {'Almora'.split('').map((char, idx) => (
+                      <span
+                        key={idx}
+                        className="almora-roll-letter"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        {char}
+                      </span>
+                    ))}
+                    {/* Top right sparkle icon (simple & static, non-blinking) */}
+                    <Sparkles 
+                      className="absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-300 fill-amber-300 drop-shadow-xs pointer-events-none" 
+                      aria-hidden="true" 
+                    />
+                  </span>
+                </>
+              )}
             </span>
             <span className="block mt-1 sm:mt-2 text-slate-100">
               {t('hero.titleLine2', 'Solid Waste Management')}
@@ -176,7 +278,9 @@ export const HeroSection = React.memo(() => {
                 {!img5Error ? (
                   <img
                     src={DIGNITARY_IMAGE_URL}
-                    alt="Dignitary"
+                    alt={isHi ? "माननीय प्रधानमंत्री - स्वच्छ भारत मिशन प्रेरणा" : "Hon'ble Prime Minister - Swachh Bharat Mission Inspiration"}
+                    width={128}
+                    height={128}
                     onError={() => setImg5Error(true)}
                     className="w-full h-full object-cover object-top"
                   />
@@ -203,7 +307,7 @@ export const HeroSection = React.memo(() => {
                 <div className="w-10 h-0.5 bg-red-500 my-2 mx-auto sm:mx-0 rounded-full" />
 
                 {/* Speaker & Context Info */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-500 font-medium text-center sm:text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-600 font-medium text-center sm:text-left">
                   <span className="font-semibold text-slate-800">
                     {t('hero.sloganMission')}
                   </span>
@@ -223,7 +327,9 @@ export const HeroSection = React.memo(() => {
                     {official.image ? (
                       <img
                         src={official.image}
-                        alt={official.name}
+                        alt={`${official.name} - ${official.designation}`}
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover object-top"
                         loading="lazy"
                         decoding="async"

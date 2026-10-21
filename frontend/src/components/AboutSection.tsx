@@ -1,21 +1,15 @@
-import React, { useMemo } from 'react';
-import { Truck, MapPin, History, Shield, ShieldCheck } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { ZilaServicesCarousel } from './ZilaServicesCarousel';
 
 export const AboutSection = React.memo(() => {
   const { t } = useTranslation();
 
-  const capabilities = useMemo(() => [
-    { icon: Truck, text: t('about.cap1') },
-    { icon: MapPin, text: t('about.cap2') },
-    { icon: History, text: t('about.cap3') },
-    { icon: Shield, text: t('about.cap4') },
-  ], [t]);
-
   return (
     <section id="about" className="pt-10 sm:pt-28 pb-12 sm:pb-20 bg-slate-50 border-b border-slate-200 scroll-mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Full-width layout — no grid split */}
+        {/* Full-width layout */}
         <div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-green-200 text-green-900 text-xs font-semibold uppercase tracking-wider mb-4 border border-green-200">
             <ShieldCheck className="w-3.5 h-3.5 text-green-900" />
@@ -45,15 +39,9 @@ export const AboutSection = React.memo(() => {
             {t('about.goal')}
           </p>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-            {capabilities.map((cap) => (
-              <div key={cap.text} className="flex items-start gap-3 p-3.5 rounded-lg bg-white border border-slate-200 shadow-xs">
-                <div className="w-8 h-8 rounded bg-navy-900 text-amber-400 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <cap.icon className="w-4 h-4" />
-                </div>
-                <p className="text-xs sm:text-sm font-medium text-navy-900 pt-1 leading-snug">{cap.text}</p>
-              </div>
-            ))}
+          {/* Moving Carousel displaying services and works of Zila Panchayat Almora department */}
+          <div className="pt-2">
+            <ZilaServicesCarousel />
           </div>
         </div>
       </div>

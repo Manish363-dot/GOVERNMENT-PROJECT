@@ -21,7 +21,7 @@ export const Footer = React.memo(() => {
   ], [isHi]);
 
   return (
-    <footer className="bg-navy-950 text-white font-sans">
+    <footer className="relative z-20 bg-navy-950 text-white font-sans">
       {/* Tricolor top ribbon */}
       <div className="uk-tricolor-line" />
 
@@ -138,7 +138,7 @@ export const Footer = React.memo(() => {
             <span className="flex items-center gap-3">
               <Link
                 to="/about-website"
-                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+                className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
               >
                 {isHi ? 'इस पोर्टल के बारे में' : 'About This Website'}
               </Link>
@@ -147,7 +147,7 @@ export const Footer = React.memo(() => {
             <span className="flex items-center gap-3">
               <Link
                 to="/terms-of-use"
-                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+                className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
               >
                 {isHi ? 'उपयोग की शर्तें' : 'Terms of Use'}
               </Link>
@@ -156,7 +156,7 @@ export const Footer = React.memo(() => {
             <span className="flex items-center gap-3">
               <Link
                 to="/website-policy"
-                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+                className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
               >
                 {isHi ? 'वेबसाइट नीति' : 'Website Policy'}
               </Link>
@@ -165,28 +165,28 @@ export const Footer = React.memo(() => {
             <span className="flex items-center gap-3">
               <Link
                 to="/sitemap"
-                className="text-[11px] text-slate-400 hover:text-amber-300 transition-colors hover:underline"
+                className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
               >
                 {isHi ? 'साइट मैप' : 'Site Map'}
               </Link>
               <span className="text-navy-700 text-[10px]">|</span>
             </span>
           </div>
-          <p className="text-[10px] text-slate-500 shrink-0">
+          <p className="text-[10px] text-slate-400 shrink-0">
             © {new Date().getFullYear()} {isHi ? 'जिला पंचायत अल्मोड़ा • उत्तराखंड सरकार' : 'District Panchayat Almora • Govt. of Uttarakhand'}
           </p>
         </div>
 
         {/*Developer Programme */}
         <div className="border-t border-navy-900 py-2 text-center">
-          <p className="text-[10px] text-slate-600 flex items-center justify-center gap-1.5 flex-wrap">
-            <Building2 className="w-3 h-3 shrink-0 text-slate-600" />
+          <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 flex-wrap">
+            <Building2 className="w-3 h-3 shrink-0 text-slate-400" />
             {isHi
               ?'डिजाइन, डेवलपमेंट और होस्टिंग मनीष पालीवाल ,दीपक बिष्ट  के साथ ।'
               : 'Design, Development, Hosting and Managed by Department Of Zila Panchayat Almora, Uttarakhand'}
             <button 
               onClick={() => setShowDeveloperContact(true)}
-              className="ml-1 text-slate-600 hover:text-amber-400 font-medium transition-colors"
+              className="ml-1 text-slate-300 hover:text-amber-400 font-medium transition-colors"
             >
               {isHi ? '(हमसे संपर्क करें)' : '(Contact Developers)'}
             </button>

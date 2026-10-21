@@ -14,7 +14,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-ui': ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
+          'vendor-ui': ['lucide-react', '@radix-ui/react-alert-dialog', '@radix-ui/react-label', '@radix-ui/react-slot'],
           'vendor-map': ['leaflet', 'react-leaflet'],
           'vendor-i18n': ['i18next', 'react-i18next'],
         },
