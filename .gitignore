@@ -29,3 +29,12 @@ Thumbs.db
 .gsd/
 adapters/
 scripts/
+
+node_modules/
+dist/
+.env
+.env.local
+.env.development
+.env.production
+*.log
+tsconfig.tsbuildinfo
