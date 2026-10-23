@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
-import { CleanlinessBylawsPage } from './CleanlinessBylawsPage';
-import { SwmRulesPage } from './SwmRulesPage';
+import { CleanlinessBylawsPage } from '@/safai-portal/CleanlinessBylawsPage';
+import { SwmRulesPage } from '@/safai-portal/SwmRulesPage';
 
 export function BylawsPage() {
   const [searchParams] = useSearchParams();
@@ -12,3 +12,5 @@ export function BylawsPage() {
 
   return <CleanlinessBylawsPage />;
 }
+
+export default BylawsPage;

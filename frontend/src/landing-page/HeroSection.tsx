@@ -210,50 +210,47 @@ export const HeroSection = React.memo(() => {
                 </>
               )}
             </span>
-            <span className="block mt-1 sm:mt-2 text-slate-100">
-              {t('hero.titleLine2', 'Solid Waste Management')}
+            <span className="block mt-1 sm:mt-2 text-slate-100 text-lg sm:text-2xl md:text-3xl font-medium tracking-normal">
+              {isHi ? 'उत्तराखण्ड शासन • पंचायती राज विभाग' : 'Government of Uttarakhand • Panchayati Raj Department'}
             </span>
-            <span className="block mt-1 sm:mt-2 text-yellow-400 font-extrabold">
-              {t('hero.titleLine3', 'Grievance Redressal Portal')}
+            <span className="block mt-1 sm:mt-2 text-yellow-400 font-extrabold text-xl sm:text-2xl md:text-4xl">
+              {isHi ? 'मुख्य आधिकारिक पोर्टल' : 'Official Administration Portal'}
             </span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-200 mb-8 max-w-2xl leading-relaxed drop-shadow-sm font-medium">
-            {t('hero.subtitle')}
+          <p className="text-sm sm:text-base md:text-lg text-slate-200 mb-8 max-w-2xl leading-relaxed drop-shadow-sm font-medium">
+            {isHi 
+              ? 'कुमाऊं की सांस्कृतिक राजधानी में पंचायती राज तंत्र, समग्र ग्रामीण विकास, एवं जन-कल्याण हेतु समर्पित संवैधानिक प्रशासनिक निकाय।'
+              : 'Apex constitutional district local governance body driving sustainable rural progress, modern civic amenities, and citizen empowerment across Almora.'}
           </p>
 
-          {/* Buttons: Full-width stacked on mobile, inline on sm+ */}
+          {/* Buttons: Clean, clear government action buttons */}
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            {/* Real-time Swachhata Pledge Counter CTA Button */}
-            <Button
-              size="lg"
-              onClick={scrollToPledge}
-              className="w-full sm:w-auto bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-500 hover:to-teal-700 text-white font-semibold shadow-xl border border-emerald-400/40 px-5 sm:px-6 h-12 text-sm transition-all duration-300 transform hover:-translate-y-0.5 group cursor-pointer"
+            {/* Primary Entry to Safai Portal */}
+            <Link
+              to="/safai-portal"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold shadow-xl border border-emerald-400/40 px-6 h-12 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5"
             >
-              <div className="flex items-center justify-center gap-2">
-                {/* Live Pulse Beacon */}
-                <Award className="w-4.5 h-4.5 text-amber-300 shrink-0 group-hover:rotate-12 transition-transform" />
+              <ShieldCheck className="w-4.5 h-4.5 text-amber-300" />
+              <span>{isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल →' : 'Safai & Grievance Portal →'}</span>
+            </Link>
 
-                {/* Counter & Action */}
-                <div className="flex items-center gap-1.5 font-medium">
-                  <span className="font-extrabold text-amber-300 text-base sm:text-lg tracking-tight font-mono">
-                    {count.toLocaleString('en-IN')}
-                  </span>
-                  <span className="text-white text-xs sm:text-sm font-semibold">
-                    {isHi ? 'नागरिकों ने शपथ ली' : (count === 1 ? 'Citizen Pledged' : 'Citizens Pledged')}
-                  </span>
-                  <span className="hidden md:inline-block text-emerald-200/60 font-light">•</span>
-                  <span className="text-[11px] sm:text-xs font-bold text-amber-200 bg-emerald-950/60 group-hover:bg-emerald-950 px-2 py-0.5 rounded-full border border-amber-400/30 whitespace-nowrap">
-                    {isHi ? 'शपथ लें →' : 'Take Pledge →'}
-                  </span>
-                </div>
-              </div>
-            </Button>
+            {/* Jump to Blocks */}
+            <a
+              href="#blocks"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold shadow-lg border border-white/20 px-6 h-12 rounded-xl text-sm transition-all duration-200"
+            >
+              <span>{isHi ? '11 विकासखंड' : '11 District Blocks'}</span>
+            </a>
 
-            <Button size="lg" className="w-full sm:w-auto bg-white text-navy-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 text-sm" onClick={openBlogModal}>
-              <BookOpen className="w-4.5 h-4.5 mr-2 text-navy-900" />
-              {t('hero.ourBlogs', 'Our Blogs')}
-            </Button>
+            {/* Jump to Tenders */}
+            <a
+              href="#notices"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 rounded-xl text-sm transition-all duration-200"
+            >
+              <BookOpen className="w-4 h-4 text-blue-900" />
+              <span>{isHi ? 'निविदाएं व आदेश' : 'Tenders & Orders'}</span>
+            </a>
           </div>
 
           {/* Subtle Slide Indicators */}

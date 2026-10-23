@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { DocumentsSection } from '@/components/DocumentsSection';
-import { ChevronRight, Home, ShieldCheck, FileText, ArrowRight } from 'lucide-react';
+import { DocumentsSection } from './DocumentsSection';
+import { ChevronRight, Home, ShieldCheck, ArrowRight } from 'lucide-react';
 
-export function CleanlinessBylawsPage() {
+export function SwmRulesPage() {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
@@ -27,13 +27,13 @@ export function CleanlinessBylawsPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="max-w-3xl">
               <h1 className="text-2xl sm:text-4xl font-extrabold font-poppins text-white tracking-tight leading-tight mb-3">
-                {isHi ? 'ग्रामीण स्वच्छता उपविधियाँ — 2023' : 'Rural Cleanliness Bylaws — 2023'}
+                {isHi ? 'ठोस अपशिष्ट प्रबंधन नियम, 2026' : 'Solid Waste Management Rules, 2026'}
               </h1>
 
               <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
                 {isHi
-                  ? 'उत्तराखंड पंचायतीराज अधिनियम, 2016 की धारा 106 के अंतर्गत जिला पंचायत अल्मोड़ा के समस्त ग्रामीण क्षेत्रों में ठोस अपशिष्ट प्रबंधन एवं स्वच्छता हेतु अधिसूचित शासकीय गजट उपविधि।'
-                  : 'Official gazette notification, mandatory waste segregation guidelines, and monthly user fee schedules notified under Section 106 of the Uttarakhand Panchayatiraj Act, 2016 for District Almora.'}
+                  ? 'पर्यावरण, वन और जलवायु परिवर्तन मंत्रालय (MoEFCC), भारत सरकार द्वारा अधिसूचित नए केंद्रीय ठोस अपशिष्ट प्रबंधन नियम एवं राष्ट्रीय दिशा-निर्देश।'
+                  : 'Official statutory rules notified by the Ministry of Environment, Forest and Climate Change (MoEFCC), Govt. of India, emphasizing source segregation, bulk waste generator rules, and environmental compliance.'}
               </p>
             </div>
           </div>
@@ -44,9 +44,11 @@ export function CleanlinessBylawsPage() {
 
       {/* ── Main Document Section (Single Document Mode: No top slider arrows, No tabs) ── */}
       <DocumentsSection 
-        singleDocId="cleanliness"
+        singleDocId="rules-2026"
         isStandalonePage={true} 
       />
     </div>
   );
 }
+
+export default SwmRulesPage;

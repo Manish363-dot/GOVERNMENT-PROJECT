@@ -12,34 +12,35 @@ import { RouteSEO } from '@/components/RouteSEO';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
-const HomePage = lazy(() => import('@/pages/HomePage').then(m => ({ default: m.HomePage })));
-const SignUpPage = lazy(() => import('@/pages/SignUpPage').then(m => ({ default: m.SignUpPage })));
-const SignInPage = lazy(() => import('@/pages/SignInPage').then(m => ({ default: m.SignInPage })));
-const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const HomePage = lazy(() => import('@/landing-page/MainLandingPage').then(m => ({ default: m.MainLandingPage })));
+const SafaiPortalPage = lazy(() => import('@/safai-portal/SafaiPortalPage').then(m => ({ default: m.SafaiPortalPage })));
+const SignUpPage = lazy(() => import('@/safai-portal/SignUpPage').then(m => ({ default: m.SignUpPage })));
+const SignInPage = lazy(() => import('@/safai-portal/SignInPage').then(m => ({ default: m.SignInPage })));
+const ForgotPasswordPage = lazy(() => import('@/safai-portal/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const TermsOfUsePage = lazy(() => import('@/pages/TermsOfUsePage').then(m => ({ default: m.TermsOfUsePage })));
 const AboutWebsitePage = lazy(() => import('@/pages/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
 const WebsitePolicyPage = lazy(() => import('@/pages/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
 const SiteMapPage = lazy(() => import('@/pages/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
 const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
-const ComplaintPage = lazy(() => import('@/pages/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
-const OurInitiativePage = lazy(() => import('@/pages/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
-const VisionMissionPage = lazy(() => import('@/pages/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
+const ComplaintPage = lazy(() => import('@/safai-portal/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
+const OurInitiativePage = lazy(() => import('@/landing-page/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
+const VisionMissionPage = lazy(() => import('@/landing-page/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
 const StaffDirectoryPage = lazy(() => import('@/pages/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
-const BylawsPage = lazy(() => import('@/pages/BylawsPage').then(m => ({ default: m.BylawsPage })));
-const CleanlinessBylawsPage = lazy(() => import('@/pages/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
-const SwmRulesPage = lazy(() => import('@/pages/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
+const BylawsPage = lazy(() => import('@/safai-portal/BylawsPage').then(m => ({ default: m.BylawsPage })));
+const CleanlinessBylawsPage = lazy(() => import('@/safai-portal/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
+const SwmRulesPage = lazy(() => import('@/safai-portal/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ServerErrorPage = lazy(() => import('@/pages/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
 const MaintenancePage = lazy(() => import('@/pages/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
 
 // Dashboard Lazy Pages
-const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
-const LiveTrackingPage = lazy(() => import('@/pages/dashboard/LiveTrackingPage').then(m => ({ default: m.LiveTrackingPage })));
-const VehicleHistoryPage = lazy(() => import('@/pages/dashboard/VehicleHistoryPage').then(m => ({ default: m.VehicleHistoryPage })));
-const RouteReplayPage = lazy(() => import('@/pages/dashboard/RouteReplayPage').then(m => ({ default: m.RouteReplayPage })));
-const ComplaintsPage = lazy(() => import('@/pages/dashboard/ComplaintsPage').then(m => ({ default: m.ComplaintsPage })));
-const VehiclesPage = lazy(() => import('@/pages/dashboard/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
-const MediaDailyWorkPage = lazy(() => import('@/pages/dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
+const DashboardPage = lazy(() => import('@/pages/safai-admin-dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const LiveTrackingPage = lazy(() => import('@/pages/safai-admin-dashboard/LiveTrackingPage').then(m => ({ default: m.LiveTrackingPage })));
+const VehicleHistoryPage = lazy(() => import('@/pages/safai-admin-dashboard/VehicleHistoryPage').then(m => ({ default: m.VehicleHistoryPage })));
+const RouteReplayPage = lazy(() => import('@/pages/safai-admin-dashboard/RouteReplayPage').then(m => ({ default: m.RouteReplayPage })));
+const ComplaintsPage = lazy(() => import('@/pages/safai-admin-dashboard/ComplaintsPage').then(m => ({ default: m.ComplaintsPage })));
+const VehiclesPage = lazy(() => import('@/pages/safai-admin-dashboard/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
+const MediaDailyWorkPage = lazy(() => import('@/pages/safai-admin-dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">
@@ -70,7 +71,20 @@ function App() {
           <Routes>
             {/* Public routes */}
             <Route element={<PublicLayout />}>
+              {/* Official Zila Panchayat Almora Main Portal */}
               <Route path="/" element={<HomePage />} />
+
+              {/* Dedicated Safai & Solid Waste Management Portal */}
+              <Route path="/safai-portal" element={<SafaiPortalPage />} />
+              <Route path="/swm" element={<SafaiPortalPage />} />
+              <Route path="/pledge" element={<SafaiPortalPage />} />
+              <Route path="/swachhata-pledge" element={<SafaiPortalPage />} />
+              <Route path="/daily-work" element={<SafaiPortalPage />} />
+              <Route path="/dailywork" element={<SafaiPortalPage />} />
+              <Route path="/waste-protocol" element={<SafaiPortalPage />} />
+              <Route path="/waste-segregation" element={<SafaiPortalPage />} />
+
+              {/* Official Portal Sub-Pages */}
               <Route path="/our-initiative" element={<OurInitiativePage />} />
               <Route path="/initiative" element={<OurInitiativePage />} />
               <Route path="/vision-mission" element={<VisionMissionPage />} />
@@ -83,12 +97,6 @@ function App() {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/notices" element={<HomePage />} />
               <Route path="/notices-and-updates" element={<HomePage />} />
-              <Route path="/pledge" element={<HomePage />} />
-              <Route path="/swachhata-pledge" element={<HomePage />} />
-              <Route path="/daily-work" element={<HomePage />} />
-              <Route path="/dailywork" element={<HomePage />} />
-              <Route path="/waste-protocol" element={<HomePage />} />
-              <Route path="/waste-segregation" element={<HomePage />} />
               <Route path="/complaint" element={<ComplaintPage />} />
               <Route path="/complaints" element={<ComplaintPage />} />
               <Route path="/complaint/register" element={<ComplaintPage />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { KPICard } from '@/components/KPICard';
+import { KPICard } from '@/pages/safai-admin-dashboard/KPICard';
 import { Truck, MapPin, Radio, MessageSquareWarning, ShieldCheck } from 'lucide-react';
 import { vehicleService } from '@/services/vehicle.service';
 import { trackingService } from '@/services/tracking.service';

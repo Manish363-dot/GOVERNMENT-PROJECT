@@ -6,7 +6,7 @@ import {
   FileText,
   Search
 } from 'lucide-react';
-import { ComplaintForm } from '@/components/ComplaintForm';
+import { ComplaintForm } from './ComplaintForm';
 
 export function ComplaintPage() {
   const { i18n } = useTranslation();
@@ -96,3 +96,5 @@ export function ComplaintPage() {
     </div>
   );
 }
+
+export default ComplaintPage;
