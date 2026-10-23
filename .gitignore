@@ -8,6 +8,7 @@ deploy.sh
 .env
 .env.local
 .env.production
+.env.development
 
 # ── Dependencies ──
 node_modules/
@@ -30,11 +31,5 @@ Thumbs.db
 adapters/
 scripts/
 
-node_modules/
-dist/
-.env
-.env.local
-.env.development
-.env.production
-*.log
-tsconfig.tsbuildinfo
+
+
