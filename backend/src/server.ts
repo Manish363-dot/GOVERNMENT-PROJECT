@@ -1,8 +1,8 @@
 import app from './app';
-import { env, isOriginAllowed } from './config/env';
+import { env, isOriginAllowed } from './shared/config/env';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { millitrackSyncService, setSocketIoInstance } from './services/millitrack.service';
+import { millitrackSyncService, setSocketIoInstance } from './modules/swm/services/millitrack.service';
 
 const PORT = parseInt(env.PORT, 10);
 
@@ -75,7 +75,7 @@ async function gracefulShutdown() {
   
   // Disconnect Prisma
   try {
-    const { prisma } = require('./config/prisma');
+    const { prisma } = require('./shared/config/prisma');
     await prisma.$disconnect();
     console.log('[Prisma] Disconnected from database.');
   } catch (err) {

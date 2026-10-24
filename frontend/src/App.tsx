@@ -12,40 +12,43 @@ import { RouteSEO } from '@/components/RouteSEO';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
+// 🏛️ 1. Landing Page Lazy Pages
 const HomePage = lazy(() => import('@/landing-page/MainLandingPage').then(m => ({ default: m.MainLandingPage })));
-const SafaiPortalPage = lazy(() => import('@/safai-portal/SafaiPortalPage').then(m => ({ default: m.SafaiPortalPage })));
-const SignUpPage = lazy(() => import('@/safai-portal/SignUpPage').then(m => ({ default: m.SignUpPage })));
-const SignInPage = lazy(() => import('@/safai-portal/SignInPage').then(m => ({ default: m.SignInPage })));
-const ForgotPasswordPage = lazy(() => import('@/safai-portal/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const TermsOfUsePage = lazy(() => import('@/landing-page/TermsOfUsePage').then(m => ({ default: m.TermsOfUsePage })));
 const AboutWebsitePage = lazy(() => import('@/landing-page/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
 const WebsitePolicyPage = lazy(() => import('@/landing-page/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
 const SiteMapPage = lazy(() => import('@/landing-page/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
 const ContactPage = lazy(() => import('@/landing-page/ContactPage').then(m => ({ default: m.ContactPage })));
-const ComplaintPage = lazy(() => import('@/safai-portal/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
 const OurInitiativePage = lazy(() => import('@/landing-page/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
 const VisionMissionPage = lazy(() => import('@/landing-page/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
 const StaffDirectoryPage = lazy(() => import('@/landing-page/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
 const MediaGalleryPage = lazy(() => import('@/landing-page/MediaGalleryPage').then(m => ({ default: m.MediaGalleryPage })));
-const BylawsPage = lazy(() => import('@/safai-portal/BylawsPage').then(m => ({ default: m.BylawsPage })));
-const CleanlinessBylawsPage = lazy(() => import('@/safai-portal/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
-const SwmRulesPage = lazy(() => import('@/safai-portal/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
 const NotFoundPage = lazy(() => import('@/landing-page/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ServerErrorPage = lazy(() => import('@/landing-page/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
 const MaintenancePage = lazy(() => import('@/landing-page/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
 
-// Rental Platform Lazy Pages
+// 🟢 2. SWM (Solid Waste Management & Safai Portal) Lazy Pages
+const SafaiPortalPage = lazy(() => import('@/swm/pages/SafaiPortalPage').then(m => ({ default: m.SafaiPortalPage })));
+const SignUpPage = lazy(() => import('@/swm/pages/SignUpPage').then(m => ({ default: m.SignUpPage })));
+const SignInPage = lazy(() => import('@/swm/pages/SignInPage').then(m => ({ default: m.SignInPage })));
+const ForgotPasswordPage = lazy(() => import('@/swm/pages/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
+const ComplaintPage = lazy(() => import('@/swm/pages/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
+const BylawsPage = lazy(() => import('@/swm/pages/BylawsPage').then(m => ({ default: m.BylawsPage })));
+const CleanlinessBylawsPage = lazy(() => import('@/swm/pages/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
+const SwmRulesPage = lazy(() => import('@/swm/pages/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
+
+// 🟢 2b. SWM Admin Fleet Dashboard Lazy Pages
+const DashboardPage = lazy(() => import('@/swm/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
+const LiveTrackingPage = lazy(() => import('@/swm/dashboard/LiveTrackingPage').then(m => ({ default: m.LiveTrackingPage })));
+const VehicleHistoryPage = lazy(() => import('@/swm/dashboard/VehicleHistoryPage').then(m => ({ default: m.VehicleHistoryPage })));
+const RouteReplayPage = lazy(() => import('@/swm/dashboard/RouteReplayPage').then(m => ({ default: m.RouteReplayPage })));
+const ComplaintsPage = lazy(() => import('@/swm/dashboard/ComplaintsPage').then(m => ({ default: m.ComplaintsPage })));
+const VehiclesPage = lazy(() => import('@/swm/dashboard/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
+const MediaDailyWorkPage = lazy(() => import('@/swm/dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
+
+// 🔵 3. Rental & Commercial Asset Platform Lazy Pages
 const RentalPortalPage = lazy(() => import('@/rental/RentalPortalPage').then(m => ({ default: m.RentalPortalPage })));
 const RentalAdminSignInPage = lazy(() => import('@/rental/RentalAdminSignInPage').then(m => ({ default: m.RentalAdminSignInPage })));
-
-// Dashboard Lazy Pages
-const DashboardPage = lazy(() => import('@/pages/safai-admin-dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
-const LiveTrackingPage = lazy(() => import('@/pages/safai-admin-dashboard/LiveTrackingPage').then(m => ({ default: m.LiveTrackingPage })));
-const VehicleHistoryPage = lazy(() => import('@/pages/safai-admin-dashboard/VehicleHistoryPage').then(m => ({ default: m.VehicleHistoryPage })));
-const RouteReplayPage = lazy(() => import('@/pages/safai-admin-dashboard/RouteReplayPage').then(m => ({ default: m.RouteReplayPage })));
-const ComplaintsPage = lazy(() => import('@/pages/safai-admin-dashboard/ComplaintsPage').then(m => ({ default: m.ComplaintsPage })));
-const VehiclesPage = lazy(() => import('@/pages/safai-admin-dashboard/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
-const MediaDailyWorkPage = lazy(() => import('@/pages/safai-admin-dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">

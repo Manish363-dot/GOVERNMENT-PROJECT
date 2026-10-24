@@ -3,26 +3,28 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { env, isOriginAllowed } from './config/env';
-import { errorHandler } from './middleware/errorHandler';
-import { csrfProtection } from './middleware/csrf';
+import { env, isOriginAllowed } from './shared/config/env';
+import { errorHandler } from './shared/middleware/errorHandler';
+import { csrfProtection } from './shared/middleware/csrf';
 import cookieParser from 'cookie-parser';
 
-// ── Modular Domain Routes ───────────────────────────────────────────
-import swmRoutes from './modules/swm/swm.routes';
-import rentalRoutes from './modules/rental/rental.routes';
-import paymentRoutes from './modules/payments/payment.routes';
+// ── 🏛️ Modular Domain Routes ─────────────────────────────────────────
+import swmRoutes from './modules/swm/routes/swm.routes';
+import rentalRoutes from './modules/rental/routes/rental.routes';
+import paymentRoutes from './modules/payments/routes/payment.routes';
 
-// ── Shared Core & Legacy Routes ─────────────────────────────────────
-import authRoutes from './routes/auth.routes';
-import vehicleRoutes from './routes/vehicle.routes';
-import gpsDeviceRoutes from './routes/gpsDevice.routes';
-import trackingRoutes from './routes/tracking.routes';
-import historyRoutes from './routes/history.routes';
-import complaintRoutes from './routes/complaint.routes';
-import mediaRoutes from './routes/media.routes';
-import contactRoutes from './routes/contact.routes';
-import pledgeRoutes from './routes/pledge.routes';
+// ── ⚪ Shared Core Routes ────────────────────────────────────────────
+import authRoutes from './shared/auth/auth.routes';
+import contactRoutes from './shared/contact/contact.routes';
+
+// ── 🔄 SWM Compatibility Sub-routes ──────────────────────────────────
+import vehicleRoutes from './modules/swm/routes/vehicle.routes';
+import gpsDeviceRoutes from './modules/swm/routes/gpsDevice.routes';
+import trackingRoutes from './modules/swm/routes/tracking.routes';
+import historyRoutes from './modules/swm/routes/history.routes';
+import complaintRoutes from './modules/swm/routes/complaint.routes';
+import mediaRoutes from './modules/swm/routes/media.routes';
+import pledgeRoutes from './modules/swm/routes/pledge.routes';
 
 const app = express();
 

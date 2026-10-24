@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { NavbarLandingPage } from '@/landing-page/NavbarLandingPage';
-import { NavbarSafaiPortal } from '@/safai-portal/NavbarSafaiPortal';
+import { NavbarSafaiPortal } from '@/swm/components/NavbarSafaiPortal';
 
 export { NavbarLandingPage } from '@/landing-page/NavbarLandingPage';
-export { NavbarSafaiPortal } from '@/safai-portal/NavbarSafaiPortal';
+export { NavbarSafaiPortal } from '@/swm/components/NavbarSafaiPortal';
 
 /**
  * Smart Delegator Navbar:
