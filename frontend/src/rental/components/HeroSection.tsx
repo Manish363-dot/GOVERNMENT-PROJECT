@@ -66,14 +66,7 @@ export const HeroSimple: React.FC = () => {
               <span>{isHi ? 'किराया ऑनलाइन जमा करें' : 'Pay Rent Online'}</span>
             </a>
 
-            {/* 2. White Glass Outline */}
-            <a
-              href="#quick-pay"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/90 hover:bg-white text-slate-800 font-bold text-xs sm:text-sm border border-slate-300 shadow-sm transition-all duration-200 cursor-pointer backdrop-blur-xs"
-            >
-              <Search className="w-4 h-4 text-slate-700" />
-              <span>{isHi ? 'दुकान व बकाया खोजें' : 'Search Shop Dues'}</span>
-            </a>
+
 
             {/* 3. Emerald Button */}
             <a
@@ -84,14 +77,7 @@ export const HeroSimple: React.FC = () => {
               <span>{isHi ? 'उपलब्ध दुकानें (240+)' : 'View Properties (240+)'}</span>
             </a>
 
-            {/* 4. Navy Accent Button */}
-            <a
-              href="#notices"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs sm:text-sm shadow-sm transition-all duration-200 cursor-pointer"
-            >
-              <Gavel className="w-4 h-4 text-amber-300" />
-              <span>{isHi ? 'ई-नीलामी व निविदाएं' : 'E-Auctions & Tenders'}</span>
-            </a>
+
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ export interface UserProfile {
   id: string;
   name: string;
   identifier: string;
+  mobile?: string;
   role: 'admin' | 'user';
   shopNo?: string;
   market?: string;
@@ -55,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Helper to check if logged in.
    * If logged in, calls callback and returns true.
-   * If not logged in, redirects to /signin?redirect=... and returns false.
+   * If not logged in, redirects to /rental/signin?redirect=... and returns false.
    */
   const requireAuth = (callback?: () => void, redirectTarget = 'quick-pay'): boolean => {
     if (user) {
@@ -64,7 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Not authenticated -> redirect to login with return target
-    navigate(`/signin?redirect=${encodeURIComponent(redirectTarget)}`);
+    navigate(`/rental/signin?redirect=${encodeURIComponent(redirectTarget)}`);
     return false;
   };
 

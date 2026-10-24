@@ -16,8 +16,8 @@ import {
   Sparkles,
   UserCheck,
   Store,
-  HelpCircle,
   CreditCard,
+  Phone,
 } from 'lucide-react';
 
 interface AdminSignInPageProps {
@@ -48,21 +48,27 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
 
   // Update role if prop changes
   useEffect(() => {
-    if (location.pathname === '/admin/login') {
+    if (location.pathname === '/admin/login' || location.pathname.includes('/rental/admin')) {
       setRole('admin');
-    } else if (location.pathname === '/signin' || location.pathname === '/login') {
+    } else if (location.pathname === '/signin' || location.pathname === '/login' || location.pathname === '/rental/signin' || location.pathname === '/rental/login') {
       setRole('user');
     }
   }, [location.pathname]);
 
-  // Pre-fill demo credentials
+  // Handle strictly 10-digit numeric mobile number input
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setIdentifier(val);
+  };
+
+  // Pre-fill demo mobile credentials
   const handleQuickFill = (targetRole: 'admin' | 'user') => {
     setError('');
     if (targetRole === 'admin') {
-      setIdentifier('admin.rental@uk.gov.in');
+      setIdentifier('9876543210');
       setPassword('Admin@ZilaPanchayat2026');
     } else {
-      setIdentifier('shopkeeper.almora@uk.gov.in');
+      setIdentifier('9412012345');
       setPassword('Tenant@Almora2026');
     }
   };
@@ -72,8 +78,28 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
     setError('');
     setSuccess('');
 
-    if (!identifier.trim() || !password.trim()) {
-      setError(isHi ? 'कृपया पहचान आईडी एवं पासवर्ड दर्ज करें।' : 'Please enter your login ID and password.');
+    const cleanMobile = identifier.trim();
+
+    if (!cleanMobile) {
+      setError(
+        isHi
+          ? 'कृपया अपना 10-अंकीय मोबाइल नंबर दर्ज करें।'
+          : 'Please enter your 10-digit mobile number.'
+      );
+      return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
+      setError(
+        isHi
+          ? 'कृपया मान्य 10-अंकीय भारतीय मोबाइल नंबर दर्ज करें (6, 7, 8 या 9 से शुरू होने वाला)।'
+          : 'Please enter a valid 10-digit Indian mobile number (starting with 6-9).'
+      );
+      return;
+    }
+
+    if (!password.trim()) {
+      setError(isHi ? 'कृपया सुरक्षा पासवर्ड दर्ज करें।' : 'Please enter your password.');
       return;
     }
 
@@ -86,14 +112,16 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
         login({
           id: 'admin-01',
           name: isHi ? 'प्रशासनिक अधिकारी (अल्मोड़ा)' : 'Admin Officer (Almora)',
-          identifier: identifier.trim(),
+          identifier: cleanMobile,
+          mobile: cleanMobile,
           role: 'admin',
         });
       } else {
         login({
           id: 'tenant-101',
           name: isHi ? 'रमेश चंद्र जोशी' : 'Ramesh Chandra Joshi',
-          identifier: identifier.trim(),
+          identifier: cleanMobile,
+          mobile: cleanMobile,
           role: 'user',
           shopNo: 'SHOP-101',
           market: isHi ? 'धारानौला मुख्य बाजार' : 'Dharanaula Main Market',
@@ -103,22 +131,22 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
       setSuccess(
         isHi
           ? role === 'admin'
-            ? 'व्यवस्थापक प्रमाणीकरण सफल! रेंटल डैशबोर्ड पर रीडायरेक्ट किया जा रहा है...'
-            : 'किरायेदार सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
+            ? 'व्यवस्थापक मोबाइल सत्यापन सफल! रेंटल डैशबोर्ड पर ले जाया जा रहा है...'
+            : 'किरायेदार मोबाइल सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
           : role === 'admin'
-          ? 'Admin authentication successful! Redirecting...'
-          : 'Tenant verified! Redirecting to rent payment...'
+          ? 'Admin mobile verification successful! Redirecting...'
+          : 'Tenant mobile verified! Redirecting to rent payment...'
       );
 
       setTimeout(() => {
         if (redirectTarget === 'quick-pay' || redirectTarget === 'pay-rent') {
-          navigate('/#quick-pay');
+          navigate('/rental#quick-pay');
           setTimeout(() => {
             const el = document.getElementById('quick-pay');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 150);
         } else {
-          navigate('/');
+          navigate('/rental');
         }
       }, 1200);
     }, 850);
@@ -232,14 +260,14 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
           {/* 📝 Right Side: Form (Login Only: Admin & Tenant) */}
           <div className="p-5 sm:p-10 lg:p-12 col-span-3 flex flex-col justify-center relative bg-white">
             
-            {/* Top Navigation Row: Back to Home */}
+            {/* Top Navigation Row: Back to Rental Portal */}
             <div className="flex items-center justify-between mb-6">
               <Link
-                to="/"
+                to="/rental"
                 className="text-slate-500 hover:text-[#0b1b36] flex items-center gap-1.5 text-xs sm:text-sm font-bold transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>{isHi ? 'मुख्य पृष्ठ पर लौटें' : 'Back to Home'}</span>
+                <span>{isHi ? 'रेंटल पोर्टल पर लौटें' : 'Back to Rental Portal'}</span>
               </Link>
 
               {/* Secure badge */}
@@ -352,33 +380,66 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
             {/* 🔐 LOGIN FORM (ONLY LOGIN, NO SIGNUP) */}
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label
-                  htmlFor="login-identifier"
-                  className="block text-xs sm:text-sm font-semibold text-slate-700"
-                >
+                <div className="flex items-center justify-between">
+                  <label
+                    htmlFor="login-identifier"
+                    className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-700"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-slate-500" />
+                    <span>
+                      {role === 'admin'
+                        ? isHi
+                          ? 'अधिकृत व्यवस्थापक मोबाइल नंबर'
+                          : 'Authorized Admin Mobile Number'
+                        : isHi
+                        ? 'पंजीकृत किरायेदार / नागरिक मोबाइल नंबर'
+                        : 'Registered Tenant / Citizen Mobile Number'}
+                    </span>
+                  </label>
+                  <span
+                    className={`text-[11px] font-semibold ${
+                      identifier.length === 10 ? 'text-emerald-600' : 'text-slate-400'
+                    }`}
+                  >
+                    {identifier.length}/10 {isHi ? 'अंक' : 'digits'}
+                  </span>
+                </div>
+                <div className="relative flex items-center">
+                  <div className="absolute left-3 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-600 select-none pointer-events-none">
+                    <span>🇮🇳</span>
+                    <span>+91</span>
+                    <span className="text-slate-300 ml-1">|</span>
+                  </div>
+                  <input
+                    id="login-identifier"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
+                    placeholder={
+                      role === 'admin'
+                        ? '9876543210'
+                        : '9412012345'
+                    }
+                    value={identifier}
+                    onChange={handleMobileChange}
+                    className="w-full pl-20 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-md text-sm font-semibold tracking-wider text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0b1b36] focus:bg-white transition-all placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal"
+                    required
+                  />
+                  {identifier.length === 10 && /^[6-9]\d{9}$/.test(identifier) && (
+                    <div className="absolute right-3 text-emerald-600 pointer-events-none flex items-center">
+                      <CheckCircle2 className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[11px] text-slate-400 leading-tight">
                   {role === 'admin'
                     ? isHi
-                      ? 'आधिकारिक शासकीय ईमेल आईडी'
-                      : 'Official Govt Email ID'
+                      ? 'विभागीय रूप से अधिकृत 10-अंकीय मोबाइल नंबर दर्ज करें'
+                      : 'Enter departmentally registered 10-digit mobile number'
                     : isHi
-                    ? 'पंजीकृत मोबाइल नंबर / किरायेदार आईडी / ईमेल'
-                    : 'Registered Mobile No. / Tenant ID / Email'}
-                </label>
-                <input
-                  id="login-identifier"
-                  type={role === 'admin' ? 'email' : 'text'}
-                  placeholder={
-                    role === 'admin'
-                      ? 'admin.rental@uk.gov.in'
-                      : isHi
-                      ? 'उदा. 9876543210 या shop.almora@uk.gov.in'
-                      : 'e.g. 9876543210 or shop.almora@uk.gov.in'
-                  }
-                  value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-md text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0b1b36] focus:bg-white transition-all"
-                  required
-                />
+                    ? 'दुकान आवंटन के समय पंजीकृत 10-अंकीय मोबाइल नंबर दर्ज करें'
+                    : 'Enter 10-digit mobile number registered during shop allotment'}
+                </p>
               </div>
 
               <div className="space-y-1">
@@ -441,11 +502,11 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
                   <span>
                     {role === 'admin'
                       ? isHi
-                        ? 'एडमिन क्रेडेंशियल भरें'
-                        : 'Quick Fill Admin'
+                        ? 'एडमिन मोबाइल (9876543210) भरें'
+                        : 'Quick Fill Admin (9876543210)'
                       : isHi
-                      ? 'किरायेदार क्रेडेंशियल भरें'
-                      : 'Quick Fill Tenant'}
+                      ? 'किरायेदार मोबाइल (9412012345) भरें'
+                      : 'Quick Fill Tenant (9412012345)'}
                   </span>
                 </button>
               </div>
@@ -473,57 +534,6 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
                 )}
               </button>
             </form>
-
-            {/* SSO / Jan Parichay Option */}
-            <div className="relative my-5">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-slate-200" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-slate-400 font-semibold text-[11px]">
-                  {isHi ? 'अथवा शासकीय पहचान से लॉगिन' : 'Or via Govt Identity'}
-                </span>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => {
-                alert(
-                  isHi
-                    ? 'मेरीपहचान (Jan Parichay SSO) एवं एनआईसी ईमेल आधारित सिंगल साइन-ऑन सेवा जल्द ही चालू होगी।'
-                    : 'Jan Parichay National SSO single sign-on will be activated shortly.'
-                );
-              }}
-              className="w-full flex items-center justify-center gap-2 py-2 px-3 border border-slate-300 rounded-md hover:bg-slate-50 text-xs font-bold text-slate-700 transition-colors shadow-2xs cursor-pointer"
-            >
-              <img
-                src="/assets/logos/logo1.png"
-                alt="Govt of Uttarakhand"
-                className="w-4 h-4 object-contain"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).style.display = 'none';
-                }}
-              />
-              <span>{isHi ? 'उत्तराखंड जन परिचय (SSO Login)' : 'Uttarakhand Jan Parichay SSO'}</span>
-            </button>
-
-            {/* 🛑 OFFICIAL NOTICE: SIGN UP DISABLED / REGISTRATION CONTROLLED BY ADMIN */}
-            <div className="mt-6 p-3.5 bg-amber-50/80 border border-amber-200/90 rounded-lg text-xs text-amber-950 flex items-start gap-2.5">
-              <HelpCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-bold block text-slate-900 text-xs mb-0.5">
-                  {isHi
-                    ? 'सार्वजनिक स्व-पंजीकरण बंद है (Self Sign-Up Disabled)'
-                    : 'Public Self-Registration is Disabled'}
-                </span>
-                <p className="text-slate-600 leading-relaxed text-[11px]">
-                  {isHi
-                    ? 'दुकानदारों एवं नागरिकों का नया पंजीकरण केवल जिला पंचायत प्रशासन द्वारा किया जाएगा। यदि आपका खाता अभी पंजीकृत नहीं है, तो कृपया जिला पंचायत अल्मोड़ा कार्यालय या हेल्पलाइन 1800-185-1850 पर संपर्क करें।'
-                    : 'New tenant accounts are registered exclusively by the Zila Panchayat administration upon official allotment. If you are not yet registered, please visit the Zila Panchayat Almora office or contact helpline 1800-185-1850.'}
-                </p>
-              </div>
-            </div>
 
           </div>
         </div>

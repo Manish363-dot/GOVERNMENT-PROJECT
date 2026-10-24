@@ -416,4 +416,28 @@ canvas {
   transform-style: preserve-3d;
   will-change: transform;
 }
+
+/* ============================================================ */
+/* Marquee Animation (Continuous Horizontal Scroll)             */
+/* ============================================================ */
+
+@keyframes marqueeScroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marqueeScroll 35s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
 

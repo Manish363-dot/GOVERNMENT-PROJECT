@@ -1,16 +1,16 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { 
-  Sparkles, 
-  Trash2, 
-  Store, 
-  FileText, 
-  Briefcase, 
-  ArrowRight, 
-  CheckCircle2, 
-  Truck, 
-  ShieldCheck, 
+import {
+  Sparkles,
+  Trash2,
+  Store,
+  FileText,
+  Briefcase,
+  ArrowRight,
+  CheckCircle2,
+  Truck,
+  ShieldCheck,
   Lock,
   ExternalLink,
   Award
@@ -23,7 +23,7 @@ export const ZilaServicesHubSection = React.memo(() => {
   return (
     <section id="services-hub" className="py-14 sm:py-20 bg-slate-50 border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold mb-3">
@@ -43,11 +43,11 @@ export const ZilaServicesHubSection = React.memo(() => {
 
         {/* 2 Primary Featured Portal Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-12">
-          
+
           {/* PORTAL 1: SAFAI PORTAL (Active & Live) */}
           <div className="bg-gradient-to-br from-emerald-900 via-teal-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 border border-emerald-500/30 shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-            
+
             <div>
               <div className="flex items-center justify-between gap-3 mb-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs font-bold tracking-wide">
@@ -133,7 +133,7 @@ export const ZilaServicesHubSection = React.memo(() => {
                   <Store className="w-6 h-6" />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors">
-                  {isHi ? 'पंचायती परिसंपत्ति एवं दुकान किराया प्रणाली' : 'Commercial Asset & Rental Management'}
+                  {isHi ? 'दुकान आवंटन, संपत्ति एवं किराया प्रबंधन पोर्टल' : 'Commercial Asset, Shop Allotment & Rental Management Portal'}
                 </h3>
               </div>
 
