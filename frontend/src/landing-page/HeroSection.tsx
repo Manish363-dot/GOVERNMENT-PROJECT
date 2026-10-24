@@ -117,8 +117,28 @@ export const HeroSection = React.memo(() => {
     return () => clearInterval(timer);
   }, []);
 
-  const openBlogModal = useCallback(() => setIsBlogModalOpen(true), []);
-  const closeBlogModal = useCallback(() => setIsBlogModalOpen(false), []);
+  const openBlogModal = useCallback(() => {
+    setIsBlogModalOpen(true);
+  }, []);
+
+  const closeBlogModal = useCallback(() => {
+    setIsBlogModalOpen(false);
+    if (window.location.hash && (window.location.hash.toLowerCase() === '#gallery' || window.location.hash.toLowerCase() === '#media' || window.location.hash.toLowerCase() === '#blogs')) {
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
+  useEffect(() => {
+    const checkHash = () => {
+      const h = window.location.hash.toLowerCase();
+      if (h === '#gallery' || h === '#media' || h === '#blogs' || h === '#blog') {
+        setIsBlogModalOpen(true);
+      }
+    };
+    checkHash();
+    window.addEventListener('hashchange', checkHash);
+    return () => window.removeEventListener('hashchange', checkHash);
+  }, []);
 
   return (
     <section className="relative bg-[#07182f] text-white border-b border-blue-600/30">
@@ -243,14 +263,16 @@ export const HeroSection = React.memo(() => {
               <span>{isHi ? '11 विकासखंड' : '11 District Blocks'}</span>
             </a>
 
-            {/* Jump to Tenders */}
-            <a
-              href="#notices"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 rounded-xl text-sm transition-all duration-200"
+            {/* Our Media Button -> Opens BlogGalleryModal */}
+            <button
+              type="button"
+              onClick={openBlogModal}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 rounded-xl text-sm transition-all duration-200 cursor-pointer hover:shadow-xl hover:-translate-y-0.5"
+              aria-label={isHi ? 'मीडिया गैलरी खोलें' : 'Open Media Gallery'}
             >
               <BookOpen className="w-4 h-4 text-blue-900" />
-              <span>{isHi ? 'निविदाएं व आदेश' : 'Tenders & Orders'}</span>
-            </a>
+              <span>{isHi ? 'हमारा मीडिया' : 'Our Media'}</span>
+            </button>
           </div>
 
           {/* Subtle Slide Indicators */}

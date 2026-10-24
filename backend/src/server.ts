@@ -42,17 +42,21 @@ io.on('connection', (socket) => {
 
 httpServer.listen(PORT, () => {
   console.log(`
-  ┌─────────────────────────────────────────────┐
-  │                                             │
-  │   🚛 Zila Panchayat Safai Backend          │
-  │   Smart Waste Collection Tracking           │
-  │                                             │
-  │   Server running on port ${PORT}              │
-  │   Health: http://localhost:${PORT}/api/health  │
-  │   Socket.io: Enabled                        │
-  │   Environment: ${env.NODE_ENV.padEnd(16)}    │
-  │                                             │
-  └─────────────────────────────────────────────┘
+  ┌─────────────────────────────────────────────────────────┐
+  │                                                         │
+  │   🏛️ Zila Panchayat Almora — Modular Monolith Server    │
+  │   • SWM & Cleanliness Fleet GPS API  (/api/swm)         │
+  │   • Commercial Rental & Assets API   (/api/rental)      │
+  │   • Government Payments & e-Challan  (/api/payments)    │
+  │                                                         │
+  │   Port:            ${PORT.toString().padEnd(37)}│
+  │   System Health:   http://localhost:${PORT}/api/health       │
+  │   SWM Health:      http://localhost:${PORT}/api/swm/health   │
+  │   Rental Health:   http://localhost:${PORT}/api/rental/health│
+  │   Socket.io:       Enabled (Live Telematics)            │
+  │   Environment:     ${env.NODE_ENV.padEnd(37)}│
+  │                                                         │
+  └─────────────────────────────────────────────────────────┘
   `);
 
   // Start automated MilliTrack live GPS sync (every 4 seconds for fast live tracking)

@@ -8,7 +8,12 @@ import { errorHandler } from './middleware/errorHandler';
 import { csrfProtection } from './middleware/csrf';
 import cookieParser from 'cookie-parser';
 
-// Routes
+// ── Modular Domain Routes ───────────────────────────────────────────
+import swmRoutes from './modules/swm/swm.routes';
+import rentalRoutes from './modules/rental/rental.routes';
+import paymentRoutes from './modules/payments/payment.routes';
+
+// ── Shared Core & Legacy Routes ─────────────────────────────────────
 import authRoutes from './routes/auth.routes';
 import vehicleRoutes from './routes/vehicle.routes';
 import gpsDeviceRoutes from './routes/gpsDevice.routes';
@@ -122,9 +127,24 @@ const uploadLimiter = rateLimit({
   message: { error: 'Too many files uploaded. Please try again later.' },
 });
 
+// Root entry route
+app.get('/', (_req, res) => {
+  res.send('🏛️ Zila Panchayat Almora — Unified Backend Server (Safai & SWM Fleet, GPS Telematics & Commercial Rental Platform) is running.');
+});
+
 // Health check (exempt from CSRF and Rate Limiting)
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    architecture: 'Modular Monolith (Vertical Slice)',
+    modules: {
+      swm: 'healthy',
+      rental: 'healthy',
+      payments: 'healthy',
+      auth: 'healthy'
+    },
+    timestamp: new Date().toISOString()
+  });
 });
 
 app.use('/api/', globalLimiter);
@@ -151,15 +171,28 @@ app.use('/api/media', (req, res, next) => {
 // Apply CSRF Protection to all API routes
 app.use('/api', csrfProtection);
 
-// API Routes
+// ── 🏛️ Modular Domain Routes ─────────────────────────────────────────
+// 1. Solid Waste Management & Safai Fleet GPS Telematics
+app.use('/api/swm', swmRoutes);
+
+// 2. Commercial Asset & Rental Management
+app.use('/api/rental', rentalRoutes);
+app.use('/rental', rentalRoutes); // Direct alias
+
+// 3. Government e-Challan & Payments Management
+app.use('/api/payments', paymentRoutes);
+
+// ── ⚪ Shared Core Routes ────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/contact', contactRoutes);
+
+// ── 🔄 Backward Compatibility Aliases (Ensures existing UI continues uninterrupted)
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/gps-devices', gpsDeviceRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/media', mediaRoutes);
-app.use('/api/contact', contactRoutes);
 app.use('/api/pledge', pledgeRoutes);
 
 // 404 handler

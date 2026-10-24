@@ -94,6 +94,14 @@ export const NavbarLandingPage = React.memo(() => {
                 <PhoneCall className="w-3 h-3 text-amber-400" />
                 <span>{t('nav.helpline', 'टोल फ्री हेल्पलाइन')}: <strong className="text-white">1800-185-1850</strong></span>
               </div>
+              <span className="hidden xl:inline text-navy-700">|</span>
+              <a
+                href="/#social-engagement"
+                className="hidden xl:flex items-center gap-1 text-[11px] text-slate-300 hover:text-amber-300 transition-colors"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>{isHi ? 'सोशल मीडिया' : 'Social Media'}</span>
+              </a>
               <LanguageSwitcher />
             </div>
           </div>
@@ -191,6 +199,13 @@ export const NavbarLandingPage = React.memo(() => {
                       >
                         {isHi ? 'अधिकारी एवं कर्मचारी विवरण' : 'Staff & Officers Directory'}
                       </Link>
+                      <a
+                        href="/#social-engagement"
+                        onClick={() => setAboutDropdownOpen(false)}
+                        className="block px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-50 transition-colors"
+                      >
+                        {isHi ? 'सोशल मीडिया जुड़ाव' : 'Social Engagement'}
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -241,23 +256,24 @@ export const NavbarLandingPage = React.memo(() => {
                         </p>
                       </Link>
 
-                      <a
-                        href="/#services-hub"
+                      <Link
+                        to="/rental"
                         onClick={() => setServicesDropdownOpen(false)}
-                        className="block px-4 py-3 hover:bg-slate-50 transition-colors group"
+                        className="block px-4 py-3 hover:bg-blue-50/60 transition-colors group"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm font-bold text-slate-800 group-hover:text-blue-700">
+                          <span className="text-xs sm:text-sm font-bold text-slate-900 group-hover:text-blue-700">
                             {isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Commercial Rental System'}
                           </span>
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">
-                            {isHi ? 'आगामी' : 'Coming Soon'}
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                            {isHi ? 'सक्रिय' : 'Live'}
                           </span>
                         </div>
                         <p className="text-[11px] text-slate-500 mt-0.5">
                           {isHi ? 'दुकान आवंटन, लीज अनुबंध व ऑनलाइन किराया बिलिंग' : 'Shop allotment, lease & computerized rent'}
                         </p>
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -286,17 +302,6 @@ export const NavbarLandingPage = React.memo(() => {
                   <span className="whitespace-nowrap">{t('nav.contact', 'संपर्क सूत्र')}</span>
                 </Link>
               </nav>
-
-              {/* Desktop Actions - ONLY Quick Button to Safai Portal (NO Admin Login / Sign In) */}
-              <div className="hidden md:flex items-center justify-end gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
-                <Link
-                  to="/safai-portal"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all hover:scale-102 whitespace-nowrap"
-                >
-                  <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-                  <span>{isHi ? 'सफाई पोर्टल' : 'Safai Portal'}</span>
-                </Link>
-              </div>
 
               {/* Mobile/Tablet Menu Button */}
               <button
@@ -378,6 +383,13 @@ export const NavbarLandingPage = React.memo(() => {
                     >
                       {isHi ? 'अधिकारी एवं कर्मचारी विवरण' : 'Staff & Officers Directory'}
                     </Link>
+                    <a
+                      href="/#social-engagement"
+                      onClick={() => setMobileOpen(false)}
+                      className="block px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-navy-900 rounded-md"
+                    >
+                      {isHi ? 'सोशल मीडिया जुड़ाव' : 'Social Engagement'}
+                    </a>
                   </div>
                 )}
               </div>
@@ -402,16 +414,17 @@ export const NavbarLandingPage = React.memo(() => {
                       <span>{isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल' : 'Safai & SWM Portal'}</span>
                       <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     </Link>
-                    <a
-                      href="/#services-hub"
+                    <Link
+                      to="/rental"
                       onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 rounded-md"
+                      className="flex items-center justify-between px-3 py-2 text-xs font-bold text-blue-800 bg-blue-50 rounded-md"
                     >
                       <span>{isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Rental System'}</span>
-                      <span className="text-[10px] text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
-                        {isHi ? 'आगामी' : 'Soon'}
+                      <span className="inline-flex items-center gap-1 text-[10px] text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+                        {isHi ? 'सक्रिय' : 'Live'}
                       </span>
-                    </a>
+                    </Link>
                   </div>
                 )}
               </div>

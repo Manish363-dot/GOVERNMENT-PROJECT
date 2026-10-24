@@ -17,21 +17,26 @@ const SafaiPortalPage = lazy(() => import('@/safai-portal/SafaiPortalPage').then
 const SignUpPage = lazy(() => import('@/safai-portal/SignUpPage').then(m => ({ default: m.SignUpPage })));
 const SignInPage = lazy(() => import('@/safai-portal/SignInPage').then(m => ({ default: m.SignInPage })));
 const ForgotPasswordPage = lazy(() => import('@/safai-portal/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
-const TermsOfUsePage = lazy(() => import('@/pages/TermsOfUsePage').then(m => ({ default: m.TermsOfUsePage })));
-const AboutWebsitePage = lazy(() => import('@/pages/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
-const WebsitePolicyPage = lazy(() => import('@/pages/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
-const SiteMapPage = lazy(() => import('@/pages/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
-const ContactPage = lazy(() => import('@/pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const TermsOfUsePage = lazy(() => import('@/landing-page/TermsOfUsePage').then(m => ({ default: m.TermsOfUsePage })));
+const AboutWebsitePage = lazy(() => import('@/landing-page/AboutWebsitePage').then(m => ({ default: m.AboutWebsitePage })));
+const WebsitePolicyPage = lazy(() => import('@/landing-page/WebsitePolicyPage').then(m => ({ default: m.WebsitePolicyPage })));
+const SiteMapPage = lazy(() => import('@/landing-page/SiteMapPage').then(m => ({ default: m.SiteMapPage })));
+const ContactPage = lazy(() => import('@/landing-page/ContactPage').then(m => ({ default: m.ContactPage })));
 const ComplaintPage = lazy(() => import('@/safai-portal/ComplaintPage').then(m => ({ default: m.ComplaintPage })));
 const OurInitiativePage = lazy(() => import('@/landing-page/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
 const VisionMissionPage = lazy(() => import('@/landing-page/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
-const StaffDirectoryPage = lazy(() => import('@/pages/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
+const StaffDirectoryPage = lazy(() => import('@/landing-page/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
+const MediaGalleryPage = lazy(() => import('@/landing-page/MediaGalleryPage').then(m => ({ default: m.MediaGalleryPage })));
 const BylawsPage = lazy(() => import('@/safai-portal/BylawsPage').then(m => ({ default: m.BylawsPage })));
 const CleanlinessBylawsPage = lazy(() => import('@/safai-portal/CleanlinessBylawsPage').then(m => ({ default: m.CleanlinessBylawsPage })));
 const SwmRulesPage = lazy(() => import('@/safai-portal/SwmRulesPage').then(m => ({ default: m.SwmRulesPage })));
-const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
-const ServerErrorPage = lazy(() => import('@/pages/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
-const MaintenancePage = lazy(() => import('@/pages/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
+const NotFoundPage = lazy(() => import('@/landing-page/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const ServerErrorPage = lazy(() => import('@/landing-page/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
+const MaintenancePage = lazy(() => import('@/landing-page/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
+
+// Rental Platform Lazy Pages
+const RentalPortalPage = lazy(() => import('@/rental/RentalPortalPage').then(m => ({ default: m.RentalPortalPage })));
+const RentalAdminSignInPage = lazy(() => import('@/rental/RentalAdminSignInPage').then(m => ({ default: m.RentalAdminSignInPage })));
 
 // Dashboard Lazy Pages
 const DashboardPage = lazy(() => import('@/pages/safai-admin-dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
@@ -90,6 +95,10 @@ function App() {
               <Route path="/vision-mission" element={<VisionMissionPage />} />
               <Route path="/staff-directory" element={<StaffDirectoryPage />} />
               <Route path="/staff-info" element={<StaffDirectoryPage />} />
+              <Route path="/gallery" element={<MediaGalleryPage />} />
+              <Route path="/media" element={<MediaGalleryPage />} />
+              <Route path="/media-gallery" element={<MediaGalleryPage />} />
+              <Route path="/blogs" element={<MediaGalleryPage />} />
               <Route path="/terms-of-use" element={<TermsOfUsePage />} />
               <Route path="/about-website" element={<AboutWebsitePage />} />
               <Route path="/website-policy" element={<WebsitePolicyPage />} />
@@ -118,6 +127,14 @@ function App() {
             <Route path="/error" element={<ServerErrorPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/under-maintenance" element={<MaintenancePage />} />
+
+            {/* Commercial Asset & Rental Management Platform */}
+            <Route path="/rental" element={<RentalPortalPage />} />
+            <Route path="/rental-system" element={<RentalPortalPage />} />
+            <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
+            <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
+            <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
+            <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
 
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFoundPage />} />

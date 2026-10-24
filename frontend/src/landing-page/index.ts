@@ -11,3 +11,4 @@ export { NoticesSection } from './NoticesSection';
 export { OurInitiativePage } from './OurInitiativePage';
 export { VisionMissionPage } from './VisionMissionPage';
 export { BlogGalleryModal } from './BlogGalleryModal';
+export { SocialMediaSection } from './SocialMediaSection';

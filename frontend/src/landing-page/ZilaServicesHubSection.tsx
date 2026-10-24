@@ -113,15 +113,15 @@ export const ZilaServicesHubSection = React.memo(() => {
             </div>
           </div>
 
-          {/* PORTAL 2: COMMERCIAL RENTAL & LEASE (Coming Soon / Future System) */}
+          {/* PORTAL 2: COMMERCIAL RENTAL & LEASE (Integrated Active System) */}
           <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 border border-indigo-500/30 shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
             <div>
               <div className="flex items-center justify-between gap-3 mb-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/40 text-xs font-bold tracking-wide">
-                  <Lock className="w-3.5 h-3.5 text-amber-300" />
-                  {isHi ? 'आगामी डिजिटल प्रणाली (Coming Soon)' : 'Under Development (Coming Soon)'}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/40 text-xs font-bold tracking-wide">
+                  <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                  {isHi ? 'सक्रिय पोर्टल (Active Portal)' : 'Active Portal (Live)'}
                 </span>
                 <span className="text-xs text-indigo-300/80 font-mono">
                   Asset & Lease Management
@@ -165,16 +165,20 @@ export const ZilaServicesHubSection = React.memo(() => {
             </div>
 
             {/* Quick Actions */}
-            <div className="pt-4 border-t border-indigo-800/60 flex items-center justify-between">
-              <span className="text-xs text-amber-300/90 font-medium">
-                {isHi ? '⚙️ सुरक्षा व वित्तीय ऑडिट के तहत विकासाधीन' : '⚙️ Under Development with Full Cyber Security'}
-              </span>
-              <button
-                disabled
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-400 font-semibold text-xs sm:text-sm border border-slate-700 cursor-not-allowed"
+            <div className="pt-4 border-t border-indigo-800/60 flex flex-wrap items-center gap-3">
+              <Link
+                to="/rental"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-white font-bold text-xs sm:text-sm hover:bg-blue-400 transition-colors shadow-md"
               >
-                <span>{isHi ? 'जल्द उपलब्ध होगा' : 'Coming Soon'}</span>
-              </button>
+                <span>{isHi ? 'किराया पोर्टल में प्रवेश करें' : 'Open Rental Portal'}</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/rental#quick-pay"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 text-white font-semibold text-xs sm:text-sm hover:bg-white/20 transition-colors border border-white/15"
+              >
+                <span>{isHi ? 'किराया स्थिति / Quick Pay' : 'Check Dues / Pay'}</span>
+              </Link>
             </div>
           </div>
 

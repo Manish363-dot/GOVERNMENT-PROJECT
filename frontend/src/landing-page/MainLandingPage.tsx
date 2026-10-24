@@ -7,6 +7,7 @@ const ZilaPanchayatAboutSection = lazy(() => import('./ZilaPanchayatAboutSection
 const AlmoraBlocksSection = lazy(() => import('./AlmoraBlocksSection').then(m => ({ default: m.AlmoraBlocksSection })));
 const ZilaServicesHubSection = lazy(() => import('./ZilaServicesHubSection').then(m => ({ default: m.ZilaServicesHubSection })));
 const NoticesSection = lazy(() => import('./NoticesSection').then(m => ({ default: m.NoticesSection })));
+const SocialMediaSection = lazy(() => import('./SocialMediaSection').then(m => ({ default: m.SocialMediaSection })));
 
 export const MainLandingPage = React.memo(() => {
   const location = useLocation();
@@ -24,6 +25,8 @@ export const MainLandingPage = React.memo(() => {
       targetId = 'blocks';
     } else if (h === '#services-hub' || h === '#services') {
       targetId = 'services-hub';
+    } else if (h === '#social-engagement' || h === '#social-media' || h === '#social') {
+      targetId = 'social-engagement';
     }
 
     if (targetId) {
@@ -42,6 +45,7 @@ export const MainLandingPage = React.memo(() => {
         <AlmoraBlocksSection />
         <ZilaServicesHubSection />
         <NoticesSection />
+        <SocialMediaSection />
       </Suspense>
     </>
   );
