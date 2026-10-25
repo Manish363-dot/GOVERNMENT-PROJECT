@@ -22,13 +22,6 @@ export const SafaiHeroBanner = React.memo(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto">
-          
-          {/* Breadcrumb / Tag */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs sm:text-sm font-semibold mb-4">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>{isHi ? 'जिला पंचायत अल्मोड़ा • स्वच्छता प्रकोष्ठ' : 'Zila Panchayat Almora • Sanitation Cell'}</span>
-          </div>
-
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight">
             {isHi ? 'ठोस अपशिष्ट प्रबंधन एवं नागरिक शिकायत निवारण पोर्टल' : 'Solid Waste Management & Citizen Grievance Portal'}
           </h1>

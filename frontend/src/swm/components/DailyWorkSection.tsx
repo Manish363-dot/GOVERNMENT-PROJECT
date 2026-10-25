@@ -144,10 +144,6 @@ export const DailyWorkSection = React.memo(() => {
 
         {/* Section Heading */}
         <div className="text-left mb-10 flex flex-col items-start">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-sky-200 text-sky-900 text-xs font-semibold uppercase tracking-wider mb-3 border border-sky-300">
-            <ImageIcon className="w-3.5 h-3.5 text-sky-700" />
-            {t('dailyWork.badge', 'DAILY WORK & ACTIVITIES')}
-          </div>
           <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 mb-3">
             {t('dailyWork.title', 'Our Daily Operations & Blogs')}
           </h2>

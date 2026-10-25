@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useEffect } from 'react';
+import { ZilaServicesCarousel } from './ZilaServicesCarousel';
 
 export function AboutWebsitePage() {
   const { i18n } = useTranslation();
@@ -83,6 +84,9 @@ export function AboutWebsitePage() {
               }
             </p>
           </section>
+             <div className="pt-2">
+            <ZilaServicesCarousel />
+          </div>
 
         </div>
       </div>

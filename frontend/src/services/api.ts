@@ -39,9 +39,9 @@ export const api = {
   get: <T>(endpoint: string) => apiCall<T>(endpoint),
   post: <T>(endpoint: string, data: any) =>
     apiCall<T>(endpoint, { method: 'POST', body: JSON.stringify(data) }),
-  upload: async <T>(endpoint: string, formData: FormData): Promise<T> => {
+  upload: async <T>(endpoint: string, formData: FormData, method: string = 'POST'): Promise<T> => {
     const response = await fetch(`${API_URL}${endpoint}`, {
-      method: 'POST',
+      method,
       body: formData,
       credentials: 'include',
     });

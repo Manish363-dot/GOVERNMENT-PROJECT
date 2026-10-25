@@ -181,11 +181,6 @@ export const WasteSegregationSection = React.memo(() => {
 
         {/* Section Header */}
         <div className="text-left max-w-1xl mx-auto mb-10 sm:mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-pink-100 text-pink-900 text-xs font-bold uppercase tracking-wider mb-3 border border-pink-300 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-pink-700" />
-            {isHi ? 'कचरा स्रोत पृथक्करण प्रणाली' : '4-Dustbin Segregation Rule'}
-          </div>
-
           <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy-800 tracking-tight leading-tight">
             {isHi ? 'कचरा स्रोत पृथक्करण प्रणाली' : 'Waste Source Segregation Protocol'}
           </h2>

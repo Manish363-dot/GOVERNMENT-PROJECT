@@ -1,13 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Award,
   Download,
-  Share2,
-  Sparkles,
-  ShieldCheck,
-  RefreshCw,
-  CheckCircle2
+  RefreshCw
 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 
@@ -18,7 +13,7 @@ const FALLBACK_LOGO_URL = '/assets/logos/logo2.png';
 export const SwachhataPledgeSection = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
-  const { count, increment } = usePledgeCount();
+  const {count , increment } = usePledgeCount();
 
   const [citizenName, setCitizenName] = useState('');
   const [gramPanchayat, setGramPanchayat] = useState('');
@@ -302,13 +297,6 @@ export const SwachhataPledgeSection = React.memo(() => {
 
         {/* Section Header */}
         <div className="text-left max-w-3xl mb-10 sm:mb-14">
-          <div className="flex flex-wrap items-center gap-2.5 mb-3">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-amber-100 text-amber-900 text-xs font-bold uppercase tracking-wider border border-amber-300 shadow-xs">
-              <Award className="w-3.5 h-3.5 text-amber-700" />
-              {isHi ? 'नागरिक सहभागिता' : 'Citizen Engagement'}
-            </div>
-          </div>
-
           <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy-900 tracking-tight leading-tight">
             {isHi ? 'स्वच्छता शपथ लें एवं ई-सर्टिफिकेट पाएं' : 'Take Swachhata Pledge & Get Certificate'}
           </h2>
@@ -320,7 +308,6 @@ export const SwachhataPledgeSection = React.memo(() => {
           {/* Form Column (5 Cols) */}
           <div className="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
-              <Sparkles className="w-4 h-4 text-amber-600" />
               <h3 className="font-bold text-base text-navy-900">
                 {isHi ? 'शपथ पत्र प्रविष्टि (Pledge Form)' : 'Citizen Pledge Registration'}
               </h3>
@@ -407,7 +394,6 @@ export const SwachhataPledgeSection = React.memo(() => {
                   </>
                 ) : (
                   <>
-                    <ShieldCheck className="w-4 h-4 text-amber-400" />
                     <span>{isHi ? 'शपथ लें एवं ई-सर्टिफिकेट पाएं' : 'Take Pledge & Get Certificate'}</span>
                   </>
                 )}

@@ -101,9 +101,6 @@ export const RentalNavbar: React.FC = () => {
                     <span className="font-poppins font-bold text-[#0b1b36] text-[13px] sm:text-base xl:text-lg 2xl:text-xl tracking-tight leading-none mb-[2px] sm:mb-0 whitespace-nowrap">
                       {isHi ? 'संपत्ति एवं किराया प्रकोष्ठ' : 'Commercial Asset & Rental Cell'}
                     </span>
-                    <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 tracking-normal leading-tight hidden sm:block">
-                      {isHi ? 'जिला पंचायत अल्मोड़ा • उत्तराखण्ड शासन' : 'Zila Panchayat Almora • Govt. of Uttarakhand'}
-                    </span>
                   </div>
                 </a>
               </div>
@@ -123,18 +120,6 @@ export const RentalNavbar: React.FC = () => {
                   className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-[#0b1b36] hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
                 >
                   {t.nav.home}
-                </a>
-                <a
-                  href="#services-hub"
-                  className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-[#0b1b36] hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
-                >
-                  {isHi ? 'नागरिक सेवाएं' : 'Services'}
-                </a>
-                <a
-                  href="#about"
-                  className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-[#0b1b36] hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
-                >
-                  {t.nav.about}
                 </a>
                 <a
                   href="#properties"
@@ -158,13 +143,7 @@ export const RentalNavbar: React.FC = () => {
                   {t.nav.documents}
                 </a>
                 <a
-                  href="#feedback"
-                  className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-[#0b1b36] hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
-                >
-                  {t.nav.feedback}
-                </a>
-                <a
-                  href="#contact"
+                  href="/contact"
                   className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-[#0b1b36] hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
                 >
                   {t.nav.contact}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { rentalAuthApi } from '../services/rentalAuth.service';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '../components/TopBarLogos';
 import {
   Eye,
@@ -13,7 +14,6 @@ import {
   ShieldCheck,
   Building2,
   FileCheck2,
-  Sparkles,
   UserCheck,
   Store,
   CreditCard,
@@ -61,18 +61,6 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
     setIdentifier(val);
   };
 
-  // Pre-fill demo mobile credentials
-  const handleQuickFill = (targetRole: 'admin' | 'user') => {
-    setError('');
-    if (targetRole === 'admin') {
-      setIdentifier('9876543210');
-      setPassword('Admin@ZilaPanchayat2026');
-    } else {
-      setIdentifier('9412012345');
-      setPassword('Tenant@Almora2026');
-    }
-  };
-
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -105,38 +93,50 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
 
     setLoading(true);
 
-    setTimeout(() => {
-      setLoading(false);
-
+    try {
       if (role === 'admin') {
-        login({
-          id: 'admin-01',
-          name: isHi ? 'प्रशासनिक अधिकारी (अल्मोड़ा)' : 'Admin Officer (Almora)',
-          identifier: cleanMobile,
-          mobile: cleanMobile,
-          role: 'admin',
-        });
-      } else {
-        login({
-          id: 'tenant-101',
-          name: isHi ? 'रमेश चंद्र जोशी' : 'Ramesh Chandra Joshi',
-          identifier: cleanMobile,
-          mobile: cleanMobile,
-          role: 'user',
-          shopNo: 'SHOP-101',
-          market: isHi ? 'धारानौला मुख्य बाजार' : 'Dharanaula Main Market',
-        });
-      }
-
-      setSuccess(
-        isHi
-          ? role === 'admin'
+        const res = await rentalAuthApi.adminLogin(cleanMobile, password);
+        const adminData = res.data?.admin;
+        if (adminData) {
+          const isSuper =
+            adminData.role === 'SUPER_ADMIN' ||
+            adminData.mobile === '9412000001' ||
+            cleanMobile === '9412000001' ||
+            adminData.username === 'almora_superadmin';
+          const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
+          login({
+            id: adminData.id,
+            name: adminData.fullName || (adminData as any).full_name || adminData.username,
+            identifier: adminData.username || cleanMobile,
+            mobile: adminData.mobile || cleanMobile,
+            role: resolvedRole,
+            adminRole: resolvedRole,
+            permissions: adminData.permissions || [],
+          });
+        }
+        setSuccess(
+          isHi
             ? 'व्यवस्थापक मोबाइल सत्यापन सफल! रेंटल डैशबोर्ड पर ले जाया जा रहा है...'
-            : 'किरायेदार मोबाइल सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
-          : role === 'admin'
-          ? 'Admin mobile verification successful! Redirecting...'
-          : 'Tenant mobile verified! Redirecting to rent payment...'
-      );
+            : 'Admin authentication successful! Redirecting to dashboard...'
+        );
+      } else {
+        const res = await rentalAuthApi.userLogin(cleanMobile, password);
+        const userData = res.data?.user;
+        if (userData) {
+          login({
+            id: userData.id,
+            name: userData.fullName,
+            identifier: userData.userCode || cleanMobile,
+            mobile: userData.mobile,
+            role: 'user',
+          });
+        }
+        setSuccess(
+          isHi
+            ? 'किरायेदार सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
+            : 'Tenant verified successfully! Redirecting...'
+        );
+      }
 
       setTimeout(() => {
         if (redirectTarget === 'quick-pay' || redirectTarget === 'pay-rent') {
@@ -145,11 +145,30 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
             const el = document.getElementById('quick-pay');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 150);
+        } else if (role === 'admin') {
+          navigate('/rental/admin/dashboard');
         } else {
-          navigate('/rental');
+          navigate('/rental/user/dashboard');
         }
-      }, 1200);
-    }, 850);
+      }, 1000);
+    } catch (err: any) {
+      if (err.status === 429 || err.message?.toLowerCase().includes('too many') || err.message?.toLowerCase().includes('throttled')) {
+        setError(
+          isHi
+            ? 'अत्यधिक लॉगिन प्रयास! सुरक्षा कारणों से आपका एक्सेस 15 मिनट के लिए सीमित किया गया है।'
+            : 'Too many authentication attempts! Access temporarily throttled for 15 minutes.'
+        );
+      } else {
+        setError(
+          err.message ||
+            (isHi
+              ? 'लॉगिन विफल रहा। कृपया अपने क्रेडेंशियल जांचें।'
+              : 'Login failed. Please verify your credentials.')
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -486,29 +505,6 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-              </div>
-
-              {/* Quick-Fill Demo Pill */}
-              <div className="flex items-center justify-between pt-0.5">
-                <span className="text-[11px] text-slate-400">
-                  {isHi ? 'परीक्षण क्रेडेंशियल्स:' : 'Testing credentials:'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleQuickFill(role)}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                >
-                  <Sparkles className="w-3 h-3 text-amber-600" />
-                  <span>
-                    {role === 'admin'
-                      ? isHi
-                        ? 'एडमिन मोबाइल (9876543210) भरें'
-                        : 'Quick Fill Admin (9876543210)'
-                      : isHi
-                      ? 'किरायेदार मोबाइल (9412012345) भरें'
-                      : 'Quick Fill Tenant (9412012345)'}
-                  </span>
-                </button>
               </div>
 
               <button

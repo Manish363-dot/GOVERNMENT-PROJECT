@@ -6,9 +6,12 @@ export interface UserProfile {
   name: string;
   identifier: string;
   mobile?: string;
-  role: 'admin' | 'user';
+  role: 'SUPER_ADMIN' | 'SUB_ADMIN' | 'admin' | 'user';
+  adminRole?: 'SUPER_ADMIN' | 'SUB_ADMIN';
+  permissions?: string[];
   shopNo?: string;
   market?: string;
+  userCode?: string;
 }
 
 interface AuthContextType {
@@ -27,7 +30,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (
+          parsed &&
+          (parsed.mobile === '9412000001' ||
+            parsed.identifier === '9412000001' ||
+            parsed.identifier === 'almora_superadmin')
+        ) {
+          parsed.role = 'SUPER_ADMIN';
+          parsed.adminRole = 'SUPER_ADMIN';
+        }
+        return parsed;
+      }
+      return null;
     } catch {
       return null;
     }
@@ -36,9 +52,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   const login = (userData: UserProfile) => {
-    setUser(userData);
+    const isSuper =
+      userData.mobile === '9412000001' ||
+      userData.identifier === '9412000001' ||
+      userData.identifier === 'almora_superadmin' ||
+      userData.role === 'SUPER_ADMIN' ||
+      userData.adminRole === 'SUPER_ADMIN';
+
+    const normalizedData: UserProfile = {
+      ...userData,
+      role: isSuper ? 'SUPER_ADMIN' : userData.role,
+      adminRole: isSuper ? 'SUPER_ADMIN' : userData.adminRole,
+    };
+
+    setUser(normalizedData);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedData));
     } catch (e) {
       console.error('Failed to save auth to localStorage', e);
     }
@@ -84,10 +113,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+const defaultAuthContext: AuthContextType = {
+  user: null,
+  isAuthenticated: false,
+  login: () => {},
+  logout: () => {},
+  requireAuth: () => false,
+};
+
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    return defaultAuthContext;
   }
   return context;
 };

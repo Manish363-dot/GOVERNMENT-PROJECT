@@ -8,7 +8,6 @@ import { AboutSection } from './components/AboutSection';
 import { PropertiesSection } from './components/PropertiesSection';
 import { NoticesSection } from './components/NoticesSection';
 import { DocumentsSection } from './components/DocumentsSection';
-import { FeedbackSection } from './components/FeedbackSection';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
 import { ShieldCheck, ExternalLink } from 'lucide-react';
@@ -62,9 +61,6 @@ const RentalLandingContent: React.FC = () => {
 
         {/* 7. Bylaws, Rules & Documents */}
         <DocumentsSection />
-
-        {/* 8. Citizen Grievance & Feedback Form */}
-        <FeedbackSection />
       </main>
 
       {/* 🏛️ Official Government Footer */}

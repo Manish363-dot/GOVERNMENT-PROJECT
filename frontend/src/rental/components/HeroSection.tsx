@@ -30,15 +30,7 @@ export const HeroSimple: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto">
-          {/* Breadcrumb / Tag Pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50/90 border border-emerald-300 text-emerald-800 text-xs sm:text-sm font-bold mb-4 shadow-xs backdrop-blur-xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>
-              {isHi
-                ? 'जिला पंचायत अल्मोड़ा • संपत्ति एवं किराया प्रकोष्ठ'
-                : 'Zila Panchayat Almora • Commercial Asset Cell'}
-            </span>
-          </div>
+       
 
           {/* H1 Title */}
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight leading-tight">

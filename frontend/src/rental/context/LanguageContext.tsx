@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Language, translations } from '../translations/translations';
+import i18n from '@/i18n/config';
 
 interface LanguageContextType {
   language: Language;
@@ -21,10 +22,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     localStorage.setItem('rental_lang', lang);
     localStorage.setItem('app_lang', lang);
     document.documentElement.lang = lang;
+    if (i18n && i18n.changeLanguage) {
+      i18n.changeLanguage(lang);
+    }
   };
 
   const toggleLanguage = () => {
-    setLanguage(language === 'hi' ? 'en' : 'hi');
+    const nextLang = language === 'hi' ? 'en' : 'hi';
+    setLanguage(nextLang);
   };
 
   useEffect(() => {
@@ -45,10 +50,17 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   );
 };
 
+const defaultLanguageContext: LanguageContextType = {
+  language: 'hi',
+  setLanguage: () => {},
+  toggleLanguage: () => {},
+  t: translations['hi'],
+};
+
 export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
   if (!context) {
-    throw new Error('useLanguage must be used within a LanguageProvider');
+    return defaultLanguageContext;
   }
   return context;
 };

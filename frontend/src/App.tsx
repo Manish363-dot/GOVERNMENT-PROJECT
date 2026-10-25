@@ -47,8 +47,27 @@ const VehiclesPage = lazy(() => import('@/swm/dashboard/VehiclesPage').then(m =>
 const MediaDailyWorkPage = lazy(() => import('@/swm/dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
 
 // 🔵 3. Rental & Commercial Asset Platform Lazy Pages
+const RentalRootLayout = lazy(() => import('@/rental/RentalRootLayout').then(m => ({ default: m.RentalRootLayout })));
 const RentalPortalPage = lazy(() => import('@/rental/RentalPortalPage').then(m => ({ default: m.RentalPortalPage })));
 const RentalAdminSignInPage = lazy(() => import('@/rental/RentalAdminSignInPage').then(m => ({ default: m.RentalAdminSignInPage })));
+const RegisterTenantPage = lazy(() => import('@/rental/admin/RegisterTenantPage').then(m => ({ default: m.RegisterTenantPage })));
+const TenantListPage = lazy(() => import('@/rental/admin/TenantListPage').then(m => ({ default: m.TenantListPage })));
+const TenantProfilePage = lazy(() => import('@/rental/admin/TenantProfilePage').then(m => ({ default: m.TenantProfilePage })));
+const PropertyManagementPage = lazy(() => import('@/rental/admin/PropertyManagementPage').then(m => ({ default: m.PropertyManagementPage })));
+const BillingManagementPage = lazy(() => import('@/rental/admin/BillingManagementPage').then(m => ({ default: m.BillingManagementPage })));
+
+// Admin Panel Pages
+const AdminDashboardPage = lazy(() => import('@/rental/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
+const SubAdminManagementPage = lazy(() => import('@/rental/admin/SubAdminManagementPage').then(m => ({ default: m.SubAdminManagementPage })));
+const RecordsAuditPage = lazy(() => import('@/rental/admin/RecordsAuditPage').then(m => ({ default: m.RecordsAuditPage })));
+const AdminNoticesPage = lazy(() => import('@/rental/admin/AdminNoticesPage').then(m => ({ default: m.AdminNoticesPage })));
+
+// User / Tenant Panel Pages
+const UserDashboardPage = lazy(() => import('@/rental/user/UserDashboardPage').then(m => ({ default: m.UserDashboardPage })));
+const UserBillsPage = lazy(() => import('@/rental/user/UserBillsPage').then(m => ({ default: m.UserBillsPage })));
+const UserReceiptsPage = lazy(() => import('@/rental/user/UserReceiptsPage').then(m => ({ default: m.UserReceiptsPage })));
+const UserNoticesPage = lazy(() => import('@/rental/user/UserNoticesPage').then(m => ({ default: m.UserNoticesPage })));
+const UserProfilePage = lazy(() => import('@/rental/user/UserProfilePage').then(m => ({ default: m.UserProfilePage })));
 
 const PageLoader = () => (
   <div className="flex h-screen w-full items-center justify-center bg-slate-50/50">
@@ -132,12 +151,36 @@ function App() {
             <Route path="/under-maintenance" element={<MaintenancePage />} />
 
             {/* Commercial Asset & Rental Management Platform */}
-            <Route path="/rental" element={<RentalPortalPage />} />
-            <Route path="/rental-system" element={<RentalPortalPage />} />
-            <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
-            <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
-            <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
-            <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
+            <Route element={<RentalRootLayout />}>
+              <Route path="/rental" element={<RentalPortalPage />} />
+              <Route path="/rental-system" element={<RentalPortalPage />} />
+              <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
+              <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
+              <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
+              <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
+
+              {/* Admin Panel Routes */}
+              <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/rental/admin" element={<AdminDashboardPage />} />
+              <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
+              <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
+              <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
+              <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
+              <Route path="/rental/admin/tenants" element={<TenantListPage />} />
+              <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
+              <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
+              <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
+              <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
+
+              {/* User / Tenant Panel Routes */}
+              <Route path="/rental/user/dashboard" element={<UserDashboardPage />} />
+              <Route path="/rental/user" element={<UserDashboardPage />} />
+              <Route path="/rental/user/bills" element={<UserBillsPage />} />
+              <Route path="/rental/user/receipts" element={<UserReceiptsPage />} />
+              <Route path="/rental/user/notices" element={<UserNoticesPage />} />
+              <Route path="/rental/user/profile" element={<UserProfilePage />} />
+              <Route path="/rental/profile" element={<UserProfilePage />} />
+            </Route>
 
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFoundPage />} />

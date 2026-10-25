@@ -16,45 +16,6 @@ interface SampleTenantRecord {
   lastPaidDate?: string;
 }
 
-const SAMPLE_DATA: SampleTenantRecord[] = [
-  {
-    shopNo: 'SHOP-101',
-    tenantName: 'रमेश चंद्र जोशी (R. C. Joshi)',
-    market: 'धारानौला मुख्य बाजार (Dharanaula Market)',
-    mobile: '9876543210',
-    monthlyRent: 3500,
-    unpaidMonths: 1,
-    arrears: 0,
-    totalDue: 3500,
-    status: 'Unpaid',
-    lastPaidDate: '10 Sep 2026',
-  },
-  {
-    shopNo: 'SHOP-102',
-    tenantName: 'कमल सिंह रावत (K. S. Rawat)',
-    market: 'तहसील परिसर हवालबाग (Hawalbagh Complex)',
-    mobile: '9897012345',
-    monthlyRent: 4200,
-    unpaidMonths: 2,
-    arrears: 4200,
-    totalDue: 8400,
-    status: 'Unpaid',
-    lastPaidDate: '10 Aug 2026',
-  },
-  {
-    shopNo: 'SHOP-103',
-    tenantName: 'हरीश वर्मा (Harish Verma)',
-    market: 'रानीखेत बस स्टैंड परिसर (Ranikhet Stand)',
-    mobile: '9412098765',
-    monthlyRent: 5000,
-    unpaidMonths: 0,
-    arrears: 0,
-    totalDue: 0,
-    status: 'Paid',
-    lastPaidDate: '08 Oct 2026',
-  },
-];
-
 export const QuickPaySection: React.FC = () => {
   const { t, language } = useLanguage();
   const isHi = language === 'hi';
@@ -64,35 +25,61 @@ export const QuickPaySection: React.FC = () => {
   const [result, setResult] = useState<SampleTenantRecord | null>(null);
   const [searched, setSearched] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!query.trim()) return;
+  const executeSearch = async (searchTerm: string) => {
+    const cleanQ = searchTerm.trim();
+    if (!cleanQ) return;
 
     setSearched(true);
     setPaymentSuccess(false);
-    const cleanQ = query.trim().toUpperCase();
+    setSearching(true);
+    setSearchError('');
+    setResult(null);
 
-    const match = SAMPLE_DATA.find(
-      (item) => item.shopNo.toUpperCase() === cleanQ || item.mobile === query.trim()
-    );
+    try {
+      // Real backend dues search from Database
+      const { rentalBillingApi } = await import('../services/rentalBilling.service');
+      const apiRes = await rentalBillingApi.searchDues(cleanQ);
 
-    if (match) {
-      setResult(match);
-    } else {
-      // Return a generated mock record for any other input so the user can test any shop number
-      setResult({
-        shopNo: cleanQ.startsWith('SHOP-') ? cleanQ : `SHOP-${cleanQ}`,
-        tenantName: user ? user.name : (isHi ? 'आवंटी (सत्यापित नागरिक)' : 'Verified Allottee'),
-        market: isHi ? 'अल्मोड़ा नगर बाजार परिसर' : 'Almora Town Market Complex',
-        mobile: query.trim(),
-        monthlyRent: 3200,
-        unpaidMonths: 1,
-        arrears: 0,
-        totalDue: 3200,
-        status: 'Unpaid',
-      });
+      if (apiRes.data && apiRes.data.pendingBills && apiRes.data.pendingBills.length > 0) {
+        const firstBill = apiRes.data.pendingBills[0];
+        setResult({
+          shopNo: firstBill.propertyNumber,
+          tenantName: firstBill.tenantName,
+          market: firstBill.location,
+          mobile: cleanQ,
+          monthlyRent: firstBill.totalAmountDue,
+          unpaidMonths: apiRes.data.billCount,
+          arrears: firstBill.totalAmountDue - firstBill.balanceDue,
+          totalDue: apiRes.data.totalOutstanding,
+          status: apiRes.data.totalOutstanding > 0 ? 'Unpaid' : 'Paid',
+        });
+      } else {
+        setResult(null);
+        setSearchError(
+          isHi
+            ? `दुकान संख्या या मोबाइल "${cleanQ}" के लिए कोई लंबित बकाया बिल नहीं मिला।`
+            : `No pending dues found for Shop/Mobile "${cleanQ}".`
+        );
+      }
+    } catch (err: any) {
+      console.error('Backend search dues error:', err);
+      setResult(null);
+      setSearchError(
+        isHi
+          ? 'बकाया राशि खोजने में असमर्थ। कृपया दुकान संख्या या मोबाइल नंबर की जांच करें।'
+          : 'Unable to find dues. Please check the Shop Number or Mobile Number.'
+      );
+    } finally {
+      setSearching(false);
     }
+  };
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await executeSearch(query);
   };
 
   const handleSimulatePayment = () => {
@@ -161,13 +148,7 @@ export const QuickPaySection: React.FC = () => {
                   type="button"
                   onClick={() => {
                     setQuery(user.shopNo || '');
-                    const cleanQ = (user.shopNo || '').toUpperCase();
-                    const match = SAMPLE_DATA.find((item) => item.shopNo.toUpperCase() === cleanQ);
-                    if (match) {
-                      setResult(match);
-                      setSearched(true);
-                      setPaymentSuccess(false);
-                    }
+                    executeSearch(user.shopNo || '');
                   }}
                   className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer shrink-0"
                 >
@@ -212,39 +193,29 @@ export const QuickPaySection: React.FC = () => {
               </div>
               <button
                 type="submit"
-                className="bg-[#0b1b36] hover:bg-[#152a4d] text-white font-bold px-6 py-3 rounded-lg text-sm transition-colors shadow flex items-center justify-center gap-2 cursor-pointer"
+                disabled={searching}
+                className="bg-[#0b1b36] hover:bg-[#152a4d] text-white font-bold px-6 py-3 rounded-lg text-sm transition-colors shadow flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70"
               >
                 <Search className="w-4 h-4" />
-                <span>{t.quickPay.searchBtn}</span>
-              </button>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500 pt-1">
-              <span className="font-semibold text-slate-700">
-                {isHi ? 'त्वरित जांच हेतु टाइप करें:' : 'Quick demo search:'}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuery('SHOP-101')}
-                className="bg-slate-100 hover:bg-slate-200 text-blue-700 px-2 py-0.5 rounded font-mono text-xs border border-slate-200 cursor-pointer"
-              >
-                SHOP-101
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuery('SHOP-102')}
-                className="bg-slate-100 hover:bg-slate-200 text-blue-700 px-2 py-0.5 rounded font-mono text-xs border border-slate-200 cursor-pointer"
-              >
-                SHOP-102
-              </button>
-              <button
-                type="button"
-                onClick={() => setQuery('9876543210')}
-                className="bg-slate-100 hover:bg-slate-200 text-blue-700 px-2 py-0.5 rounded font-mono text-xs border border-slate-200 cursor-pointer"
-              >
-                9876543210
+                <span>{searching ? (isHi ? 'खोजा जा रहा है...' : 'Searching...') : t.quickPay.searchBtn}</span>
               </button>
             </div>
           </form>
+
+          {/* Not Found / Error Message */}
+          {searched && !result && searchError && (
+            <div className="mt-8 pt-6 border-t border-slate-200 animate-fadeIn">
+              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-xs sm:text-sm">
+                  <span className="font-bold">
+                    {isHi ? 'कोई रिकॉर्ड नहीं मिला' : 'No Records Found'}
+                  </span>
+                  <p className="text-amber-800 text-xs mt-0.5">{searchError}</p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Search Result Box */}
           {searched && result && (

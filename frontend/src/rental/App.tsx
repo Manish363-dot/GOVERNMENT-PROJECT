@@ -9,7 +9,6 @@ import { AboutSection } from './components/AboutSection';
 import { PropertiesSection } from './components/PropertiesSection';
 import { NoticesSection } from './components/NoticesSection';
 import { DocumentsSection } from './components/DocumentsSection';
-import { FeedbackSection } from './components/FeedbackSection';
 import { AdminSignInPage } from './pages/AdminSignInPage';
 import { useLanguage } from './context/LanguageContext';
 import { Phone, Mail, MapPin, Clock, ExternalLink, ShieldCheck } from 'lucide-react';
@@ -51,9 +50,6 @@ const LandingPage: React.FC = () => {
 
         {/* 7. Bylaws, Rules & Documents (PRD Section 5 - Documents) */}
         <DocumentsSection />
-
-        {/* 8. Citizen Grievance & Feedback Form (PRD Section 5 & 17) */}
-        <FeedbackSection />
       </main>
 
       {/* 🏛️ Official Government Footer (PRD Section 5 - Contact Us) */}
@@ -220,18 +216,65 @@ const LandingPage: React.FC = () => {
   );
 };
 
+import { RegisterTenantPage } from './admin/RegisterTenantPage';
+import { TenantListPage } from './admin/TenantListPage';
+import { PropertyManagementPage } from './admin/PropertyManagementPage';
+import { BillingManagementPage } from './admin/BillingManagementPage';
+
+// Admin Pages
+import { AdminDashboardPage } from './admin/AdminDashboardPage';
+import { SubAdminManagementPage } from './admin/SubAdminManagementPage';
+import { RecordsAuditPage } from './admin/RecordsAuditPage';
+import { AdminNoticesPage } from './admin/AdminNoticesPage';
+
+// User / Tenant Pages
+import { UserDashboardPage } from './user/UserDashboardPage';
+import { UserBillsPage } from './user/UserBillsPage';
+import { UserReceiptsPage } from './user/UserReceiptsPage';
+import { UserNoticesPage } from './user/UserNoticesPage';
+import { UserProfilePage } from './user/UserProfilePage';
+
+import { LanguageProvider } from './context/LanguageContext';
+import { AuthProvider } from './context/AuthContext';
+
 /* Root App with routing */
 export const App: React.FC = () => {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/admin/login" element={<AdminSignInPage initialRole="admin" />} />
-      <Route path="/signin" element={<AdminSignInPage initialRole="user" />} />
-      <Route path="/login" element={<AdminSignInPage initialRole="user" />} />
-      <Route path="/admin/signup" element={<AdminSignInPage initialRole="admin" />} />
-      <Route path="/signup" element={<AdminSignInPage initialRole="user" />} />
-      {/* Catch-all → redirect home */}
-      <Route path="*" element={<LandingPage />} />
-    </Routes>
+    <LanguageProvider>
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/admin/login" element={<AdminSignInPage initialRole="admin" />} />
+          <Route path="/signin" element={<AdminSignInPage initialRole="user" />} />
+          <Route path="/login" element={<AdminSignInPage initialRole="user" />} />
+          <Route path="/admin/signup" element={<AdminSignInPage initialRole="admin" />} />
+          <Route path="/signup" element={<AdminSignInPage initialRole="user" />} />
+          
+          {/* ── ADMIN PANEL ROUTES ─────────────────────────────────────────── */}
+          <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/subadmins" element={<SubAdminManagementPage />} />
+          <Route path="/admin/records" element={<RecordsAuditPage />} />
+          <Route path="/admin/audit" element={<RecordsAuditPage />} />
+          <Route path="/admin/properties" element={<PropertyManagementPage />} />
+          <Route path="/admin/tenants" element={<TenantListPage />} />
+          <Route path="/admin/register-tenant" element={<RegisterTenantPage />} />
+          <Route path="/admin/billing" element={<BillingManagementPage />} />
+          <Route path="/admin/notices" element={<AdminNoticesPage />} />
+
+          {/* ── USER / TENANT PANEL ROUTES ─────────────────────────────────── */}
+          <Route path="/user/dashboard" element={<UserDashboardPage />} />
+          <Route path="/user" element={<UserDashboardPage />} />
+          <Route path="/user/bills" element={<UserBillsPage />} />
+          <Route path="/user/receipts" element={<UserReceiptsPage />} />
+          <Route path="/user/notices" element={<UserNoticesPage />} />
+          <Route path="/user/profile" element={<UserProfilePage />} />
+          <Route path="/profile" element={<UserProfilePage />} />
+
+          {/* Catch-all → redirect home */}
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </AuthProvider>
+    </LanguageProvider>
   );
 };
