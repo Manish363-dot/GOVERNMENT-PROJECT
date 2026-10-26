@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '@/services/api';
 
 export interface UserProfile {
   id: string;
@@ -26,22 +27,30 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'zp_rental_auth_user';
 
+const normalizeUserData = (userData: UserProfile): UserProfile => {
+  const isSuper =
+    userData.mobile === '9412000001' ||
+    userData.identifier === '9412000001' ||
+    userData.identifier === 'almora_superadmin' ||
+    userData.role === 'SUPER_ADMIN' ||
+    userData.adminRole === 'SUPER_ADMIN';
+
+  return {
+    ...userData,
+    role: isSuper ? 'SUPER_ADMIN' : userData.role,
+    adminRole: isSuper ? 'SUPER_ADMIN' : userData.adminRole,
+  };
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<UserProfile | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (
-          parsed &&
-          (parsed.mobile === '9412000001' ||
-            parsed.identifier === '9412000001' ||
-            parsed.identifier === 'almora_superadmin')
-        ) {
-          parsed.role = 'SUPER_ADMIN';
-          parsed.adminRole = 'SUPER_ADMIN';
+        if (parsed) {
+          return normalizeUserData(parsed);
         }
-        return parsed;
       }
       return null;
     } catch {
@@ -51,23 +60,88 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const navigate = useNavigate();
 
-  const login = (userData: UserProfile) => {
-    const isSuper =
-      userData.mobile === '9412000001' ||
-      userData.identifier === '9412000001' ||
-      userData.identifier === 'almora_superadmin' ||
-      userData.role === 'SUPER_ADMIN' ||
-      userData.adminRole === 'SUPER_ADMIN';
-
-    const normalizedData: UserProfile = {
-      ...userData,
-      role: isSuper ? 'SUPER_ADMIN' : userData.role,
-      adminRole: isSuper ? 'SUPER_ADMIN' : userData.adminRole,
+  // 1. Listen for storage changes across tabs & dispatch events
+  useEffect(() => {
+    const syncUser = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed) {
+            setUser(normalizeUserData(parsed));
+          }
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      }
     };
 
-    setUser(normalizedData);
+    window.addEventListener('storage', syncUser);
+    window.addEventListener('rental-auth-change', syncUser);
+    return () => {
+      window.removeEventListener('storage', syncUser);
+      window.removeEventListener('rental-auth-change', syncUser);
+    };
+  }, []);
+
+  // 2. Validate current session with backend /rental/auth/admin/me
+  useEffect(() => {
+    const verifySessionWithBackend = async () => {
+      try {
+        const res = await api.get<{
+          success: boolean;
+          data: {
+            admin?: {
+              id: string;
+              username: string;
+              fullName: string;
+              role: 'SUPER_ADMIN' | 'SUB_ADMIN';
+              mobile: string;
+              email?: string;
+              permissions: string[];
+            };
+          };
+        }>('/rental/auth/admin/me');
+
+        if (res && res.data && res.data.admin) {
+          const adm = res.data.admin;
+          const isSuper =
+            adm.role === 'SUPER_ADMIN' ||
+            adm.mobile === '9412000001' ||
+            adm.username === 'almora_superadmin';
+          const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
+
+          const backendUser: UserProfile = {
+            id: adm.id,
+            name: adm.fullName || adm.username,
+            identifier: adm.username || adm.mobile,
+            mobile: adm.mobile,
+            role: resolvedRole,
+            adminRole: resolvedRole,
+            permissions: adm.permissions || [],
+          };
+
+          setUser(backendUser);
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(backendUser));
+          } catch {}
+        }
+      } catch {
+        // Not logged in or session expired
+      }
+    };
+
+    verifySessionWithBackend();
+  }, []);
+
+  const login = (userData: UserProfile) => {
+    const normalized = normalizeUserData(userData);
+    setUser(normalized);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalizedData));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+      window.dispatchEvent(new Event('rental-auth-change'));
     } catch (e) {
       console.error('Failed to save auth to localStorage', e);
     }
@@ -77,23 +151,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     try {
       localStorage.removeItem(STORAGE_KEY);
+      window.dispatchEvent(new Event('rental-auth-change'));
     } catch (e) {
       console.error('Failed to remove auth from localStorage', e);
     }
   };
 
-  /**
-   * Helper to check if logged in.
-   * If logged in, calls callback and returns true.
-   * If not logged in, redirects to /rental/signin?redirect=... and returns false.
-   */
   const requireAuth = (callback?: () => void, redirectTarget = 'quick-pay'): boolean => {
     if (user) {
       if (callback) callback();
       return true;
     }
-
-    // Not authenticated -> redirect to login with return target
     navigate(`/rental/signin?redirect=${encodeURIComponent(redirectTarget)}`);
     return false;
   };
@@ -113,18 +181,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-const defaultAuthContext: AuthContextType = {
-  user: null,
-  isAuthenticated: false,
-  login: () => {},
-  logout: () => {},
-  requireAuth: () => false,
-};
-
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    return defaultAuthContext;
+    let localUser: UserProfile | null = null;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        localUser = normalizeUserData(JSON.parse(saved));
+      }
+    } catch {}
+
+    return {
+      user: localUser,
+      isAuthenticated: !!localUser,
+      login: (userData: UserProfile) => {
+        const normalized = normalizeUserData(userData);
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
+          window.dispatchEvent(new Event('rental-auth-change'));
+        } catch {}
+      },
+      logout: () => {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          window.dispatchEvent(new Event('rental-auth-change'));
+        } catch {}
+      },
+      requireAuth: () => !!localUser,
+    };
   }
   return context;
 };

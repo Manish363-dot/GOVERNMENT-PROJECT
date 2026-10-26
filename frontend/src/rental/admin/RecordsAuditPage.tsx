@@ -132,11 +132,6 @@ export const RecordsAuditPage: React.FC = () => {
   return (
     <AdminLayout
       title={isHi ? 'वित्तीय रिकॉर्ड्स एवं ऑडिट लेजर' : 'Financial Records & Audit Ledger'}
-      subtitle={
-        isHi
-          ? 'माहवार, वर्षवार एवं किरायेदार अनुसार राजस्व वसूली रिकॉर्ड्स, रसीदें एवं डाउनलोड'
-          : 'Monthly, yearly, and tenant-wise revenue collection ledger with receipt downloads'
-      }
       breadcrumbs={[{ label: isHi ? 'ऑडिट रिकॉर्ड्स' : 'Audit Records' }]}
     >
       {/* ───────────────────────────────────────────────────────────────────────
@@ -148,9 +143,7 @@ export const RecordsAuditPage: React.FC = () => {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               {isHi ? 'चयनित अवधि की कुल वसूली' : 'Total Revenue Collected'}
             </span>
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <Receipt className="w-5 h-5" />
-            </div>
+
           </div>
           <div className="mt-2">
             <div className="text-2xl font-black text-emerald-700 tracking-tight">
@@ -167,9 +160,7 @@ export const RecordsAuditPage: React.FC = () => {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               {isHi ? 'कुल भुगतान संख्या' : 'Total Transactions'}
             </span>
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
-              <BarChart3 className="w-5 h-5" />
-            </div>
+
           </div>
           <div className="mt-2">
             <div className="text-2xl font-black text-slate-900 tracking-tight">
@@ -186,9 +177,7 @@ export const RecordsAuditPage: React.FC = () => {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               {isHi ? 'ऑनलाइन गेटवे भुगतान' : 'Online Payments'}
             </span>
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
-              <CreditCard className="w-5 h-5" />
-            </div>
+
           </div>
           <div className="mt-2">
             <div className="text-2xl font-black text-purple-700 tracking-tight">
@@ -205,9 +194,7 @@ export const RecordsAuditPage: React.FC = () => {
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               {isHi ? 'कार्यालय काउंटर वसूली' : 'Counter Cash / DD'}
             </span>
-            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
-              <Wallet className="w-5 h-5" />
-            </div>
+
           </div>
           <div className="mt-2">
             <div className="text-2xl font-black text-amber-700 tracking-tight">

@@ -224,6 +224,7 @@ import { BillingManagementPage } from './admin/BillingManagementPage';
 // Admin Pages
 import { AdminDashboardPage } from './admin/AdminDashboardPage';
 import { SubAdminManagementPage } from './admin/SubAdminManagementPage';
+import { RegisterSubAdminPage } from './admin/RegisterSubAdminPage';
 import { RecordsAuditPage } from './admin/RecordsAuditPage';
 import { AdminNoticesPage } from './admin/AdminNoticesPage';
 
@@ -254,6 +255,7 @@ export const App: React.FC = () => {
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/subadmins" element={<SubAdminManagementPage />} />
+          <Route path="/admin/register-subadmin" element={<RegisterSubAdminPage />} />
           <Route path="/admin/records" element={<RecordsAuditPage />} />
           <Route path="/admin/audit" element={<RecordsAuditPage />} />
           <Route path="/admin/properties" element={<PropertyManagementPage />} />

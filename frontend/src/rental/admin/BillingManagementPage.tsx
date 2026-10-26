@@ -156,11 +156,6 @@ export const BillingManagementPage: React.FC = () => {
   return (
     <AdminLayout
       title={isHi ? 'मासिक किराया बिलिंग एवं राजस्व वसूली' : 'Commercial Billing & Invoices'}
-      subtitle={
-        isHi
-          ? 'जिला पंचायत अल्मोड़ा के व्यावसायिक परिसंपत्तियों के मासिक चालान एवं बकाया वसूली'
-          : 'Monthly rental bill generation, arrears roll-forward, and counter payment collection'
-      }
       breadcrumbs={[{ label: isHi ? 'बिलिंग' : 'Billing' }]}
     >
       <div className="space-y-6">
@@ -179,13 +174,13 @@ export const BillingManagementPage: React.FC = () => {
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl text-xs font-bold shadow-sm transition"
             >
               <PlusCircle className="w-4 h-4" />
-              {isHi ? '+ मासिक बिल जारी करें' : '+ Generate Monthly Bills'}
+              {isHi ? 'मासिक बिल जारी करें' : 'Generate Monthly Bills'}
             </button>
             <button
               onClick={() => navigate('/rental/admin/properties')}
               className="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold shadow-xs transition"
             >
-              <Building className="w-3.5 h-3.5 text-blue-600" />
+
               {isHi ? 'संपत्ति रजिस्टर' : 'Properties'}
             </button>
             <button
@@ -231,9 +226,7 @@ export const BillingManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">{total}</h3>
             </div>
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
-              <FileText className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -243,9 +236,7 @@ export const BillingManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">₹{totalDemanded.toLocaleString('en-IN')}</h3>
             </div>
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -255,9 +246,7 @@ export const BillingManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-emerald-600 mt-1">₹{totalCollected.toLocaleString('en-IN')}</h3>
             </div>
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -267,9 +256,7 @@ export const BillingManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-red-600 mt-1">₹{totalBalanceDue.toLocaleString('en-IN')}</h3>
             </div>
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-lg flex items-center justify-center">
-              <Clock className="w-6 h-6" />
-            </div>
+
           </div>
         </div>
 
@@ -420,9 +407,8 @@ export const BillingManagementPage: React.FC = () => {
                           ₹{bill.amountPaid.toLocaleString('en-IN')}
                         </div>
                         <div
-                          className={`text-xs font-semibold ${
-                            bill.balanceDue > 0 ? 'text-red-600' : 'text-slate-400'
-                          }`}
+                          className={`text-xs font-semibold ${bill.balanceDue > 0 ? 'text-red-600' : 'text-slate-400'
+                            }`}
                         >
                           Due: ₹{bill.balanceDue.toLocaleString('en-IN')}
                         </div>
@@ -430,26 +416,24 @@ export const BillingManagementPage: React.FC = () => {
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            bill.status === 'PAID'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : bill.status === 'PARTIALLY_PAID'
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${bill.status === 'PAID'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : bill.status === 'PARTIALLY_PAID'
                               ? 'bg-blue-100 text-blue-800'
                               : bill.status === 'OVERDUE'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-amber-100 text-amber-800'
+                            }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              bill.status === 'PAID'
-                                ? 'bg-emerald-600'
-                                : bill.status === 'PARTIALLY_PAID'
+                            className={`w-1.5 h-1.5 rounded-full ${bill.status === 'PAID'
+                              ? 'bg-emerald-600'
+                              : bill.status === 'PARTIALLY_PAID'
                                 ? 'bg-blue-600'
                                 : bill.status === 'OVERDUE'
-                                ? 'bg-red-600'
-                                : 'bg-amber-600'
-                            }`}
+                                  ? 'bg-red-600'
+                                  : 'bg-amber-600'
+                              }`}
                           />
                           {bill.status}
                         </span>
@@ -545,8 +529,8 @@ export const BillingManagementPage: React.FC = () => {
                         ? 'बिल तैयार हो रहे हैं...'
                         : 'Generating...'
                       : isHi
-                      ? 'बिल जारी करें'
-                      : 'Generate Bills'}
+                        ? 'बिल जारी करें'
+                        : 'Generate Bills'}
                   </button>
                 </div>
               </form>
@@ -828,8 +812,8 @@ export const BillingManagementPage: React.FC = () => {
                           ? 'दर्ज कर रहे हैं...'
                           : 'Processing...'
                         : isHi
-                        ? 'वसूली दर्ज करें एवं रसीद दें'
-                        : 'Record & Issue Receipt'}
+                          ? 'वसूली दर्ज करें एवं रसीद दें'
+                          : 'Record & Issue Receipt'}
                     </button>
                   </div>
                 </form>

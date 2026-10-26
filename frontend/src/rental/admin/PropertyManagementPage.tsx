@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
+import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 import {
   rentalPropertyApi,
@@ -196,26 +197,35 @@ export const PropertyManagementPage: React.FC = () => {
     }
   };
 
-  const handleVacateProperty = async (prop: PropertyListItem) => {
-    const confirmVacate = window.confirm(
-      isHi
-        ? `क्या आप वाकई दुकान ${prop.propertyNumber} को खाली (Vacant) करना चाहते हैं?`
-        : `Are you sure you want to mark ${prop.propertyNumber} as VACANT?`
-    );
-    if (!confirmVacate) return;
+  const [vacateModal, setVacateModal] = useState<{
+    isOpen: boolean;
+    property: PropertyListItem | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    property: null,
+    loading: false,
+  });
 
-    const reason = window.prompt(
-      isHi ? 'खाली करने का कारण दर्ज करें:' : 'Enter reason for vacating (e.g., Lease expired, Tenant surrendered):',
-      'Lease term completed'
-    );
-    if (!reason) return;
+  const requestVacateProperty = (prop: PropertyListItem) => {
+    setVacateModal({
+      isOpen: true,
+      property: prop,
+      loading: false,
+    });
+  };
 
+  const handleConfirmVacateProperty = async () => {
+    if (!vacateModal.property) return;
+    setVacateModal((prev) => ({ ...prev, loading: true }));
     try {
-      await rentalPropertyApi.unassignProperty(prop.id, reason);
+      await rentalPropertyApi.unassignProperty(vacateModal.property.id, 'Lease term completed / Official vacating');
       setSuccessMsg(isHi ? 'दुकान खाली कर दी गई है और रिक्त स्थिति में है।' : 'Property vacated successfully.');
+      setVacateModal({ isOpen: false, property: null, loading: false });
       fetchProperties();
     } catch (err: any) {
       setError(err.message || 'Failed to vacate property.');
+      setVacateModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -257,11 +267,6 @@ export const PropertyManagementPage: React.FC = () => {
   return (
     <AdminLayout
       title={isHi ? 'व्यावसायिक संपत्ति एवं परिसंपत्ति रजिस्टर' : 'Commercial Property & Asset Registry'}
-      subtitle={
-        isHi
-          ? 'जिला पंचायत अल्मोड़ा की सभी दुकानों, स्टॉलों एवं परिसंपत्तियों का प्रबंधन'
-          : 'Manage all commercial shops, stalls, and municipal lease assets of Zila Panchayat Almora'
-      }
       breadcrumbs={[{ label: isHi ? 'दुकानें व संपत्तियां' : 'Properties' }]}
     >
       <div className="space-y-6">
@@ -283,11 +288,11 @@ export const PropertyManagementPage: React.FC = () => {
               {isHi ? 'मासिक बिलिंग' : 'Billing & Invoices'}
             </button>
             <button
-              onClick={() => setIsAddModalOpen(true)}
+              onClick={() => navigate('/rental/admin/register-property')}
               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl text-xs font-bold shadow-sm transition"
             >
               <PlusCircle className="w-4 h-4" />
-              {isHi ? '+ नई संपत्ति जोड़ें' : '+ Add Asset'}
+              {isHi ? '+ नई संपत्ति पंजीकृत करें' : '+ Register New Asset'}
             </button>
             <button
               onClick={fetchProperties}
@@ -332,9 +337,7 @@ export const PropertyManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">{total}</h3>
             </div>
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center">
-              <Building className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -344,9 +347,7 @@ export const PropertyManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-emerald-600 mt-1">{vacantCount}</h3>
             </div>
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
-              <Store className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -356,9 +357,7 @@ export const PropertyManagementPage: React.FC = () => {
               </p>
               <h3 className="text-2xl font-bold text-blue-600 mt-1">{allottedCount}</h3>
             </div>
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center">
-              <UserCheck className="w-6 h-6" />
-            </div>
+
           </div>
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
@@ -512,22 +511,20 @@ export const PropertyManagementPage: React.FC = () => {
 
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
-                            prop.status === 'VACANT'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : prop.status === 'ALLOTTED'
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${prop.status === 'VACANT'
+                            ? 'bg-emerald-100 text-emerald-800'
+                            : prop.status === 'ALLOTTED'
                               ? 'bg-blue-100 text-blue-800'
                               : 'bg-amber-100 text-amber-800'
-                          }`}
+                            }`}
                         >
                           <span
-                            className={`w-1.5 h-1.5 rounded-full ${
-                              prop.status === 'VACANT'
-                                ? 'bg-emerald-600'
-                                : prop.status === 'ALLOTTED'
+                            className={`w-1.5 h-1.5 rounded-full ${prop.status === 'VACANT'
+                              ? 'bg-emerald-600'
+                              : prop.status === 'ALLOTTED'
                                 ? 'bg-blue-600'
                                 : 'bg-amber-600'
-                            }`}
+                              }`}
                           />
                           {prop.status}
                         </span>
@@ -593,8 +590,9 @@ export const PropertyManagementPage: React.FC = () => {
                                 {isHi ? 'किराया बदलें' : 'Revise Rent'}
                               </button>
                               <button
-                                onClick={() => handleVacateProperty(prop)}
-                                className="inline-flex items-center gap-1 px-2 py-1.5 text-red-600 hover:bg-red-50 rounded text-xs font-medium transition"
+                                type="button"
+                                onClick={() => requestVacateProperty(prop)}
+                                className="inline-flex items-center gap-1 px-2 py-1.5 text-red-600 hover:bg-red-50 rounded text-xs font-medium transition cursor-pointer"
                                 title={isHi ? 'दुकान खाली करें' : 'Vacate Property'}
                               >
                                 <UserX className="w-3.5 h-3.5" />
@@ -750,8 +748,8 @@ export const PropertyManagementPage: React.FC = () => {
                         ? 'सहेज रहे हैं...'
                         : 'Registering...'
                       : isHi
-                      ? 'संपत्ति दर्ज करें'
-                      : 'Register Asset'}
+                        ? 'संपत्ति दर्ज करें'
+                        : 'Register Asset'}
                   </button>
                 </div>
               </form>
@@ -867,8 +865,8 @@ export const PropertyManagementPage: React.FC = () => {
                         ? 'आवंटन कर रहे हैं...'
                         : 'Allotting...'
                       : isHi
-                      ? 'आवंटन की पुष्टि करें'
-                      : 'Confirm Allotment'}
+                        ? 'आवंटन की पुष्टि करें'
+                        : 'Confirm Allotment'}
                   </button>
                 </div>
               </form>
@@ -998,8 +996,8 @@ export const PropertyManagementPage: React.FC = () => {
                         ? 'सहेज रहे हैं...'
                         : 'Saving...'
                       : isHi
-                      ? 'किराया संशोधित करें'
-                      : 'Save Rent Revision'}
+                        ? 'किराया संशोधित करें'
+                        : 'Save Rent Revision'}
                   </button>
                 </div>
               </form>
@@ -1107,6 +1105,29 @@ export const PropertyManagementPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <AdminConfirmModal
+          isOpen={vacateModal.isOpen}
+          title={isHi ? 'दुकान / संपत्ति खाली कराने की पुष्टि' : 'Vacate Property & Shop'}
+          message={
+            isHi
+              ? 'क्या आप वाकई इस दुकान का आवंटन समाप्त कर इसे रिक्त (Vacant) स्थिति में लाना चाहते हैं? वर्तमान किरायेदार का आवंटन समाप्त हो जाएगा।'
+              : 'Are you sure you want to terminate the allotment and mark this shop/property as VACANT? Current tenant assignment will be ended.'
+          }
+          subject={
+            vacateModal.property
+              ? `${vacateModal.property.propertyName} (${vacateModal.property.propertyNumber}) • किरायेदार: ${vacateModal.property.currentTenant?.fullName || 'N/A'}`
+              : undefined
+          }
+          variant="danger"
+          iconType="trash"
+          confirmText={isHi ? 'हां, दुकान खाली करें' : 'Vacate Shop'}
+          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          loading={vacateModal.loading}
+          onConfirm={handleConfirmVacateProperty}
+          onDeny={() => setVacateModal({ isOpen: false, property: null, loading: false })}
+        />
       </div>
     </AdminLayout>
   );
