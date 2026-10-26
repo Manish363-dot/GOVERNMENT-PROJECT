@@ -19,12 +19,14 @@ import { useTranslation } from 'react-i18next';
 const TILE_LAYERS = {
   google: {
     name: 'Google Maps',
+    nameHi: 'गूगल मैप्स',
     url: 'https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
     subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google Maps',
   },
   satellite: {
     name: 'Satellite View',
+    nameHi: 'सैटेलाइट व्यू',
     url: 'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
     subdomains: ['0', '1', '2', '3'],
     attribution: '&copy; Google Maps',
@@ -341,7 +343,6 @@ export const LiveTrackingPage = React.memo(() => {
           {/* Clean, Uncluttered Top Map Bar */}
           <div className="bg-[#081325] text-white px-3 sm:px-4 py-2.5 flex items-center justify-between gap-2 z-20 border-b border-slate-800">
             <div className="flex items-center gap-2">
-              <Radio className="w-4 h-4 text-emerald-400 animate-pulse shrink-0" />
               <span className="font-poppins text-xs font-bold uppercase tracking-wide text-slate-100">
                 {isHi ? 'लाइव जीपीएस मैप' : ' Live GPS Map'}
               </span>
@@ -349,7 +350,7 @@ export const LiveTrackingPage = React.memo(() => {
 
             {/* Clean Map Layer Controls (OpenStreetMap & Satellite View) & Fullscreen Button */}
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline mr-1 shrink-0">Map:</span>
+              <span className="text-[11px] font-mono text-slate-400 hidden sm:inline mr-1 shrink-0">{isHi ? 'मैप:' : 'Map:'}</span>
               {(Object.keys(TILE_LAYERS) as Array<keyof typeof TILE_LAYERS>).map((layerKey) => (
                 <button
                   key={layerKey}
@@ -360,7 +361,7 @@ export const LiveTrackingPage = React.memo(() => {
                       : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-700'
                   }`}
                 >
-                  {TILE_LAYERS[layerKey].name}
+                  {isHi ? TILE_LAYERS[layerKey].nameHi : TILE_LAYERS[layerKey].name}
                 </button>
               ))}
 
@@ -469,7 +470,7 @@ export const LiveTrackingPage = React.memo(() => {
                             </span>
                           </p>
                           <p className="flex justify-between border-t border-slate-200 pt-1 mt-1 text-[11px] text-slate-500">
-                            <span>MilliTrack Ping:</span>
+                            <span>{isHi ? 'पिग:' : 'Ping:'}</span>
                             <span>{format(new Date(loc.updated_at), 'HH:mm:ss')}</span>
                           </p>
                         </div>
@@ -556,7 +557,6 @@ export const LiveTrackingPage = React.memo(() => {
           <div className="pb-3 mb-3 border-b border-slate-200 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-poppins font-bold text-[14px] text-navy-900 flex items-center gap-1.5">
-                <Truck className="w-4 h-4 text-emerald-600" />
                 Active Fleet List
               </h3>
               <span className="text-[13px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
@@ -665,23 +665,17 @@ export const LiveTrackingPage = React.memo(() => {
                       {(selectedVehicle as any).vehicle?.vehicle_number}
                     </span>
                   </div>
-                  <button
-                    onClick={() => setSelectedVehicle(null)}
-                    className="text-[10px] font-bold text-slate-300 hover:text-white bg-navy-800 hover:bg-navy-700 px-2 py-0.5 rounded uppercase transition-colors"
-                  >
-                    All
-                  </button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-[11px]">
                   <div>
-                    <span className="text-slate-400 text-[10px] uppercase block">MilliTrack Speed</span>
+                    <span className="text-slate-400 text-[10px] uppercase block">{isHi ? 'गति:' : 'Speed:'}</span>
                     <span className="font-bold text-emerald-400 font-mono">
                       {isSelectedMoving ? `${(selectedVehicle.speed || 0).toFixed(1)} km/h` : '0 km/h (Parked)'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-400 text-[10px] uppercase block">Heading</span>
+                    <span className="text-slate-400 text-[10px] uppercase block">{isHi ? 'दिशा' : 'Heading'}</span>
                     <span className="font-bold text-amber-300 font-mono">
                       {selectedVehicle.heading || 0}°
                     </span>
@@ -689,8 +683,8 @@ export const LiveTrackingPage = React.memo(() => {
                 </div>
 
                 <div className="pt-1 border-t border-navy-800 text-[10px] text-slate-400 space-y-0.5">
-                  <p className="truncate">GPS: {selectedVehicle.latitude.toFixed(5)}, {selectedVehicle.longitude.toFixed(5)}</p>
-                  <p>MilliTrack Ping: {format(new Date(selectedVehicle.updated_at), 'yyyy-MM-dd HH:mm:ss')}</p>
+                  <p className="truncate">{isHi ? 'जीपीएस:' : 'GPS:'} {selectedVehicle.latitude.toFixed(5)}, {selectedVehicle.longitude.toFixed(5)}</p>
+                  <p>{isHi ? 'पिग:' : 'Ping:'} {format(new Date(selectedVehicle.updated_at), 'yyyy-MM-dd HH:mm:ss')}</p>
                 </div>
               </div>
             );
