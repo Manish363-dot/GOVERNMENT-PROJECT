@@ -557,15 +557,9 @@ export const VehicleHistoryPage = React.memo(() => {
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-xs">
         <div className="bg-[#0a1628] px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <History className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-normal">
                 {isHi ? 'वाहन रूट इतिहास एवं रीप्ले प्लेयर' : 'Vehicle Route History & Replay Console'}
-              </p>
-              <p className="text-[11px] text-slate-300 font-mono">
-                {isHi
-                  ? 'जिला पंचायत अल्मोड़ा • ठोस अपशिष्ट प्रबंधन वाहन ऑडिट एवं रीप्ले'
-                  : 'Zila Panchayat Almora • Solid Waste Fleet Route Replay & Excel Audit'}
               </p>
             </div>
           </div>
@@ -579,8 +573,7 @@ export const VehicleHistoryPage = React.memo(() => {
               className="flex items-center gap-2 bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-[12px] font-bold px-3.5 py-2 rounded shadow-xs transition-colors shrink-0"
               title={isHi ? 'इस वाहन का आज का डेटा सीधे एक्सेल में लें' : 'Download today\'s route log for current vehicle'}
             >
-              <FileSpreadsheet className="w-4 h-4 text-emerald-200" />
-              <span>{isHi ? 'इस ट्रक का एक्सेल (.xlsx)' : 'Download This Truck (.xlsx)'}</span>
+              <span>{isHi ? 'इस ट्रक का एक्सेल' : 'Download This Truck'}</span>
             </button>
 
             {/* Filtered Advanced Download Modal Trigger */}
@@ -589,7 +582,6 @@ export const VehicleHistoryPage = React.memo(() => {
               className="flex items-center gap-2 bg-[#1a3a6b] hover:bg-[#254f8e] text-white text-[12px] font-bold px-3.5 py-2 rounded shadow-xs transition-colors shrink-0"
               title={isHi ? 'सभी वाहन / दिनांक फ़िल्टर के साथ एक्सेल डाउनलोड विकल्प' : 'Advanced Excel download with vehicle and date filters'}
             >
-              <Filter className="w-4 h-4 text-amber-300" />
               <span>{isHi ? 'फ़िल्टर के साथ डाउनलोड करें' : 'Download with Filters'}</span>
             </button>
           </div>
@@ -600,14 +592,8 @@ export const VehicleHistoryPage = React.memo(() => {
       <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-xs">
         <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2 flex items-center justify-between">
           <p className="text-[13px] font-bold text-[#0a1628] uppercase tracking-normal flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-[#1a3a6b]" />
             {isHi ? 'वाहन व दिनांक चयन' : 'Select Vehicle & Date for Route Inspection'}
           </p>
-          {result && totalPoints > 0 && (
-            <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded font-bold">
-              ✓ {totalPoints} {isHi ? 'जीपीएस बिंदु लोड हुए' : 'GPS Points Loaded'}
-            </span>
-          )}
         </div>
 
         <div className="p-4">
@@ -615,7 +601,7 @@ export const VehicleHistoryPage = React.memo(() => {
             {/* Vehicle Select */}
             <div className="flex-1 space-y-1.5">
               <Label className="text-[12px] font-bold text-slate-700 uppercase tracking-normal">
-                {isHi ? 'वाहन चुनें (Truck / Vehicle)' : 'Select Vehicle / Truck'}
+                {isHi ? 'वाहन चुनें' : 'Select Vehicle'}
               </Label>
               {vehiclesLoading ? (
                 <Skeleton className="h-10 w-full rounded" />
@@ -625,7 +611,6 @@ export const VehicleHistoryPage = React.memo(() => {
                   onChange={(e) => setSelectedVehicle(e.target.value)}
                   className="flex h-10 w-full border border-slate-300 bg-white px-3 text-xs sm:text-[12px] font-bold text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded"
                 >
-                  <option value="">{isHi ? '-- वाहन चुनें --' : '-- Select Vehicle --'}</option>
                   {vehicles.map((v) => (
                     <option key={v.id} value={v.id}>
                       {v.vehicle_number} {v.vehicle_name ? `• ${v.vehicle_name}` : ''}
@@ -638,7 +623,7 @@ export const VehicleHistoryPage = React.memo(() => {
             {/* Date Select */}
             <div className="flex-1 space-y-1.5">
               <Label className="text-[12px] font-bold text-slate-700 uppercase tracking-normal">
-                {isHi ? 'दिनांक चुनें (Operation Date)' : 'Select Date'}
+                {isHi ? 'दिनांक चुनें' : 'Select Date'}
               </Label>
               <Input
                 type="date"
@@ -667,13 +652,11 @@ export const VehicleHistoryPage = React.memo(() => {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             {
-              icon: Truck,
-              label: isHi ? 'ट्रक / वाहन' : 'Truck / Vehicle',
+              label: isHi ? 'वाहन' : 'Vehicle',
               value: selectedVehicleData?.vehicle_number || '—',
               sub: selectedVehicleData?.vehicle_name || 'Sanitation Fleet'
             },
             {
-              icon: Clock,
               label: isHi ? 'परिचालन समय' : 'Operation Hours',
               value: result.summary.startTime
                 ? `${format(new Date(result.summary.startTime), 'hh:mm a')} – ${format(new Date(result.summary.endTime!), 'hh:mm a')}`
@@ -681,26 +664,33 @@ export const VehicleHistoryPage = React.memo(() => {
               sub: `${selectedDate}`
             },
             {
-              icon: Route,
               label: isHi ? 'कुल तय दूरी' : 'Total Distance',
               value: `${result.summary.totalDistance} ${isHi ? 'किमी' : 'km'}`,
               sub: isHi ? 'आज का दैनिक मार्ग' : "Day's Total Run"
             },
             {
-              icon: MapPin,
               label: isHi ? 'मार्ग कवरेज' : 'Route Coverage',
               value: `${totalPoints} ${isHi ? 'जीपीएस बिंदु' : 'GPS Points'}`,
               sub: isHi ? 'प्रारंभ से अंतिम ठहराव' : 'From Start to End'
             },
-          ].map(({ icon: Icon, label, value, sub }) => (
-            <div key={label} className="bg-white border border-slate-300 rounded overflow-hidden shadow-xs">
-              <div className="bg-[#f0f4f9] border-b border-slate-200 px-3 py-1.5 flex items-center gap-1.5">
-                <Icon className="w-3.5 h-3.5 text-[#1a3a6b]" />
-                <p className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{label}</p>
+          ].map(({ label, value, sub }) => (
+            <div key={label} className="bg-white border border-slate-300 rounded shadow-xs overflow-hidden">
+              <div className="bg-[#f0f4f9] border-b border-slate-200 px-3 py-2 flex items-center gap-1.5">
+                <p className="text-[11px] sm:text-[12px] font-bold text-slate-700 uppercase tracking-normal leading-normal">{label}</p>
               </div>
-              <div className="px-3 py-2">
-                <p className="font-mono text-xs sm:text-[13px] font-bold text-[#0a1628] truncate">{value}</p>
-                <p className="text-[10px] text-slate-500 font-mono mt-0.5 truncate">{sub}</p>
+              <div className="px-3.5 py-3 flex flex-col justify-center min-h-[68px]">
+                <p className={cn(
+                  "text-xs sm:text-[14px] font-bold text-[#0a1628] leading-[1.7] py-0.5 truncate",
+                  isHi ? "font-sans" : "font-mono"
+                )}>
+                  {value}
+                </p>
+                <p className={cn(
+                  "text-[11px] text-slate-500 mt-1 leading-[1.6] py-0.5 truncate",
+                  isHi ? "font-sans" : "font-mono"
+                )}>
+                  {sub}
+                </p>
               </div>
             </div>
           ))}
