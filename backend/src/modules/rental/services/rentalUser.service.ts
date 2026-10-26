@@ -151,46 +151,64 @@ export class RentalUserService {
           });
         }
 
-        // Property Assignment if propertyId provided
-        if (dto.propertyId) {
-          const property = await tx.rentalProperty.findFirst({
-            where: {
-              OR: [
-                { id: dto.propertyId },
-                { property_id: dto.propertyId },
-                { property_number: dto.propertyId },
-              ],
-            },
-          });
-
-          if (!property) {
-            throw new Error('Assigned property / shop does not exist.');
-          }
-
-          if (property.status === 'ALLOTTED') {
-            throw new Error(`Property ${property.property_number} is already allotted to another tenant.`);
-          }
-
-          const rent = dto.monthlyRent ? Number(dto.monthlyRent) : Number(property.base_monthly_rent);
-          const leaseStart = dto.rentEffectiveDate ? new Date(dto.rentEffectiveDate) : new Date();
-
-          await tx.propertyAssignment.create({
-            data: {
-              property_id: property.id,
-              user_id: user.id,
-              monthly_rent: rent,
-              lease_start_date: leaseStart,
-              is_active: true,
-              assigned_by: adminId,
-            },
-          });
-
-          // Mark property as ALLOTTED
-          await tx.rentalProperty.update({
-            where: { id: property.id },
-            data: { status: 'ALLOTTED' },
-          });
+        // Property Assignment Check & Enforcement
+        if (!dto.propertyId) {
+          throw new Error('किरायेदार आवंटन के लिए दुकान / परिसंपत्ति का चयन अनिवार्य है। (Shop selection is required)');
         }
+
+        const property = await tx.rentalProperty.findFirst({
+          where: {
+            OR: [
+              { id: dto.propertyId },
+              { property_id: dto.propertyId },
+              { property_number: dto.propertyId },
+            ],
+          },
+        });
+
+        if (!property) {
+          throw new Error('चयनित दुकान / परिसंपत्ति जिला पंचायत रिकॉर्ड में पंजीकृत नहीं है। किरायेदार को आवंटित करने से पहले कृपया संपत्ति प्रबंधन में जाकर नई दुकान पंजीकृत करें। (Selected shop is not registered in the system. Please register the property first.)');
+        }
+
+        // Verify that the shop is not currently allotted to anyone else
+        const activeAssignment = await tx.propertyAssignment.findFirst({
+          where: {
+            property_id: property.id,
+            is_active: true,
+          },
+          include: {
+            user: {
+              select: { full_name: true, user_id: true },
+            },
+          },
+        });
+
+        if (property.status !== 'VACANT' || activeAssignment) {
+          const tenantInfo = activeAssignment?.user?.full_name ? ` (वर्तमान किरायेदार: ${activeAssignment.user.full_name})` : '';
+          throw new Error(
+            `दुकान संख्या ${property.property_number} (${property.property_name}) वर्तमान में पहले से किसी किरायेदार को आवंटित है${tenantInfo}। जब तक यह दुकान रिक्त (Vacant) नहीं हो जाती, इसे नये किरायेदार को आवंटित नहीं किया जा सकता।`
+          );
+        }
+
+        const rent = dto.monthlyRent ? Number(dto.monthlyRent) : Number(property.base_monthly_rent);
+        const leaseStart = dto.rentEffectiveDate ? new Date(dto.rentEffectiveDate) : new Date();
+
+        await tx.propertyAssignment.create({
+          data: {
+            property_id: property.id,
+            user_id: user.id,
+            monthly_rent: rent,
+            lease_start_date: leaseStart,
+            is_active: true,
+            assigned_by: adminId,
+          },
+        });
+
+        // Mark property as ALLOTTED
+        await tx.rentalProperty.update({
+          where: { id: property.id },
+          data: { status: 'ALLOTTED' },
+        });
 
         // Administrative Audit Trail
         await tx.rentalAdminAuditLog.create({

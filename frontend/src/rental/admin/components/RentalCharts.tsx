@@ -150,15 +150,11 @@ export const Revenue3DBarChart: React.FC<Revenue3DProps> = ({ data, isHi }) => {
     <Card className="w-full bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>{isHi ? 'मासिक राजस्व एवं वसूली (3D आइसोमेट्रिक चार्ट)' : 'Monthly Revenue & Collections (3D Isometric)'}</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-              <TrendingUp className="w-3 h-3 text-emerald-600" />
-              +14.2%
-            </span>
+          <CardTitle className="text-base font-bold text-slate-800">
+            {isHi ? 'मासिक राजस्व एवं वसूली' : 'Monthly Revenue & Collections'}
           </CardTitle>
           <CardDescription className="text-xs text-slate-500 mt-0.5">
-            {isHi ? 'मासिक देय मांग बनाम प्राप्त वसूली का 3D विज़ुअलाइज़ेशन' : '3D depth visualization of billed rent vs actual collections'}
+            {isHi ? 'मासिक देय मांग बनाम प्राप्त वसूली का विवरण' : 'Billed rent demand vs actual collections'}
           </CardDescription>
         </div>
 
@@ -256,15 +252,11 @@ export const RevenuePatternAreaChart: React.FC<PatternAreaProps> = ({ data, isHi
     <Card className="w-full bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden">
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <span>{isHi ? 'राजस्व वृद्धि ट्रेंड (पैटर्न एरिया चार्ट)' : 'Revenue Growth Trend (Pattern Area)'}</span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
-              <Activity className="w-3 h-3 text-blue-600" />
-              {isHi ? 'वार्षिक प्रवाह' : 'Cash Flow'}
-            </span>
+          <CardTitle className="text-base font-bold text-slate-800">
+            {isHi ? 'राजस्व वृद्धि एवं संग्रह ट्रेंड' : 'Revenue Collection & Growth Trend'}
           </CardTitle>
           <CardDescription className="text-xs text-slate-500 mt-0.5">
-            {isHi ? 'मासिक संग्रह एवं बकाया का निरंतर प्राकृतिक वक्र व विकर्ण धारियां' : 'Continuous natural curves with diagonal textured stripes'}
+            {isHi ? 'मासिक मांग, संग्रह एवं बकाया राशि का तुलनात्मक प्रवाह' : 'Monthly demand, collections and arrears progression'}
           </CardDescription>
         </div>
       </CardHeader>
@@ -396,14 +388,11 @@ export const PropertyPatternDonutChart: React.FC<PropertyPatternDonutProps> = ({
   return (
     <Card className="w-full bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden flex flex-col justify-between">
       <CardHeader className="pb-0">
-        <CardTitle className="text-base font-bold text-slate-900 flex items-center justify-between">
-          <span>{isHi ? 'संपत्ति वर्ग एवं आवंटन अनुपात' : 'Asset Categories & Allotment'}</span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
-            {isHi ? 'पैटर्न डोनट' : 'Pattern Donut'}
-          </span>
+        <CardTitle className="text-base font-bold text-slate-800">
+          {isHi ? 'संपत्ति वर्ग एवं आवंटन अनुपात' : 'Asset Categories & Allotment'}
         </CardTitle>
         <CardDescription className="text-xs text-slate-500">
-          {isHi ? 'वाणिज्यिक दुकानों, थड़ों व वेयरहाउस का बनावट पैटर्न वितरण' : 'Texture pattern breakdown of municipal assets'}
+          {isHi ? 'वाणिज्यिक दुकानों, थड़ों व वेयरहाउस का आवंटन वितरण' : 'Breakdown of municipal commercial assets'}
         </CardDescription>
       </CardHeader>
 
@@ -524,14 +513,11 @@ export const MunicipalRadialScoresChart: React.FC<RadialScoreProps> = ({
   return (
     <Card className="w-full bg-white border border-slate-200/90 shadow-sm rounded-2xl overflow-hidden flex flex-col justify-between">
       <CardHeader className="pb-0">
-        <CardTitle className="text-base font-bold text-slate-900 flex items-center justify-between">
-          <span>{isHi ? 'नगरपालिका परफॉरमेंस इंडेक्स' : 'Municipal Performance Index'}</span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
-            {isHi ? 'ग्लो रेडियल' : 'Radial Glow'}
-          </span>
+        <CardTitle className="text-base font-bold text-slate-800">
+          {isHi ? 'प्रशासनिक दक्षता सूचकांक' : 'Administrative Performance Index'}
         </CardTitle>
         <CardDescription className="text-xs text-slate-500">
-          {isHi ? 'आवंटन, वसूली व अनुपालन स्कोर (नियोन ग्लो फिल्टर सहित)' : 'Occupancy, revenue collection, and compliance audit scores'}
+          {isHi ? 'दुकान आवंटन, राजस्व वसूली एवं समय पर भुगतान का विश्लेषण' : 'Occupancy, revenue collection, and compliance audit scores'}
         </CardDescription>
       </CardHeader>
 

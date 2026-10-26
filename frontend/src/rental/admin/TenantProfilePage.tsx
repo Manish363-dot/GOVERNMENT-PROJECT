@@ -111,8 +111,7 @@ export const TenantProfilePage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'किरायेदार विस्तृत विवरण (Profile)' : 'Tenant Dossier & Profile'}
-      subtitle={profile.fullName ? `${profile.fullName} (${profile.userCode})` : undefined}
+      title={isHi ? 'किरायेदार प्रोफ़ाइल' : 'Tenant Profile'}
       breadcrumbs={[
         { label: isHi ? 'किरायेदार' : 'Tenants', to: '/rental/admin/tenants' },
         { label: profile.fullName || 'Tenant' },

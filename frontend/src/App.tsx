@@ -60,6 +60,9 @@ const BillingManagementPage = lazy(() => import('@/rental/admin/BillingManagemen
 // Admin Panel Pages
 const AdminDashboardPage = lazy(() => import('@/rental/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
 const SubAdminManagementPage = lazy(() => import('@/rental/admin/SubAdminManagementPage').then(m => ({ default: m.SubAdminManagementPage })));
+const RegisterSubAdminPage = lazy(() => import('@/rental/admin/RegisterSubAdminPage').then(m => ({ default: m.RegisterSubAdminPage })));
+const RegisterPropertyPage = lazy(() => import('@/rental/admin/RegisterPropertyPage').then(m => ({ default: m.RegisterPropertyPage })));
+const RentLedgerPage = lazy(() => import('@/rental/admin/RentLedgerPage').then(m => ({ default: m.RentLedgerPage })));
 const RecordsAuditPage = lazy(() => import('@/rental/admin/RecordsAuditPage').then(m => ({ default: m.RecordsAuditPage })));
 const AdminNoticesPage = lazy(() => import('@/rental/admin/AdminNoticesPage').then(m => ({ default: m.AdminNoticesPage })));
 
@@ -167,6 +170,10 @@ function App() {
               <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/rental/admin" element={<AdminDashboardPage />} />
               <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
+              <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
+              <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
+              <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
+              <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
               <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
               <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
               <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />

@@ -37,4 +37,8 @@ router.use('/payments', rentalPaymentRoutes);
 import rentalNoticeRoutes from './rentalNotice.routes';
 router.use('/notices', rentalNoticeRoutes);
 
+// ── Financial Ledger & Comprehensive Audit Routes ───────────────────────────
+import rentalLedgerRoutes from './rentalLedger.routes';
+router.use('/ledger', rentalLedgerRoutes);
+
 export default router;

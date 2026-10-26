@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from './AdminLayout';
+import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 import { rentalNoticeApi, NoticeItem, CreateNoticeInput } from '../services/rentalNotice.service';
 import { rentalUserApi, TenantListItem } from '../services/rentalUser.service';
@@ -102,27 +103,45 @@ export const AdminNoticesPage: React.FC = () => {
     }
   };
 
-  const handleDeleteNotice = async (id: string) => {
-    if (!window.confirm(isHi ? 'क्या आप वाकई इस सूचना को हटाना चाहते हैं?' : 'Are you sure you want to delete this notice?')) {
-      return;
-    }
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    noticeId: string | null;
+    title: string;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    noticeId: null,
+    title: '',
+    loading: false,
+  });
+
+  const requestDeleteNotice = (id: string, title: string) => {
+    setDeleteModal({
+      isOpen: true,
+      noticeId: id,
+      title,
+      loading: false,
+    });
+  };
+
+  const handleConfirmDeleteNotice = async () => {
+    if (!deleteModal.noticeId) return;
+    setDeleteModal((prev) => ({ ...prev, loading: true }));
     try {
-      await rentalNoticeApi.deleteNotice(id);
+      await rentalNoticeApi.deleteNotice(deleteModal.noticeId);
       setSuccessMsg(isHi ? 'सूचना हटा दी गई।' : 'Notice deleted successfully.');
+      setDeleteModal({ isOpen: false, noticeId: null, title: '', loading: false });
       fetchNotices();
     } catch (err: any) {
       setError(err.message || 'Failed to delete notice.');
+      setDeleteModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
   return (
     <AdminLayout
-      title={isHi ? 'आधिकारिक सूचनाएं एवं परिपत्र' : 'Public & Tenant Notices Management'}
-      subtitle={
-        isHi
-          ? 'जिला पंचायत अल्मोड़ा के सार्वजनिक आदेश, निविदा सूचनाएं एवं व्यक्तिगत किरायेदार संदेश'
-          : 'Issue public gazette notices, auction alerts, and private tenant notifications'
-      }
+      title={isHi ? 'आधिकारिक सूचनाएं एवं परिपत्र' : 'Notices & Circulars'}
+      breadcrumbs={[{ label: isHi ? 'सूचनाएं' : 'Notices' }]}
     >
       <div className="space-y-6">
         {/* Top Action Bar */}
@@ -219,9 +238,10 @@ export const AdminNoticesPage: React.FC = () => {
                   </div>
 
                   <button
-                    onClick={() => handleDeleteNotice(notice.id)}
-                    className="p-1 text-slate-400 hover:text-red-600 rounded transition"
-                    title="Delete Notice"
+                    type="button"
+                    onClick={() => requestDeleteNotice(notice.id, notice.title)}
+                    className="p-1 text-slate-400 hover:text-red-600 rounded transition cursor-pointer"
+                    title={isHi ? 'सूचना हटाएं' : 'Delete Notice'}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -368,6 +388,25 @@ export const AdminNoticesPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <AdminConfirmModal
+          isOpen={deleteModal.isOpen}
+          title={isHi ? 'आधिकारिक सूचना हटाएं' : 'Delete Notice'}
+          message={
+            isHi
+              ? 'क्या आप वाकई इस आधिकारिक सूचना को पोर्टल से स्थायी रूप से हटाना चाहते हैं?'
+              : 'Are you sure you want to permanently delete this official notice from the portal?'
+          }
+          subject={deleteModal.title || undefined}
+          variant="danger"
+          iconType="trash"
+          confirmText={isHi ? 'हां, हटाएं' : 'Delete Notice'}
+          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          loading={deleteModal.loading}
+          onConfirm={handleConfirmDeleteNotice}
+          onDeny={() => setDeleteModal({ isOpen: false, noticeId: null, title: '', loading: false })}
+        />
       </div>
     </AdminLayout>
   );

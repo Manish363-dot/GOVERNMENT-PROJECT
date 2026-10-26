@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
+import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { rentalAuthApi } from '../services/rentalAuth.service';
@@ -14,11 +15,8 @@ import {
   Phone,
   Mail,
   User,
-  AlertCircle,
   RefreshCw,
   Lock,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 
 interface SubAdmin {
@@ -42,25 +40,11 @@ export const SubAdminManagementPage: React.FC = () => {
   const { language } = useLanguage();
   const isHi = language === 'hi';
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
-
-  // Form State
-  const [formData, setFormData] = useState({
-    username: '',
-    fullName: '',
-    mobile: '',
-    email: '',
-    initialPassword: '',
-    permissions: ['manage_tenants', 'view_bills', 'record_payments'],
-  });
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
 
   const fetchSubAdmins = async () => {
     setLoading(true);
@@ -91,84 +75,42 @@ export const SubAdminManagementPage: React.FC = () => {
     }
   }, [isSuperAdmin]);
 
-  const handleToggleStatus = async (admin: SubAdmin) => {
-    const adminName = getAdminName(admin);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    admin: SubAdmin | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    admin: null,
+    loading: false,
+  });
+
+  const requestToggleStatus = (admin: SubAdmin) => {
+    setConfirmModal({
+      isOpen: true,
+      admin,
+      loading: false,
+    });
+  };
+
+  const handleConfirmToggleStatus = async () => {
+    if (!confirmModal.admin) return;
+    const admin = confirmModal.admin;
     const newStatus = admin.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    const confirmMsg = isHi
-      ? `क्या आप वाकई ${adminName} (${admin.username}) को ${newStatus === 'ACTIVE' ? 'सक्रिय' : 'निलंबित'} करना चाहते हैं?`
-      : `Are you sure you want to mark ${adminName} as ${newStatus}?`;
-
-    if (!window.confirm(confirmMsg)) return;
-
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
       await rentalAuthApi.toggleSubAdminStatus(admin.id, newStatus);
       setSubAdmins((prev) =>
         prev.map((a) => (a.id === admin.id ? { ...a, status: newStatus } : a))
       );
+      setConfirmModal({ isOpen: false, admin: null, loading: false });
     } catch (err: any) {
       alert(err.response?.data?.message || err.message || 'Status update failed');
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
-  const handleCreateSubAdmin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setSuccessMsg('');
 
-    if (!formData.username.trim() || !formData.fullName.trim() || !formData.mobile.trim() || !formData.initialPassword) {
-      setErrorMsg(isHi ? 'कृपया सभी अनिवार्य फ़ील्ड भरें।' : 'Please fill all mandatory fields.');
-      return;
-    }
-
-    if (formData.mobile.length !== 10) {
-      setErrorMsg(isHi ? 'कृपया मान्य 10 अंकों का मोबाइल नंबर दर्ज करें।' : 'Please enter a valid 10-digit mobile number.');
-      return;
-    }
-
-    if (formData.initialPassword.length < 8) {
-      setErrorMsg(isHi ? 'पासवर्ड न्यूनतम 8 अक्षरों का होना चाहिए।' : 'Password must be at least 8 characters long.');
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const res = await rentalAuthApi.createSubAdmin({
-        username: formData.username.trim(),
-        fullName: formData.fullName.trim(),
-        mobile: formData.mobile.trim(),
-        email: formData.email.trim() || undefined,
-        initialPassword: formData.initialPassword,
-        permissions: formData.permissions,
-      });
-
-      if (res && res.success) {
-        setSuccessMsg(
-          isHi
-            ? `उप-प्रशासक "${formData.fullName}" सफलतापूर्वक पंजीकृत हो गया है!`
-            : `Sub-Admin "${formData.fullName}" registered successfully!`
-        );
-        setFormData({
-          username: '',
-          fullName: '',
-          mobile: '',
-          email: '',
-          initialPassword: '',
-          permissions: ['manage_tenants', 'view_bills', 'record_payments'],
-        });
-        setTimeout(() => {
-          setShowModal(false);
-          setSuccessMsg('');
-          fetchSubAdmins();
-        }, 1200);
-      }
-    } catch (err: any) {
-      setErrorMsg(
-        err.response?.data?.message || err.message || (isHi ? 'पंजीकरण विफल रहा।' : 'Registration failed.')
-      );
-    } finally {
-      setSubmitting(false);
-    }
-  };
 
   const filteredAdmins = (subAdmins || []).filter((a) => {
     if (!a) return false;
@@ -218,19 +160,12 @@ export const SubAdminManagementPage: React.FC = () => {
   return (
     <AdminLayout
       title={isHi ? 'उप-प्रशासक प्रबंधन (Sub-Admins)' : 'Sub-Admin Management'}
-      subtitle={
-        isHi
-          ? 'सुपर एडमिन नियंत्रण — ज़िला पंचायत अल्मोड़ा के राजस्व अधिकारियों व उप-प्रशासकों का पंजीकरण एवं अधिकार'
-          : 'Super Admin Authority — Register sub-administrators, tax inspectors, and manage system roles'
-      }
       breadcrumbs={[{ label: isHi ? 'उप-प्रशासक' : 'Sub-Admins' }]}
     >
       {/* Top Privilege Bar */}
       <div className="bg-white rounded-2xl p-5 border border-slate-200/90 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center border border-amber-500/20">
-            <Shield className="w-6 h-6" />
-          </div>
+
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-base font-bold text-slate-900">
@@ -259,8 +194,8 @@ export const SubAdminManagementPage: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/20"
+            onClick={() => navigate('/rental/admin/register-subadmin')}
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/20 cursor-pointer"
           >
             <UserPlus className="w-4 h-4" />
             <span>{isHi ? '+ नया उप-प्रशासक जोड़ें' : '+ Register Sub-Admin'}</span>
@@ -346,26 +281,25 @@ export const SubAdminManagementPage: React.FC = () => {
                         })}
                       </td>
                       <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => handleToggleStatus(admin)}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                          admin.status === 'ACTIVE'
+                        <button
+                          onClick={() => requestToggleStatus(admin)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${admin.status === 'ACTIVE'
                             ? 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200'
                             : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200'
-                        }`}
-                      >
-                        {admin.status === 'ACTIVE'
-                          ? isHi
-                            ? 'निलंबित करें'
-                            : 'Suspend'
-                          : isHi
-                          ? 'सक्रिय करें'
-                          : 'Activate'}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                            }`}
+                        >
+                          {admin.status === 'ACTIVE'
+                            ? isHi
+                              ? 'निलंबित करें'
+                              : 'Suspend'
+                            : isHi
+                              ? 'सक्रिय करें'
+                              : 'Activate'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           ) : (
@@ -384,162 +318,40 @@ export const SubAdminManagementPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ───────────────────────────────────────────────────────────────────────
-          REGISTER SUB-ADMIN MODAL
-      ──────────────────────────────────────────────────────────────────────── */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-base">
-                  {isHi ? 'नया उप-प्रशासक खाता बनाएं' : 'Register New Sub-Admin'}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  {isHi
-                    ? 'जिला पंचायत अल्मोड़ा — वाणिज्यिक रेंटल प्रबंधन'
-                    : 'Zila Panchayat Almora — Commercial Asset Management'}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700"
-              >
-                ✕
-              </button>
-            </div>
-
-            {errorMsg && (
-              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
-                <span>{errorMsg}</span>
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2 font-bold">
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                <span>{successMsg}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleCreateSubAdmin} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  {isHi ? 'अधिकारी का पूरा नाम *' : 'Full Name *'}
-                </label>
-                <div className="relative">
-                  <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="text"
-                    required
-                    value={formData.fullName}
-                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    placeholder={isHi ? 'उदा. हरीश सिंह कार्की' : 'e.g. Harish Singh Karki'}
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:border-amber-500 outline-none text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    {isHi ? 'मोबाइल नंबर (10 अंक) *' : 'Mobile Number (10 digits) *'}
-                  </label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                    <input
-                      type="tel"
-                      required
-                      maxLength={10}
-                      value={formData.mobile}
-                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, '') })}
-                      placeholder="9412000002"
-                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:border-amber-500 outline-none text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-700 mb-1">
-                    {isHi ? 'यूजरनेम *' : 'Username *'}
-                  </label>
-                  <div className="relative">
-                    <span className="text-slate-400 font-mono absolute left-3 top-2 text-xs">@</span>
-                    <input
-                      type="text"
-                      required
-                      value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '') })}
-                      placeholder="almora_subadmin1"
-                      className="w-full pl-8 pr-3 py-2 rounded-xl border border-slate-300 focus:border-amber-500 outline-none text-xs font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  {isHi ? 'शासकीय ईमेल (वैकल्पिक)' : 'Official Email (Optional)'}
-                </label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="subadmin@almora.gov.in"
-                    className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:border-amber-500 outline-none text-xs"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block font-bold text-slate-700 mb-1">
-                  {isHi ? 'प्रारंभिक पासवर्ड * (न्यूनतम 8 अक्षर)' : 'Initial Password * (min 8 chars)'}
-                </label>
-                <div className="relative">
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    minLength={8}
-                    value={formData.initialPassword}
-                    onChange={(e) => setFormData({ ...formData, initialPassword: e.target.value })}
-                    placeholder="Almora@2026#Sub"
-                    className="w-full pl-9 pr-9 py-2 rounded-xl border border-slate-300 focus:border-amber-500 outline-none text-xs font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2 border-t">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold hover:bg-slate-200"
-                >
-                  {isHi ? 'रद्द करें' : 'Cancel'}
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="px-5 py-2 rounded-xl bg-[#0b1b36] hover:bg-slate-800 text-amber-400 font-bold flex items-center gap-1.5 shadow"
-                >
-                  {submitting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>{isHi ? 'उप-प्रशासक बनाएं' : 'Create Account'}</span>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Confirmation Dialog */}
+      <AdminConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={
+          confirmModal.admin?.status === 'ACTIVE'
+            ? isHi ? 'उप-प्रशासक निलंबन की पुष्टि' : 'Suspend Sub-Administrator'
+            : isHi ? 'उप-प्रशासक सक्रिय करने की पुष्टि' : 'Activate Sub-Administrator'
+        }
+        message={
+          confirmModal.admin?.status === 'ACTIVE'
+            ? isHi
+              ? 'क्या आप वाकई इस उप-प्रशासक को निलंबित करना चाहते हैं? निलंबन के बाद यह अधिकारी पोर्टल पर लॉगिन या प्रशासनिक कार्य नहीं कर पाएंगे।'
+              : 'Are you sure you want to suspend this sub-administrator? They will lose access to administrative functions until reactivated.'
+            : isHi
+              ? 'क्या आप इस उप-प्रशासक का खाता पुनः सक्रिय करना चाहते हैं?'
+              : 'Are you sure you want to reactivate this sub-administrator account?'
+        }
+        subject={
+          confirmModal.admin
+            ? `${getAdminName(confirmModal.admin)} (@${confirmModal.admin.username}) • ${confirmModal.admin.mobile}`
+            : undefined
+        }
+        variant={confirmModal.admin?.status === 'ACTIVE' ? 'danger' : 'success'}
+        iconType={confirmModal.admin?.status === 'ACTIVE' ? 'userX' : 'check'}
+        confirmText={
+          confirmModal.admin?.status === 'ACTIVE'
+            ? isHi ? 'हां, निलंबित करें' : 'Suspend Account'
+            : isHi ? 'हां, सक्रिय करें' : 'Activate Account'
+        }
+        denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+        loading={confirmModal.loading}
+        onConfirm={handleConfirmToggleStatus}
+        onDeny={() => setConfirmModal({ isOpen: false, admin: null, loading: false })}
+      />
     </AdminLayout>
   );
 };

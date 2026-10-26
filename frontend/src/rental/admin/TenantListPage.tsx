@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
+import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 import { rentalUserApi, TenantListItem } from '../services/rentalUser.service';
 import { rentalPropertyApi, PropertyListItem } from '../services/rentalProperty.service';
@@ -28,6 +29,7 @@ import {
   ZoomIn,
   Calendar,
   IndianRupee,
+  BookOpen,
 } from 'lucide-react';
 
 export const TenantListPage: React.FC = () => {
@@ -250,19 +252,36 @@ export const TenantListPage: React.FC = () => {
     }
   };
 
-  const handleToggleStatus = async (tenantId: string, currentStatus: string) => {
-    const nextStatus = currentStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
-    const confirmMsg = isHi
-      ? `क्या आप इस किरायेदार का खाता ${nextStatus === 'ACTIVE' ? 'सक्रिय' : 'निष्क्रिय'} करना चाहते हैं?`
-      : `Are you sure you want to change this tenant status to ${nextStatus}?`;
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    tenant: TenantListItem | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    tenant: null,
+    loading: false,
+  });
 
-    if (!window.confirm(confirmMsg)) return;
+  const requestToggleStatus = (tenant: TenantListItem) => {
+    setConfirmModal({
+      isOpen: true,
+      tenant,
+      loading: false,
+    });
+  };
 
+  const handleConfirmToggleStatus = async () => {
+    if (!confirmModal.tenant) return;
+    const { id, status } = confirmModal.tenant;
+    const nextStatus = status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
     try {
-      await rentalUserApi.updateTenantStatus(tenantId, nextStatus as any);
+      await rentalUserApi.updateTenantStatus(id, nextStatus as any);
+      setConfirmModal({ isOpen: false, tenant: null, loading: false });
       fetchTenants();
     } catch (err: any) {
       alert(err.message || 'Failed to update status');
+      setConfirmModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
@@ -271,28 +290,16 @@ export const TenantListPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'पंजीकृत किरायेदार निर्देशिका (Users)' : 'Registered Tenants Directory (Users)'}
-      subtitle={
-        isHi
-          ? `कुल ${total} किरायेदार जिला पंचायत अल्मोड़ा के अंतर्गत पंजीकृत हैं`
-          : `Total ${total} tenants registered under Zila Panchayat Almora`
-      }
+      title={isHi ? 'किरायेदार (Users)' : 'Tenants (Users)'}
       breadcrumbs={[{ label: isHi ? 'किरायेदार' : 'Tenants' }]}
     >
       <div className="space-y-6">
         {/* Top Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div>
-              <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950">
-                {isHi ? 'पंजीकृत किरायेदार निर्देशिका' : 'Registered Tenants Directory'}
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500">
-                {isHi
-                  ? `कुल ${total} किरायेदार जिला पंचायत अल्मोड़ा के अंतर्गत पंजीकृत हैं`
-                  : `Total ${total} tenants registered under Zila Panchayat Almora`}
-              </p>
-            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950">
+              {isHi ? 'पंजीकृत किरायेदार निर्देशिका' : 'Registered Tenants Directory'}
+            </h1>
           </div>
 
           <div className="flex items-center gap-2">
@@ -301,7 +308,7 @@ export const TenantListPage: React.FC = () => {
               onClick={() => navigate('/rental/admin/properties')}
               className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-xs shrink-0 cursor-pointer"
             >
-              <Building className="w-4 h-4 text-indigo-600" />
+
               <span>{isHi ? 'संपत्ति रजिस्टर' : 'Property Assets'}</span>
             </button>
             <button
@@ -472,6 +479,16 @@ export const TenantListPage: React.FC = () => {
                       </td>
 
                       <td className="px-5 py-3.5 text-right space-x-2">
+                        {/* LEDGER BUTTON */}
+                        <NavLink
+                          to={`/rental/admin/ledger?tenantId=${t.id}`}
+                          className="px-2.5 py-1.5 bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1 shadow-xs cursor-pointer"
+                          title={isHi ? 'बहीखाता / लेजर देखें' : 'View Ledger'}
+                        >
+                          <BookOpen className="w-3.5 h-3.5 text-amber-700" />
+                          <span>{isHi ? 'लेजर' : 'Ledger'}</span>
+                        </NavLink>
+
                         {/* VIEW BUTTON (OPENS PROFILE) */}
                         <button
                           type="button"
@@ -485,12 +502,11 @@ export const TenantListPage: React.FC = () => {
 
                         <button
                           type="button"
-                          onClick={() => handleToggleStatus(t.id, t.status)}
-                          className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-colors cursor-pointer ${
-                            t.status === 'ACTIVE'
-                              ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/50'
-                              : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
-                          }`}
+                          onClick={() => requestToggleStatus(t)}
+                          className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-colors cursor-pointer ${t.status === 'ACTIVE'
+                            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/50'
+                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
+                            }`}
                         >
                           {t.status === 'ACTIVE' ? (isHi ? 'निष्क्रिय' : 'Deactivate') : (isHi ? 'सक्रिय' : 'Activate')}
                         </button>
@@ -558,20 +574,29 @@ export const TenantListPage: React.FC = () => {
                             ? 'संपादन मोड: सभी फ़ील्ड संपादन योग्य हैं'
                             : 'Edit Mode: Every field is editable'
                           : isHi
-                          ? 'किरायेदार प्रोफ़ाइल विवरण'
-                          : 'Tenant Profile Details'}
+                            ? 'किरायेदार प्रोफ़ाइल विवरण'
+                            : 'Tenant Profile Details'}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
+                  {/* VIEW LEDGER BUTTON */}
+                  <NavLink
+                    to={`/rental/admin/ledger?tenantId=${selectedTenant.id}`}
+                    className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm flex items-center gap-1.5 transition-colors shadow-md cursor-pointer"
+                  >
+                    <BookOpen className="w-4 h-4" />
+                    <span>{isHi ? 'बहीखाता / लेजर' : 'View Ledger'}</span>
+                  </NavLink>
+
                   {/* TOP EDIT BUTTON */}
                   {!isEditMode ? (
                     <button
                       type="button"
                       onClick={() => setIsEditMode(true)}
-                      className="px-4 py-2 rounded-xl bg-amber-400 text-navy-950 font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-amber-300 transition-colors shadow-md shadow-amber-400/20 cursor-pointer"
+                      className="px-4 py-2 rounded-xl bg-white/15 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2 hover:bg-white/25 transition-colors shadow-md cursor-pointer"
                     >
                       <Edit3 className="w-4 h-4" />
                       <span>{isHi ? 'विवरण संपादित करें' : 'Edit Profile'}</span>
@@ -1267,6 +1292,41 @@ export const TenantListPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Confirmation Dialog */}
+        <AdminConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={
+            confirmModal.tenant?.status === 'ACTIVE'
+              ? isHi ? 'किरायेदार खाता निष्क्रिय करें' : 'Deactivate Tenant Account'
+              : isHi ? 'किरायेदार खाता सक्रिय करें' : 'Activate Tenant Account'
+          }
+          message={
+            confirmModal.tenant?.status === 'ACTIVE'
+              ? isHi
+                ? 'क्या आप वाकई इस किरायेदार का खाता निष्क्रिय (Inactive) करना चाहते हैं? निष्क्रिय स्थिति में किरायेदार पोर्टल सेवाओं का उपयोग नहीं कर सकेंगे।'
+                : 'Are you sure you want to deactivate this tenant? They will not be able to log in to the tenant portal until reactivated.'
+              : isHi
+                ? 'क्या आप इस किरायेदार का खाता पुनः सक्रिय (Active) करना चाहते हैं?'
+                : 'Are you sure you want to reactivate this tenant account?'
+          }
+          subject={
+            confirmModal.tenant
+              ? `${confirmModal.tenant.fullName} (${confirmModal.tenant.userCode}) • ${confirmModal.tenant.mobile}`
+              : undefined
+          }
+          variant={confirmModal.tenant?.status === 'ACTIVE' ? 'danger' : 'success'}
+          iconType={confirmModal.tenant?.status === 'ACTIVE' ? 'userX' : 'check'}
+          confirmText={
+            confirmModal.tenant?.status === 'ACTIVE'
+              ? isHi ? 'हां, निष्क्रिय करें' : 'Deactivate'
+              : isHi ? 'हां, सक्रिय करें' : 'Activate'
+          }
+          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          loading={confirmModal.loading}
+          onConfirm={handleConfirmToggleStatus}
+          onDeny={() => setConfirmModal({ isOpen: false, tenant: null, loading: false })}
+        />
       </div>
     </AdminLayout>
   );

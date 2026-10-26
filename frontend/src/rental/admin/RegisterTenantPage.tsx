@@ -44,23 +44,25 @@ export const RegisterTenantPage: React.FC = () => {
   );
   const [initialPassword, setInitialPassword] = useState('');
 
-  // Vacant / Not-Allotted Properties State
-  const [availableProperties, setAvailableProperties] = useState<PropertyListItem[]>([]);
+  // All Properties State (vacant + allotted)
+  const [allProperties, setAllProperties] = useState<PropertyListItem[]>([]);
+  const [vacantProperties, setVacantProperties] = useState<PropertyListItem[]>([]);
+  const [allottedProperties, setAllottedProperties] = useState<PropertyListItem[]>([]);
   const [loadingProperties, setLoadingProperties] = useState(false);
   const [selectedPropertyDetails, setSelectedPropertyDetails] = useState<PropertyListItem | null>(null);
 
   const fetchAvailableProperties = async () => {
     setLoadingProperties(true);
     try {
-      const res = await rentalPropertyApi.listProperties({
-        status: 'VACANT',
-        limit: 100,
-      });
+      const res = await rentalPropertyApi.listProperties({ limit: 200 });
       if (res && res.data && Array.isArray(res.data.data)) {
-        setAvailableProperties(res.data.data);
+        const all = res.data.data;
+        setAllProperties(all);
+        setVacantProperties(all.filter((p) => p.status === 'VACANT'));
+        setAllottedProperties(all.filter((p) => p.status !== 'VACANT'));
       }
     } catch (err) {
-      console.error('Failed to load available properties', err);
+      console.error('Failed to load properties', err);
     } finally {
       setLoadingProperties(false);
     }
@@ -72,7 +74,7 @@ export const RegisterTenantPage: React.FC = () => {
 
   const handlePropertyChange = (selectedId: string) => {
     setPropertyId(selectedId);
-    const selected = availableProperties.find((p) => p.id === selectedId);
+    const selected = allProperties.find((p) => p.id === selectedId);
     if (selected) {
       setSelectedPropertyDetails(selected);
       if (selected.baseMonthlyRent) {
@@ -158,8 +160,29 @@ export const RegisterTenantPage: React.FC = () => {
     if (!propertyId) {
       setError(
         isHi
-          ? 'कृपया ड्रॉपडाउन से दुकान / परिसंपत्ति का चयन अनिवार्य रूप से करें।'
+          ? 'कृपया ड्रॉपडाउन से रिक्त दुकान / परिसंपत्ति का चयन अनिवार्य रूप से करें।'
           : 'Please select a vacant shop / property from the dropdown.'
+      );
+      return;
+    }
+
+    // GST format validation — if provided must be exactly 15 chars
+    if (gstNumber.trim() && gstNumber.trim().length !== 15) {
+      setError(
+        isHi
+          ? `जीएसटी नंबर ठीक 15 अक्षरों का होना चाहिए। आपने ${gstNumber.trim().length} अक्षर दर्ज किए हैं।`
+          : `GST number must be exactly 15 characters. You entered ${gstNumber.trim().length} characters.`
+      );
+      return;
+    }
+
+    // Block if selected property is not VACANT
+    const selectedProp = allProperties.find((p) => p.id === propertyId);
+    if (selectedProp && selectedProp.status !== 'VACANT') {
+      setError(
+        isHi
+          ? `दुकान संख्या ${selectedProp.propertyNumber} वर्तमान में पहले से किसी किरायेदार को आवंटित है। कृपया केवल रिक्त (VACANT) दुकान चुनें।`
+          : `Shop ${selectedProp.propertyNumber} is currently allotted to another tenant. Please select a VACANT shop only.`
       );
       return;
     }
@@ -221,11 +244,6 @@ export const RegisterTenantPage: React.FC = () => {
   return (
     <AdminLayout
       title={isHi ? 'नया किरायेदार पंजीकरण' : 'Register New Tenant'}
-      subtitle={
-        isHi
-          ? 'जिला पंचायत अल्मोड़ा — वाणिज्यिक दुकान आवंटन एवं नागरिक सत्यापन'
-          : 'Zila Panchayat Almora — Commercial Property Allotment & Tenant Verification'
-      }
       breadcrumbs={[
         { label: isHi ? 'किरायेदार' : 'Tenants', to: '/rental/admin/tenants' },
         { label: isHi ? 'नया पंजीकरण' : 'New Registration' },
@@ -527,15 +545,37 @@ export const RegisterTenantPage: React.FC = () => {
 
                   <div className="border border-slate-200 rounded-2xl p-4">
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'जीएसटी नंबर (GST Number - वैकल्पिक)' : 'GST Number (Optional)'}
+                      {isHi ? 'जीएसटी नंबर (GST Number — वैकल्पिक)' : 'GST Number (Optional)'}
                     </label>
                     <input
                       type="text"
                       value={gstNumber}
-                      onChange={(e) => setGstNumber(e.target.value.toUpperCase())}
+                      maxLength={15}
+                      onChange={(e) => {
+                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                        if (val.length <= 15) setGstNumber(val);
+                      }}
                       placeholder="05AAAAA0000A1Z5"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs mb-2 font-mono uppercase"
+                      className={`w-full px-3 py-2 rounded-lg border text-xs mb-1 font-mono uppercase tracking-widest ${
+                        gstNumber.length > 0 && gstNumber.length < 15
+                          ? 'border-amber-400 bg-amber-50 focus:ring-amber-400'
+                          : gstNumber.length === 15
+                          ? 'border-emerald-400 bg-emerald-50'
+                          : 'border-slate-300'
+                      } focus:outline-none focus:ring-2`}
                     />
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className={`text-[10px] font-medium ${
+                        gstNumber.length === 0 ? 'text-slate-400' :
+                        gstNumber.length < 15 ? 'text-amber-600' : 'text-emerald-600'
+                      }`}>
+                        {gstNumber.length === 0
+                          ? (isHi ? 'सरकारी मानक: ठीक 15 अक्षर (GSTIN)' : 'Govt standard: Exactly 15 characters (GSTIN)')
+                          : gstNumber.length < 15
+                          ? (isHi ? `${gstNumber.length}/15 — ${15 - gstNumber.length} और अक्षर चाहिए` : `${gstNumber.length}/15 — ${15 - gstNumber.length} more characters needed`)
+                          : (isHi ? '✓ 15/15 — मान्य GSTIN प्रारूप' : '✓ 15/15 — Valid GSTIN format')}
+                      </span>
+                    </div>
                     <label className="block text-[11px] font-semibold text-slate-500 mb-1">
                       {isHi ? 'जीएसटी प्रमाणपत्र प्रति (वैकल्पिक - PDF / Image)' : 'GST Certificate (Optional - PDF / Image)'}
                     </label>
@@ -551,36 +591,98 @@ export const RegisterTenantPage: React.FC = () => {
 
               {/* Section 3: Commercial Property Allotment */}
               <div className="pt-8">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-navy-900 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-amber-600" />
-                    {isHi ? '3. जिला पंचायत दुकान / परिसंपत्ति आवंटन' : '3. Commercial Asset Allotment'}
-                  </h3>
-                  <div className="flex items-center gap-2">
+                {/* Section Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <span className="w-1.5 h-5 rounded-sm bg-amber-500 inline-block" />
+                    <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800">
+                      {isHi ? '3. दुकान / परिसंपत्ति आवंटन' : '3. Shop / Property Allotment'}
+                    </h3>
+                  </div>
+                  <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={fetchAvailableProperties}
                       disabled={loadingProperties}
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
-                      title={isHi ? 'दुकानों की सूची ताज़ा करें' : 'Refresh shops list'}
+                      className="text-xs font-semibold text-slate-500 hover:text-slate-800 transition disabled:opacity-50 cursor-pointer"
                     >
-                      <RefreshCw className={`w-3 h-3 text-slate-500 ${loadingProperties ? 'animate-spin text-blue-600' : ''}`} />
-                      <span>{isHi ? 'ताज़ा करें' : 'Refresh'}</span>
+                      {loadingProperties ? (isHi ? 'लोड हो रहा है...' : 'Loading...') : (isHi ? 'सूची ताज़ा करें' : 'Refresh List')}
                     </button>
+                    <span className="text-slate-300">|</span>
                     <NavLink
                       to="/rental/admin/properties"
                       target="_blank"
-                      className="inline-flex items-center gap-1 text-xs text-blue-700 hover:text-blue-900 font-bold underline"
+                      className="text-xs font-bold text-amber-700 hover:text-amber-900 transition border-b border-amber-400 hover:border-amber-700 pb-px"
                     >
-                      <span>{isHi ? '+ नई दुकान जोड़ें' : '+ Add Shop'}</span>
+                      {isHi ? 'नई दुकान पंजीकृत करें →' : 'Register New Shop →'}
                     </NavLink>
                   </div>
                 </div>
 
+                {/* STATUS NOTICE: No shops registered at all */}
+                {!loadingProperties && allProperties.length === 0 && (
+                  <div className="mb-5 rounded-xl border-l-4 border-red-500 bg-red-50 px-4 py-3.5">
+                    <p className="text-xs font-bold text-red-800 uppercase tracking-wide mb-1">
+                      {isHi ? 'कोई दुकान पंजीकृत नहीं है' : 'No Properties Registered'}
+                    </p>
+                    <p className="text-xs text-red-700 leading-relaxed mb-2.5">
+                      {isHi
+                        ? 'किरायेदार को दुकान आवंटित करने से पहले जिला पंचायत रिकॉर्ड में दुकान पंजीकृत होनी अनिवार्य है। कृपया पहले संपत्ति प्रबंधन में जाकर नई दुकान/परिसंपत्ति पंजीकृत करें।'
+                        : 'Before allotting a shop to a tenant, the property must first be registered in the system. Please register a new shop/property in Property Management.'}
+                    </p>
+                    <NavLink
+                      to="/rental/admin/properties"
+                      target="_blank"
+                      className="inline-block text-xs font-bold text-red-700 border border-red-400 hover:bg-red-100 rounded-lg px-3 py-1.5 transition"
+                    >
+                      {isHi ? 'संपत्ति प्रबंधन — नई दुकान पंजीकृत करें' : 'Property Management — Register New Shop'}
+                    </NavLink>
+                  </div>
+                )}
+
+                {/* STATUS NOTICE: All shops allotted */}
+                {!loadingProperties && allProperties.length > 0 && vacantProperties.length === 0 && (
+                  <div className="mb-5 rounded-xl border-l-4 border-amber-500 bg-amber-50 px-4 py-3.5">
+                    <p className="text-xs font-bold text-amber-900 uppercase tracking-wide mb-1">
+                      {isHi ? 'सभी पंजीकृत दुकानें आवंटित हैं' : 'All Registered Shops Are Allotted'}
+                    </p>
+                    <p className="text-xs text-amber-800 leading-relaxed mb-2.5">
+                      {isHi
+                        ? `कुल ${allProperties.length} पंजीकृत दुकान में से कोई भी वर्तमान में रिक्त नहीं है। नये किरायेदार को आवंटन हेतु कोई दुकान रिक्त कराएं या नई दुकान पंजीकृत करें।`
+                        : `All ${allProperties.length} registered shop(s) are currently allotted. To allot a shop to this tenant, vacate an existing shop or register a new one.`}
+                    </p>
+                    <NavLink
+                      to="/rental/admin/properties"
+                      target="_blank"
+                      className="inline-block text-xs font-bold text-amber-800 border border-amber-400 hover:bg-amber-100 rounded-lg px-3 py-1.5 transition"
+                    >
+                      {isHi ? 'संपत्ति प्रबंधन पेज खोलें' : 'Open Property Management'}
+                    </NavLink>
+                  </div>
+                )}
+
+                {/* INFO BAR: Vacant shops available */}
+                {!loadingProperties && vacantProperties.length > 0 && (
+                  <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3.5 py-2">
+                    <span className="font-semibold text-emerald-700">{vacantProperties.length} {isHi ? 'रिक्त दुकान उपलब्ध' : 'vacant shop(s) available'}</span>
+                    {allottedProperties.length > 0 && (
+                      <>
+                        <span className="text-slate-300">|</span>
+                        <span>{allottedProperties.length} {isHi ? 'आवंटित (अचयनित)' : 'allotted (disabled)'}</span>
+                      </>
+                    )}
+                    <span className="text-slate-300">|</span>
+                    <span>{isHi ? 'दुकान सूची में नहीं?' : 'Shop missing?'}</span>
+                    <NavLink to="/rental/admin/properties" target="_blank" className="font-semibold text-amber-700 hover:text-amber-900 underline underline-offset-2">
+                      {isHi ? 'यहाँ पंजीकृत करें' : 'Register here'}
+                    </NavLink>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'दुकान चुनें (रिक्त / अन-आवंटित) *' : 'Select Shop (Vacant / Not Allotted) *'}
+                      {isHi ? 'दुकान चुनें (केवल रिक्त / उपलब्ध) *' : 'Select Shop (Vacant Only) *'}
                     </label>
                     <div className="relative">
                       <select
@@ -591,28 +693,38 @@ export const RegisterTenantPage: React.FC = () => {
                       >
                         <option value="">
                           {loadingProperties
-                            ? (isHi ? 'लोड हो रहा है...' : 'Loading vacant shops...')
-                            : availableProperties.length === 0
-                            ? (isHi ? '-- कोई रिक्त दुकान उपलब्ध नहीं है --' : '-- No vacant shops available --')
-                            : (isHi ? '-- रिक्त / अन-आवंटित दुकान चुनें --' : '-- Select Vacant Shop --')}
+                            ? (isHi ? 'लोड हो रहा है...' : 'Loading shops...')
+                            : allProperties.length === 0
+                            ? (isHi ? '-- कोई दुकान पंजीकृत नहीं है --' : '-- No shops registered --')
+                            : vacantProperties.length === 0
+                            ? (isHi ? '-- सभी दुकानें आवंटित हैं --' : '-- All shops are allotted --')
+                            : (isHi ? '-- रिक्त दुकान चुनें --' : '-- Select Vacant Shop --')}
                         </option>
-                        {availableProperties.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.propertyNumber} — {p.propertyName} ({p.location}) [किराया: ₹{Number(p.baseMonthlyRent).toLocaleString('en-IN')}]
-                          </option>
-                        ))}
+                        {/* Vacant shops (selectable) */}
+                        {vacantProperties.length > 0 && (
+                          <optgroup label={isHi ? '🟢 रिक्त / उपलब्ध दुकानें' : '🟢 Vacant / Available Shops'}>
+                            {vacantProperties.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                🟢 {p.propertyNumber} — {p.propertyName} ({p.location}) [₹{Number(p.baseMonthlyRent).toLocaleString('en-IN')}/माह]
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {/* Allotted shops (disabled, informational) */}
+                        {allottedProperties.length > 0 && (
+                          <optgroup label={isHi ? '🔴 पहले से आवंटित (चयन नहीं होगा)' : '🔴 Already Allotted (Not selectable)'}>
+                            {allottedProperties.map((p) => (
+                              <option key={p.id} value={p.id} disabled style={{ color: '#9ca3af' }}>
+                                🔴 {p.propertyNumber} — {p.propertyName} [{p.currentTenant?.fullName ?? (isHi ? 'आवंटित' : 'ALLOTTED')}]
+                              </option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-500">
                         <Building2 className="w-4 h-4" />
                       </div>
                     </div>
-                    {availableProperties.length === 0 && !loadingProperties && (
-                      <p className="text-[11px] text-amber-700 mt-1 font-medium">
-                        {isHi
-                          ? 'वर्तमान में कोई रिक्त दुकान उपलब्ध नहीं है। आप बाद में भी दुकान आवंटित कर सकते हैं।'
-                          : 'No vacant shops found. You can register tenant and allot shop later.'}
-                      </p>
-                    )}
                   </div>
 
                   <div>
@@ -646,6 +758,7 @@ export const RegisterTenantPage: React.FC = () => {
                     />
                   </div>
                 </div>
+
 
                 {/* Selected Shop Preview Card */}
                 {selectedPropertyDetails && (

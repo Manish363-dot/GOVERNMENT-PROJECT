@@ -5,18 +5,18 @@ import { useAuth } from '../context/AuthContext';
 import { RentalAdminNavbar } from './RentalAdminNavbar';
 import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import {
-  LayoutDashboard,
-  Building,
+  Home,
+  Building2,
   Users,
   Shield,
-  FileText,
+  Receipt,
   Bell,
   LogOut,
   UserPlus,
   ChevronRight,
-  BarChart3,
-  Receipt,
-  ExternalLink,
+  ClipboardList,
+  FileSpreadsheet,
+  BookOpen,
   X,
   Phone,
 } from 'lucide-react';
@@ -26,6 +26,7 @@ interface AdminLayoutProps {
   title: string;
   subtitle?: string;
   breadcrumbs?: Array<{ label: string; to?: string }>;
+  hideHeader?: boolean;
 }
 
 export const AdminLayout: React.FC<AdminLayoutProps> = ({
@@ -33,6 +34,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   title,
   subtitle,
   breadcrumbs,
+  hideHeader = false,
 }) => {
   const { language } = useLanguage();
   const isHi = language === 'hi';
@@ -58,45 +60,47 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     {
       to: '/rental/admin/dashboard',
       label: isHi ? 'डैशबोर्ड' : 'Dashboard',
-      icon: LayoutDashboard,
-      badge: isHi ? 'लाइव' : 'Live',
+      icon: Home,
     },
     {
       to: '/rental/admin/tenants',
-      label: isHi ? 'किरायेदार (Users)' : 'Tenants & Users',
+      label: isHi ? 'किरायेदार व उपयोगकर्ता' : 'Tenants & Users',
       icon: Users,
     },
     ...(isSuperAdmin
       ? [
-          {
-            to: '/rental/admin/subadmins',
-            label: isHi ? 'उप-प्रशासक (Sub-Admins)' : 'Sub-Admins',
-            icon: Shield,
-            superAdminOnly: true,
-            badge: 'Admin',
-          },
-        ]
+        {
+          to: '/rental/admin/subadmins',
+          label: isHi ? 'उप-प्रशासक प्रबंधन' : 'Sub-Admin Management',
+          icon: Shield,
+          superAdminOnly: true,
+        },
+      ]
       : []),
     {
+      to: '/rental/admin/billing',
+      label: isHi ? 'किराया प्रबंधन' : 'Rent Management',
+      icon: Receipt,
+    },
+    {
       to: '/rental/admin/properties',
-      label: isHi ? 'दुकानें व संपत्तियां' : 'Properties & Shops',
-      icon: Building,
+      label: isHi ? 'संपत्तियां व दुकानें' : 'Properties & Shops',
+      icon: Building2,
+    },
+    {
+      to: '/rental/admin/ledger',
+      label: isHi ? 'राजस्व बहीखाता (Ledger)' : 'Rent Ledger',
+      icon: BookOpen,
     },
     {
       to: '/rental/admin/records',
-      label: isHi ? 'वित्तीय रिकॉर्ड्स व ऑडिट' : 'Records & Audit',
-      icon: BarChart3,
-      badge: 'GST',
-    },
-    {
-      to: '/rental/admin/billing',
-      label: isHi ? 'मासिक बिलिंग एवं मांग' : 'Monthly Billing',
-      icon: FileText,
+      label: isHi ? 'रिकॉर्ड्स व ऑडिट' : 'Records & Audit',
+      icon: ClipboardList,
     },
     {
       to: '/rental/admin/notices',
       label: isHi ? 'सूचना एवं परिपत्र' : 'Notices & Circulars',
-      icon: Bell,
+      icon: FileSpreadsheet,
     },
   ];
 
@@ -130,9 +134,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             3. Bottom: Admin Name, Mobile Number (No Avatar/Image) + Logout Button
         ──────────────────────────────────────────────────────────────────────── */}
         <aside
-          className={`fixed md:sticky top-0 md:top-[34px] left-0 z-40 md:z-20 h-screen md:h-[calc(100vh-34px)] w-64 bg-[#0b1b36] text-slate-200 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-xl shrink-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-          }`}
+          className={`fixed md:sticky top-0 md:top-[34px] left-0 z-40 md:z-20 h-screen md:h-[calc(100vh-34px)] w-64 bg-[#0b1b36] text-slate-200 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-xl shrink-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+            }`}
         >
           {/* Top Header & Navigation Links */}
           <div className="flex flex-col min-h-0">
@@ -176,7 +179,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
 
             {/* Navigation Links */}
-            <nav className="px-3 space-y-1 overflow-y-auto max-h-[calc(100vh-230px)] scrollbar-thin scrollbar-thumb-slate-800">
+            <nav className="px-3 space-y-1 overflow-y-auto max-h-[calc(100vh-250px)] scrollbar-thin scrollbar-thumb-slate-800">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -200,15 +203,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                       />
                       <span className="truncate">{item.label}</span>
                     </div>
-                    {item.badge && (
+
+                    {(item as any).badge && (
                       <span
-                        className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full ${
+                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
                           isActive
                             ? 'bg-slate-950 text-amber-400'
                             : 'bg-slate-800 text-amber-300 border border-slate-700'
                         }`}
                       >
-                        {item.badge}
+                        {(item as any).badge}
                       </span>
                     )}
                   </NavLink>
@@ -223,18 +227,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div className="px-2 py-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-bold text-white truncate">
-                  {user?.name || (isSuperAdmin ? (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator') : (isHi ? 'प्रशासक' : 'Administrator'))}
+                  {user?.name || (isSuperAdmin ? (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator') : user?.role === 'SUB_ADMIN' ? (isHi ? 'उप-प्रशासक' : 'Sub Administrator') : (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator'))}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[9px] font-extrabold text-amber-400 uppercase tracking-wider">
-                    {isSuperAdmin ? 'SUPER ADMIN' : 'SUB ADMIN'}
+                    {isSuperAdmin ? 'SUPER ADMIN' : user?.role === 'SUB_ADMIN' ? 'SUB ADMIN' : 'SUPER ADMIN'}
                   </span>
                 </div>
               </div>
               <div className="text-xs font-mono text-slate-400 mt-1 flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-amber-400/80 shrink-0" />
-                <span>{user?.mobile || user?.identifier || (isSuperAdmin ? '9412000001' : (isHi ? 'सक्रिय सत्र' : 'Active Session'))}</span>
+                <span>{user?.mobile || user?.identifier || (user?.role === 'SUB_ADMIN' ? '9874561230' : '9412000001')}</span>
               </div>
             </div>
 
@@ -254,73 +258,65 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         ──────────────────────────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Breadcrumbs & Section Title Header Strip */}
-        <div className="bg-white border-b border-slate-200/90 px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
-              <NavLink
-                to="/rental/admin/dashboard"
-                className="font-semibold text-slate-700 hover:text-amber-600 transition"
-              >
-                {isHi ? 'जिला पंचायत अल्मोड़ा' : 'Zila Panchayat Almora'}
-              </NavLink>
-              <ChevronRight className="w-3 h-3 text-slate-400" />
-              <span className="text-slate-600 font-medium">
-                {isHi ? 'वाणिज्यिक किराया प्रशासन' : 'Rental Admin'}
-              </span>
-              {breadcrumbs?.map((b, idx) => (
-                <React.Fragment key={idx}>
+          {/* Breadcrumbs & Section Title Header Strip */}
+          {!hideHeader && (
+            <div className="bg-white border-b border-slate-200/90 px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+              <div>
+                <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
+                  <NavLink
+                    to="/rental/admin/dashboard"
+                    className="font-semibold text-slate-700 hover:text-amber-600 transition"
+                  >
+                    {isHi ? 'जिला पंचायत अल्मोड़ा' : 'Zila Panchayat Almora'}
+                  </NavLink>
                   <ChevronRight className="w-3 h-3 text-slate-400" />
-                  {b.to ? (
-                    <NavLink to={b.to} className="hover:text-amber-600 font-medium">
-                      {b.label}
-                    </NavLink>
-                  ) : (
-                    <span className="text-slate-900 font-bold">{b.label}</span>
-                  )}
-                </React.Fragment>
-              ))}
+                  <span className="text-slate-600 font-medium">
+                    {isHi ? 'वाणिज्यिक किराया प्रशासन' : 'Rental Admin'}
+                  </span>
+                  {breadcrumbs?.map((b, idx) => (
+                    <React.Fragment key={idx}>
+                      <ChevronRight className="w-3 h-3 text-slate-400" />
+                      {b.to ? (
+                        <NavLink to={b.to} className="hover:text-amber-600 font-medium">
+                          {b.label}
+                        </NavLink>
+                      ) : (
+                        <span className="text-slate-900 font-bold">{b.label}</span>
+                      )}
+                    </React.Fragment>
+                  ))}
+                </div>
+                <h1 className="text-base sm:text-lg font-extrabold text-[#0b1b36] tracking-tight">
+                  {title}
+                </h1>
+              </div>
+
+
             </div>
-            <h1 className="text-base sm:text-lg font-extrabold text-[#0b1b36] tracking-tight">
-              {title}
-            </h1>
-            {subtitle && <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>}
-          </div>
+          )}
 
-          {/* Quick Action Shortcut */}
-          <div className="flex items-center gap-2">
-            <NavLink
-              to="/rental/admin/register-tenant"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0b1b36] hover:bg-slate-800 text-amber-400 rounded-lg text-xs font-bold transition shadow-xs border border-amber-500/30"
-            >
-              <UserPlus className="w-3.5 h-3.5 text-amber-400" />
-              <span>{isHi ? '+ नया किरायेदार जोड़ें' : '+ Add Tenant'}</span>
-            </NavLink>
-          </div>
+          {/* Main Content Area */}
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
+            {children}
+          </main>
+
+          {/* Sub-Footer from design.md */}
+          <footer className="bg-white border-t border-slate-200 py-3.5 px-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>
+                {isHi
+                  ? 'कार्यालय जिला पंचायत अल्मोड़ा — वाणिज्यिक किराया नियंत्रण एवं राजस्व पोर्टल (उत्तराखंड शासन)'
+                  : 'Office of Zila Panchayat Almora — Commercial Rental Management & Revenue System (Govt. of Uttarakhand)'}
+              </span>
+            </div>
+            <div className="font-mono text-[11px] text-slate-500">
+              {isHi ? 'अधिकृत शासकीय प्रशासन' : 'Official Administration'} • 2026
+            </div>
+          </footer>
         </div>
-
-        {/* Main Content Area */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
-          {children}
-        </main>
-
-        {/* Sub-Footer from design.md */}
-        <footer className="bg-white border-t border-slate-200 py-3.5 px-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>
-              {isHi
-                ? 'कार्यालय जिला पंचायत अल्मोड़ा — वाणिज्यिक किराया नियंत्रण एवं राजस्व पोर्टल (उत्तराखंड शासन)'
-                : 'Office of Zila Panchayat Almora — Commercial Rental Management & Revenue System (Govt. of Uttarakhand)'}
-            </span>
-          </div>
-          <div className="font-mono text-[11px] text-slate-500">
-            {isHi ? 'अधिकृत शासकीय प्रशासन' : 'Official Administration'} • 2026
-          </div>
-        </footer>
       </div>
     </div>
-  </div>
   );
 };
 

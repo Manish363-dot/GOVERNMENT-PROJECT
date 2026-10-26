@@ -94,48 +94,112 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
     setLoading(true);
 
     try {
+      let finalRole: 'admin' | 'user' = role;
+
       if (role === 'admin') {
-        const res = await rentalAuthApi.adminLogin(cleanMobile, password);
-        const adminData = res.data?.admin;
-        if (adminData) {
-          const isSuper =
-            adminData.role === 'SUPER_ADMIN' ||
-            adminData.mobile === '9412000001' ||
-            cleanMobile === '9412000001' ||
-            adminData.username === 'almora_superadmin';
-          const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
-          login({
-            id: adminData.id,
-            name: adminData.fullName || (adminData as any).full_name || adminData.username,
-            identifier: adminData.username || cleanMobile,
-            mobile: adminData.mobile || cleanMobile,
-            role: resolvedRole,
-            adminRole: resolvedRole,
-            permissions: adminData.permissions || [],
-          });
+        try {
+          const res = await rentalAuthApi.adminLogin(cleanMobile, password);
+          const adminData = res.data?.admin;
+          if (adminData) {
+            const isSuper =
+              adminData.role === 'SUPER_ADMIN' ||
+              adminData.mobile === '9412000001' ||
+              cleanMobile === '9412000001' ||
+              adminData.username === 'almora_superadmin';
+            const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
+            login({
+              id: adminData.id,
+              name: adminData.fullName || (adminData as any).full_name || adminData.username,
+              identifier: adminData.username || cleanMobile,
+              mobile: adminData.mobile || cleanMobile,
+              role: resolvedRole,
+              adminRole: resolvedRole,
+              permissions: adminData.permissions || [],
+            });
+          }
+          finalRole = 'admin';
+          setSuccess(
+            isHi
+              ? 'व्यवस्थापक मोबाइल सत्यापन सफल! रेंटल डैशबोर्ड पर ले जाया जा रहा है...'
+              : 'Admin authentication successful! Redirecting to dashboard...'
+          );
+        } catch (adminErr: any) {
+          // If admin login failed, attempt tenant login in case user was on wrong tab
+          try {
+            const userRes = await rentalAuthApi.userLogin(cleanMobile, password);
+            const userData = userRes.data?.user;
+            if (userData) {
+              login({
+                id: userData.id,
+                name: userData.fullName,
+                identifier: userData.userCode || cleanMobile,
+                mobile: userData.mobile,
+                role: 'user',
+              });
+              finalRole = 'user';
+              setRole('user');
+              setSuccess(
+                isHi
+                  ? 'किरायेदार सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
+                  : 'Tenant verified successfully! Redirecting...'
+              );
+            }
+          } catch {
+            throw adminErr;
+          }
         }
-        setSuccess(
-          isHi
-            ? 'व्यवस्थापक मोबाइल सत्यापन सफल! रेंटल डैशबोर्ड पर ले जाया जा रहा है...'
-            : 'Admin authentication successful! Redirecting to dashboard...'
-        );
       } else {
-        const res = await rentalAuthApi.userLogin(cleanMobile, password);
-        const userData = res.data?.user;
-        if (userData) {
-          login({
-            id: userData.id,
-            name: userData.fullName,
-            identifier: userData.userCode || cleanMobile,
-            mobile: userData.mobile,
-            role: 'user',
-          });
+        try {
+          const res = await rentalAuthApi.userLogin(cleanMobile, password);
+          const userData = res.data?.user;
+          if (userData) {
+            login({
+              id: userData.id,
+              name: userData.fullName,
+              identifier: userData.userCode || cleanMobile,
+              mobile: userData.mobile,
+              role: 'user',
+            });
+          }
+          finalRole = 'user';
+          setSuccess(
+            isHi
+              ? 'किरायेदार सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
+              : 'Tenant verified successfully! Redirecting...'
+          );
+        } catch (userErr: any) {
+          // If tenant login failed, check if this is an Admin logging in from the Tenant tab!
+          try {
+            const adminRes = await rentalAuthApi.adminLogin(cleanMobile, password);
+            const adminData = adminRes.data?.admin;
+            if (adminData) {
+              const isSuper =
+                adminData.role === 'SUPER_ADMIN' ||
+                adminData.mobile === '9412000001' ||
+                cleanMobile === '9412000001' ||
+                adminData.username === 'almora_superadmin';
+              const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
+              login({
+                id: adminData.id,
+                name: adminData.fullName || (adminData as any).full_name || adminData.username,
+                identifier: adminData.username || cleanMobile,
+                mobile: adminData.mobile || cleanMobile,
+                role: resolvedRole,
+                adminRole: resolvedRole,
+                permissions: adminData.permissions || [],
+              });
+              finalRole = 'admin';
+              setRole('admin');
+              setSuccess(
+                isHi
+                  ? 'व्यवस्थापक मोबाइल सत्यापन सफल! रेंटल डैशबोर्ड पर ले जाया जा रहा है...'
+                  : 'Admin authentication successful! Redirecting to dashboard...'
+              );
+            }
+          } catch {
+            throw userErr;
+          }
         }
-        setSuccess(
-          isHi
-            ? 'किरायेदार सत्यापन सफल! किराया भुगतान पोर्टल पर ले जाया जा रहा है...'
-            : 'Tenant verified successfully! Redirecting...'
-        );
       }
 
       setTimeout(() => {
@@ -145,12 +209,12 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
             const el = document.getElementById('quick-pay');
             if (el) el.scrollIntoView({ behavior: 'smooth' });
           }, 150);
-        } else if (role === 'admin') {
+        } else if (finalRole === 'admin') {
           navigate('/rental/admin/dashboard');
         } else {
           navigate('/rental/user/dashboard');
         }
-      }, 1000);
+      }, 900);
     } catch (err: any) {
       if (err.status === 429 || err.message?.toLowerCase().includes('too many') || err.message?.toLowerCase().includes('throttled')) {
         setError(
@@ -308,8 +372,6 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
                     setRole('admin');
                     setError('');
                     setSuccess('');
-                    setIdentifier('');
-                    setPassword('');
                   }}
                   className={`flex items-center justify-center gap-2 py-2 px-3 text-xs sm:text-sm font-bold rounded-md transition-all cursor-pointer ${
                     role === 'admin'
@@ -326,8 +388,6 @@ export const AdminSignInPage: React.FC<AdminSignInPageProps> = ({ initialRole = 
                     setRole('user');
                     setError('');
                     setSuccess('');
-                    setIdentifier('');
-                    setPassword('');
                   }}
                   className={`flex items-center justify-center gap-2 py-2 px-3 text-xs sm:text-sm font-bold rounded-md transition-all cursor-pointer ${
                     role === 'user'
