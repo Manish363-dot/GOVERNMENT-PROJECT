@@ -23,10 +23,8 @@ import {
   Trash2,
   ShieldCheck,
   Paperclip,
-  ExternalLink,
   MessageCircle,
-  KeyRound,
-  RefreshCw
+  KeyRound
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ComplaintTrack } from './ComplaintTrack';
@@ -483,7 +481,6 @@ _यह पावती भविष्य के संदर्भ के ल�
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              <Send className="w-4 h-4" />
               <span>{isHi ? 'शिकायत दर्ज करें' : 'Lodge Complaint'}</span>
             </button>
 
@@ -496,7 +493,6 @@ _यह पावती भविष्य के संदर्भ के ल�
                   : 'text-slate-300 hover:text-white hover:bg-white/10'
               }`}
             >
-              <Search className="w-4 h-4" />
               <span>{isHi ? 'शिकायत ट्रैक करें' : 'Track Status'}</span>
             </button>
           </div>
@@ -830,9 +826,9 @@ _यह पावती भविष्य के संदर्भ के ल�
                     
                     {/* Almora Block Dropdown */}
                     <div className="space-y-1.5">
-                      <Label htmlFor="complaint-block" className="text-xs font-bold text-navy-900 flex items-center gap-1.5">
-                        <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                        <span>{isHi ? 'विकासखंड (Almora Block)' : 'Block (Almora District)'}</span>
+                      <Label htmlFor="complaint-block" className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                        <Building2 className="w-3.5 h-3.5 text-slate-500" />
+                        <span>{isHi ? 'विकासखंड (Almora Block)' : 'Block'}</span>
                         <span className="text-red-500">*</span>
                       </Label>
                       <select
@@ -853,7 +849,7 @@ _यह पावती भविष्य के संदर्भ के ल�
                     {/* Specific Location / Ward / Village */}
                     <div className="space-y-1.5">
                       <Label htmlFor="complaint-area" className="text-xs font-bold text-navy-900 flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-red-500" />
+                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
                         <span>{isHi ? 'ग्राम पंचायत / वार्ड / मोहल्ला / स्थान' : 'Gram Panchayat / Ward / Area'}</span>
                         <span className="text-red-500">*</span>
                       </Label>
@@ -1061,8 +1057,7 @@ _यह पावती भविष्य के संदर्भ के ल�
                       />
                       <div className="space-y-1 text-xs sm:text-sm">
                         <span className="font-bold text-navy-950 flex items-center gap-1.5">
-                          <ShieldCheck className={`w-4 h-4 ${declarationAccepted ? 'text-emerald-600' : 'text-slate-400'}`} />
-                          <span>{isHi ? 'नागरिक स्व-घोषणा (Citizen Self-Declaration)' : 'Citizen Self-Declaration'}</span>
+                          <span>{isHi ? 'नागरिक स्व-घोषणा' : 'Citizen Self-Declaration'}</span>
                           <span className="text-red-500">*</span>
                         </span>
                         <p className="text-slate-600 text-xs leading-relaxed">
@@ -1094,7 +1089,6 @@ _यह पावती भविष्य के संदर्भ के ल�
                         </>
                       ) : (
                         <>
-                          <Send className="w-4 h-4 text-amber-400" />
                           <span>{isHi ? 'शिकायत ऑनलाइन प्रेषित करें' : 'Submit Grievance Now'}</span>
                         </>
                       )}

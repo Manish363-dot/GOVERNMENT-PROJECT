@@ -88,7 +88,7 @@ export const NavbarSafaiPortal = React.memo(() => {
               </span>
               <span className="hidden md:inline text-slate-300">|</span>
               <span className="hidden sm:inline text-slate-300">
-                {isHi ? 'ठोस अपशिष्ट प्रबंधन एवं नागरिक शिकायत निवारण प्रकोष्ठ' : 'Solid Waste Management & Grievance Cell'}
+                {isHi ? 'उत्तराखंड सरकार • जिला पंचायत डिजिटल सेवाएं' : 'Government of Uttarakhand Zila Panchayat Digital Services'}
               </span>
             </div>
             <div className="flex items-center gap-4 text-slate-300">
@@ -193,11 +193,11 @@ export const NavbarSafaiPortal = React.memo(() => {
                     onClick={() => setComplaintDropdownOpen((prev) => !prev)}
                     className={`px-2.5 2xl:px-3 py-2 text-sm font-bold rounded-md transition-colors flex items-center gap-1.5 focus:outline-none cursor-pointer whitespace-nowrap ${complaintDropdownOpen
                       ? 'text-navy-900 bg-slate-100'
-                      : 'text-slate-700 hover:text-navy-900 hover:bg-slate-100'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-50'
                       }`}
                     aria-expanded={complaintDropdownOpen}
                   >
-                    <span className="text-amber-700 font-extrabold">{isHi ? 'शिकायत' : 'Complaints'}</span>
+                    <span className="text-slate-700 font-extrabold hover:text-slate-900 hover:bg-slate-50">{isHi ? 'शिकायत' : 'Complaints'}</span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 shrink-0 ${complaintDropdownOpen ? 'rotate-180 text-navy-900' : 'text-slate-500'}`} />
                   </button>
 
@@ -225,22 +225,21 @@ export const NavbarSafaiPortal = React.memo(() => {
                     </div>
                   </div>
                 </div>
-
-                {/* 5. Daily Work */}
-                <a
-                  href="/safai-portal#daily-work"
-                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
-                >
-                  <span>{isHi ? 'दैनिक कार्य' : 'Daily Work'}</span>
-                </a>
-
-                {/* 6. Swachhata Pledge */}
+                {/* 5. Swachhata Pledge */}
                 <a
                   href="/safai-portal#pledge"
-                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-emerald-700 hover:text-emerald-900 hover:bg-emerald-50 rounded-md transition-colors whitespace-nowrap"
+                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
                 >
                   <span>{isHi ? 'स्वच्छता शपथ' : 'Swachhata Pledge'}</span>
                 </a>
+
+                {/* 6. Contact */}
+                <Link
+                  to="/contact"
+                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
+                >
+                  <span>{isHi ? 'संपर्क' : 'Contact Us'}</span>
+                </Link>
               </nav>
 
               {/* Desktop Actions: Admin Login / Sign In ONLY on Safai Portal */}
@@ -295,15 +294,6 @@ export const NavbarSafaiPortal = React.memo(() => {
                 <ArrowLeft className="w-4 h-4" />
                 <span>{isHi ? 'मुख्य जिला पंचायत पोर्टल' : 'Back to Main Portal'}</span>
               </Link>
-
-              <a
-                href="/safai-portal#about-swm"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
-              >
-                {isHi ? 'सफाई प्रकोष्ठ परिचय' : 'About SWM'}
-              </a>
-
               {/* Mobile Bylaws & Rules */}
               <div>
                 <button
@@ -339,7 +329,7 @@ export const NavbarSafaiPortal = React.memo(() => {
                 <button
                   type="button"
                   onClick={() => setMobileComplaintOpen((prev) => !prev)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 rounded-md"
+                  className="w-full flex items-center justify-between px-3 py-2 text-sm font-bold text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-md"
                 >
                   <span>{isHi ? 'शिकायत निवारण' : 'Complaints'}</span>
                   <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${mobileComplaintOpen ? 'rotate-180' : ''}`} />
@@ -363,22 +353,21 @@ export const NavbarSafaiPortal = React.memo(() => {
                   </div>
                 )}
               </div>
-
-              <a
-                href="/safai-portal#daily-work"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
-              >
-                {isHi ? 'दैनिक सफाई कार्य' : 'Daily Work'}
-              </a>
-
               <a
                 href="/safai-portal#pledge"
                 onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-bold text-emerald-800 bg-emerald-100/70 hover:bg-emerald-200 rounded-md"
+                className="block px-3 py-2 text-sm font-bold text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-md"
               >
                 {isHi ? 'स्वच्छता शपथ' : 'Swachhata Pledge'}
               </a>
+
+              <Link
+                to="/contact"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 text-sm font-bold text-slate-700 bg-slate-50 hover:bg-slate-200 rounded-md"
+              >
+                {isHi ? 'संपर्क' : 'Contact Us'}
+              </Link>
 
               {/* Admin Login on Mobile (Safai Portal Only) */}
               <div className="pt-3 border-t border-slate-200 mt-2 space-y-2">

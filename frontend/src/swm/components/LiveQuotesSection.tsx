@@ -224,7 +224,7 @@ export const LiveQuotesSection: React.FC = () => {
             <h2 className="font-poppins font-extrabold text-2xl sm:text-3xl lg:text-4xl text-white tracking-tight leading-tight">
               {isHi ? 'प्रेरणादायक विचार' : 'Inspirational Quotes'}
             </h2>
-            <div className="h-1 w-20 sm:w-24 bg-amber-400 rounded-full mt-2.5" />
+            <div className="h-1 w-20 sm:w-24 bg-emerald-400 rounded-full mt-2.5" />
           </div>
 
           {/* Interactive Navigation & Playback Controls */}

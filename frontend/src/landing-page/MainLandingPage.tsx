@@ -4,7 +4,6 @@ import { HeroSection } from './HeroSection';
 
 // Lazy load official landing-page below-fold sections
 const ZilaPanchayatAboutSection = lazy(() => import('./ZilaPanchayatAboutSection').then(m => ({ default: m.ZilaPanchayatAboutSection })));
-const AlmoraBlocksSection = lazy(() => import('./AlmoraBlocksSection').then(m => ({ default: m.AlmoraBlocksSection })));
 const ZilaServicesHubSection = lazy(() => import('./ZilaServicesHubSection').then(m => ({ default: m.ZilaServicesHubSection })));
 const NoticesSection = lazy(() => import('./NoticesSection').then(m => ({ default: m.NoticesSection })));
 const SocialMediaSection = lazy(() => import('./SocialMediaSection').then(m => ({ default: m.SocialMediaSection })));
@@ -19,10 +18,10 @@ export const MainLandingPage = React.memo(() => {
 
     if (p === '/notices' || p === '/notices-and-updates' || h === '#notices') {
       targetId = 'Notices';
+    } else if (p === '/daily-work' || p === '/dailywork' || h === '#daily-work' || h === '#dailywork' || h === '#blogs') {
+      targetId = 'daily-work';
     } else if (h === '#about-zp' || h === '#about') {
       targetId = 'about-zp';
-    } else if (h === '#blocks') {
-      targetId = 'blocks';
     } else if (h === '#services-hub' || h === '#services') {
       targetId = 'services-hub';
     } else if (h === '#social-engagement' || h === '#social-media' || h === '#social') {
@@ -42,7 +41,6 @@ export const MainLandingPage = React.memo(() => {
       <HeroSection />
       <Suspense fallback={<div className="h-32 flex items-center justify-center text-slate-400">Loading Zila Panchayat Portal...</div>}>
         <ZilaPanchayatAboutSection />
-        <AlmoraBlocksSection />
         <ZilaServicesHubSection />
         <NoticesSection />
         <SocialMediaSection />

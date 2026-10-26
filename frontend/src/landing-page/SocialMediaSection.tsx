@@ -9,6 +9,11 @@ import {
   Video
 } from 'lucide-react';
 
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const image_01 = `${S3_BUCKET}/Social-Media-Section/SocialMedia-1.webp`;
+const image_02 = `${S3_BUCKET}/Social-Media-Section/SocialMedia-2.webp`;
+
+
 export const SocialMediaSection = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
@@ -19,8 +24,9 @@ export const SocialMediaSection = React.memo(() => {
       title: isHi
         ? 'निराश्रित व आवारा गोवंश संरक्षण — 5 नई गौशालाओं का निर्माण'
         : 'Stray Cattle Relief & 5 New Cow Shelters Under Construction',
-      description:
-        'अल्मोड़ा जिले के ग्रामीण क्षेत्रों में निराश्रित और आवारा गोवंश की समस्या से किसानों को राहत दिलाने के लिए पांच नई गौशालाओं का निर्माण किया जा रहा है, जबकि दो गौशालाओं का विस्तारीकरण किया जा रहा है।',
+      description:isHi ?
+        'अल्मोड़ा जिले के ग्रामीण क्षेत्रों में निराश्रित और आवारा गोवंश की समस्या से किसानों को राहत दिलाने के लिए पांच नई गौशालाओं का निर्माण किया जा रहा है, जबकि दो गौशालाओं का विस्तारीकरण किया जा रहा है।' : 
+        'To provide relief to farmers from the problem of destitute and stray cattle in the rural areas of Almora district, five new cow shelters are being constructed, while two existing cow shelters are being expanded.',
       hashtags: [
         '#Almora',
         '#Uttarakhand',
@@ -31,6 +37,7 @@ export const SocialMediaSection = React.memo(() => {
         '#FarmersRelief'
       ],
       videoUrl: 'https://www.facebook.com/share/v/18YZ6kmwKb/',
+      thumbnailUrl: image_01,
       badge: isHi ? 'गौवंश संरक्षण व कृषक कल्याण' : 'Farmer Relief & Animal Welfare'
     },
     {
@@ -50,6 +57,7 @@ export const SocialMediaSection = React.memo(() => {
         '#CleanAlmora'
       ],
       videoUrl: 'https://www.facebook.com/share/v/1FGZx4tChj/?mibextid=wwXIfr',
+      thumbnailUrl: image_02,
       badge: isHi ? 'ठोस अपशिष्ट एवं विकास कार्य' : 'Rural Development & SWM'
     }
   ];
@@ -100,21 +108,14 @@ export const SocialMediaSection = React.memo(() => {
         {/* Top Header Section with Navigation Controls (Matching NoticesSection layout) */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-blue-100 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-3.5 border border-blue-200">
-              <Share2 className="w-3.5 h-3.5 text-blue-800" />
-              <span>{isHi ? 'सोशल मीडिया जुड़ाव' : 'Social Connect'}</span>
-            </div>
-
             <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-bold text-navy-900 leading-tight">
               Social Engagement
             </h2>
+            <div className="h-1 w-20 bg-amber-400 rounded-full mt-3 mb-6" />
           </div>
 
           {/* Slider Controls (Prev / Next Buttons) */}
           <div className="flex items-center gap-3 shrink-0 self-end sm:self-auto">
-            <span className="text-xs text-slate-500 font-medium hidden sm:inline">
-              {currentIndex + 1} - {Math.min(currentIndex + cardsPerView, socialWorkPosts.length)} / {socialWorkPosts.length}
-            </span>
             <button
               onClick={prevSlide}
               aria-label="Previous Post"
@@ -153,12 +154,27 @@ export const SocialMediaSection = React.memo(() => {
                       href={post.videoUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="relative block rounded-xl overflow-hidden bg-slate-950 aspect-video group cursor-pointer shadow-inner border border-slate-800"
-                      title={isHi ? 'फेसबुक पर वीडियो देखें' : 'Watch video on Facebook'}
+                      className="relative block rounded-xl overflow-hidden bg-slate-950 aspect-video group cursor-pointer shadow-inner border border-slate-200"
                     >
-                      {/* Dark gradient backdrop */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-slate-900/90 to-navy-950/80" />
-                      <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:16px_16px] opacity-15" /> 
+                      {/* Video Thumbnail Image */}
+                      <img
+                        src={post.thumbnailUrl}
+                        alt={post.title}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      {/* Dark overlay for play button contrast */}
+                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-300" />
+
+                      {/* Share button - top right corner */}
+                      <button
+                        type="button"
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleShare(post.videoUrl, post.title); }}
+                        className="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/90 backdrop-blur-sm hover:bg-white text-slate-700 flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer hover:scale-110"
+                        title={isHi ? 'साझा करें' : 'Share'}
+                      >
+                        <Share2 className="w-4 h-4" />
+                      </button>
 
 
                       {/* Center: Play Button */}
@@ -169,13 +185,6 @@ export const SocialMediaSection = React.memo(() => {
                         <span className="mt-2 text-[11px] font-semibold text-white/90 group-hover:text-amber-300 transition-colors drop-shadow-sm">
                           {isHi ? 'वीडियो देखें ▶' : 'Click to Watch ▶'}
                         </span>
-                      </div>
-
-                      {/* Bottom overlay title */}
-                      <div className="absolute bottom-0 inset-x-0 p-3 bg-gradient-to-t from-black via-black/80 to-transparent z-10">
-                        <p className="text-white text-xs font-bold truncate drop-shadow-sm">
-                          {post.title}
-                        </p>
                       </div>
                     </a>
                   </div>
@@ -193,38 +202,18 @@ export const SocialMediaSection = React.memo(() => {
                     {/* Hashtags */}
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {post.hashtags.map((tag, idx) => (
-                        <span
+                        <a
                           key={idx}
-                          className="text-[11px] font-semibold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
+                          href={`https://www.facebook.com/hashtag/${tag.replace('#', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[11px] font-semibold text-blue-600 bg-blue-50/80 px-2 py-0.5 rounded-md hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer"
                         >
                           {tag}
-                        </span>
+                        </a>
                       ))}
                     </div>
                   </div>
-                </div>
-
-                {/* Action Footer */}
-                <div className="p-4 sm:p-5 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 bg-slate-50/50">
-                  <a
-                    href={post.videoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-[#1877F2] hover:bg-blue-700 text-white text-xs font-bold shadow-xs transition-colors"
-                  >
-                    <span>{isHi ? 'वीडियो लिंक खोलें' : 'Watch the video'}</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-
-                  <button
-                    type="button"
-                    onClick={() => handleShare(post.videoUrl, post.title)}
-                    className="py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-                    title={isHi ? 'साझा करें' : 'Share'}
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-slate-500" />
-                    <span className="hidden sm:inline">{isHi ? 'शेयर' : 'Share'}</span>
-                  </button>
                 </div>
               </div>
             ))}

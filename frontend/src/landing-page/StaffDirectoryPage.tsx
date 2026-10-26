@@ -327,35 +327,26 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-navy-900 pb-24">
       
-      {/* ── Top Government Banner (Same as Our Initiative Page Header) ── */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 text-white relative py-10 sm:py-14 overflow-hidden">
+      {/* ── Top Government Banner (Slim) ── */}
+      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-[#0c2a52] text-white relative py-4 sm:py-5 overflow-hidden border-b border-navy-800 shadow-xs">
         {/* Subtle decorative background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
 
         {/* Government tricolor top accent */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-            <div className="max-w-3xl">
-              <h1 className="text-2xl sm:text-4xl font-extrabold font-poppins text-white tracking-tight leading-tight mb-3">
-                {isHi ? 'अधिकारी एवं कर्मचारी विवरण' : 'Staff & Officers Directory'}
-              </h1>
-
-              <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl">
-                {isHi
-                  ? 'जिला पंचायत अल्मोड़ा — स्वच्छ भारत मिशन (ग्रामीण), ठोस अपशिष्ट प्रबंधन एवं नागरिक सेवाओं के सुगम संचालन हेतु प्रमुख नेतृत्व, कार्यालय कार्मिकों एवं क्षेत्रीय फील्ड कार्यकर्ताओं की संपूर्ण संपर्क सूची।'
-                  : 'Official personnel directory of District Panchayat Almora — connecting citizens with administrative leadership, office secretariat personnel, and on-ground sanitation site workers.'}
-              </p>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-6 sm:h-7 bg-amber-400 rounded-full shrink-0" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-white tracking-tight leading-none">
+              {isHi ? 'अधिकारी एवं कर्मचारी विवरण' : 'Staff & Officers Directory'}
+            </h1>
           </div>
-
-          <div className="h-1 w-24 bg-amber-400 rounded-full mt-6" />
         </div>
       </div>
 
       {/* ── Main Content Container ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 space-y-14">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 space-y-14">
 
         {/* ════════════════════════════════════════════════════════════════
             SECTION 1: FIRST TWO CARDS (EXECUTIVE LEADERSHIP)

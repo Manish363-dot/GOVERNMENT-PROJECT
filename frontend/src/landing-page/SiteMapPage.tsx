@@ -72,6 +72,12 @@ export function SiteMapPage() {
                 </Link>
               </div>
               <div>
+                <Link to="/blocks" className="hover:underline flex items-center gap-2">
+                  <span className="text-slate-500 text-[11px]">◇</span>
+                  <span>{isHi ? 'जनपद के 11 विकासखंड' : '11 District Blocks'}</span>
+                </Link>
+              </div>
+              <div>
                 <a href="/#about" className="hover:underline flex items-center gap-2">
                   <span className="text-slate-500 text-[11px]">◇</span>
                   <span>{isHi ? 'हमारे बारे में अनुभाग' : 'About Us Section'}</span>

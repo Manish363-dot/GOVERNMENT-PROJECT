@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  FileText,
   ChevronLeft,
   ChevronRight,
-  ShieldCheck,
   Scale,
   X,
   ZoomIn,
@@ -12,7 +10,6 @@ import {
   BookOpen,
   Gavel,
   Eye,
-  Info,
   CheckCircle2,
   AlertOctagon,
   Leaf,
@@ -385,12 +382,6 @@ export const DocumentsSection = React.memo<DocumentsSectionProps>(({
                 <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
                   <Gavel className="w-64 h-64 text-white" />
                 </div>
-
-                <div className="flex items-center gap-1.5 text-[10px] text-amber-300 font-semibold uppercase tracking-wider mb-6 z-10 border border-amber-500/30 px-3 py-1 rounded-full bg-amber-500/10">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{isHi ? (doc.gazetteHi.includes('भारत') ? 'भारत का राजपत्र' : 'उत्तराखंड सरकारी गजट') : (doc.gazetteEn.includes('India') ? 'The Gazette of India' : 'Uttarakhand Government Gazette')}</span>
-                </div>
-
                 <div 
                   className="relative w-full max-w-[360px] aspect-[3/4] rounded-xl overflow-hidden border border-navy-700 shadow-2xl bg-white z-10 cursor-pointer group"
                   onClick={() => openViewer(slideIndex)}
@@ -444,11 +435,9 @@ export const DocumentsSection = React.memo<DocumentsSectionProps>(({
 
                   <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 mb-6 font-medium">
                     <span className="inline-flex items-center gap-1.5">
-                      <BookOpen className="w-4 h-4 text-navy-600 shrink-0" />
                       {isHi ? doc.gazetteHi : doc.gazetteEn}
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <FileText className="w-4 h-4 text-navy-600 shrink-0" />
                       {isHi ? doc.dateHi : doc.dateEn}
                     </span>
                   </div>
@@ -460,7 +449,6 @@ export const DocumentsSection = React.memo<DocumentsSectionProps>(({
                   {/* Premium Highlights Grid */}
                   <div>
                     <h4 className="flex items-center gap-2 text-navy-900 font-bold text-base uppercase tracking-wide mb-5">
-                      <Info className="text-amber-500 w-5 h-5" />
                       {isHi ? 'प्रमुख बिंदु व नियम' : 'Key Rules & Provisions'}
                     </h4>
                     
@@ -522,7 +510,6 @@ export const DocumentsSection = React.memo<DocumentsSectionProps>(({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center gap-3 min-w-0">
-              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <span className="text-white text-sm font-semibold truncate">
                 {isHi ? viewerDoc.titleHi : viewerDoc.titleEn}
               </span>

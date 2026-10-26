@@ -1,28 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
   Phone, 
   Mail, 
   MapPin, 
-  Clock, 
   ExternalLink,
-  Building2,
   Send,
   CheckCircle2,
   User,
   AlertCircle,
   HelpCircle,
   RefreshCw,
-  ShieldCheck,
-  FileCheck2,
-  Headphones,
-  Truck,
-  MessageSquareWarning,
-  ArrowRight,
-  ShieldAlert
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { contactService, ContactFormData } from '@/services/contact.service';
@@ -49,6 +40,8 @@ export function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState<{ referenceId: string } | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [consentGiven, setConsentGiven] = useState(false);
+  const [consentTouched, setConsentTouched] = useState(false);
 
   // Validate single field or all fields
   const validateField = (field: keyof ContactFormData, value: string): string => {
@@ -149,9 +142,15 @@ export function ContactPage() {
 
     setErrors(newErrors);
 
+    setConsentTouched(true);
     const hasErrors = Object.values(newErrors).some((err) => !!err);
     if (hasErrors) {
       toast.error(isHi ? 'कृपया प्रपत्र में आवश्यक त्रुटियों को सुधारें।' : 'Please fix the errors in the form before submitting.');
+      return;
+    }
+
+    if (!consentGiven) {
+      toast.error(isHi ? 'कृपया सूचना प्रेषित करने हेतु सहमति (Consent) चेकबॉक्स स्वीकार करें।' : 'Please check the consent box before submitting.');
       return;
     }
 
@@ -164,6 +163,8 @@ export function ContactPage() {
         setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
         setTouched({});
         setErrors({});
+        setConsentGiven(false);
+        setConsentTouched(false);
       } else {
         throw new Error(res.message || 'Failed to send message');
       }
@@ -178,22 +179,25 @@ export function ContactPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-20">
-      {/* Top Banner Header */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-[#0c2a52] text-white py-12 sm:py-16 border-b border-navy-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold font-poppins text-white tracking-tight mb-3">
-            {isHi ? 'संपर्क करें' : 'Contact Administration'}
-          </h1>
-          <p className="text-slate-300 max-w-2xl text-sm sm:text-base leading-relaxed">
-            {isHi 
-              ? 'जिला पंचायत अल्मोड़ा — ठोस अपशिष्ट प्रबंधन, वाहन ट्रैकिंग एवं नागरिक शिकायत निवारण से संबंधित किसी भी जानकारी अथवा सहायता हेतु संपर्क करें।'
-              : 'District Panchayat Almora — Reach out for inquiries, waste collection support, live vehicle tracking assistance, or grievance redressal.'}
-          </p>
-          <div className="h-1 w-24 bg-amber-400 rounded-full mt-6"></div>
+      {/* Top Banner Header (Slim) */}
+      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-[#0c2a52] text-white relative py-4 sm:py-5 overflow-hidden border-b border-navy-800 shadow-xs">
+        {/* Subtle dot pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
+
+        {/* Uttarakhand tricolor top accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-6 sm:h-7 bg-amber-400 rounded-full shrink-0" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-white tracking-tight leading-none">
+              {isHi ? 'संपर्क करें' : 'Contact Administration'}
+            </h1>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
         {/* Main 3 Quick Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
           {/* Toll Free Card */}
@@ -211,9 +215,6 @@ export function ContactPage() {
               >
                 1800-185-1850
               </a>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {isHi ? 'निःशुल्क हेल्पलाइन — समस्त कार्य दिवसों में सक्रिय' : 'Toll-free service available during all office hours'}
-              </p>
             </CardContent>
           </Card>
 
@@ -232,9 +233,6 @@ export function ContactPage() {
               >
                 amazpalmora@gmail.com
               </a>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {isHi ? 'विभागीय पत्राचार एवं औपचारिक सुझाव हेतु' : 'For official correspondence and feedback'}
-              </p>
             </CardContent>
           </Card>
 
@@ -251,9 +249,6 @@ export function ContactPage() {
                 {isHi 
                   ? 'जिला पंचायत कार्यालय, धारानौला, अल्मोड़ा, उत्तराखंड — 263601'
                   : 'Zila Panchayat Office, Dharanaula, Almora, Uttarakhand — 263601'}
-              </p>
-              <p className="text-xs text-slate-500 leading-relaxed">
-                {isHi ? 'अपर मुख्य अधिकारी (AMA) कक्ष' : 'Office of Additional Chief Officer (AMA)'}
               </p>
             </CardContent>
           </Card>
@@ -306,7 +301,11 @@ export function ContactPage() {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => setSubmitSuccess(null)}
+                        onClick={() => {
+                          setSubmitSuccess(null);
+                          setConsentGiven(false);
+                          setConsentTouched(false);
+                        }}
                         className="mt-4 text-xs bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100"
                       >
                         <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
@@ -420,9 +419,6 @@ export function ContactPage() {
                       <AlertCircle className="w-3 h-3" /> {errors.email}
                     </p>
                   )}
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    {isHi ? 'इस पते पर पावती एवं पत्राचार प्राप्त होगा।' : 'An acknowledgment receipt will be delivered to this email.'}
-                  </p>
                 </div>
 
                 {/* Subject & Quick Suggestions */}
@@ -509,12 +505,53 @@ export function ContactPage() {
                   )}
                 </div>
 
+                {/* Citizen Consent & Declaration Checkbox */}
+                <div
+                  className={`p-4 rounded-xl border transition-all ${
+                    consentTouched && !consentGiven
+                      ? 'bg-red-50/70 border-red-400 ring-2 ring-red-400/20'
+                      : consentGiven
+                      ? 'bg-emerald-50/50 border-emerald-300'
+                      : 'bg-slate-50/80 border-slate-200'
+                  }`}
+                >
+                  <label className="flex items-start gap-3 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      id="inquiry-consent"
+                      checked={consentGiven}
+                      onChange={(e) => {
+                        setConsentGiven(e.target.checked);
+                        setConsentTouched(true);
+                      }}
+                      className="mt-0.5 h-4 w-4 rounded border-slate-300 text-navy-900 focus:ring-navy-800 cursor-pointer accent-navy-900 shrink-0"
+                    />
+                    <div className="space-y-1 text-xs">
+                      <span className="font-bold text-navy-950 flex items-center gap-1.5">
+                        <span>{isHi ? 'नागरिक सहमति एवं स्व-घोषणा' : 'Citizen Consent & Declaration'}</span>
+                        <span className="text-red-500">*</span>
+                      </span>
+                      <p className="text-slate-600 leading-relaxed text-[11px] sm:text-xs">
+                        {isHi
+                          ? 'मैं प्रमाणित करता/करती हूँ कि उपरोक्त विवरण पूर्णतः सत्य है एवं मैं जिला पंचायत प्रशासन द्वारा इस पूछताछ/सुझाव के संदर्भ में संपर्क करने व आवश्यक कार्यवाही हेतु सहमति प्रदान करता/करती हूँ।'
+                          : 'I declare that the information provided is accurate and I give my consent to Zila Panchayat Almora administration to process my inquiry and contact me regarding this matter.'}
+                      </p>
+                    </div>
+                  </label>
+                  {consentTouched && !consentGiven && (
+                    <p className="text-red-600 text-xs mt-2 flex items-center gap-1 pl-7">
+                      <AlertCircle className="w-3 h-3 shrink-0" />
+                      <span>{isHi ? 'संदेश भेजने हेतु इस सहमति को स्वीकार करना अनिवार्य है।' : 'Accepting this consent declaration is required to submit.'}</span>
+                    </p>
+                  )}
+                </div>
+
                 {/* Submit Action */}
-                <div className="pt-2 mt-auto">
+                <div className="pt-2 mt-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                   <Button
                     type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto bg-navy-900 hover:bg-navy-800 text-white font-bold px-8 h-12 text-sm shadow-md transition-all flex items-center justify-center gap-2"
+                    disabled={isSubmitting || !consentGiven}
+                    className="w-full sm:w-auto bg-navy-900 hover:bg-navy-800 text-white font-bold px-8 h-12 text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>
@@ -528,6 +565,11 @@ export function ContactPage() {
                       </>
                     )}
                   </Button>
+                  {!consentGiven && (
+                    <span className="text-[11px] text-slate-500 italic text-center sm:text-left">
+                      {isHi ? '* संदेश भेजने के लिए ऊपर दिए गए सहमति चेकबॉक्स को चिह्नित करें' : '* Please tick the consent checkbox above to enable sending'}
+                    </span>
+                  )}
                 </div>
 
               </form>
@@ -540,7 +582,6 @@ export function ContactPage() {
             {/* 1. Key Officials Directory */}
             <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm">
               <h2 className="text-base font-bold text-navy-900 flex items-center gap-2 mb-4">
-                <Building2 className="w-5 h-5 text-amber-600" />
                 {isHi ? 'प्रमुख प्रशासनिक संपर्क' : 'Key Administrative Officers'}
               </h2>
               <div className="space-y-3 text-xs sm:text-sm">
@@ -549,18 +590,12 @@ export function ContactPage() {
                   <p className="text-xs text-amber-700 font-semibold mb-1">
                     {isHi ? 'अध्यक्षा, जिला पंचायत अल्मोड़ा' : 'Chairperson, Zila Panchayat Almora'}
                   </p>
-                  <p className="text-slate-500 text-xs">
-                    {isHi ? 'कार्यालय: जिला पंचायत भवन, धारानौला' : 'Office: Zila Panchayat Bhawan, Dharanaula'}
-                  </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/60">
                   <p className="font-bold text-navy-900 text-sm">Sh. Rajesh Kumar</p>
                   <p className="text-xs text-blue-700 font-semibold mb-1">
                     {isHi ? 'अपर मुख्य अधिकारी (AMA)' : 'Apar Mukhya Adhikari (AMA)'}
-                  </p>
-                  <p className="text-slate-500 text-xs">
-                    {isHi ? 'सफाई नियंत्रण एवं वाहन प्रबंधन प्रकोष्ठ' : 'Sanitation Control & Fleet Monitoring Cell'}
                   </p>
                 </div>
               </div>
@@ -569,7 +604,6 @@ export function ContactPage() {
             {/* 2. Office Working Hours */}
             <div className="bg-white rounded-2xl border border-slate-200/90 p-6 shadow-sm">
               <h2 className="text-base font-bold text-navy-900 flex items-center gap-2 mb-4">
-                <Clock className="w-5 h-5 text-blue-600" />
                 {isHi ? 'कार्यालय समय एवं कार्य दिवस' : 'Office Hours & Schedule'}
               </h2>
               <div className="space-y-3 text-sm">
@@ -593,7 +627,6 @@ export function ContactPage() {
               <div className="p-3.5 px-4 bg-slate-50 border-b border-slate-200/80 flex items-center justify-between">
                 <div>
                   <h3 className="font-bold text-navy-900 text-xs sm:text-sm flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-red-600" />
                     {isHi ? 'कार्यालय भौगोलिक स्थान' : 'Office Location'}
                   </h3>
                   <p className="text-[11px] text-slate-500">
@@ -638,18 +671,10 @@ export function ContactPage() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-6 border-b border-white/10 mb-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
-                <Headphones className="w-5 h-5" />
-              </div>
               <div>
                 <h3 className="text-lg sm:text-xl font-bold font-poppins text-white">
                   {isHi ? 'उत्तराखंड राज्य एवं आपदा आपातकालीन हेल्पलाइन' : 'State & District 24×7 Emergency Helplines'}
                 </h3>
-                <p className="text-xs text-slate-400">
-                  {isHi 
-                    ? 'नागरिकों की सुरक्षा, आपदा प्रबंधन एवं जनसहयोग हेतु चौबीसों घंटे सक्रिय आधिकारिक संपर्क'
-                    : 'Round-the-clock official contacts for public safety, disaster management & emergency assistance'}
-                </p>
               </div>
             </div>
           </div>
@@ -743,7 +768,7 @@ export function ContactPage() {
               className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all duration-300 group block"
             >
               <p className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
-                {isHi ? 'बाल सहायता (Childline)' : 'Child Helpline'}
+                {isHi ? 'बाल सहायता' : 'Child Helpline'}
               </p>
               <p className="font-extrabold text-amber-300 text-lg font-mono tracking-wide mt-0.5">
                 1098

@@ -1,6 +1,6 @@
 import { useSearchParams } from 'react-router-dom';
-import { CleanlinessBylawsPage } from './CleanlinessBylawsPage';
-import { SwmRulesPage } from './SwmRulesPage';
+import { CleanlinessBylawsPage } from '../pages/CleanlinessBylawsPage';
+import { SwmRulesPage } from '../pages/SwmRulesPage';
 
 export function BylawsPage() {
   const [searchParams] = useSearchParams();

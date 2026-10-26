@@ -3,7 +3,7 @@
 // ============================================================================
 export { HeroSection } from '../landing-page/HeroSection';
 export { ZilaPanchayatAboutSection } from '../landing-page/ZilaPanchayatAboutSection';
-export { AlmoraBlocksSection } from '../landing-page/AlmoraBlocksSection';
+export { AlmoraBlocksPage } from '../landing-page/AlmoraBlocksPage';
 export { ZilaServicesHubSection } from '../landing-page/ZilaServicesHubSection';
 export { NoticesSection } from '../landing-page/NoticesSection';
 export { NavbarLandingPage } from '../landing-page/NavbarLandingPage';
@@ -16,12 +16,11 @@ export { AboutSection } from '../swm/components/AboutSection';
 export { ZilaServicesCarousel } from '../landing-page/ZilaServicesCarousel';
 export { LiveQuotesSection } from '../swm/components/LiveQuotesSection';
 export { WasteSegregationSection } from '../swm/components/WasteSegregationSection';
-export { DailyWorkSection } from '../swm/components/DailyWorkSection';
+export { DailyWorkSection } from '../landing-page/DailyWorkSection';
 export { SwachhataPledgeSection } from '../swm/components/SwachhataPledgeSection';
 export { ComplaintForm } from '../swm/components/ComplaintForm';
 export { ComplaintTrack } from '../swm/components/ComplaintTrack';
 export { DocumentsSection } from '../swm/components/DocumentsSection';
-export { BlogGalleryModal } from '../landing-page/BlogGalleryModal';
 export { NavbarSafaiPortal } from '../swm/components/NavbarSafaiPortal';
 
 // ============================================================================

@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { ShieldCheck, Award, BookOpen, User, Sparkles } from 'lucide-react';
+import { User, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
-
-import { BlogGalleryModal } from './BlogGalleryModal';
 
 const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image6.jpeg'];
 
@@ -22,29 +18,46 @@ const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.jpg`;
 const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
 const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
 
-const OFFICIALS = [
+interface Official {
+  id: number;
+  nameEn: string;
+  nameHi: string;
+  designationEn: string;
+  designationHi: string;
+  image: string;
+}
+
+const OFFICIALS: Official[] = [
   {
     id: 1,
-    name: "Sh. Pushkar Singh Dhami",
-    designation: "Hon'ble Chief Minister of Uttarakhand",
+    nameEn: "Sh. Pushkar Singh Dhami",
+    nameHi: "श्री पुष्कर सिंह धामी",
+    designationEn: "Hon'ble Chief Minister of Uttarakhand",
+    designationHi: "माननीय मुख्यमंत्री, उत्तराखण्ड",
     image: CM_IMAGE_URL,
   },
   {
     id: 2,
-    name: "Sh. Madan Kaushik",
-    designation: "Hon'ble Panchayati Raj Minister, Uttarakhand",
+    nameEn: "Sh. Madan Kaushik",
+    nameHi: "श्री मदन कौशिक",
+    designationEn: "Hon'ble Panchayati Raj Minister, Uttarakhand",
+    designationHi: "माननीय पंचायती राज मंत्री, उत्तराखण्ड",
     image: MK_IMAGE_URL,
   },
   {
     id: 3,
-    name: "Smt. Hema Gaira",
-    designation: "Chairperson, Zila Panchayat Almora",
+    nameEn: "Smt. Hema Gaira",
+    nameHi: "श्रीमती हेमा गैरा",
+    designationEn: "Chairperson, Zila Panchayat Almora",
+    designationHi: "अध्यक्ष, जिला पंचायत अल्मोड़ा",
     image: CH_IMAGE_URL,
   },
   {
     id: 4,
-    name: "Sh. Rajesh Kumar",
-    designation: "Apar Mukhya Adhikari (AMA), Almora",
+    nameEn: "Sh. Rajesh Kumar",
+    nameHi: "श्री राजेश कुमार",
+    designationEn: "Apar Mukhya Adhikari (AMA), Almora",
+    designationHi: "अपर मुख्य अधिकारी (AMA), अल्मोड़ा",
     image: AMA_IMAGE_URL,
   },
 ];
@@ -55,7 +68,6 @@ export const HeroSection = React.memo(() => {
   const { count } = usePledgeCount();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
-  const [isBlogModalOpen, setIsBlogModalOpen] = useState(false);
   const [isAlmoraRolling, setIsAlmoraRolling] = useState(false);
   const rollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -115,29 +127,6 @@ export const HeroSection = React.memo(() => {
     }, 5000);
 
     return () => clearInterval(timer);
-  }, []);
-
-  const openBlogModal = useCallback(() => {
-    setIsBlogModalOpen(true);
-  }, []);
-
-  const closeBlogModal = useCallback(() => {
-    setIsBlogModalOpen(false);
-    if (window.location.hash && (window.location.hash.toLowerCase() === '#gallery' || window.location.hash.toLowerCase() === '#media' || window.location.hash.toLowerCase() === '#blogs')) {
-      window.history.replaceState(null, '', window.location.pathname);
-    }
-  }, []);
-
-  useEffect(() => {
-    const checkHash = () => {
-      const h = window.location.hash.toLowerCase();
-      if (h === '#gallery' || h === '#media' || h === '#blogs' || h === '#blog') {
-        setIsBlogModalOpen(true);
-      }
-    };
-    checkHash();
-    window.addEventListener('hashchange', checkHash);
-    return () => window.removeEventListener('hashchange', checkHash);
   }, []);
 
   return (
@@ -244,37 +233,6 @@ export const HeroSection = React.memo(() => {
               : 'Apex constitutional district local governance body driving sustainable rural progress, modern civic amenities, and citizen empowerment across Almora.'}
           </p>
 
-          {/* Buttons: Clean, clear government action buttons */}
-          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            {/* Primary Entry to Safai Portal */}
-            <Link
-              to="/safai-portal"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-600 text-white font-bold shadow-xl border border-emerald-400/40 px-6 h-12 rounded-xl text-sm transition-all duration-300 transform hover:-translate-y-0.5"
-            >
-              <ShieldCheck className="w-4.5 h-4.5 text-amber-300" />
-              <span>{isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल →' : 'Safai & Grievance Portal →'}</span>
-            </Link>
-
-            {/* Jump to Blocks */}
-            <a
-              href="#blocks"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 text-white font-semibold shadow-lg border border-white/20 px-6 h-12 rounded-xl text-sm transition-all duration-200"
-            >
-              <span>{isHi ? '11 विकासखंड' : '11 District Blocks'}</span>
-            </a>
-
-            {/* Our Media Button -> Opens BlogGalleryModal */}
-            <button
-              type="button"
-              onClick={openBlogModal}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-slate-900 hover:bg-slate-100 font-semibold shadow-lg border border-white px-6 h-12 rounded-xl text-sm transition-all duration-200 cursor-pointer hover:shadow-xl hover:-translate-y-0.5"
-              aria-label={isHi ? 'मीडिया गैलरी खोलें' : 'Open Media Gallery'}
-            >
-              <BookOpen className="w-4 h-4 text-blue-900" />
-              <span>{isHi ? 'हमारा मीडिया' : 'Our Media'}</span>
-            </button>
-          </div>
-
           {/* Subtle Slide Indicators */}
           <div className="flex items-center justify-center gap-1.5 mt-6 sm:mt-8 mb-4">
             {HERO_IMAGES.map((_, idx) => (
@@ -328,7 +286,7 @@ export const HeroSection = React.memo(() => {
                 {/* Speaker & Context Info */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-[11px] sm:text-xs text-slate-600 font-medium text-center sm:text-left">
                   <span className="font-semibold text-slate-800">
-                    {t('hero.sloganMission')}
+                    {t('hero.designation')}
                   </span>
                 </div>
               </div>
@@ -336,47 +294,51 @@ export const HeroSection = React.memo(() => {
 
             {/* 4 Officials Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 pb-4 items-stretch">
-              {OFFICIALS.map((official) => (
-                <div
-                  key={official.id}
-                  className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-3 sm:p-5 md:p-6 flex flex-col items-center text-center justify-start h-full transition-all hover:-translate-y-1.5 hover:shadow-xl duration-300"
-                >
-                  {/* Circular Avatar with soft white ring & shadow */}
-                  <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-slate-50 ring-2 sm:ring-4 ring-white shadow-md mb-2 sm:mb-4 shrink-0">
-                    {official.image ? (
-                      <img
-                        src={official.image}
-                        alt={`${official.name} - ${official.designation}`}
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover object-top"
-                        loading="lazy"
-                        decoding="async"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">
-                        Image {official.id}
-                      </div>
-                    )}
+              {OFFICIALS.map((official) => {
+                const displayName = isHi ? official.nameHi : official.nameEn;
+                const displayDesignation = isHi ? official.designationHi : official.designationEn;
+
+                return (
+                  <div
+                    key={official.id}
+                    className="bg-white rounded-2xl sm:rounded-3xl shadow-[0_8px_25px_rgba(0,0,0,0.06)] border border-slate-100 p-3 sm:p-5 md:p-6 flex flex-col items-center text-center justify-start h-full transition-all hover:-translate-y-1.5 hover:shadow-xl duration-300"
+                  >
+                    {/* Circular Avatar with soft white ring & shadow */}
+                    <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-full overflow-hidden bg-slate-50 ring-2 sm:ring-4 ring-white shadow-md mb-2 sm:mb-4 shrink-0">
+                      {official.image ? (
+                        <img
+                          src={official.image}
+                          alt={`${displayName} - ${displayDesignation}`}
+                          width={96}
+                          height={96}
+                          className="w-full h-full object-cover object-top"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium">
+                          Image {official.id}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Dignitary Name */}
+                    <h4 className="text-[11px] sm:text-sm md:text-[15px] lg:text-[17px] font-bold text-slate-900 leading-snug mb-1">
+                      {displayName}
+                    </h4>
+
+                    {/* Designation */}
+                    <p className="text-[10px] sm:text-xs md:text-[13px] text-slate-500 font-normal leading-relaxed">
+                      {displayDesignation}
+                    </p>
                   </div>
-
-                  {/* Dignitary Name */}
-                  <h4 className="text-[11px] sm:text-sm md:text-[15px] lg:text-[17px] font-bold text-slate-900 leading-snug mb-1">
-                    {official.name}
-                  </h4>
-
-                  {/* Designation */}
-                  <p className="text-[10px] sm:text-xs md:text-[13px] text-slate-500 font-normal leading-relaxed">
-                    {official.designation}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
         </div>
       </div>
-      <BlogGalleryModal isOpen={isBlogModalOpen} onClose={closeBlogModal} />
     </section>
   );
 });

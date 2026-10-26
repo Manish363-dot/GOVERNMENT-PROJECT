@@ -1,395 +1,216 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Mountain,
-  Recycle,
-  Leaf,
-  CheckCircle2,
-  ShieldCheck,
-  Clock,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react';
 
 export function VisionMissionPage() {
   const { i18n } = useTranslation();
-  const isHi = i18n.language === 'hi';
-
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [cardsPerView, setCardsPerView] = useState(3);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const isHi = i18n.language === 'hi' || Boolean(i18n.language?.startsWith('hi'));
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Responsive cards per view
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 640) {
-        setCardsPerView(1);
-      } else if (window.innerWidth < 1024) {
-        setCardsPerView(2);
-      } else {
-        setCardsPerView(3);
-      }
-    };
-    handleResize();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const visionPillars = useMemo(() => [
-    {
-      id: isHi ? 'विज़न-01' : 'Vision-01',
-      iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      title: isHi ? 'पर्वतीय पर्यावरण व नदी संरक्षण' : 'Himalayan Ecology & River Conservation',
-      desc: isHi
-        ? 'अल्मोड़ा की प्राकृतिक वादियों, कोसी व सुयाल नदी जलग्रहण क्षेत्रों को प्लास्टिक व ठोस कचरे से सर्वथा मुक्त रखना।'
-        : "Preserving Almora's scenic hills, valleys, and river catchment areas from plastic contamination and solid waste accumulation.",
-      highlights: isHi
-        ? ['कोसी व सुयाल नदी जलग्रहण संरक्षण', 'प्राकृतिक वादियों में कचरा रोकथाम', 'ग्रामीण क्षेत्रों में हरित पहल']
-        : ['River catchment protection', 'Zero plastic accumulation in valleys', 'Green rural initiatives'],
-      icon: Mountain,
-    },
-    {
-      id: isHi ? 'विज़न-02' : 'Vision-02',
-      iconBg: 'bg-blue-50 text-blue-700 border-blue-200',
-      title: isHi ? 'शून्य-लैंडफिल एवं शत-प्रतिशत पृथक्करण' : 'Zero-Landfill & 100% Segregation',
-      desc: isHi
-        ? 'गीले और सूखे कचरे का शत-प्रतिशत वैज्ञानिक स्रोत पर पृथक्करण सुनिश्चित कर खुले में डंपिंग समाप्त करना।'
-        : 'Achieving 100% source-level segregation of wet and dry waste to eliminate open dumping practices.',
-      highlights: isHi
-        ? ['गीला व सूखा कचरा स्रोत पृथक्करण', 'खुले में डंपिंग पर पूर्ण रोक', 'जैविक खाद निर्माण को प्रोत्साहन']
-        : ['100% source waste segregation', 'End to open dumping sites', 'Promotion of organic composting'],
-      icon: Recycle,
-    },
-    {
-      id: isHi ? 'विज़न-03' : 'Vision-03',
-      iconBg: 'bg-teal-50 text-teal-700 border-teal-200',
-      title: isHi ? 'सतत पर्यटन एवं स्वच्छ देवभूमि' : 'Eco-Tourism & Clean Devbhoomi',
-      desc: isHi
-        ? 'धार्मिक व पर्यटक स्थलों पर कचरा-मुक्त वातावरण जिससे पर्यटकों एवं श्रद्धालुओं में पर्यावरण चेतना जागे।'
-        : 'Maintaining spotless tourist and pilgrimage routes to foster responsible eco-tourism across Uttarakhand.',
-      highlights: isHi
-        ? ['धार्मिक व ऐतिहासिक स्थलों की सफाई', 'पर्यटन मार्गों पर विशेष डस्टबिन', 'सिंगल-यूज़ प्लास्टिक रोकथाम']
-        : ['Pilgrimage & heritage site cleanliness', 'Eco-friendly bins on travel corridors', 'Single-use plastic prevention'],
-      icon: Leaf,
-    },
-  ], [isHi]);
-
-  const missionPillars = useMemo(() => [
-    {
-      id: isHi ? 'मिशन-01' : 'Mission-01',
-      iconBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      title: isHi ? 'डोर-टू-डोर दैनिक एकत्रीकरण' : 'Daily Door-to-Door Collection',
-      desc: isHi
-        ? 'समस्त 11 विकासखंडों, ग्राम पंचायतों और ग्रामीण बाजारों में नियमित स्वच्छता वाहनों का परिचालन।'
-        : 'Regular morning waste pickup across all rural markets, gram panchayat wards, and commercial establishments.',
-      highlights: isHi
-        ? ['11 विकासखंडों में दैनिक वाहन सेवा', 'प्रातःकालीन निश्चित समय-सारणी', 'समर्पित स्वच्छता कर्मियों की तैनाती']
-        : ['Daily collection across 11 blocks', 'Scheduled morning collection', 'Dedicated sanitation workforce'],
-      icon: CheckCircle2,
-    },
-    {
-      id: isHi ? 'मिशन-02' : 'Mission-02',
-      iconBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-      title: isHi ? 'जीपीएस फ्लीट ट्रैकिंग व पारदर्शिता' : 'GPS Telematics Fleet Tracking',
-      desc: isHi
-        ? 'प्रत्येक कचरा संग्रहण वाहन में मिलीट्रैक (MilliTrack) जीपीएस से रीयल-टाइम रूट मॉनिटरिंग एवं पारदर्शी जवाबदेही।'
-        : 'Real-time vehicle tracking via MilliTrack GPS hardware ensuring route compliance and full operational transparency.',
-      highlights: isHi
-        ? ['MilliTrack GPS लाइव मॉनिटरिंग', 'मार्ग विचलन व ठहराव ट्रैकिंग', '100% पारदर्शी डिजिटल रिकॉर्ड']
-        : ['Live MilliTrack GPS monitoring', 'Route compliance & idle detection', '100% transparent digital records'],
-      icon: ShieldCheck,
-    },
-    {
-      id: isHi ? 'मिशन-03' : 'Mission-03',
-      iconBg: 'bg-amber-50 text-amber-700 border-amber-200',
-      title: isHi ? 'त्वरित नागरिक शिकायत निवारण' : 'Swift Citizen Grievance Redressal',
-      desc: isHi
-        ? 'नागरिकों द्वारा दर्ज की गई शिकायतों का 24 से 48 घंटे के भीतर डिजिटल समाधान व समयबद्ध स्टेटस ट्रैकिंग।'
-        : 'Digital complaint logging with guaranteed resolution and status tracking within 24 to 48 operational hours.',
-      highlights: isHi
-        ? ['पोर्टल पर 24/7 ऑनलाइन शिकायत', '24 से 48 घंटे में समाधान गारंटी', 'समाधान पूर्व व पश्चात फोटो प्रमाण']
-        : ['24/7 online grievance logging', '24–48 hour resolution target', 'Before & after photo verification'],
-      icon: Clock,
-    },
-  ], [isHi]);
-
-  // Combined items for carousel
-  const carouselItems = useMemo(() => {
-    return [...visionPillars, ...missionPillars];
-  }, [visionPillars, missionPillars]);
-
-  const maxIndex = Math.max(0, carouselItems.length - cardsPerView);
-
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev >= maxIndex ? 0 : prev + 1));
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev <= 0 ? maxIndex : prev - 1));
-  };
-
-  // Touch Swipe Handlers for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-    if (diff > 50) nextSlide();
-    if (diff < -50) prevSlide();
-    setTouchStart(null);
-  };
-
-  const strategicMilestones = useMemo(() => [
-    {
-      year: '2025–2026',
-      phase: isHi ? 'चरण I' : 'Phase I',
-      title: isHi ? '100% वाहन जीपीएस एवं डिजिटल कमांड पोर्टल' : '100% Fleet GPS & Command Portal',
-      desc: isHi
-        ? 'सभी वाहनों पर रीयल-टाइम जीपीएस ट्रैकिंग, नागरिक शिकायत पोर्टल एवं डिजिटल दैनिक कार्य फोटो अभिलेख।'
-        : 'Full fleet telematics, citizen grievance portal, and daily work photo archiving across all 11 blocks.',
-    },
-    {
-      year: '2026–2027',
-      phase: isHi ? 'चरण II' : 'Phase II',
-      title: isHi ? 'ब्लॉक स्तरीय मैटेरियल रिकवरी सेंटर (MRF) विस्तार' : 'Block-Level MRF Expansion',
-      desc: isHi
-        ? 'हवालबाग, रानीखेत, द्वाराहाट सहित सभी ब्लॉकों में हाइड्रोलिक प्लास्टिक कॉम्पेक्टर व बेलिंग यूनिट्स।'
-        : 'Hydraulic plastic compactors and baling facilities operationalised across all 11 development blocks.',
-    },
-    {
-      year: '2027–2028',
-      phase: isHi ? 'चरण III' : 'Phase III',
-      title: isHi ? 'विकेंद्रीकृत कम्पोस्टिंग एवं प्लास्टिक-मुक्त गलियारे' : 'Decentralised Composting & Plastic-Free Corridors',
-      desc: isHi
-        ? 'गीले कचरे से जैविक खाद उत्पादन एवं पर्यटन व तीर्थ मार्गों को पूरी तरह सिंगल-यूज प्लास्टिक मुक्त बनाना।'
-        : 'Organic manure production from wet waste and zero-single-use-plastic heritage and tourist corridors district-wide.',
-    },
-  ], [isHi]);
+  const coreValues = isHi
+    ? [
+        {
+          num: '1',
+          title: 'जनसेवा एवं नागरिक कल्याण',
+          desc: 'नागरिकों का कल्याण हमारे कार्यों का केंद्र है। हमारा प्रयास ग्रामीण समुदायों की आवश्यकताओं को समझना और ऐसी पहलों को प्रोत्साहित करना है जो सार्वजनिक सुविधाओं तथा आवश्यक सेवाओं तक उनकी पहुँच बेहतर बनाएँ। नागरिक-केंद्रित दृष्टिकोण अपनाकर हम प्रशासन को अधिक संवेदनशील, सुलभ और प्रभावी बनाने की दिशा में कार्य करते हैं। हमारा उद्देश्य अल्मोड़ा जिले के ग्रामीण क्षेत्रों में रहने वाले लोगों के जीवन स्तर को बेहतर बनाने में योगदान देना है।'
+        },
+        {
+          num: '2',
+          title: 'समावेशी एवं संतुलित विकास',
+          desc: 'हमारा मानना है कि विकास के अवसर समाज के प्रत्येक वर्ग और जिले के सभी क्षेत्रों तक पहुँचने चाहिए। हमारा दृष्टिकोण ग्रामीण क्षेत्रों की संतुलित प्रगति, गाँवों में आवश्यक सुविधाओं के विस्तार और विभिन्न समुदायों की जरूरतों पर ध्यान देने पर आधारित है। हम ऐसी विकास पहलों को प्रोत्साहित करना चाहते हैं जिनसे पूरे समुदाय को लाभ मिले और एक अधिक समान, जुड़ा हुआ तथा समृद्ध ग्रामीण वातावरण विकसित हो।'
+        },
+        {
+          num: '3',
+          title: 'स्वच्छता एवं पर्यावरण संरक्षण',
+          desc: 'अल्मोड़ा की प्राकृतिक सुंदरता और पर्यावरणीय संसाधनों की रक्षा करना सतत विकास का एक महत्वपूर्ण हिस्सा है। हम स्वच्छता, जिम्मेदार अपशिष्ट प्रबंधन, पर्यावरण के प्रति जागरूकता और स्वच्छ परिवेश बनाए रखने में सामुदायिक भागीदारी को प्रोत्साहित करते हैं। पर्यावरण-अनुकूल आदतों और स्थानीय स्वच्छता पहलों को बढ़ावा देकर हमारा लक्ष्य जिले की प्राकृतिक विरासत को सुरक्षित रखना और वर्तमान तथा आने वाली पीढ़ियों के लिए स्वच्छ एवं स्वस्थ गाँवों के निर्माण में योगदान देना है।'
+        },
+        {
+          num: '4',
+          title: 'पारदर्शिता एवं जवाबदेही',
+          desc: 'हम जिम्मेदार प्रशासन, स्पष्ट प्रक्रियाओं और सार्वजनिक सेवाओं में जवाबदेही को महत्व देते हैं। हमारा उद्देश्य नागरिकों को सार्वजनिक जानकारी तक बेहतर पहुँच उपलब्ध कराने, उनकी समस्याओं के समयबद्ध निस्तारण को प्रोत्साहित करने और स्थानीय शासन के प्रति विश्वास मजबूत करने की दिशा में कार्य करना है। व्यवस्थित प्रक्रियाओं और जिम्मेदार निर्णयों को बढ़ावा देकर हम यह सुनिश्चित करने का प्रयास करते हैं कि विकास संबंधी गतिविधियाँ जनहित और सामुदायिक कल्याण पर केंद्रित रहें।'
+        },
+        {
+          num: '5',
+          title: 'डिजिटल नवाचार एवं सुलभ सेवाएँ',
+          desc: 'हम मानते हैं कि तकनीक सार्वजनिक सेवाओं को अधिक सरल, सुलभ और व्यवस्थित बनाने में महत्वपूर्ण भूमिका निभा सकती है। उपयुक्त डिजिटल पहलों के माध्यम से हमारा उद्देश्य सार्वजनिक जानकारी की उपलब्धता बेहतर बनाना, सेवा संबंधी प्रक्रियाओं को सरल करना और नागरिकों को स्थानीय प्रशासन से जुड़ने के सुविधाजनक माध्यम उपलब्ध कराने में योगदान देना है। हमारा ध्यान तकनीक के जिम्मेदार उपयोग पर है, ताकि प्रशासनिक कार्यक्षमता, संवाद और ग्रामीण समुदायों की सेवाओं तक पहुँच में सुधार हो सके।'
+        },
+        {
+          num: '6',
+          title: 'जनभागीदारी एवं सहयोग',
+          desc: 'हमारा विश्वास है कि स्थायी विकास तभी संभव है जब नागरिक, स्थानीय जनप्रतिनिधि, सामुदायिक समूह और सरकारी विभाग मिलकर कार्य करें। जनभागीदारी से स्थानीय आवश्यकताओं को बेहतर ढंग से समझने, साझा जिम्मेदारी विकसित करने और विकास पहलों के प्रति सामुदायिक स्वामित्व को मजबूत करने में सहायता मिलती है। हम सहयोग और सामूहिक प्रयासों को प्रोत्साहित करना चाहते हैं, ताकि नागरिक अपने गाँवों के सुधार और अल्मोड़ा के उज्ज्वल भविष्य के निर्माण में सक्रिय योगदान दे सकें।'
+        },
+        {
+          num: '7',
+          title: 'ग्रामीण सशक्तिकरण एवं स्थानीय विकास',
+          desc: 'सशक्त ग्रामीण समुदाय जिले की समग्र प्रगति के लिए आवश्यक हैं। हमारा उद्देश्य स्थानीय विकास को बढ़ावा देना, ग्रामीण आर्थिक गतिविधियों को सहयोग देना और आत्मनिर्भरता तथा आजीविका में सुधार के अवसरों को प्रोत्साहित करना है। स्थानीय कौशल, संसाधनों और सामुदायिक क्षमताओं को महत्व देते हुए हम अल्मोड़ा की विशिष्ट पहचान एवं सांस्कृतिक समृद्धि को सुरक्षित रखते हुए सतत विकास की दिशा में कार्य करना चाहते हैं।'
+        },
+        {
+          num: '8',
+          title: 'गुणवत्तापूर्ण सेवाएँ एवं निरंतर सुधार',
+          desc: 'हमारा मानना है कि नागरिकों की बदलती आवश्यकताओं के अनुरूप सार्वजनिक सेवाओं में निरंतर सुधार होना चाहिए। हमारा दृष्टिकोण सेवाओं में मौजूद कमियों को पहचानने, व्यावहारिक समाधान खोजने और जनसुविधाओं के बेहतर संचालन के लिए समन्वय को प्रोत्साहित करने पर आधारित है। अनुभव, सहयोग और जिम्मेदार क्रियान्वयन के माध्यम से हम प्रभावी स्थानीय शासन और ग्रामीण समुदायों के लिए बेहतर परिणाम प्राप्त करने की दिशा में योगदान देना चाहते हैं।'
+        }
+      ]
+    : [
+        {
+          num: '1',
+          title: 'Public Service & Citizen Welfare',
+          desc: 'The welfare of citizens is at the heart of our work. We strive to understand the needs of rural communities and support initiatives that improve access to public facilities and essential services. By maintaining a citizen-focused approach, we aim to make public administration more responsive, approachable, and effective. Our goal is to contribute to a better quality of life for people living across the villages of Almora district.'
+        },
+        {
+          num: '2',
+          title: 'Inclusive & Balanced Development',
+          desc: 'We believe that development should create opportunities for every community and reach all parts of the district. Our approach emphasizes balanced rural progress, improved village facilities, and attention to the needs of different sections of society. We aim to encourage development initiatives that benefit communities collectively and help create a more equitable, connected, and prosperous rural environment.'
+        },
+        {
+          num: '3',
+          title: 'Cleanliness & Environmental Sustainability',
+          desc: 'Protecting the natural beauty and environmental resources of Almora is an important part of sustainable development. We encourage cleanliness, responsible waste management, environmental awareness, and community participation in maintaining clean surroundings. By promoting environmentally responsible practices and supporting local cleanliness initiatives, we aim to preserve the district\'s natural heritage and contribute to healthier, cleaner villages for present and future generations.'
+        },
+        {
+          num: '4',
+          title: 'Transparency & Accountability',
+          desc: 'We value responsible administration, clear processes, and accountability in public service delivery. Our aim is to promote better access to public information, encourage the timely handling of citizen concerns, and strengthen public confidence in local governance. By supporting systematic processes and responsible decision-making, we strive to ensure that development initiatives remain focused on public needs and community welfare.'
+        },
+        {
+          num: '5',
+          title: 'Digital Innovation & Accessibility',
+          desc: 'We recognize the importance of technology in making public services easier to access and manage. Through suitable digital initiatives, we aim to improve the availability of information, simplify service-related processes, and provide convenient ways for citizens to connect with local administration. Our focus is on using technology responsibly to support efficient administration, improve communication, and help bridge the gap between public institutions and rural communities.'
+        },
+        {
+          num: '6',
+          title: 'Community Participation & Cooperation',
+          desc: 'We believe that lasting development is possible when citizens, local representatives, community groups, and government departments work together. Public participation helps identify genuine local needs, encourages shared responsibility, and strengthens community ownership of development initiatives. We aim to promote cooperation and collective action so that people can contribute actively to improving their villages and building a stronger future for Almora.'
+        },
+        {
+          num: '7',
+          title: 'Rural Empowerment & Local Growth',
+          desc: 'Strong rural communities are essential for the overall progress of the district. We aim to encourage local development, support rural economic activities, and promote opportunities that contribute to self-reliance and improved livelihoods. By recognizing local skills, resources, and community strengths, we seek to support sustainable growth while preserving the distinctive identity and cultural richness of Almora.'
+        },
+        {
+          num: '8',
+          title: 'Quality Services & Continuous Improvement',
+          desc: 'We believe public services should continuously improve to meet the changing needs of citizens. Our approach focuses on identifying service gaps, encouraging practical solutions, and supporting better coordination in the delivery of public facilities. Through learning, cooperation, and responsible implementation, we aim to contribute to more effective local governance and improved outcomes for rural communities.'
+        }
+      ];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-24">
-      {/* ── Top Government Banner (Same as Our Initiative & Complaint Page Header) ── */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 text-white relative py-10 sm:py-14 overflow-hidden">
+      {/* ── Top Government Banner (Slim) ── */}
+      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-[#0c2a52] text-white relative py-4 sm:py-5 overflow-hidden border-b border-navy-800 shadow-xs">
         {/* Subtle decorative background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
 
         {/* Government tricolor top accent */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="max-w-3xl">
-              <h1 className="text-2xl sm:text-[2.6rem] font-extrabold text-white tracking-tight leading-tight mb-3 font-poppins">
-                {isHi ? 'हमारा विज़न एवं मिशन' : 'Vision & Mission Statement'}
-              </h1>
-
-              <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
-                {isHi
-                  ? 'जिला पंचायत अल्मोड़ा — स्वच्छ भारत मिशन (ग्रामीण) के अंतर्गत ठोस अपशिष्ट प्रबंधन, सफाई व्यवस्था एवं वाहन संचालन संबंधी समस्याओं का समयबद्ध समाधान व पारदर्शी डिजिटल ट्रैकिंग।'
-                  : 'District Panchayat Almora — Timely redressal and 100% transparent tracking for solid waste management, sanitation issues, and vehicle operations under Swachh Bharat Mission (Grameen).'}
-              </p>
-            </div>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-6 sm:h-7 bg-amber-400 rounded-full shrink-0" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-white tracking-tight leading-none">
+              {isHi ? 'हमारा मिशन एवं विज़न' : 'Our Mission & Vision'}
+            </h1>
           </div>
-
-          <div className="h-1 w-24 bg-amber-400 rounded-full mt-6"></div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-        <div className="space-y-8">
+      {/* ── Main Content Area (Clean Text Layout - Full Width Container) ── */}
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-10">
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-10 lg:p-12 space-y-10">
 
-          {/* Section 1: Institutional Statement & Overview */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-            <h2 className="text-lg sm:text-2xl font-bold text-navy-900 mb-3">
-              {isHi ? 'पृष्ठभूमि एवं ध्येय' : 'Background & Core Purpose'}
+          {/* Section 1: Our Mission */}
+          <section className="space-y-4">
+            <h2 className="text-xl sm:text-2xl font-bold font-poppins text-slate-900">
+              {isHi ? 'हमारा मिशन' : 'Our Mission'}
             </h2>
-            <div className="text-slate-700 leading-relaxed text-sm sm:text-base space-y-4">
+            <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
               <p>
                 {isHi
-                  ? 'जिला पंचायत अल्मोड़ा का विज़न एवं मिशन आधुनिक डिजिटल पहलों, वैज्ञानिक अपशिष्ट प्रबंधन और सामुदायिक भागीदारी के माध्यम से पूरे जिले में स्वच्छता, पारदर्शिता और जवाबदेही को सुदृढ़ करना है। स्वच्छ भारत मिशन (ग्रामीण) के अंतर्गत हमारा उद्देश्य अल्मोड़ा को एक स्वच्छ, हरित, प्रदूषण-मुक्त और सतत पर्वतीय जिला बनाना है।'
-                  : "District Panchayat Almora's vision and mission center around strengthening sanitation, transparency, and accountability across the district through modern digital solutions, scientific waste processing, and community engagement. Under the Swachh Bharat Mission (Grameen), our goal is to build a clean, green, pollution-free, and sustainable mountain district."}
+                  ? 'जिला पंचायत अल्मोड़ा का प्रमुख मिशन जिले के ग्रामीण क्षेत्रों में समावेशी, सतत एवं संतुलित विकास को बढ़ावा देना है। हमारा उद्देश्य ग्रामीण समुदायों के जीवन स्तर में सुधार लाना, सार्वजनिक बुनियादी ढाँचे को मजबूत करना, आवश्यक जनसुविधाओं को बेहतर बनाना, स्वच्छता को प्रोत्साहित करना, प्राकृतिक पर्यावरण का संरक्षण करना तथा ग्रामीण विकास से जुड़ी पहलों के प्रभावी क्रियान्वयन में योगदान देना है।'
+                  : 'Zila Panchayat Almora is committed to promoting inclusive, sustainable, and balanced development across the rural regions of Almora district. Our mission is to improve the quality of life of rural communities by strengthening public infrastructure, improving essential facilities, encouraging cleanliness, protecting the natural environment, and supporting the effective implementation of rural development initiatives.'}
               </p>
-
-              {/* Quote Highlight Box */}
-              <div className="p-4 sm:p-5 rounded-lg bg-slate-50 border-l-4 border-amber-500">
-                <blockquote className="text-slate-800 font-medium text-sm sm:text-base italic leading-relaxed">
-                  {isHi
-                    ? '“अल्मोड़ा के समस्त ग्रामीण एवं अर्ध-शहरी अंचलों को एक स्वच्छ, हरित, प्रदूषण-मुक्त तथा शून्य-अपशिष्ट (Zero-Waste) आदर्श पर्वतीय क्षेत्र के रूप में स्थापित करना।”'
-                    : '“To establish Almora\'s rural and semi-urban valleys as a pristine, green, pollution-free and zero-waste model mountain district of Uttarakhand.”'}
-                </blockquote>
-              </div>
+              <p>
+                {isHi
+                  ? 'हम जिम्मेदार प्रशासन, जनभागीदारी और डिजिटल तकनीक के उचित उपयोग के माध्यम से सार्वजनिक सेवाओं को अधिक सुलभ, सरल और नागरिक-केंद्रित बनाने के लिए प्रयासरत हैं। स्थानीय निकायों, सरकारी विभागों, जनप्रतिनिधियों और नागरिकों के साथ समन्वय स्थापित करके हमारा लक्ष्य स्थानीय आवश्यकताओं को समझना और उनके लिए व्यावहारिक एवं दीर्घकालिक समाधान की दिशा में कार्य करना है।'
+                  : 'We aim to make public services more accessible, efficient, and citizen-friendly by promoting responsible administration, community participation, and the appropriate use of digital technology. Through coordination with local bodies, government departments, elected representatives, and citizens, we strive to identify local needs and work towards practical, long-term solutions.'}
+              </p>
+              <p>
+                {isHi
+                  ? 'हमारा मिशन ग्रामीण आजीविका को प्रोत्साहित करने, स्थानीय आर्थिक गतिविधियों को सहयोग देने, गाँवों के बुनियादी ढाँचे में सुधार करने और प्रत्येक समुदाय को विकास की प्रक्रिया में भागीदार बनाने पर भी केंद्रित है। हमारा मानना है कि वास्तविक विकास गाँवों से शुरू होता है और जिले की प्रगति में प्रत्येक नागरिक की महत्वपूर्ण भूमिका होती है।'
+                  : 'Our mission also focuses on strengthening rural livelihoods, supporting local economic activities, improving village infrastructure, and creating an environment where every community can participate in the development process. We believe that meaningful development begins at the village level and that every citizen should have the opportunity to contribute to the progress of the district.'}
+              </p>
             </div>
-          </div>
+          </section>
 
-          {/* ══════════════════════════════════════════════════
-              Section 2: OUR VISION & OUR MISSION CARD CAROUSEL
-             ══════════════════════════════════════════════════ */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-
-            {/* Header: Title + Category Tabs + Navigation Buttons */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5 mb-6">
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold font-poppins text-navy-900">
-                  {isHi ? 'हमारा विज़न एवं मिशन कार्ड्स' : 'Our Vision & Mission Cards'}
-                </h2>
-              </div>
-
-              {/* Carousel Controls (Prev/Next buttons + Tab Pill Switcher) */}
-              <div className="flex flex-wrap items-center gap-3">
-
-                {/* Left / Right Carousel Arrow Buttons */}
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={prevSlide}
-                    className="w-9 h-9 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-colors flex items-center justify-center shadow-xs"
-                    title={isHi ? 'पिछला' : 'Previous'}
-                    aria-label="Previous slide"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={nextSlide}
-                    className="w-9 h-9 rounded-lg border border-slate-300 text-slate-700 bg-white hover:bg-navy-900 hover:text-white hover:border-navy-900 transition-colors flex items-center justify-center shadow-xs"
-                    title={isHi ? 'अगला' : 'Next'}
-                    aria-label="Next slide"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
+          {/* Section 2: Our Vision */}
+          <section className="space-y-4 border-t border-slate-200/80 pt-8">
+            <h2 className="text-xl sm:text-2xl font-bold font-poppins text-slate-900">
+              {isHi ? 'हमारा विज़न' : 'Our Vision'}
+            </h2>
+            <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
+              <p>
+                {isHi
+                  ? 'हमारा विज़न एक स्वच्छ, समृद्ध, आत्मनिर्भर और विकसित अल्मोड़ा का निर्माण करना है, जहाँ प्रत्येक गाँव को बेहतर जनसुविधाएँ, आवश्यक सेवाएँ और सतत विकास के अवसर प्राप्त हों। हम ऐसे ग्रामीण समुदायों की कल्पना करते हैं जो आधुनिक आवश्यकताओं के अनुरूप आगे बढ़ते हुए अपनी सांस्कृतिक विरासत, प्राकृतिक सुंदरता और पारंपरिक मूल्यों को भी सुरक्षित रखें।'
+                  : 'Our vision is to build a clean, prosperous, self-reliant, and well-developed Almora where every village has access to improved public facilities, essential services, and opportunities for sustainable growth. We aspire to create rural communities that are equipped to meet modern challenges while preserving their cultural heritage, natural beauty, and traditional values.'}
+              </p>
+              <p>
+                {isHi
+                  ? 'हमारा लक्ष्य ऐसा भविष्य बनाना है जहाँ विकास का लाभ समाज के सभी वर्गों तक पहुँचे, सार्वजनिक सेवाएँ नागरिकों के लिए सुलभ हों और लोग स्थानीय निर्णयों तथा सामुदायिक सुधार में सक्रिय भागीदारी निभाएँ। पर्यावरण के प्रति जिम्मेदारी को बढ़ावा देकर, गाँवों के बुनियादी ढाँचे को मजबूत करके, डिजिटल सेवाओं की पहुँच बेहतर बनाकर और स्थानीय विकास पहलों को प्रोत्साहित करके हम एक सशक्त एवं आत्मनिर्भर ग्रामीण जिले के निर्माण में योगदान देना चाहते हैं।'
+                  : 'We envision a future in which development reaches every section of society, public services are accessible to all, and citizens actively participate in local decision-making and community improvement. By encouraging environmental responsibility, strengthening village-level infrastructure, promoting digital accessibility, and supporting local development initiatives, we aim to contribute to a stronger and more resilient rural district.'}
+              </p>
+              <p>
+                {isHi
+                  ? 'हमारा दीर्घकालिक विज़न अल्मोड़ा को उत्तराखंड में जनभागीदारी पर आधारित ग्रामीण विकास का एक उत्कृष्ट उदाहरण बनाना है, जहाँ प्रगति का मूल्यांकन केवल सड़कों और सुविधाओं के निर्माण से नहीं, बल्कि जीवन स्तर में सुधार, पर्यावरण संरक्षण, जनभागीदारी और नागरिकों के कल्याण से भी किया जाए।'
+                  : 'Our long-term vision is to make Almora a model of community-driven rural development in Uttarakhand—where progress is measured not only by infrastructure and facilities but also by improved living standards, environmental sustainability, public participation, and the well-being of its people.'}
+              </p>
             </div>
+          </section>
 
-            {/* ── CARD SLIDER / CAROUSEL TRACK ── */}
-            <div
-              className="relative overflow-hidden -mx-2 px-2 py-2"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
-              <div
-                className="flex transition-transform duration-500 ease-in-out gap-5"
-                style={{
-                  transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`,
-                }}
-              >
-                {carouselItems.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div
-                      key={item.id}
-                      className="shrink-0 bg-white rounded-xl border border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden p-5 sm:p-6"
-                      style={{
-                        width: `calc(${100 / cardsPerView}% - ${(20 * (cardsPerView - 1)) / cardsPerView}px)`,
-                      }}
-                    >
-                      {/* Card Header: Badge + Icon */}
-                      <div>
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="font-mono text-xs font-bold px-2.5 py-1 rounded bg-navy-900 text-amber-400">
-                            {item.id}
-                          </span>
+          {/* Section 3: Our Core Values (8 Values) */}
+          <section className="space-y-6 border-t border-slate-200/80 pt-8">
+            <h2 className="text-xl sm:text-2xl font-bold font-poppins text-slate-900">
+              {isHi ? 'हमारे मूल मूल्य' : 'Our Core Values'}
+            </h2>
 
-                          <div className={`w-9 h-9 rounded-lg border flex items-center justify-center shrink-0 ${item.iconBg}`}>
-                            <Icon className="w-4.5 h-4.5" />
-                          </div>
-                        </div>
-
-                        {/* Title */}
-                        <h3 className="font-bold text-base sm:text-lg text-navy-900 leading-snug mb-2">
-                          {item.title}
-                        </h3>
-
-                        {/* Description */}
-                        <p className="text-slate-700 text-xs sm:text-sm leading-relaxed mb-4">
-                          {item.desc}
-                        </p>
-
-                        {/* Bullet Highlights */}
-                        <div className="bg-slate-50/80 rounded-lg p-3 border border-slate-200/80 mb-4">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
-                            {isHi ? 'मुख्य कार्यबिंदु' : 'Key Focus Points'}
-                          </p>
-                          <ul className="space-y-1.5 text-xs text-slate-700">
-                            {item.highlights.map((point, idx) => (
-                              <li key={idx} className="flex items-start gap-1.5">
-                                <span className="text-emerald-600 font-bold shrink-0 mt-0.5">•</span>
-                                <span className="leading-snug">{point}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Carousel Bottom Pagination Dots */}
-            <div className="flex items-center justify-center mt-6 pt-4 border-t border-slate-100">
-              {/* Dot Indicators */}
-              <div className="flex items-center gap-1.5">
-                {Array.from({ length: maxIndex + 1 }).map((_, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentIndex(idx)}
-                    className={`transition-all duration-300 rounded-full ${idx === currentIndex
-                      ? 'w-6 h-2 bg-navy-900'
-                      : 'w-2 h-2 bg-slate-300 hover:bg-slate-400'
-                      }`}
-                    aria-label={`Go to slide ${idx + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-          </div>
-
-          {/* ══════════════════════════════════════════════════
-              Section 3: 3-YEAR STRATEGIC ROADMAP (2025–2028)
-             ══════════════════════════════════════════════════ */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-            <div className="border-b border-slate-200 pb-3 mb-6">
-              <h2 className="text-lg sm:text-2xl font-bold text-navy-900">
-                {isHi ? 'रणनीतिक लक्ष्य एवं चरणबद्ध कार्ययोजना (2025–2028)' : 'Strategic Goals & Implementation Roadmap (2025–2028)'}
-              </h2>
-            </div>
-
-            {/* Timeline grid */}
-            <div className="p-4 sm:p-6 grid md:grid-cols-3 gap-0 md:divide-x divide-slate-200 border-t border-slate-100">
-              {strategicMilestones.map((ms, idx) => (
-                <div key={idx} className="flex flex-col px-4 sm:px-5 py-4 first:pt-4 md:first:pl-0 md:last:pr-0 relative border-b md:border-b-0 border-slate-200 last:border-b-0">
-                  {/* Phase badge */}
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-[9px] font-extrabold uppercase tracking-widest text-white bg-[#0a1628] px-2 py-1">
-                      {ms.phase}
-                    </span>
-                    <span className="font-mono text-xs font-bold text-amber-500">{ms.year}</span>
-                  </div>
-
-                  {/* Step number */}
-                  <div className="flex items-start gap-3">
-                    <div className="w-7 h-7 rounded-full bg-amber-400/15 border-2 border-amber-400 flex items-center justify-center shrink-0 mt-0.5 font-mono text-xs font-extrabold text-amber-600">
-                      {idx + 1}
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-800 leading-snug mb-1.5">{ms.title}</h3>
-                      <p className="text-[11.5px] text-slate-500 leading-relaxed">{ms.desc}</p>
-                    </div>
-                  </div>
+            <div className="space-y-6">
+              {coreValues.map((val) => (
+                <div key={val.num} className="text-sm sm:text-base leading-relaxed space-y-1.5">
+                  <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+                    {val.num}. {val.title}
+                  </h3>
+                  <p className="text-slate-700 leading-relaxed">
+                    {val.desc}
+                  </p>
                 </div>
               ))}
             </div>
-          </div>
+          </section>
+
+          {/* Section 4: Our Commitment */}
+          <section className="space-y-4 border-t border-slate-200/80 pt-8">
+            <h2 className="text-xl sm:text-2xl font-bold font-poppins text-slate-900">
+              {isHi ? 'हमारी प्रतिबद्धता' : 'Our Commitment'}
+            </h2>
+            <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">
+              <p>
+                {isHi
+                  ? 'जिला पंचायत अल्मोड़ा जिले के ग्रामीण समुदायों के सामाजिक, आर्थिक और बुनियादी ढाँचे से जुड़े विकास के लिए कार्य करने हेतु प्रतिबद्ध है। हम समझते हैं कि वास्तविक प्रगति के लिए निरंतर प्रयास, सहयोग, जिम्मेदार योजना और नागरिकों की सक्रिय भागीदारी आवश्यक है।'
+                  : 'Zila Panchayat Almora is dedicated to working towards the social, economic, and infrastructural development of the district\'s rural communities. We recognize that meaningful progress requires consistent effort, cooperation, responsible planning, and active participation from the public.'}
+              </p>
+              <p>
+                {isHi
+                  ? 'हमारी प्रतिबद्धता ऐसी पहलों को प्रोत्साहित करना है जो गाँवों की सुविधाओं में सुधार करें, आवश्यक सेवाओं को मजबूत बनाएँ, स्वच्छता को बढ़ावा दें, पर्यावरण की रक्षा करें और नागरिकों के कल्याण में योगदान दें। समुदायों, स्थानीय जनप्रतिनिधियों और संबंधित सरकारी विभागों के साथ समन्वय के माध्यम से हमारा लक्ष्य स्थानीय प्राथमिकताओं पर ध्यान देना और सतत विकास को आगे बढ़ाना है।'
+                  : 'We are committed to encouraging initiatives that improve village facilities, strengthen essential services, promote cleanliness, protect the environment, and support the welfare of citizens. By working in coordination with communities, local representatives, and relevant government departments, we aim to address local priorities and contribute to sustainable development.'}
+              </p>
+              <p>
+                {isHi
+                  ? 'हम जनकल्याण को अपने प्रयासों के केंद्र में रखते हुए ऐसे अल्मोड़ा के निर्माण की दिशा में कार्य करना चाहते हैं जहाँ गाँव सशक्त हों, सेवाएँ अधिक सुलभ हों, समुदाय आत्मनिर्भर बनें और आने वाली पीढ़ियों को स्वच्छ, स्वस्थ एवं समृद्ध वातावरण प्राप्त हो।'
+                  : 'Our commitment is to keep public welfare at the center of our efforts and to work towards an Almora where villages are stronger, services are more accessible, communities are empowered, and future generations can benefit from a cleaner, healthier, and more prosperous environment.'}
+              </p>
+            </div>
+          </section>
+
         </div>
       </div>
     </div>

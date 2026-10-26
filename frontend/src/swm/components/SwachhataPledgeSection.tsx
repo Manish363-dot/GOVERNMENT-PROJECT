@@ -18,7 +18,7 @@ export const SwachhataPledgeSection = React.memo(() => {
   const [citizenName, setCitizenName] = useState('');
   const [gramPanchayat, setGramPanchayat] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
-  const [agreedToPledge, setAgreedToPledge] = useState(true);
+  const [agreedToPledge, setAgreedToPledge] = useState(false);
   const [pledgeTaken, setPledgeTaken] = useState(false);
   const [hasDownloaded, setHasDownloaded] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -300,6 +300,7 @@ export const SwachhataPledgeSection = React.memo(() => {
           <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy-900 tracking-tight leading-tight">
             {isHi ? 'स्वच्छता शपथ लें एवं ई-सर्टिफिकेट पाएं' : 'Take Swachhata Pledge & Get Certificate'}
           </h2>
+          <div className="h-1 w-20 bg-emerald-400 rounded-full mt-3 mb-6" />
         </div>
 
         {/* 2-Column Grid: Form & Live Certificate Preview */}

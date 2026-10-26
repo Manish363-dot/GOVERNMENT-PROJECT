@@ -18,7 +18,7 @@ export { SafaiHeroBanner } from './components/SafaiHeroBanner';
 export { AboutSection as SafaiAboutSection } from './components/AboutSection';
 export { LiveQuotesSection } from './components/LiveQuotesSection';
 export { WasteSegregationSection } from './components/WasteSegregationSection';
-export { DailyWorkSection } from './components/DailyWorkSection';
+export { DailyWorkSection } from '../landing-page/DailyWorkSection';
 export { SwachhataPledgeSection } from './components/SwachhataPledgeSection';
 export { ComplaintForm } from './components/ComplaintForm';
 export { ComplaintTrack } from './components/ComplaintTrack';

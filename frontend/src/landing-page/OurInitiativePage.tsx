@@ -1,172 +1,206 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import {
+  Building2,
+} from 'lucide-react';
+
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+
+export interface InitiativeItem {
+  id: string;
+  titleEn: string;
+  titleHi: string;
+  descEn: string;
+  descHi: string;
+  imageUrl: string;
+}
+const image_01 = `${S3_BUCKET}/Initiative/Intiative1.webp`;
+const image_02 = `${S3_BUCKET}/Initiative/Intiative2.webp`;
+const image_03 = `${S3_BUCKET}/Initiative/Intiative3.webp`;
+const image_04 = `${S3_BUCKET}/Initiative/Intiative4.webp`;
+const image_05 = `${S3_BUCKET}/Initiative/Intiative5.webp`;
+const image_06 = `${S3_BUCKET}/Initiative/Intiative6.webp`;
+const image_07 = `${S3_BUCKET}/Initiative/Intiative7.webp`;
+const image_08 = `${S3_BUCKET}/Initiative/Intiative8.webp`;
+const image_09 = `${S3_BUCKET}/Initiative/Intiative9.webp`;
+const image_10 = `${S3_BUCKET}/Initiative/Intiative10.webp`;
+export const INITIATIVES_DATA: InitiativeItem[] = [
+  {
+    id: '01',
+    titleHi: 'ग्रामीण विकास मिशन',
+    titleEn: 'Rural Development Mission',
+    descHi: 'ग्रामीण क्षेत्रों में बुनियादी सुविधाओं का विस्तार, संपर्क मार्गों में सुधार और गाँवों के समग्र विकास को बढ़ावा देना।',
+    descEn: 'Promote overall rural development, essential facilities, and better living standards across village communities.',
+    imageUrl: image_01
+  },
+  {
+    id: '02',
+    titleHi: 'ग्रामीण बुनियादी ढाँचा विकास',
+    titleEn: 'Rural Infrastructure Development',
+    descHi: 'ग्रामीण सड़कों, सार्वजनिक भवनों, सामुदायिक स्थलों और अन्य आवश्यक सुविधाओं के विकास एवं रखरखाव को प्रोत्साहित करना।',
+    descEn: 'Support the development and maintenance of rural roads, public buildings, community spaces, and essential infrastructure.',
+    imageUrl: image_02
+  },
+  {
+    id: '03',
+    titleHi: 'स्वच्छ एवं स्वस्थ ग्राम अभियान',
+    titleEn: 'Clean & Healthy Village Initiative',
+    descHi: 'स्वच्छता, कचरा प्रबंधन, स्वच्छ सार्वजनिक स्थानों और नागरिक जागरूकता के माध्यम से स्वस्थ ग्रामीण वातावरण बनाना।',
+    descEn: 'Encourage sanitation, waste management, clean public spaces, and community cleanliness across rural wards.',
+    imageUrl: image_03
+  },
+  {
+    id: '04',
+    titleHi: 'डिजिटल पंचायत एवं ई-गवर्नेंस',
+    titleEn: 'Digital Panchayat & E-Governance',
+    descHi: 'ऑनलाइन आवेदन, डिजिटल भुगतान, प्रमाणपत्र संबंधी जानकारी और नागरिक सेवाओं को तकनीक के माध्यम से सुगम बनाना।',
+    descEn: 'Improve access to online applications, digital payments, public information, and citizen services.',
+    imageUrl: image_04
+  },
+  {
+    id: '05',
+    titleHi: 'जनशिकायत एवं समाधान प्रणाली',
+    titleEn: 'Public Grievance & Resolution System',
+    descHi: 'नागरिकों को ऑनलाइन शिकायत दर्ज करने, उनकी स्थिति ट्रैक करने और पारदर्शी समाधान अपडेट प्राप्त करने की सुविधा।',
+    descEn: 'Enable citizens to register complaints, track their status, and access transparent resolution updates.',
+    imageUrl: image_05
+  },
+  {
+    id: '06',
+    titleHi: 'ग्रामीण आजीविका एवं स्वरोजगार',
+    titleEn: 'Rural Livelihood & Self-Employment',
+    descHi: 'स्थानीय उद्यमियों, शिल्पकारों, स्वयं सहायता समूहों और ग्रामीण रोजगार के नए अवसरों को प्रोत्साहित करना।',
+    descEn: 'Support local entrepreneurs, artisans, self-help groups, and rural employment opportunities.',
+    imageUrl: image_06
+  },
+  {
+    id: '07',
+    titleHi: 'कृषि एवं प्राकृतिक संसाधन संरक्षण',
+    titleEn: 'Agriculture & Natural Resource Conservation',
+    descHi: 'स्थानीय पर्वतीय कृषि, जल संचयन, मृदा संरक्षण और प्राकृतिक संपदा के सतत एवं विवेकपूर्ण उपयोग को बढ़ावा।',
+    descEn: 'Promote local agriculture, water conservation, soil protection, and responsible use of natural resources.',
+    imageUrl: image_07
+  },
+  {
+    id: '08',
+    titleHi: 'स्थानीय संस्कृति एवं पर्यटन प्रोत्साहन',
+    titleEn: 'Local Culture & Tourism Promotion',
+    descHi: 'अल्मोड़ा की सांस्कृतिक धरोहर, पारंपरिक हस्तशिल्प, स्थानीय उत्पादों एवं ग्रामीण पर्यटन के अवसरों को वैश्विक पहचान दिलाना।',
+    descEn: "Highlight Almora's cultural heritage, traditional crafts, local products, and rural tourism opportunities.",
+    imageUrl: image_08
+  },
+  {
+    id: '09',
+    titleHi: 'पेयजल एवं स्वच्छता',
+    titleEn: 'Drinking Water & Sanitation',
+    descHi: 'स्वच्छ पेयजल की उपलब्धता, जल संचयन और पर्यावरण संरक्षण के लिए आवश्यक प्रयास।',
+    descEn: 'Ensure clean drinking water, rainwater harvesting, and environmental protection initiatives.',
+    imageUrl: image_09
+  },
+  {
+    id: '10',
+    titleHi: 'सरकारी योजनाएँ एवं जनजागरूकता',
+    titleEn: 'Government Schemes & Public Awareness',
+    descHi: 'केंद्रीय व राज्य वित्त आयोग की जनकल्याणकारी योजनाओं, पात्रता नियमों, आवश्यक दस्तावेजों और प्रक्रियाओं की सुगम जानकारी।',
+    descEn: 'Help citizens understand applicable government schemes, eligibility criteria, required documents, and application procedures.',
+    imageUrl: image_10
+  }
+];
 
 export function OurInitiativePage() {
   const { i18n } = useTranslation();
-  const isHi = i18n.language === 'hi';
+  const isHi = i18n.language === 'hi' || Boolean(i18n.language?.startsWith('hi'));
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const initiatives = [
-    {
-      id: '01',
-      title: 'Swachh Almora – Digital Safai Mission',
-      titleHi: 'स्वच्छ अल्मोड़ा – डिजिटल सफाई मिशन',
-      desc: isHi
-        ? 'पब्लिक फोटो और लोकेशन के साथ सफाई शिकायतें सीधे पोर्टल पर सबमिट कर सके।'
-        : 'Citizens can submit cleanliness and waste complaints directly with photo and live GPS location.',
-    },
-    {
-      id: '02',
-      title: 'Smart Garbage Vehicle Tracking',
-      titleHi: 'स्मार्ट कचरा वाहन ट्रैकिंग',
-      desc: isHi
-        ? 'जीपीएस से कचरा वाहनों की लाइव लोकेशन और मूवमेंट रीयल-टाइम में ट्रैक हो।'
-        : 'Real-time live location and route movement tracking of garbage vehicles via GPS telematics.',
-    },
-    {
-      id: '03',
-      title: 'Before & After Safai Proof',
-      titleHi: 'सफाई पूर्व व पश्चात प्रमाण',
-      desc: isHi
-        ? 'शिकायत का समाधान होने पर स्टाफ तस्वीरें अपलोड करे और नागरिक समाधान की पुष्टि कर सके।'
-        : 'Staff uploads before & after photos upon complaint resolution, allowing citizens to confirm satisfactory resolution.',
-    },
-    {
-      id: '04',
-      title: 'Adopt-a-Village Cleanliness Program',
-      titleHi: 'ग्राम स्वच्छता अंगीकरण कार्यक्रम',
-      desc: isHi
-        ? 'गांवों में स्वच्छता अभियान और निरीक्षण आयोजित हों।'
-        : 'Cleanliness drives and regular field inspections organized across rural villages.',
-    },
-    {
-      id: '05',
-      title: 'Safai Inspection & Audit System',
-      titleHi: 'सफाई निरीक्षण एवं ऑडिट प्रणाली',
-      desc: isHi
-        ? 'अधिकारी डिजिटल चेकलिस्ट और तस्वीरों से फील्ड निरीक्षण रिकॉर्ड करें।'
-        : 'Administrative officials record on-ground field inspections using digital checklists and photos.',
-    },
-  ];
-
   return (
     <div className="min-h-screen bg-slate-50 font-sans pb-24">
-      {/* ── Top Government Banner (Same as Complaint Page Header) ── */}
-      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-navy-950 text-white relative py-10 sm:py-14 overflow-hidden">
+      {/* ── Top Government Banner (Slim) ── */}
+      <div className="bg-gradient-to-r from-navy-950 via-navy-900 to-[#0c2a52] text-white relative py-4 sm:py-5 overflow-hidden border-b border-navy-800 shadow-xs">
         {/* Subtle decorative background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:24px_24px] opacity-5 pointer-events-none" />
 
         {/* Government tricolor top accent */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-white to-emerald-600 opacity-90" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="max-w-3xl">
-              <h1 className="text-2xl sm:text-4xl font-extrabold font-poppins text-white tracking-tight leading-tight mb-3">
-                {isHi ? 'हमारी पहल' : 'Our Initiative'}
-              </h1>
-
-              <p className="text-slate-300 text-xs sm:text-sm md:text-base leading-relaxed">
-                {isHi
-                  ? 'जिला पंचायत अल्मोड़ा — स्वच्छ भारत मिशन (ग्रामीण) के अंतर्गत ठोस अपशिष्ट प्रबंधन, सफाई व्यवस्था एवं वाहन संचालन संबंधी समस्याओं का समयबद्ध समाधान व पारदर्शी डिजिटल ट्रैकिंग।'
-                  : 'District Panchayat Almora — Timely redressal and 100% transparent tracking for solid waste management, sanitation issues, and vehicle operations under Swachh Bharat Mission (Grameen).'}
-              </p>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="w-1.5 h-6 sm:h-7 bg-amber-400 rounded-full shrink-0" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold font-poppins text-white tracking-tight leading-none">
+              {isHi ? 'हमारी पहल' : 'Our Initiatives'}
+            </h1>
           </div>
-
-          <div className="h-1 w-24 bg-amber-400 rounded-full mt-6"></div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10">
-        <div className="space-y-8">
-          
-          {/* Section 1: Overview */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-            <h2 className="text-lg sm:text-2xl font-bold text-navy-900 mb-3">
-              {isHi ? 'पृष्ठभूमि एवं उद्देश्य' : 'Background & Objectives'}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6 sm:mt-8">
+        <div className="space-y-8 sm:space-y-10">
+
+          {/* Section Introduction Card */}
+          <div className="bg-white rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200/90 shadow-sm relative overflow-hidden">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 font-poppins mb-4">
+              {isHi
+                ? 'समावेशी ग्रामीण विकास एवं पारदर्शी सुशासन'
+                : 'Inclusive Rural Progress & Transparent Governance'}
             </h2>
-            <div className="text-slate-700 leading-relaxed text-sm sm:text-base space-y-3">
+
+            <div className="text-slate-700 leading-relaxed text-sm sm:text-base space-y-4">
               <p>
                 {isHi
-                  ? 'जिला पंचायत अल्मोड़ा का उद्देश्य नवीन डिजिटल पहलों के माध्यम से स्वच्छता, पारदर्शिता और बेहतर जनसेवाओं को बढ़ावा देना है। हमारा लक्ष्य “स्मार्ट स्वच्छ अल्मोड़ा” प्रणाली विकसित करना है, जिसके अंतर्गत नागरिक ऑनलाइन शिकायत पोर्टल के माध्यम से स्वच्छता संबंधी समस्याओं की शिकायत दर्ज कर सकेंगे तथा अधिकारी उन शिकायतों की निगरानी कर उनका प्रभावी ढंग से निस्तारण कर सकेंगे। यह प्रणाली कूड़ा संग्रहण वाहनों की जीपीएस आधारित ट्रैकिंग की सुविधा भी प्रदान करेगी, जिससे अधिकारी वाहनों की गतिविधियों पर नजर रख सकेंगे और कार्य संचालन की दक्षता में सुधार कर सकेंगे।'
-                  : 'Zila Panchayat Almora aims to promote cleanliness, transparency, and better public services through innovative digital initiatives. Our vision is to develop a Smart Swachh Almora system that enables citizens to report sanitation-related issues through an online complaint portal, while allowing officials to monitor and resolve complaints efficiently. The system also supports GPS-based tracking of garbage collection vehicles, helping administrators monitor vehicle movements and improve operational efficiency.'}
+                  ? 'जिला पंचायत अल्मोड़ा का उद्देश्य बेहतर बुनियादी सुविधाओं, डिजिटल प्रशासन, स्वच्छता, जनकल्याण, आजीविका के अवसरों, पर्यावरण संरक्षण और पारदर्शी प्रशासन के माध्यम से समावेशी ग्रामीण विकास को बढ़ावा देना है। हमारी पहल ग्रामीण समुदायों को सशक्त बनाने, जनसेवाओं तक पहुँच आसान करने और नागरिकों की भागीदारी एवं सतत विकास के माध्यम से स्वच्छ, स्वस्थ और आत्मनिर्भर अल्मोड़ा का निर्माण करने पर केंद्रित है।'
+                  : 'Zila Panchayat Almora aims to promote inclusive rural development through improved infrastructure, digital governance, sanitation, public welfare, livelihood opportunities, environmental protection, and transparent administration. Our initiatives focus on empowering rural communities, improving access to public services, and building a cleaner, healthier, and more self-reliant Almora through citizen participation and sustainable development.'}
               </p>
-              <p>
+              <p className="text-slate-600 text-xs sm:text-sm pt-1 border-t border-slate-100">
                 {isHi
-                  ? 'इसके अतिरिक्त, सफाई कार्य पूरा होने के बाद उसके पहले और बाद की तस्वीरें अपलोड की जाएंगी, जिससे कार्य पूर्ण होने का प्रमाण उपलब्ध होगा। नागरिकों की प्रतिक्रिया के माध्यम से शिकायतों के निस्तारण की पुष्टि करने में भी सहायता मिलेगी। ग्राम स्तर पर स्वच्छता कार्यक्रमों तथा डिजिटल निरीक्षण एवं ऑडिट सुविधाओं के माध्यम से हमारा उद्देश्य जनभागीदारी को प्रोत्साहित करना, जवाबदेही को मजबूत बनाना तथा अल्मोड़ा को अधिक स्वच्छ, स्मार्ट और टिकाऊ जिला बनाना है।'
-                  : 'Additionally, before-and-after photographs provide photographic evidence of completed cleaning activities, while citizen feedback helps verify complaint resolution. Through village-level cleanliness programs and digital inspection and audit facilities, we aim to encourage community participation, strengthen accountability, and build a cleaner, smarter, and more sustainable Almora.'}
+                  ? 'यह पहलें अल्मोड़ा जनपद की 1,160+ ग्राम पंचायतों, 11 विकासखंडों और स्थानीय नागरिकों के सर्वांगीण उत्थान को समर्पित हैं।'
+                  : 'These initiatives are dedicated to the holistic upliftment of 1,160+ Gram Panchayats, 11 Development Blocks, and rural citizens across Almora district.'}
               </p>
             </div>
           </div>
 
-          {/* Section 2: 5 Core Digital Initiatives (Simple Clean Text) */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-            <div className="border-b border-slate-200 pb-3 mb-6">
-              <h2 className="text-lg sm:text-2xl font-bold text-navy-900">
-                {isHi ? 'प्रमुख पहल एवं कार्यप्रणाली' : 'Key Initiatives & Operating Framework'}
+          {/* 14 Comprehensive Initiatives List - 2 Items Per Row, Image on Left, Text on Right */}
+          <div className="bg-white rounded-2xl p-6 sm:p-8 lg:p-10 border border-slate-200/90 shadow-sm">
+            <div className="border-b border-slate-200 pb-4 mb-8">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 font-poppins">
+                {isHi ? 'प्रमुख विकास एवं जनकल्याण पहलें' : 'Core Development & Public Welfare Initiatives'}
               </h2>
-              <p className="text-slate-500 text-xs sm:text-sm mt-1">
-                {isHi ? 'डिजिटल तकनीक एवं पारदर्शी जन-भागीदारी पर आधारित पांच प्रमुख बिंदु' : 'Five primary pillars driven by digital technology and civic participation'}
-              </p>
             </div>
 
-            <div className="space-y-4">
-              {initiatives.map((item) => (
-                <div
-                  key={item.id}
-                  className="p-4 sm:p-5 rounded-lg border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-slate-300 transition-colors"
-                >
-                  <div className="flex items-start gap-3.5">
-                    <span className="font-mono text-xs font-bold px-2.5 py-1 rounded bg-navy-900 text-amber-400 shrink-0 mt-0.5">
-                      {item.id}
-                    </span>
-                    <div>
-                      <h3 className="font-bold text-base sm:text-lg text-navy-900 leading-snug">
-                        {isHi ? item.titleHi : item.title}
+            {/* 2 items in one row (grid-cols-1 md:grid-cols-2) without boxed cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-12 gap-y-8 sm:gap-y-10">
+              {INITIATIVES_DATA.map((item, idx) => {
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-start gap-4 sm:gap-5 pb-6 border-b border-slate-200/80 group"
+                  >
+                    {/* Left Thumbnail Image */}
+                    <div className="w-28 h-20 sm:w-36 sm:h-24 md:w-40 md:h-26 rounded-xl sm:rounded-2xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200/80 shadow-xs">
+                      <img
+                        src={item.imageUrl}
+                        alt={isHi ? item.titleHi : item.titleEn}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Right Content */}
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-poppins font-bold text-slate-900 text-sm sm:text-base leading-snug group-hover:text-blue-900 transition-colors">
+                        {idx + 1}. {isHi ? item.titleHi : item.titleEn}
                       </h3>
-                      <p className="text-slate-700 text-sm sm:text-base mt-1.5 leading-relaxed">
-                        {item.desc}
+                      <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                        {isHi ? item.descHi : item.descEn}
                       </p>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
-
-          {/* Section 3: Ground Operations & Facilities */}
-          <div className="bg-white rounded-xl p-6 sm:p-8 border border-slate-200 shadow-xs">
-            <h2 className="text-lg sm:text-2xl font-bold text-navy-900 mb-4">
-              {isHi ? 'बुनियादी सुविधाएं एवं जमीनी संचालन' : 'Ground Infrastructure & Support Operations'}
-            </h2>
-            <ul className="list-disc pl-5 space-y-2.5 text-slate-700 text-sm sm:text-base leading-relaxed">
-              <li>
-                <strong className="text-slate-900">{isHi ? 'पर्यावरण मित्र (Paryavaran Mitras):' : 'Paryavaran Mitras:'}</strong>{' '}
-                {isHi
-                  ? 'समस्त वार्डों एवं ग्रामीण बाजारों में समर्पित स्वच्छता कर्मियों की तैनाती जो प्रतिदिन सुबह सफाई व घर-घर कचरा एकत्रीकरण करते हैं।'
-                  : 'Dedicated sanitation workers deployed across wards and rural markets for regular morning waste collection.'}
-              </li>
-              <li>
-                <strong className="text-slate-900">{isHi ? 'मैटेरियल रिकवरी सेंटर (MRF):' : 'Material Recovery Facilities (MRF):'}</strong>{' '}
-                {isHi
-                  ? 'एकत्रित सूखे कचरे का श्रेणीवार (प्लास्टिक, गत्ता, कांच, धातु) पृथक्करण करने हेतु विकासखंडों में आधुनिक एमआरएफ केंद्रों की स्थापना।'
-                  : 'Modern MRF centers established across blocks to sort recyclable paper, cardboard, glass, and metals.'}
-              </li>
-              <li>
-                <strong className="text-slate-900">{isHi ? 'प्लास्टिक कॉम्पेक्टर एवं बेलिंग:' : 'Plastic Compactors & Baling Units:'}</strong>{' '}
-                {isHi
-                  ? 'प्लास्टिक कचरे को उच्च दबाव बेलिंग मशीनों द्वारा संपीड़ित कर अधिकृत रीसाइक्लर्स को वैज्ञानिक पुनर्उपयोग हेतु भेजना।'
-                  : 'Hydraulic baling units to compress plastic waste into dense bales for authorized eco-friendly recycling.'}
-              </li>
-            </ul>
-          </div>
-
         </div>
       </div>
     </div>

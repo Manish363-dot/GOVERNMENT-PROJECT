@@ -6,7 +6,6 @@ import { SafaiHeroBanner } from '../components/SafaiHeroBanner';
 const AboutSection = lazy(() => import('../components/AboutSection').then(m => ({ default: m.AboutSection })));
 const LiveQuotesSection = lazy(() => import('../components/LiveQuotesSection').then(m => ({ default: m.LiveQuotesSection })));
 const WasteSegregationSection = lazy(() => import('../components/WasteSegregationSection').then(m => ({ default: m.WasteSegregationSection })));
-const DailyWorkSection = lazy(() => import('../components/DailyWorkSection').then(m => ({ default: m.DailyWorkSection })));
 const SwachhataPledgeSection = lazy(() => import('../components/SwachhataPledgeSection').then(m => ({ default: m.SwachhataPledgeSection })));
 
 export const SafaiPortalPage = React.memo(() => {
@@ -19,7 +18,9 @@ export const SafaiPortalPage = React.memo(() => {
     if (h === '#pledge') {
       targetId = 'pledge';
     } else if (h === '#daily-work' || h === '#dailywork' || h === '#blogs') {
-      targetId = 'daily-work';
+      // Daily work moved to landing page notice & updates
+      window.location.href = `/#daily-work`;
+      return;
     } else if (h === '#waste-protocol' || h === '#waste-segregation') {
       targetId = 'waste-protocol';
     } else if (h === '#about-swm' || h === '#services') {
@@ -43,7 +44,6 @@ export const SafaiPortalPage = React.memo(() => {
         </div>
         <LiveQuotesSection />
         <WasteSegregationSection />
-        <DailyWorkSection />
         <SwachhataPledgeSection />
       </Suspense>
     </>

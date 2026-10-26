@@ -20,10 +20,10 @@
       "brandName": "Department Of Zila Panchayat Almora",
       "govBadge": "Government of Uttarakhand",
       "govBadgeHi": "उत्तराखंड शासन",
-      "govSubtitle": "Government of Uttarakhand • Zila Panchayat Digital Services",
+      "govSubtitle": "Government of Uttarakhand Zila Panchayat Digital Services",
       "helpline": "Helpline",
       "gallerySlogan": "Our Mountains, Our Responsibility",
-      "gallerySloganSub": "Swachh Bharat • Swachh Uttarakhand • Clean Almora",
+      "gallerySloganSub": "Swachh Bharat Swachh Uttarakhand Clean Almora",
       "gallerySummaryTitle": "Media Gallery Archive",
       "gallerySummarySub": "District Panchayat Almora • Photo Gallery Archive Overview",
       "gallerySummaryBadge": "Verified Photo Archive",
@@ -54,8 +54,8 @@
         "citizens": "Citizens Served",
         "resolved": "Complaints Resolved"
       },
-      "slogan": "Na gandagi karenge, na karne denge -Cleaning up the country cannot be the sole responsibility of sanitation workers (safai karamcharis). Do citizens have no role in this? We have to change this mindset.",
-      "sloganMission": "Swachh Bharat Mission (Clean India Mission)"
+      "slogan": "Sabka Sath, Sabka Vikas,Sabka Vishwas, Sabka Prayas – Empowering every village through public participation, mutual trust, and collective efforts to take rural areas to new heights of development.",
+      "designation": "Hon'ble Prime Minister of India, Shri Narendra Modi"
     },
     "complaint": {
       "badge": "Citizen Services",
@@ -97,8 +97,7 @@
       "portalSub": "Uttarakhand Public Service Portal"
     },
     "about": {
-      "badge": "About",
-      "title": "Zila Panchayat Initiative",
+      "title": "About - Solid Waste Management System",
       "para1": "The Swachh Bharat Mission (Grameen) is a key initiative of the Government of India aimed at promoting cleanliness, environmental protection, and scientific waste management in rural areas. In line with this, the District Panchayat Almora has set up a comprehensive solid and plastic waste management system across various rural, tourist, and religious places in the district.",
       "para2": "To properly dispose of the plastic and solid waste generated daily in Almora's rural markets and semi-urban areas, several measures are in place:",
       "point1Label": "Sanitation Workers (Paryavaran Mitras):",

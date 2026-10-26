@@ -21,6 +21,7 @@ const SiteMapPage = lazy(() => import('@/landing-page/SiteMapPage').then(m => ({
 const ContactPage = lazy(() => import('@/landing-page/ContactPage').then(m => ({ default: m.ContactPage })));
 const OurInitiativePage = lazy(() => import('@/landing-page/OurInitiativePage').then(m => ({ default: m.OurInitiativePage })));
 const VisionMissionPage = lazy(() => import('@/landing-page/VisionMissionPage').then(m => ({ default: m.VisionMissionPage })));
+const AlmoraBlocksPage = lazy(() => import('@/landing-page/AlmoraBlocksPage').then(m => ({ default: m.AlmoraBlocksPage })));
 const StaffDirectoryPage = lazy(() => import('@/landing-page/StaffDirectoryPage').then(m => ({ default: m.StaffDirectoryPage })));
 const MediaGalleryPage = lazy(() => import('@/landing-page/MediaGalleryPage').then(m => ({ default: m.MediaGalleryPage })));
 const NotFoundPage = lazy(() => import('@/landing-page/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
@@ -106,8 +107,8 @@ function App() {
               <Route path="/swm" element={<SafaiPortalPage />} />
               <Route path="/pledge" element={<SafaiPortalPage />} />
               <Route path="/swachhata-pledge" element={<SafaiPortalPage />} />
-              <Route path="/daily-work" element={<SafaiPortalPage />} />
-              <Route path="/dailywork" element={<SafaiPortalPage />} />
+              <Route path="/daily-work" element={<HomePage />} />
+              <Route path="/dailywork" element={<HomePage />} />
               <Route path="/waste-protocol" element={<SafaiPortalPage />} />
               <Route path="/waste-segregation" element={<SafaiPortalPage />} />
 
@@ -115,6 +116,9 @@ function App() {
               <Route path="/our-initiative" element={<OurInitiativePage />} />
               <Route path="/initiative" element={<OurInitiativePage />} />
               <Route path="/vision-mission" element={<VisionMissionPage />} />
+              <Route path="/blocks" element={<AlmoraBlocksPage />} />
+              <Route path="/almora-blocks" element={<AlmoraBlocksPage />} />
+              <Route path="/development-blocks" element={<AlmoraBlocksPage />} />
               <Route path="/staff-directory" element={<StaffDirectoryPage />} />
               <Route path="/staff-info" element={<StaffDirectoryPage />} />
               <Route path="/gallery" element={<MediaGalleryPage />} />

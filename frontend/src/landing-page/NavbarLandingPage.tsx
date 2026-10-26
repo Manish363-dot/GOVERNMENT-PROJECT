@@ -217,7 +217,7 @@ export const NavbarLandingPage = React.memo(() => {
                         className="block px-4 py-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm font-bold text-slate-900 ">
+                          <span className="text-xs sm:text-sm font-bold text-slate-700 ">
                             {isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल' : 'SWM Portal'}
                           </span>
                         </div>
@@ -229,7 +229,7 @@ export const NavbarLandingPage = React.memo(() => {
                         className="block px-4 py-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm font-bold text-slate-900">
+                          <span className="text-xs sm:text-sm font-bold text-slate-700">
                             {isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Commercial Rental System'}
                           </span>
                         </div>
@@ -239,14 +239,22 @@ export const NavbarLandingPage = React.memo(() => {
                 </div>
 
                 {/* 4. 11 Blocks Link */}
-                <a
-                  href="/#blocks"
+                <Link
+                  to="/blocks"
                   className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
                 >
                   <span className="whitespace-nowrap">{isHi ? '11 विकासखंड' : '11 Blocks'}</span>
-                </a>
+                </Link>
 
-                {/* 5. Notices and Updates Link */}
+                {/* 5. Our Media Link */}
+                <Link
+                  to="/media"
+                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
+                >
+                  <span className="whitespace-nowrap">{isHi ? 'हमारा मीडिया' : 'Our Media'}</span>
+                </Link>
+
+                {/* 6. Notices and Updates Link */}
                 <a
                   href="/#notices"
                   className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
@@ -254,7 +262,7 @@ export const NavbarLandingPage = React.memo(() => {
                   <span className="whitespace-nowrap">{isHi ? 'सूचनाएं एवं विज्ञप्तियां' : 'Notices & Updates'}</span>
                 </a>
 
-                {/* 6. Contact Link */}
+                {/* 7. Contact Link */}
                 <Link
                   to="/contact"
                   className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
@@ -361,13 +369,22 @@ export const NavbarLandingPage = React.memo(() => {
               </div>
 
               {/* Mobile 11 Blocks */}
-              <a
-                href="/#blocks"
+              <Link
+                to="/blocks"
                 onClick={() => setMobileOpen(false)}
                 className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
               >
                 {isHi ? '11 विकासखंड' : '11 District Blocks'}
-              </a>
+              </Link>
+
+              {/* Mobile Our Media */}
+              <Link
+                to="/media"
+                onClick={() => setMobileOpen(false)}
+                className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
+              >
+                {isHi ? 'हमारा मीडिया' : 'Our Media'}
+              </Link>
 
               {/* Mobile Notices */}
               <a

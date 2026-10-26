@@ -184,6 +184,7 @@ export const WasteSegregationSection = React.memo(() => {
           <h2 className="font-poppins text-2xl sm:text-3xl lg:text-4xl font-extrabold text-navy-800 tracking-tight leading-tight">
             {isHi ? 'कचरा स्रोत पृथक्करण प्रणाली' : 'Waste Source Segregation Protocol'}
           </h2>
+          <div className="h-1 w-20 bg-emerald-400 rounded-full mt-3 mb-6" />
         </div>
 
         {/* 4 Cards Grid */}

@@ -118,7 +118,6 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                         <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
                         <>
-                            <Search className="w-4 h-4 text-amber-400" />
                             {isHi ? 'स्थिति खोजें' : 'Track Status'}
                         </>
                     )}
@@ -391,7 +390,6 @@ export const ComplaintTrack: React.FC<ComplaintTrackProps> = ({ initialId = '' }
                         <div className="bg-slate-50 p-4 sm:p-5 rounded-lg border-2 border-slate-300">
                             <div className="flex items-center justify-between mb-5">
                                 <p className="text-xs font-extrabold uppercase tracking-widest text-navy-900 flex items-center gap-1.5">
-                                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
                                     {isHi ? '2. स्थिति प्रगति ऑडिट (Official Lifecycle Audit Progress)' : '2. Official Lifecycle Audit Progress'}
                                 </p>
                                 <span className="text-[10px] font-mono text-slate-500 uppercase">Stage {currentRank} of 3</span>
