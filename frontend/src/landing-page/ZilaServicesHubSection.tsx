@@ -2,11 +2,14 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
-  ArrowRight
+  ArrowRight,
+  Clock
 } from 'lucide-react';
+import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
 export const ZilaServicesHubSection = React.memo(() => {
   const { i18n } = useTranslation();
+  const { openRentalComingSoon } = useRentalComingSoon();
   const isHi = i18n.language === 'hi';
 
   return (
@@ -54,15 +57,19 @@ export const ZilaServicesHubSection = React.memo(() => {
             </div>
           </div>
 
-          {/* PORTAL 2: COMMERCIAL RENTAL & LEASE (Integrated Active System) */}
+          {/* PORTAL 2: COMMERCIAL RENTAL & LEASE (Coming Soon Mode) */}
           <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-2xl p-6 sm:p-8 border border-indigo-500/30 shadow-lg relative overflow-hidden flex flex-col justify-between group">
             <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none" />
 
             <div>
-              <div className="flex items-center gap-3 mb-3">
+              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
                 <h3 className="text-xl sm:text-2xl font-bold text-white group-hover:text-indigo-300 transition-colors">
                   {isHi ? 'दुकान आवंटन, संपत्ति एवं किराया प्रबंधन पोर्टल' : 'Commercial Asset, Shop Allotment & Rental Management Portal'}
                 </h3>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-semibold">
+                  <Clock className="w-3 h-3" />
+                  {isHi ? 'शीघ्र उपलब्ध' : 'Coming Soon'}
+                </span>
               </div>
 
               <p className="text-slate-300 text-sm leading-relaxed mb-6">
@@ -73,13 +80,14 @@ export const ZilaServicesHubSection = React.memo(() => {
             </div>
             {/* Quick Actions */}
             <div className="pt-4 border-t border-indigo-800/60 flex flex-wrap items-center gap-3">
-              <Link
-                to="/rental"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-500 text-white font-bold text-xs sm:text-sm hover:bg-blue-400 transition-colors shadow-md"
+              <button
+                type="button"
+                onClick={openRentalComingSoon}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-colors shadow-md cursor-pointer active:scale-95"
               >
                 <span>{isHi ? 'किराया पोर्टल में प्रवेश करें' : 'Open Rental Portal'}</span>
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -90,3 +98,4 @@ export const ZilaServicesHubSection = React.memo(() => {
 });
 
 ZilaServicesHubSection.displayName = 'ZilaServicesHubSection';
+

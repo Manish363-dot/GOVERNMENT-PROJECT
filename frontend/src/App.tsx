@@ -9,6 +9,9 @@ import { Toaster } from 'sonner';
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
 import { RouteSEO } from '@/components/RouteSEO';
+import { RentalComingSoonProvider } from '@/contexts/RentalComingSoonContext';
+import { RentalComingSoonModal } from '@/components/RentalComingSoonModal';
+import { RentalRedirectGuard } from '@/rental/RentalRedirectGuard';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
@@ -95,11 +98,13 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <AuthRedirectHandler />
-        <GooglePasskeyModal />
-        <RouteSEO />
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+        <RentalComingSoonProvider>
+          <AuthRedirectHandler />
+          <GooglePasskeyModal />
+          <RentalComingSoonModal />
+          <RouteSEO />
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
             {/* Public routes */}
             <Route element={<PublicLayout />}>
               {/* Official Zila Panchayat Almora Main Portal */}
@@ -157,41 +162,10 @@ function App() {
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/under-maintenance" element={<MaintenancePage />} />
 
-            {/* Commercial Asset & Rental Management Platform */}
-            <Route element={<RentalRootLayout />}>
-              <Route path="/rental" element={<RentalPortalPage />} />
-              <Route path="/rental-system" element={<RentalPortalPage />} />
-              <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
-              <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
-              <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
-              <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
-
-              {/* Admin Panel Routes */}
-              <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
-              <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
-              <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
-              <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
-              <Route path="/rental/admin/tenants" element={<TenantListPage />} />
-              <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
-              <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
-              <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
-              <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
-
-              {/* User / Tenant Panel Routes */}
-              <Route path="/rental/user/dashboard" element={<UserDashboardPage />} />
-              <Route path="/rental/user" element={<UserDashboardPage />} />
-              <Route path="/rental/user/bills" element={<UserBillsPage />} />
-              <Route path="/rental/user/receipts" element={<UserReceiptsPage />} />
-              <Route path="/rental/user/notices" element={<UserNoticesPage />} />
-              <Route path="/rental/user/profile" element={<UserProfilePage />} />
-              <Route path="/rental/profile" element={<UserProfilePage />} />
-            </Route>
+            {/* Commercial Asset & Rental Management Platform (Guarded for Safai Deployment) */}
+            <Route path="/rental" element={<RentalRedirectGuard />} />
+            <Route path="/rental-system" element={<RentalRedirectGuard />} />
+            <Route path="/rental/*" element={<RentalRedirectGuard />} />
 
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFoundPage />} />
@@ -220,6 +194,7 @@ function App() {
             </Route>
           </Routes>
         </Suspense>
+        </RentalComingSoonProvider>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
     </AuthProvider>
