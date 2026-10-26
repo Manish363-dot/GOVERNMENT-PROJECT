@@ -10,9 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-  History, MapPin, Clock, Route, Truck, Search, Maximize2, Minimize2,
-  Play, Pause, RotateCcw, SkipBack, SkipForward, FileSpreadsheet,
-  Download, Filter, X, CheckCircle2, ChevronDown, ChevronUp, Calendar, AlertCircle
+  History, Maximize2, Minimize2,
+  Play, Pause, RotateCcw, SkipBack, SkipForward,
+  Download, X,
 } from 'lucide-react';
 import { format, parseISO, eachDayOfInterval, subDays } from 'date-fns';
 import type { Vehicle, HistoryResult, VehicleLocationHistory } from '@/types';
@@ -76,18 +76,20 @@ const endIcon = L.divIcon({
 });
 
 // Animated Moving Vehicle Marker
-const createMovingVehicleMarker = (vehicleNumber: string, speed: number, heading: number) => {
+const createMovingVehicleMarker = (vehicleNumber: string, speed: number, heading: number, isHi: boolean = false) => {
   const isMoving = speed >= 5;
   const badgeColor = isMoving ? '#10b981' : '#f59e0b';
+  const speedUnit = isHi ? 'किमी/घंटा' : 'km/h';
+  const statusText = isHi ? 'स्थिर' : 'Stopped';
 
   return L.divIcon({
     className: 'custom-replay-vehicle-marker',
     html: `
       <div style="position:relative; display:flex; flex-direction:column; align-items:center; user-select:none; pointer-events:auto; cursor:pointer;">
         <!-- Vehicle Plate & Live Speed Badge -->
-        <div style="background:#0a1628; color:#ffffff; font-family:ui-monospace, monospace; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1.5px solid #3b82f6; white-space:nowrap; box-shadow:0 3px 8px rgba(0,0,0,0.4); display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+        <div style="background:#0a1628; color:#ffffff; font-family:system-ui, -apple-system, sans-serif; font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; border:1.5px solid #3b82f6; white-space:nowrap; box-shadow:0 3px 8px rgba(0,0,0,0.4); display:flex; align-items:center; gap:4px; margin-bottom:3px; line-height:1.4;">
           <span>${vehicleNumber}</span>
-          <span style="color:${badgeColor}; font-weight:700;">• ${isMoving ? `${speed.toFixed(0)} km/h` : 'Stopped'}</span>
+          <span style="color:${badgeColor}; font-weight:700;">• ${isMoving ? `${speed.toFixed(0)} ${speedUnit}` : statusText}</span>
         </div>
         <!-- Directional Truck / Arrow Icon -->
         <div style="width:34px; height:34px; background:#1e3a8a; border:2.5px solid #ffffff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(0,0,0,0.4); transform:rotate(${heading}deg); transition:transform 0.25s linear;">
@@ -640,7 +642,6 @@ export const VehicleHistoryPage = React.memo(() => {
               disabled={!selectedVehicle || !selectedDate || loading}
               className="flex items-center justify-center gap-2 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-xs sm:text-[12px] font-bold uppercase tracking-normal px-6 h-10 rounded transition-colors whitespace-nowrap"
             >
-              <Search className="w-4 h-4" />
               {loading ? (isHi ? 'डेटा लोड हो रहा है...' : 'Loading Data...') : (isHi ? 'इतिहास लोड करें' : 'Load History')}
             </button>
           </div>
@@ -727,7 +728,7 @@ export const VehicleHistoryPage = React.memo(() => {
                 title={isPlaying ? 'Pause Replay' : 'Play Replay'}
               >
                 {isPlaying ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
-                <span>{isPlaying ? (isHi ? 'रोकें' : 'Pause') : (isHi ? 'रीप्ले चलाएं' : 'Play Route')}</span>
+                <span>{isPlaying ? (isHi ? 'रोकें' : 'Pause') : (isHi ? 'रीप्ले चलाएं' : 'Play')}</span>
               </button>
 
               <button
@@ -921,7 +922,8 @@ export const VehicleHistoryPage = React.memo(() => {
                   icon={createMovingVehicleMarker(
                     selectedVehicleData?.vehicle_number || 'TRUCK',
                     currentPoint.speed,
-                    currentPoint.heading
+                    currentPoint.heading,
+                    isHi
                   )}
                 >
                   <Popup>
@@ -933,10 +935,10 @@ export const VehicleHistoryPage = React.memo(() => {
                         {isHi ? 'समय' : 'Time'}: {format(new Date(currentPoint.recorded_at), 'hh:mm:ss a')}
                       </p>
                       <p className="text-slate-600">
-                        {isHi ? 'गति' : 'Speed'}: <span className="font-bold">{currentPoint.speed.toFixed(1)} km/h</span>
+                        {isHi ? 'गति' : 'Speed'}: <span className="font-bold">{currentPoint.speed.toFixed(1)} {isHi ? 'किमी/घंटा' : 'km/h'}</span>
                       </p>
                       <p className="text-slate-500 text-[10px] mt-1">
-                        GPS: {currentPoint.latitude.toFixed(5)}, {currentPoint.longitude.toFixed(5)}
+                        {isHi ? 'जीपीएस' : 'GPS'}: {currentPoint.latitude.toFixed(5)}, {currentPoint.longitude.toFixed(5)}
                       </p>
                     </div>
                   </Popup>
@@ -970,100 +972,10 @@ export const VehicleHistoryPage = React.memo(() => {
             </div>
 
             <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setShowLogTable(!showLogTable)}
-                className="text-xs font-bold text-[#1a3a6b] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                {showLogTable ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                {showLogTable
-                  ? (isHi ? 'लॉग तालिका छिपाएं' : 'Hide Log Table')
-                  : (isHi ? `जीपीएस लॉग तालिका देखें (${totalPoints})` : `View GPS Table (${totalPoints})`)}
-              </button>
             </div>
           </div>
         </div>
-      ) : result && totalPoints === 0 ? (
-        <EmptyState
-          icon={History}
-          title={isHi ? 'इस दिनांक के लिए कोई जीपीएस रिकॉर्ड नहीं मिला' : 'No GPS Records Found'}
-          description={
-            isHi
-              ? `${selectedVehicleData?.vehicle_number || 'वाहन'} के लिए ${selectedDate} पर कोई जीपीएस टेलीमैटिक्स डेटा दर्ज नहीं हुआ है। कृपया कोई अन्य तिथि या वाहन चुनें।`
-              : `No GPS history recorded for ${selectedVehicleData?.vehicle_number} on ${selectedDate}. Please select another date or vehicle.`
-          }
-        />
       ) : null}
-
-      {/* ── Collapsible Checkpoint Records Table ── */}
-      {result && totalPoints > 0 && showLogTable && (
-        <div className="bg-white border border-slate-300 rounded overflow-hidden shadow-xs">
-          <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2.5 flex items-center justify-between">
-            <p className="text-[13px] font-bold text-[#0a1628] uppercase tracking-normal">
-              {isHi ? 'दैनिक जीपीएस चेकपॉइंट ऑडिट लॉग' : 'Daily GPS Checkpoints Audit Table'} — {selectedVehicleData?.vehicle_number} ({selectedDate})
-            </p>
-            <button
-              onClick={handleQuickDownloadExcel}
-              className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-950 cursor-pointer"
-            >
-              <FileSpreadsheet className="w-3.5 h-3.5" />
-              {isHi ? 'एक्सेल में लें' : 'Export Table to Excel'}
-            </button>
-          </div>
-
-          <div className="max-h-72 overflow-y-auto">
-            <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-slate-100 border-b border-slate-200 sticky top-0 text-[11px] text-slate-700">
-                <tr>
-                  <th className="py-2 px-3">#</th>
-                  <th className="py-2 px-3">{isHi ? 'समय' : 'Time'}</th>
-                  <th className="py-2 px-3">{isHi ? 'स्थान / विवरण' : 'Place / Route Area'}</th>
-                  <th className="py-2 px-3">{isHi ? 'अक्षांश' : 'Latitude'}</th>
-                  <th className="py-2 px-3">{isHi ? 'देशांतर' : 'Longitude'}</th>
-                  <th className="py-2 px-3">{isHi ? 'गति (km/h)' : 'Speed'}</th>
-                  <th className="py-2 px-3">{isHi ? 'स्थिति' : 'Status'}</th>
-                  <th className="py-2 px-3">{isHi ? 'कार्रवाई' : 'Action'}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {result.history.map((pt, i) => (
-                  <tr
-                    key={pt.id || i}
-                    onClick={() => setCurrentIndex(i)}
-                    className={cn(
-                      "hover:bg-blue-50/60 cursor-pointer transition-colors",
-                      currentIndex === i ? "bg-amber-100/70 font-bold" : ""
-                    )}
-                  >
-                    <td className="py-1.5 px-3">{i + 1}</td>
-                    <td className="py-1.5 px-3 text-[#1a3a6b]">
-                      {format(new Date(pt.recorded_at), 'hh:mm:ss a')}
-                    </td>
-                    <td className="py-1.5 px-3 text-slate-700">
-                      {getPlaceDescription(i, totalPoints)}
-                    </td>
-                    <td className="py-1.5 px-3 text-slate-500">{pt.latitude.toFixed(5)}</td>
-                    <td className="py-1.5 px-3 text-slate-500">{pt.longitude.toFixed(5)}</td>
-                    <td className="py-1.5 px-3 font-bold">{pt.speed.toFixed(0)}</td>
-                    <td className="py-1.5 px-3">
-                      <span className={cn(
-                        "px-1.5 py-0.5 rounded text-[10px]",
-                        pt.speed >= 5 ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"
-                      )}>
-                        {pt.speed >= 5 ? (isHi ? 'गतिमान' : 'Moving') : (isHi ? 'स्थिर' : 'Stopped')}
-                      </span>
-                    </td>
-                    <td className="py-1.5 px-3 text-blue-700 text-[11px]">
-                      {currentIndex === i ? '● Active' : 'Jump'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
       {/* Initial empty state */}
       {!result && !loading && (
         <div className="bg-white border border-slate-300 rounded p-10 text-center shadow-xs">
@@ -1086,16 +998,10 @@ export const VehicleHistoryPage = React.memo(() => {
             {/* Modal Header */}
             <div className="bg-[#0a1628] px-4 py-3 flex items-center justify-between text-white border-b border-navy-800">
               <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-emerald-400" />
                 <div>
                   <h3 className="text-sm font-bold uppercase tracking-normal">
                     {isHi ? 'वाहन परिचालन एक्सेल रिपोर्ट डाउनलोड' : 'Export Vehicle Route Excel Report'}
                   </h3>
-                  <p className="text-[10px] text-slate-300 font-mono">
-                    {isHi
-                      ? 'ट्रक का नाम, दिनांक, प्रारंभिक व अंतिम स्थान सारांश'
-                      : 'Truck Name, Date, Starting & Ending Place Summary'}
-                  </p>
                 </div>
               </div>
               <button
@@ -1113,7 +1019,7 @@ export const VehicleHistoryPage = React.memo(() => {
               {/* Filter 1: Target Vehicle */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
-                  1. {isHi ? 'वाहन फ़िल्टर (Select Vehicle Scope)' : '1. Vehicle Scope'}
+                  1. {isHi ? 'वाहन फ़िल्टर' : '1. Vehicle Scope'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <label className={cn(
@@ -1169,7 +1075,7 @@ export const VehicleHistoryPage = React.memo(() => {
               {/* Filter 2: Date Selection Mode */}
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
-                  2. {isHi ? 'दिनांक फ़िल्टर (Select Date Filter)' : '2. Date Mode'}
+                  2. {isHi ? 'दिनांक' : '2. Date Mode'}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <label className={cn(
@@ -1207,7 +1113,7 @@ export const VehicleHistoryPage = React.memo(() => {
                       className="text-[#1a3a6b] focus:ring-0"
                     />
                     <div>
-                      <p className="text-[11px]">{isHi ? 'तिथि सीमा (Date Range)' : 'Date Range'}</p>
+                      <p className="text-[11px]">{isHi ? 'तिथि सीमा ' : 'Date Range'}</p>
                       <p className="text-[10px] text-slate-500 font-normal">{isHi ? 'यहाँ से यहाँ तक' : 'From - To'}</p>
                     </div>
                   </label>
@@ -1232,7 +1138,7 @@ export const VehicleHistoryPage = React.memo(() => {
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
                     <label className="text-[11px] text-slate-600 block">
-                      {isHi ? 'प्रारंभ तिथि (From Date):' : 'From Date:'}
+                      {isHi ? 'प्रारंभ तिथि:' : 'From Date:'}
                     </label>
                     <Input
                       type="date"
@@ -1244,7 +1150,7 @@ export const VehicleHistoryPage = React.memo(() => {
                   </div>
                   <div className="space-y-1">
                     <label className="text-[11px] text-slate-600 block">
-                      {isHi ? 'अंतिम तिथि (To Date):' : 'To Date:'}
+                      {isHi ? 'अंतिम तिथि:' : 'To Date:'}
                     </label>
                     <Input
                       type="date"
@@ -1256,25 +1162,6 @@ export const VehicleHistoryPage = React.memo(() => {
                   </div>
                 </div>
               )}
-
-              {/* Included Columns Notice */}
-              <div className="bg-slate-50 border border-slate-200 rounded p-2.5 text-[11px] text-slate-600 space-y-1">
-                <p className="font-bold text-[#0a1628] flex items-center gap-1.5">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  {isHi ? 'एक्सेल फाइल में शामिल मुख्य कॉलम:' : 'Excel Columns Included:'}
-                </p>
-                <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-600 font-mono pl-5">
-                  <span>• ट्रक का नाम (Truck Name)</span>
-                  <span>• वाहन संख्या (Vehicle No)</span>
-                  <span>• परिचालन दिनांक (Date)</span>
-                  <span>• प्रारंभ स्थान व समय</span>
-                  <span>• समाप्ति स्थान व समय</span>
-                  <span>• कुल तय दूरी (km)</span>
-                  <span>• परिचालन अवधि</span>
-                  <span>• परिचालन स्थिति</span>
-                </div>
-              </div>
-
               {/* Progress Text while downloading */}
               {isExporting && (
                 <div className="bg-amber-50 border border-amber-300 p-2.5 rounded text-amber-900 text-xs flex items-center gap-2">
@@ -1305,7 +1192,7 @@ export const VehicleHistoryPage = React.memo(() => {
                 <span>
                   {isExporting
                     ? (isHi ? 'डाउनलोड हो रहा है...' : 'Exporting...')
-                    : (isHi ? 'एक्सेल (.xlsx) डाउनलोड करें' : 'Download Excel (.xlsx)')}
+                    : (isHi ? 'एक्सेल डाउनलोड करें' : 'Download Excel')}
                 </span>
               </button>
             </div>
