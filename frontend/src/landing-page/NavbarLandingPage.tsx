@@ -4,9 +4,11 @@ import { X, ShieldCheck, PhoneCall, ChevronDown } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
+import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
 export const NavbarLandingPage = React.memo(() => {
   const { t, i18n } = useTranslation();
+  const { openRentalComingSoon } = useRentalComingSoon();
   const isHi = i18n.language === 'hi';
 
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -223,17 +225,23 @@ export const NavbarLandingPage = React.memo(() => {
                         </div>
                       </Link>
 
-                      <Link
-                        to="/rental"
-                        onClick={() => setServicesDropdownOpen(false)}
-                        className="block px-4 py-3"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServicesDropdownOpen(false);
+                          openRentalComingSoon();
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs sm:text-sm font-bold text-slate-700">
+                          <span className="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-blue-600">
                             {isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Commercial Rental System'}
                           </span>
+                          <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                            {isHi ? 'शीघ्र' : 'Soon'}
+                          </span>
                         </div>
-                      </Link>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -357,13 +365,19 @@ export const NavbarLandingPage = React.memo(() => {
                     >
                       <span>{isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल' : 'Safai & SWM Portal'}</span>
                     </Link>
-                    <Link
-                      to="/rental"
-                      onClick={() => setMobileOpen(false)}
-                      className="flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 hover:text-navy-900 rounded-md"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileOpen(false);
+                        openRentalComingSoon();
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 hover:text-navy-900 rounded-md text-left cursor-pointer hover:bg-slate-200"
                     >
                       <span>{isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Rental System'}</span>
-                    </Link>
+                      <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
+                        {isHi ? 'शीघ्र' : 'Soon'}
+                      </span>
+                    </button>
                   </div>
                 )}
               </div>
