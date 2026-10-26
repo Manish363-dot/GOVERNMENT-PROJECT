@@ -13,7 +13,8 @@ import { gpsDeviceService, GpsDevice } from '@/services/gpsDevice.service';
 import { useTranslation } from 'react-i18next';
 
 export const VehiclesPage = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -131,7 +132,6 @@ export const VehiclesPage = React.memo(() => {
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#0a1628] px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-normal">{t('admin.vehicles.title')}</p>
             </div>
@@ -168,7 +168,7 @@ export const VehiclesPage = React.memo(() => {
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.number')}</Label>
               <Input
-                placeholder="e.g. UK-01-XX-1234"
+                placeholder={isHi ? "वाहन संख्या दर्ज करें" : "Enter Vehicle Number"}
                 value={form.vehicle_number}
                 onChange={(e) => setForm({ ...form, vehicle_number: e.target.value })}
                 required
@@ -178,7 +178,7 @@ export const VehiclesPage = React.memo(() => {
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.name')}</Label>
               <Input
-                placeholder="e.g. Ward 5 Truck"
+                placeholder={isHi ? "वाहन का नाम दर्ज करें" : "Enter Vehicle Name"}
                 value={form.vehicle_name}
                 onChange={(e) => setForm({ ...form, vehicle_name: e.target.value })}
                 className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
