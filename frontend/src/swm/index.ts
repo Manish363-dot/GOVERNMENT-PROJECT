@@ -28,7 +28,6 @@ export { DocumentsSection } from './components/DocumentsSection';
 export { DashboardPage } from './dashboard/DashboardPage';
 export { LiveTrackingPage } from './dashboard/LiveTrackingPage';
 export { VehicleHistoryPage } from './dashboard/VehicleHistoryPage';
-export { RouteReplayPage } from './dashboard/RouteReplayPage';
 export { ComplaintsPage } from './dashboard/ComplaintsPage';
 export { VehiclesPage } from './dashboard/VehiclesPage';
 export { GpsDevicesPage } from './dashboard/GpsDevicesPage';

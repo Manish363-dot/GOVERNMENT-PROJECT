@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { PublicLayout } from '@/layouts/PublicLayout';
 import { DashboardLayout } from '@/layouts/DashboardLayout';
@@ -42,7 +42,6 @@ const SwmRulesPage = lazy(() => import('@/swm/pages/SwmRulesPage').then(m => ({ 
 const DashboardPage = lazy(() => import('@/swm/dashboard/DashboardPage').then(m => ({ default: m.DashboardPage })));
 const LiveTrackingPage = lazy(() => import('@/swm/dashboard/LiveTrackingPage').then(m => ({ default: m.LiveTrackingPage })));
 const VehicleHistoryPage = lazy(() => import('@/swm/dashboard/VehicleHistoryPage').then(m => ({ default: m.VehicleHistoryPage })));
-const RouteReplayPage = lazy(() => import('@/swm/dashboard/RouteReplayPage').then(m => ({ default: m.RouteReplayPage })));
 const ComplaintsPage = lazy(() => import('@/swm/dashboard/ComplaintsPage').then(m => ({ default: m.ComplaintsPage })));
 const VehiclesPage = lazy(() => import('@/swm/dashboard/VehiclesPage').then(m => ({ default: m.VehiclesPage })));
 const MediaDailyWorkPage = lazy(() => import('@/swm/dashboard/MediaDailyWorkPage').then(m => ({ default: m.MediaDailyWorkPage })));
@@ -213,7 +212,7 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="tracking" element={<LiveTrackingPage />} />
               <Route path="history" element={<VehicleHistoryPage />} />
-              <Route path="route-replay" element={<RouteReplayPage />} />
+              <Route path="route-replay" element={<Navigate to="/dashboard/history" replace />} />
               <Route path="complaints" element={<ComplaintsPage />} />
               <Route path="vehicles" element={<VehiclesPage />} />
               <Route path="media" element={<MediaDailyWorkPage />} />

@@ -23,7 +23,7 @@ function webhookApiKeyAuth(req: Request, res: Response, next: NextFunction): voi
 }
 
 // Public: GPS webhook endpoint — secured with API key
-// Supports both GET (Traccar default) and POST
+// Supports both GET and POST for GPS device telemetry webhooks
 router.post('/webhook', webhookApiKeyAuth, trackingController.receiveWebhook);
 router.get('/webhook', webhookApiKeyAuth, trackingController.receiveWebhook);
 

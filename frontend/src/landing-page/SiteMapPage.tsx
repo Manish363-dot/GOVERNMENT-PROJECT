@@ -280,13 +280,7 @@ export function SiteMapPage() {
               <div>
                 <Link to="/dashboard/history" className="hover:underline flex items-center gap-2">
                   <span className="text-slate-500 text-[11px]">◇</span>
-                  <span>{isHi ? 'वाहन इतिहास (Vehicle History)' : 'Vehicle History'}</span>
-                </Link>
-              </div>
-              <div>
-                <Link to="/dashboard/route-replay" className="hover:underline flex items-center gap-2">
-                  <span className="text-slate-500 text-[11px]">◇</span>
-                  <span>{isHi ? 'रूट रिप्ले (Route Replay)' : 'Route Replay'}</span>
+                  <span>{isHi ? 'वाहन इतिहास व रूट रीप्ले (Vehicle History & Replay)' : 'Vehicle History & Route Replay'}</span>
                 </Link>
               </div>
               <div>

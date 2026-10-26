@@ -35,12 +35,13 @@ export async function getVehicleLive(req: Request, res: Response): Promise<void>
 
 /**
  * GET/POST /api/tracking/webhook
- * Receives GPS data from Traccar position forwarding.
+ * Receives GPS data from external telematics gateways / GPS tracker position forwarding.
  * 
- * Traccar can forward in 3 formats:
- * 1. Default (no forward.json): GET/POST with query params ?id=DEVICE_ID&lat=X&lon=Y&speed=Z&bearing=B&timestamp=T
- * 2. forward.json=true: POST with flat JSON { id: "DEVICE_ID", latitude: X, longitude: Y, speed: Z, course: B, fixTime: T }
+ * Supports forwarding in multiple formats:
+ * 1. Query parameters: GET/POST with ?id=DEVICE_ID&lat=X&lon=Y&speed=Z&bearing=B&timestamp=T
+ * 2. Flat JSON: POST with { id: "DEVICE_ID", latitude: X, longitude: Y, speed: Z, course: B, fixTime: T }
  * 3. Event forwarding: POST with nested JSON { device: { uniqueId: "..." }, position: { latitude: X, ... } }
+ * 4. Direct GPS API: POST with { device_identifier, latitude, longitude, speed, heading, timestamp }
  */
 export async function receiveWebhook(req: Request, res: Response): Promise<void> {
   try {
@@ -55,7 +56,7 @@ export async function receiveWebhook(req: Request, res: Response): Promise<void>
     const q = req.query;
     const body = req.body;
 
-    // FORMAT 1: Query parameters (Traccar default forwarding)
+    // FORMAT 1: Query parameters (standard GPS gateway forwarding)
     // URL: ?id=DEVICE_ID&lat=29.6&lon=79.6&speed=0&bearing=0&timestamp=1234567890
     if (q.id && (q.lat || q.latitude)) {
       device_identifier = String(q.id);

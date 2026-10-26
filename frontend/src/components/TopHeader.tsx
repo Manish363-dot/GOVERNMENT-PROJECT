@@ -15,8 +15,7 @@ import { cn } from '@/lib/utils';
 const navItems = [
   { icon: LayoutDashboard, labelKey: 'admin.nav.dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
   { icon: MapPin, labelKey: 'admin.nav.tracking', label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
-  { icon: History, labelKey: 'admin.nav.history', label: 'History', labelHi: 'इतिहास', to: '/dashboard/history' },
-  { icon: PlaySquare, labelKey: 'admin.nav.routeReplay', label: 'Route Replay', labelHi: 'रूट रीप्ले', to: '/dashboard/route-replay' },
+  { icon: History, labelKey: 'admin.nav.history', label: 'History & Replay', labelHi: 'इतिहास व रीप्ले', to: '/dashboard/history' },
   { icon: MessageSquareWarning, labelKey: 'admin.nav.grievances', label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
   { icon: Truck, labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' },
   { icon: Image, labelKey: 'admin.nav.media', label: 'Media', labelHi: 'मीडिया', to: '/dashboard/media' }

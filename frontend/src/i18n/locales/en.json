@@ -137,7 +137,7 @@
         "liveActive": "Live GPS Active",
         "liveActiveSub": "Currently Tracking",
         "onlineTelematics": "Online Telematics",
-        "onlineTelematicsSub": "Traccar Network",
+        "onlineTelematicsSub": "MilliTrack Network",
         "pendingComplaints": "Pending Complaints",
         "pendingComplaintsSub": "Action Required"
       },

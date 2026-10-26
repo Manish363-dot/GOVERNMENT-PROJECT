@@ -111,7 +111,7 @@ export const GpsDevicesPage = React.memo(() => {
 
   const deviceTypeLabels: Record<string, string> = {
     hardwired: isHi ? 'हार्डवायर्ड जीपीएस उपकरण' : 'Hardwired GPS',
-    mobile_app: isHi ? 'मोबाइल ऐप (ट्रैकर क्लाइंट)' : 'Mobile App (Traccar Client)',
+    mobile_app: isHi ? 'मोबाइल ऐप (मिलीट्रैक / जीपीएस क्लाइंट)' : 'Mobile App (MilliTrack / GPS Client)',
     obd2: isHi ? 'ओबीडी-II ट्रैकर' : 'OBD-II Tracker',
     other: isHi ? 'अन्य' : 'Other',
   };
@@ -202,7 +202,7 @@ export const GpsDevicesPage = React.memo(() => {
             </div>
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-wider font-mono">
-                {t('admin.devices.deviceIdentifier')} (Traccar ID) *
+                {t('admin.devices.deviceIdentifier')} (MilliTrack / IMEI ID) *
               </Label>
               <Input
                 placeholder="e.g. 869925074843044"
@@ -263,7 +263,7 @@ export const GpsDevicesPage = React.memo(() => {
         <EmptyState
           icon={Radio}
           title={isHi ? 'कोई जीपीएस उपकरण नहीं मिला' : 'No GPS Devices Added'}
-          description={isHi ? 'वाहन से जोड़ने के लिए ट्रैकर उपकरण पंजीकृत करें।' : 'Add a device identifier from Traccar so you can link it to a vehicle.'}
+          description={isHi ? 'वाहन से जोड़ने के लिए ट्रैकर उपकरण पंजीकृत करें।' : 'Add a device identifier from MilliTrack so you can link it to a vehicle.'}
         >
           <Button onClick={openAddForm}>
             <Plus className="w-4 h-4" />

@@ -1,6 +1,7 @@
 import http from 'http';
 import querystring from 'querystring';
 import * as gpsService from './gps.service';
+import { env } from '../../../shared/config/env';
 
 let ioInstance: any = null;
 
@@ -37,8 +38,8 @@ interface MillitrackPosition {
 class MillitrackSyncService {
   private host = 'track11.millitrack.com';
   private port = 80;
-  private email = process.env.MILLITRACK_USER || 'uk01ga0324';
-  private password = process.env.MILLITRACK_PASSWORD || '123456';
+  private email = env.MILLITRACK_USER || 'uk01ga0324';
+  private password = env.MILLITRACK_PASSWORD || '123456';
   private sessionCookie: string[] | null = null;
   private syncTimeout: NodeJS.Timeout | null = null;
   private isRunning = false;

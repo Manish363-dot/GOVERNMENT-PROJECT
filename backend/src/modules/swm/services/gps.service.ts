@@ -310,26 +310,4 @@ export async function processGpsPosition(payload: GpsPositionPayload): Promise<{
   }
 }
 
-export async function processTraccarWebhook(payload: any): Promise<{
-  success: boolean;
-  message: string;
-}> {
-  const device = payload.device;
-  const position = payload.position;
 
-  if (!device?.uniqueId || !position) {
-    return { success: false, message: 'Invalid Traccar webhook payload' };
-  }
-
-  const result = await processGpsPosition({
-    device_identifier: device.uniqueId,
-    latitude: position.latitude,
-    longitude: position.longitude,
-    speed: position.speed || 0,
-    heading: position.course || 0,
-    timestamp: position.fixTime,
-    ignition: position.attributes?.ignition !== undefined ? Boolean(position.attributes.ignition) : undefined,
-  });
-
-  return { success: result.success, message: result.message };
-}

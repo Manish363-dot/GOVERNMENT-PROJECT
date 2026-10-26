@@ -370,11 +370,11 @@ const SEO_MAP: Record<string, SEOConfig> = {
     robots: 'noindex, nofollow',
   },
   '/dashboard/route-replay': {
-    titleHi: 'वाहन रूट रीप्ले | जिला पंचायत अल्मोड़ा',
-    titleEn: 'Vehicle Route Replay | Zila Panchayat Almora',
-    descHi: 'सफाई वाहनों के ऐतिहासिक रूट का समयबद्ध एनीमेशन रीप्ले व विश्लेषण।',
-    descEn: 'Interactive animated playback of past sanitation vehicle routes.',
-    canonicalPath: '/dashboard/route-replay',
+    titleHi: 'वाहन रूट इतिहास व रीप्ले | जिला पंचायत अल्मोड़ा',
+    titleEn: 'Vehicle Route History & Replay | Zila Panchayat Almora',
+    descHi: 'सफाई वाहनों के ऐतिहासिक रूट का समयबद्ध एनीमेशन रीप्ले व ऑडिट विश्लेषण।',
+    descEn: 'Interactive animated playback and audit of past sanitation vehicle routes.',
+    canonicalPath: '/dashboard/history',
     robots: 'noindex, nofollow',
   },
   '/dashboard/complaints': {

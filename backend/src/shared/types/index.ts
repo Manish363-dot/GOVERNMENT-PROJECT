@@ -111,22 +111,7 @@ export interface GpsPositionPayload {
   ignition?: boolean;
 }
 
-export interface TraccarWebhookPayload {
-  id: number;
-  deviceId: number;
-  type: string;
-  device?: {
-    uniqueId: string;
-    name: string;
-  };
-  position?: {
-    latitude: number;
-    longitude: number;
-    speed: number;
-    course: number;
-    fixTime: string;
-  };
-}
+
 
 // --- Express Extended Types ---
 
