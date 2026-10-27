@@ -13,6 +13,7 @@ export interface Notice {
 }
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+
 const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
  export const NOTICES_DATA: Notice[] = [
@@ -57,7 +58,7 @@ fullTextHi:'जिला गंगा सुरक्षा समिति क�
     titleEn: 'Zero-Tolerance Enforcement on Single-Use Plastic & Open Burning',
     titleHi: 'सिंगल-यूज़ प्लास्टिक पर पूर्ण प्रतिबंध एवं खुले में कचरा जलाने पर रोक',
     summaryEn: 'Strict enforcement drives initiated against sale, storage, and distribution of banned polythene and thermocol cutleries. Open burning of waste carries an immediate environmental penalty.',
-    summaryHi: 'प्रतिबंधित पॉलीथीन एवं थर्मोकोल कटलरी के विक्रय, भंडारण एवं उपयोग पर सघन चेकिंग अभियान। खुले में कचरा जलाने पर राष्ट्रीय हरित अधिकरण (NGT) के नियमानुसार दंडात्मक कार्रवाई।',
+    summaryHi: 'अल्मोड़ा के हवालबाग विकासखंड के कोसी बाजार में निराश्रित गोवंश की समस्या से निजात दिलाने के लिए जिला पंचायत और पशुपालन विभाग ने संयुक्त अभियान चलाया। इसके तहत 22 गोवंश को पकड़कर गौशाला भेजा गया। ',
     fullTextEn: 'To protect the fragile Himalayan ecology and water catchment basins of Almora, zero-tolerance enforcement of the Plastic Waste Management Rules is mandated. All trade associations, merchant unions, and tourism stakeholders are requested to switch to cloth bags and compostable alternatives.',
     fullTextHi: 'अल्मोड़ा जनपद के संवेदनशील हिमालयी पर्यावरण एवं जलस्रोतों को प्रदूषण मुक्त रखने हेतु प्लास्टिक अपशिष्ट प्रबंधन नियमों का कठोरता से अनुपालन कराया जा रहा है। सभी व्यापार मंडलों व नागरिकों से अपील है कि वे कपड़े के थैले व पर्यावरण-अनुकूल विकल्पों को प्राथमिकता दें।',
   },

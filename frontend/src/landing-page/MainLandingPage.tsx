@@ -42,8 +42,8 @@ export const MainLandingPage = React.memo(() => {
       <Suspense fallback={<div className="h-32 flex items-center justify-center text-slate-400">Loading Zila Panchayat Portal...</div>}>
         <ZilaPanchayatAboutSection />
         <ZilaServicesHubSection />
-        <NoticesSection />
         <LatestNotificationsSection />
+        <NoticesSection />
       </Suspense>
     </>
   );

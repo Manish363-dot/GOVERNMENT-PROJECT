@@ -14,7 +14,7 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
     : LATEST_UPDATES_DATA.slice(0, 2);
 
   return (
-    <section id="updates" className="relative pt-6 pb-16 sm:pb-20 bg-slate-50">
+    <section id="updates" className="relative pt-12 sm:pt-16 pb-14 sm:pb-20 bg-slate-50 border-b border-slate-200">
       {/* Anchor duplicates for smooth compatibility */}
       <div id="social-engagement" className="absolute -top-16 left-0 h-1 w-1 pointer-events-none" />
       <div id="notifications" className="absolute -top-16 left-0 h-1 w-1 pointer-events-none" />
