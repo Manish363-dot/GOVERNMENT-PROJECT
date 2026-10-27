@@ -13,7 +13,7 @@ import {
   parseISO,
   getDay
 } from 'date-fns';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, FileText } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Image as ImageIcon, Clock, FileText, X, Eye } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 
@@ -42,6 +42,7 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedWork, setSelectedWork] = useState<DailyWork | null>(null);
+  const [activeModalWork, setActiveModalWork] = useState<DailyWork | null>(null);
 
   // Carousel state — responsive: 1 card on mobile, 2 on sm+
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -112,6 +113,7 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
     setSelectedWork(work);
     setSelectedDate(parseISO(work.date));
     setCurrentMonth(parseISO(work.date));
+    setActiveModalWork(work);
   }, []);
 
   const prevSlide = useCallback(() => {
@@ -243,9 +245,18 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
                         )}>
                           <span>{dateFormatted}</span>
                         </div>
-                        <h4 className="text-base sm:text-lg font-bold text-white leading-snug line-clamp-2 drop-shadow-lg group-hover/card:text-amber-50 transition-colors duration-300">
+                        <h4 className={cn(
+                          "text-base sm:text-lg font-bold text-white leading-[1.55] line-clamp-3 drop-shadow-lg group-hover/card:text-amber-50 transition-colors duration-300 pt-0.5",
+                          isHi && "font-hind"
+                        )}>
                           {work.description || (isHi ? 'दैनिक कार्य विवरण' : 'Daily work update details')}
                         </h4>
+
+                        {/* Visual indicator to read full text */}
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-300 group-hover/card:text-white transition-colors mt-2 drop-shadow-sm">
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>{isHi ? 'क्लिक करके पूरा पढ़ें' : 'Click to view full update'}</span>
+                        </div>
                       </div>
                     </div>
                   );
@@ -406,6 +417,99 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
         </div>
 
       </div>
+
+      {/* Full Details Modal for Daily Work with Large Image and Complete Description */}
+      {activeModalWork && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fade-in"
+          onClick={() => setActiveModalWork(null)}
+        >
+          <div 
+            className="relative bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-200 my-auto animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100 bg-slate-50/90">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-700">
+                  <CalendarIcon className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-bold text-slate-800">
+                    {(() => {
+                      const dateObj = parseISO(activeModalWork.date);
+                      return isHi 
+                        ? `${format(dateObj, 'dd')} ${HINDI_MONTHS[dateObj.getMonth()]} ${format(dateObj, 'yyyy')}`
+                        : format(dateObj, 'dd MMMM yyyy');
+                    })()}
+                  </div>
+                  <span className="text-[11px] font-semibold text-emerald-700">
+                    {isHi ? 'दैनिक कार्य विवरण' : 'Daily Work Update'}
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveModalWork(null)}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-800 hover:bg-slate-200/80 transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Media */}
+            <div className="relative w-full max-h-[380px] bg-slate-950 flex items-center justify-center overflow-hidden">
+              {activeModalWork.type === 'video' ? (
+                <video
+                  src={activeModalWork.url}
+                  className="w-full max-h-[380px] object-contain"
+                  controls
+                  autoPlay
+                />
+              ) : activeModalWork.type === 'document' ? (
+                <div className="py-12 flex flex-col items-center justify-center text-slate-400">
+                  <FileText className="w-16 h-16 text-blue-400 mb-2" />
+                  <a
+                    href={activeModalWork.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-blue-600 underline"
+                  >
+                    {isHi ? 'दस्तावेज़ डाउनलोड / देखें' : 'Open / Download Document'}
+                  </a>
+                </div>
+              ) : (
+                <img
+                  src={activeModalWork.url}
+                  alt="Daily Work Detail"
+                  className="w-full max-h-[380px] object-contain"
+                />
+              )}
+            </div>
+
+            {/* Modal Body: Complete Full Description */}
+            <div className="p-5 sm:p-6 max-h-[40vh] overflow-y-auto">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
+                {isHi ? 'कार्य का पूरा विवरण / कार्य सारांश' : 'Full Work Summary'}
+              </div>
+              <p className="text-slate-800 text-sm sm:text-base leading-relaxed font-hind font-medium whitespace-pre-wrap">
+                {activeModalWork.description || (isHi ? 'इस कार्य हेतु कोई अतिरिक्त विवरण दर्ज नहीं है।' : 'No additional details recorded for this work.')}
+              </p>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setActiveModalWork(null)}
+                className="px-5 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-navy-900 text-white hover:bg-navy-800 transition-colors cursor-pointer"
+              >
+                {isHi ? 'बंद करें' : 'Close'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 
