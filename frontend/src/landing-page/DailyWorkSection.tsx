@@ -68,6 +68,14 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
     return new Date();
   });
   const [selectedWork, setSelectedWork] = useState<DailyWork | null>(() => works[0] || null);
+  const [expandedWorkIds, setExpandedWorkIds] = useState<Record<string, boolean>>({});
+
+  const toggleExpandWork = useCallback((id: string) => {
+    setExpandedWorkIds(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  }, []);
 
   // Carousel state — responsive: 1 card on mobile, 2 on sm+
   const [carouselIndex, setCarouselIndex] = useState(0);
