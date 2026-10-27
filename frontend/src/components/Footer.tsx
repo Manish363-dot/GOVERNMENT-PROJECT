@@ -23,7 +23,7 @@ export const Footer = React.memo(() => {
     { label: isHi ? 'सोशल मीडिया जुड़ाव' : 'Social Engagement', href: '/#social-engagement' },
     { label: isHi ? 'दैनिक कार्य' : 'Daily Work', href: '/#blogs' },
     { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/complaint' },
-    { label: isHi ? 'ठोस अपवशिष्ट प्रबन्धन पोर्टल' : 'About SWM Portal', href: '/contact' },
+    { label: isHi ? 'ठोस अपशिष्ट प्रबन्धन पोर्टल' : 'About SWM Portal', href: '/contact' },
     { label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href: '/bylaws' },
     {label:isHi ? "ग्राम पंचायत विवरण" : "Swachhata Pledge", href:"/safai-portal#pledge"}
   ], [isHi]);
@@ -55,10 +55,10 @@ export const Footer = React.memo(() => {
 
       {/* Main 3-Column Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10">
 
           {/* Col 1: About Portal */}
-          <div className="space-y-3.5">
+          <div className="md:col-span-4 lg:col-span-4 space-y-3.5">
             <h4 className={cn(
               "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
               isHi ? "tracking-normal" : "tracking-wider"
@@ -80,32 +80,32 @@ export const Footer = React.memo(() => {
           </div>
 
           {/* Col 2: Quick Navigation */}
-          <div>
+          <div className="md:col-span-5 lg:col-span-5">
             <h4 className={cn(
               "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
               isHi ? "tracking-normal" : "tracking-wider"
             )}>
               {isHi ? 'त्वरित लिंक' : 'Quick Links'}
             </h4>
-            <ul className="grid grid-cols-2 gap-y-2.5 gap-x-8 sm:gap-x-10">
+            <ul className="grid grid-cols-2 gap-y-2.5 gap-x-6 sm:gap-x-8">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   {link.href.startsWith('/#') ? (
                     <a
                       href={link.href}
-                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group"
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group whitespace-nowrap"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                      {link.label}
+                      <span>{link.label}</span>
                     </a>
                   ) : (
                     <Link
                       to={link.href}
                       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group"
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group whitespace-nowrap"
                     >
                       <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                      {link.label}
+                      <span>{link.label}</span>
                     </Link>
                   )}
                 </li>
@@ -114,7 +114,7 @@ export const Footer = React.memo(() => {
           </div>
 
           {/* Col 3: Contact & Helpline */}
-          <div>
+          <div className="md:col-span-3 lg:col-span-3">
             <h4 className={cn(
               "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
               isHi ? "tracking-normal" : "tracking-wider"
@@ -128,7 +128,7 @@ export const Footer = React.memo(() => {
                 "text-xs font-bold uppercase text-amber-400 mb-1",
                 isHi ? "tracking-normal" : "tracking-wider"
               )}>
-                {isHi ? '☎ टोल-फ्री हेल्पलाइन' : '☎ Toll-Free Helpline'}
+                {isHi ? 'टोल-फ्री हेल्पलाइन' : 'Toll-Free Helpline'}
               </p>
               <p className="font-mono font-bold text-white text-xl sm:text-2xl tracking-wide">1800-185-1850</p>
               <p className="text-xs text-slate-300 mt-1">
