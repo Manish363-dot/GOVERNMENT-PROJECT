@@ -10,12 +10,129 @@ interface MediaPhoto {
   created_at?: string;
 }
 
+// ── Optimized Lazy Thumbnail Component for Horizontal Strip ──
+// Only loads the image when scrolled into or near viewport via IntersectionObserver
+const LazyThumbnail = React.memo(({
+  item,
+  idx,
+  isActive,
+  onClick
+}: {
+  item: MediaPhoto;
+  idx: number;
+  isActive: boolean;
+  onClick: () => void;
+}) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const el = buttonRef.current;
+    if (!el) return;
+    if (typeof window !== 'undefined' && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        },
+        { rootMargin: '200px' }
+      );
+      observer.observe(el);
+      return () => observer.disconnect();
+    } else {
+      setIsVisible(true);
+    }
+  }, []);
+
+  return (
+    <button
+      ref={buttonRef}
+      type="button"
+      onClick={onClick}
+      className={`relative shrink-0 w-20 sm:w-28 aspect-[16/10] rounded-xl overflow-hidden transition-all duration-300 cursor-pointer bg-slate-900 ${
+        isActive
+          ? 'ring-2 ring-amber-400 scale-[1.03] shadow-md border-transparent'
+          : 'opacity-65 hover:opacity-100 border border-slate-200 hover:scale-102'
+      }`}
+    >
+      {isVisible ? (
+        <img
+          src={item.url}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full bg-slate-800/80 flex items-center justify-center text-[10px] text-slate-400 font-mono">
+          #{idx + 1}
+        </div>
+      )}
+    </button>
+  );
+});
+LazyThumbnail.displayName = 'LazyThumbnail';
+
+// ── Optimized Gallery Grid Card Component ──
+const GalleryGridCard = React.memo(({
+  item,
+  index,
+  isHi,
+  onClick
+}: {
+  item: MediaPhoto;
+  index: number;
+  isHi: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <div
+      onClick={onClick}
+      className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-800 border border-slate-200 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+      title={isHi ? 'क्लिक करके बड़ा देखें' : 'Click to view full screen'}
+    >
+      <img
+        loading={index < 8 ? "eager" : "lazy"}
+        decoding="async"
+        src={item.url}
+        alt=""
+        className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+      />
+
+      {/* Ambient dark gradient overlay on hover */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      {/* Floating Maximize Icon Badge */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+        <div className="p-3 bg-black/60 backdrop-blur-md rounded-full text-amber-300 border border-amber-400/40 shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+          <Maximize2 className="w-4 h-4" />
+        </div>
+      </div>
+    </div>
+  );
+});
+GalleryGridCard.displayName = 'GalleryGridCard';
+
 export function MediaGalleryPage() {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
 
-  const [photos, setPhotos] = useState<MediaPhoto[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  // Instant hydration from sessionStorage if already visited
+  const [photos, setPhotos] = useState<MediaPhoto[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('zp_media_blog_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState<boolean>(() => photos.length === 0);
   const [featuredIndex, setFeaturedIndex] = useState<number>(0);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [visibleCount, setVisibleCount] = useState<number>(12);
@@ -27,12 +144,14 @@ export function MediaGalleryPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Fetch real uploaded media from database
+  // Fetch real uploaded media from database with SWR caching
   useEffect(() => {
     let isMounted = true;
     const fetchMedia = async () => {
       try {
-        setIsLoading(true);
+        if (photos.length === 0) {
+          setIsLoading(true);
+        }
         const res = await fetch(`${API_URL}/media/blog`);
         if (res.ok) {
           const data = await res.json();
@@ -40,6 +159,9 @@ export function MediaGalleryPage() {
             // Filter only valid image items
             const valid = data.filter((item: any) => item && typeof item.url === 'string' && item.url.trim().length > 0);
             setPhotos(valid);
+            try {
+              sessionStorage.setItem('zp_media_blog_cache', JSON.stringify(valid));
+            } catch {}
           }
         }
       } catch (err) {
@@ -81,6 +203,11 @@ export function MediaGalleryPage() {
     return photos.slice(0, visibleCount);
   }, [photos, visibleCount]);
 
+  // Limit thumbnail strip to 15 photos for maximum performance
+  const stripPhotos = useMemo(() => {
+    return photos.slice(0, 15);
+  }, [photos]);
+
   const handleThumbnailClick = (idx: number) => {
     setFeaturedIndex(idx);
     const container = thumbnailStripRef.current;
@@ -94,12 +221,14 @@ export function MediaGalleryPage() {
 
   const nextFeatured = useCallback(() => {
     if (photos.length === 0) return;
-    setFeaturedIndex((prev) => (prev + 1) % photos.length);
+    const max = Math.min(photos.length, 15);
+    setFeaturedIndex((prev) => (prev + 1) % max);
   }, [photos.length]);
 
   const prevFeatured = useCallback(() => {
     if (photos.length === 0) return;
-    setFeaturedIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    const max = Math.min(photos.length, 15);
+    setFeaturedIndex((prev) => (prev - 1 + max) % max);
   }, [photos.length]);
 
   return (
@@ -145,6 +274,7 @@ export function MediaGalleryPage() {
               <img
                 src={photos[featuredIndex]?.url}
                 alt=""
+                decoding="async"
                 className="w-full h-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.02]"
               />
 
@@ -173,38 +303,25 @@ export function MediaGalleryPage() {
 
               {/* Photo Index Tag */}
               <div className="absolute bottom-4 left-4 z-20 bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/15 text-white text-xs font-bold">
-                {featuredIndex + 1} / {photos.length}
+                {featuredIndex + 1} / {Math.min(photos.length, 15)}
               </div>
             </div>
 
-            {/* Horizontal Thumbnail Strip for quick jumping */}
+            {/* Horizontal Thumbnail Strip (Strictly limited to 15 photos) */}
             <div
               ref={thumbnailStripRef}
               className="flex items-center gap-2.5 mt-3 sm:mt-4 overflow-x-auto pb-2 pt-1 scroll-smooth no-scrollbar"
               style={{ scrollbarWidth: 'none' }}
             >
-              {photos.map((item, idx) => {
-                const isActive = idx === featuredIndex;
-                return (
-                  <button
-                    key={item.id || idx}
-                    type="button"
-                    onClick={() => handleThumbnailClick(idx)}
-                    className={`relative shrink-0 w-20 sm:w-28 aspect-[16/10] rounded-xl overflow-hidden transition-all duration-300 cursor-pointer ${
-                      isActive
-                        ? 'ring-2 ring-amber-400 scale-[1.03] shadow-md border-transparent'
-                        : 'opacity-65 hover:opacity-100 border border-slate-200 hover:scale-102'
-                    }`}
-                  >
-                    <img
-                      src={item.url}
-                      alt=""
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  </button>
-                );
-              })}
+              {stripPhotos.map((item, idx) => (
+                <LazyThumbnail
+                  key={item.id || idx}
+                  item={item}
+                  idx={idx}
+                  isActive={idx === featuredIndex}
+                  onClick={() => handleThumbnailClick(idx)}
+                />
+              ))}
             </div>
 
           </div>
@@ -244,29 +361,13 @@ export function MediaGalleryPage() {
             {/* High-Quality Grid: Clean pure photos, no paragraphs, click to enlarge */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
               {displayedPhotos.map((item, index) => (
-                <div
+                <GalleryGridCard
                   key={item.id || index}
+                  item={item}
+                  index={index}
+                  isHi={isHi}
                   onClick={() => setLightboxIndex(index)}
-                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 shadow-xs hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
-                  title={isHi ? 'क्लिक करके बड़ा देखें' : 'Click to view full screen'}
-                >
-                  <img
-                    loading="lazy"
-                    src={item.url}
-                    alt=""
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-
-                  {/* Ambient dark gradient overlay on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Floating Maximize Icon Badge */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-                    <div className="p-3 bg-black/60 backdrop-blur-md rounded-full text-amber-300 border border-amber-400/40 shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                      <Maximize2 className="w-4 h-4" />
-                    </div>
-                  </div>
-                </div>
+                />
               ))}
             </div>
 
@@ -339,6 +440,7 @@ export function MediaGalleryPage() {
               <img
                 src={photos[lightboxIndex].url}
                 alt=""
+                decoding="async"
                 className="max-h-[75vh] sm:max-h-[80vh] max-w-full w-auto object-contain rounded-xl select-none"
               />
             </div>
@@ -357,26 +459,61 @@ export function MediaGalleryPage() {
             </button>
           </div>
 
-          {/* Bottom Thumbnails inside Lightbox for easy browsing */}
+          {/* Bottom Thumbnails inside Lightbox (limited to 15 windowed photos) */}
           <div
             className="w-full max-w-3xl mx-auto flex items-center gap-2 overflow-x-auto py-2 px-1 z-50 no-scrollbar"
             onClick={(e) => e.stopPropagation()}
             style={{ scrollbarWidth: 'none' }}
           >
-            {photos.map((item, idx) => (
-              <button
-                key={item.id || idx}
-                type="button"
-                onClick={() => setLightboxIndex(idx)}
-                className={`shrink-0 w-12 sm:w-16 aspect-[4/3] rounded-lg overflow-hidden border transition-all cursor-pointer ${
-                  idx === lightboxIndex
-                    ? 'border-amber-400 ring-2 ring-amber-400 scale-105'
-                    : 'border-white/20 opacity-50 hover:opacity-100'
-                }`}
-              >
-                <img src={item.url} alt="" className="w-full h-full object-cover" />
-              </button>
-            ))}
+            {(() => {
+              const total = photos.length;
+              if (total <= 15) {
+                return photos.map((item, idx) => (
+                  <button
+                    key={item.id || idx}
+                    type="button"
+                    onClick={() => setLightboxIndex(idx)}
+                    className={`shrink-0 w-12 sm:w-16 aspect-[4/3] rounded-lg overflow-hidden border transition-all cursor-pointer ${
+                      idx === lightboxIndex
+                        ? 'border-amber-400 ring-2 ring-amber-400 scale-105'
+                        : 'border-white/20 opacity-50 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={item.url}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                ));
+              }
+              const start = Math.max(0, Math.min((lightboxIndex ?? 0) - 7, total - 15));
+              return photos.slice(start, start + 15).map((item, offset) => {
+                const actualIdx = start + offset;
+                return (
+                  <button
+                    key={item.id || actualIdx}
+                    type="button"
+                    onClick={() => setLightboxIndex(actualIdx)}
+                    className={`shrink-0 w-12 sm:w-16 aspect-[4/3] rounded-lg overflow-hidden border transition-all cursor-pointer ${
+                      actualIdx === lightboxIndex
+                        ? 'border-amber-400 ring-2 ring-amber-400 scale-105'
+                        : 'border-white/20 opacity-50 hover:opacity-100'
+                    }`}
+                  >
+                    <img
+                      src={item.url}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full h-full object-cover"
+                    />
+                  </button>
+                );
+              });
+            })()}
           </div>
 
         </div>

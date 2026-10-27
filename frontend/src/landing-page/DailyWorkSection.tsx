@@ -37,19 +37,37 @@ export interface DailyWorkSectionProps {
 export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ embedded = false }) => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
-  const [works, setWorks] = useState<DailyWork[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [selectedWork, setSelectedWork] = useState<DailyWork | null>(null);
-  const [expandedWorkIds, setExpandedWorkIds] = useState<Record<string, boolean>>({});
-
-  const toggleExpandWork = useCallback((id: string) => {
-    setExpandedWorkIds(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  }, []);
+  // Instant hydration from sessionStorage for zero-latency page loading
+  const [works, setWorks] = useState<DailyWork[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = sessionStorage.getItem('zp_daily_work_cache');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return [];
+  });
+  const [isLoading, setIsLoading] = useState(() => works.length === 0);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (works.length > 0) {
+      try {
+        return parseISO(works[0].date);
+      } catch {}
+    }
+    return new Date();
+  });
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    if (works.length > 0) {
+      try {
+        return parseISO(works[0].date);
+      } catch {}
+    }
+    return new Date();
+  });
+  const [selectedWork, setSelectedWork] = useState<DailyWork | null>(() => works[0] || null);
 
   // Carousel state — responsive: 1 card on mobile, 2 on sm+
   const [carouselIndex, setCarouselIndex] = useState(0);
@@ -67,12 +85,15 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
   }, []);
 
   const fetchWorks = useCallback(async () => {
-    setIsLoading(true);
+    if (works.length === 0) setIsLoading(true);
     try {
       const res = await fetch(`${API_URL}/media/daily-work`);
       if (res.ok) {
         const data = await res.json();
         setWorks(data);
+        try {
+          sessionStorage.setItem('zp_daily_work_cache', JSON.stringify(data));
+        } catch {}
         if (data.length > 0) {
           const workForToday = data.find((w: DailyWork) => isSameDay(parseISO(w.date), new Date()));
           setSelectedWork(workForToday || data[0]);
@@ -87,7 +108,7 @@ export const DailyWorkSection: React.FC<DailyWorkSectionProps> = React.memo(({ e
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [works.length]);
 
   useEffect(() => {
     fetchWorks();

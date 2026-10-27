@@ -113,6 +113,11 @@ export function OurInitiativePage() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Preload the first 2 visible initiative images immediately
+    const img1 = new Image();
+    img1.src = image_01;
+    const img2 = new Image();
+    img2.src = image_02;
   }, []);
 
   return (
@@ -182,8 +187,12 @@ export function OurInitiativePage() {
                       <img
                         src={item.imageUrl}
                         alt={isHi ? item.titleHi : item.titleEn}
+                        width={160}
+                        height={104}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
+                        loading={idx < 4 ? "eager" : "lazy"}
+                        decoding="async"
+                        fetchPriority={idx < 2 ? "high" : "auto"}
                       />
                     </div>
 
