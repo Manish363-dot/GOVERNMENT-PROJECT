@@ -21,23 +21,17 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Main Card Container (matching exact UI screenshot) */}
-        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 sm:p-8">
-          
-          {/* Header with Lightbulb Emoji & Blue Underline Accent */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xl sm:text-2xl" role="img" aria-label="notifications">
-                💡
-              </span>
-              <h2 className="font-poppins text-lg sm:text-xl font-bold text-navy-950 tracking-tight">
-                {isHi ? 'नवीनतम सूचनाएं एवं अपडेट' : 'Latest Notifications'}
-              </h2>
-            </div>
-            {/* Blue underline accent as shown in screenshot */}
-            <div className="h-1 w-24 sm:w-28 bg-blue-600 rounded-full mt-2" />
-          </div>
+        {/* Section Heading - Matching all other sections and pages */}
+        <div className="text-left mb-6 sm:mb-8 flex flex-col items-start">
+          <h2 className="font-poppins text-2xl sm:text-3xl font-bold text-navy-900 leading-tight">
+            {isHi ? 'नवीनतम सूचनाएं' : 'Latest Notifications'}
+          </h2>
+          <div className="h-1 w-20 bg-amber-400 rounded-full mt-3" />
+        </div>
 
+        {/* Main Card Container with Notification items */}
+        <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 sm:p-7">
+          
           {/* List of Notification Cards */}
           <div className="space-y-3.5 sm:space-y-4">
             {displayedItems.map((item: NotificationUpdateItem) => {
