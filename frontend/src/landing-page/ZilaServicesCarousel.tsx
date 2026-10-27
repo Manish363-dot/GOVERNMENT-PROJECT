@@ -109,7 +109,7 @@ export const ZilaServicesCarousel: React.FC<ZilaServicesCarouselProps> = ({
       {/* Optional Top Section Heading */}
       {showHeading && (
         <div className="text-center mb-6">
-          <h3 className="font-poppins font-extrabold text-xl sm:text-2xl text-navy-900">
+          <h3 className={`text-xl sm:text-2xl text-navy-900 ${isHi ? 'font-hind font-bold leading-normal pt-1' : 'font-poppins font-extrabold'}`}>
             {isHi ? 'जिला पंचायत अल्मोड़ा द्वारा प्रदत्त सेवाएं एवं कार्य' : 'Services & Works by Zila Panchayat Almora'}
           </h3>
           <div className="h-1 w-20 bg-amber-400 rounded-full mx-auto mt-2" />
@@ -135,7 +135,7 @@ export const ZilaServicesCarousel: React.FC<ZilaServicesCarouselProps> = ({
         />
 
         {/* Continuous Moving Track */}
-        <div className="overflow-x-hidden py-1">
+        <div className="overflow-x-hidden py-2">
           <div
             className="animate-infinite-moving-carousel flex gap-3.5 sm:gap-4.5 w-max items-center select-none"
             style={{
@@ -148,16 +148,20 @@ export const ZilaServicesCarousel: React.FC<ZilaServicesCarouselProps> = ({
                 <div
                   key={`${item.id}-${idx}`}
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 px-4 py-3 sm:px-4.5 sm:py-3.5 flex items-center gap-3.5 shrink-0"
-                  style={{ minWidth: '270px', maxWidth: '340px' }}
+                  style={{ minWidth: '290px', maxWidth: '380px' }}
                 >
                   {/* Circular Icon */}
                   <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border flex items-center justify-center shrink-0 shadow-2xs ${item.iconBg || 'bg-slate-50 border-slate-100'}`}>
                     <FallbackIcon className={`w-5 h-5 ${item.iconColor || 'text-navy-900'}`} />
                   </div>
 
-                  {/* Heading & Small Para on Right */}
-                  <div className="min-w-0 flex-1">
-                    <h4 className="font-poppins font-bold text-navy-900 text-xs sm:text-[13px] tracking-tight leading-snug truncate">
+                  {/* Heading on Right with proper Hindi font-hind and line-height */}
+                  <div className="min-w-0 flex-1 py-1">
+                    <h4 className={`text-navy-900 text-xs sm:text-[13.5px] leading-normal whitespace-nowrap pt-1 pb-0.5 ${
+                      isHi 
+                        ? 'font-hind font-semibold sm:font-bold tracking-normal' 
+                        : 'font-poppins font-bold tracking-tight'
+                    }`}>
                       {isHi ? item.headingHi : item.headingEn}
                     </h4>
                   </div>
