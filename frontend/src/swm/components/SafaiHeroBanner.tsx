@@ -1,15 +1,15 @@
+
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-import { Award, ArrowRight, Building2 } from 'lucide-react';
+import { ArrowRight, Award, Building2 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
 export const SafaiHeroBanner = React.memo(() => {
-  const { t, i18n } = useTranslation();
-  const { openRentalComingSoon } = useRentalComingSoon();
+  const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
   const { count } = usePledgeCount();
+  const { openRentalComingSoon } = useRentalComingSoon();
 
   const scrollToPledge = () => {
     const el = document.getElementById('pledge');
@@ -17,53 +17,97 @@ export const SafaiHeroBanner = React.memo(() => {
   };
 
   return (
-    <div className="relative bg-white text-slate-900 border-b border-slate-200 overflow-hidden py-14 sm:py-20">
-      {/* 🖼️ SWM Hero Background Picture */}
+    <section
+      className="relative w-full overflow-hidden border-b border-slate-200 bg-white min-h-[300px] sm:min-h-[330px] md:min-h-[350px] lg:min-h-[365px] flex items-center"
+    >
+      {/* Background image — object-cover pinned to bottom so truck, wheels and road are 100% visible */}
       <img
-        src="/swm-hero-bg.jpg"
-        alt="Zila Panchayat Solid Waste Management Background"
-        className="absolute inset-0 w-full h-full object-cover object-bottom select-none pointer-events-none z-0"
+        src="/swm-hero-bg.png"
+        alt="Zila Panchayat Almora — Solid Waste Management"
+        className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+        style={{
+          objectPosition: 'center bottom',
+        }}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight leading-tight">
-            {isHi ? 'ठोस अपशिष्ट प्रबंधन एवं नागरिक शिकायत निवारण पोर्टल' : 'Solid Waste Management & Citizen Grievance Portal'}
+      {/* Smooth white gradient: solid white behind text on left, gentle feathering into transparent so truck and mountains stay vibrant */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            'linear-gradient(to right, #ffffff 0%, #ffffff 32%, rgba(255,255,255,0.94) 40%, rgba(255,255,255,0.65) 50%, rgba(255,255,255,0.15) 60%, transparent 70%)',
+        }}
+      />
+
+      {/* Content */}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-8 sm:px-8 sm:py-10 md:py-12 lg:px-14">
+        <div className="flex flex-col max-w-[640px] lg:max-w-[700px]">
+
+          {/* Heading — exactly 2 lines, bigger, bold and balanced */}
+          <h1
+            className="mb-6 font-extrabold leading-[1.18] tracking-tight text-[#0b2447]"
+            style={{
+              fontSize: 'clamp(1.7rem, 3.1vw, 2.5rem)',
+            }}
+          >
+            {isHi ? (
+              <>
+                <span className="block sm:whitespace-nowrap">ठोस अपशिष्ट प्रबंधन एवं</span>
+                <span className="block sm:whitespace-nowrap">नागरिक शिकायत निवारण पोर्टल</span>
+              </>
+            ) : (
+              <>
+                <span className="block sm:whitespace-nowrap">Solid Waste Management &amp;</span>
+                <span className="block sm:whitespace-nowrap">Citizen Grievance Portal</span>
+              </>
+            )}
           </h1>
 
-          {/* Action Buttons: Pledge & Rental Portal */}
-          <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3.5 sm:gap-4 max-w-2xl mx-auto w-full">
-            {/* 1. Swachhata Pledge Button */}
+          {/* Buttons — comfortable width so icons and text have plenty of space without clipping */}
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center w-full max-w-[580px]">
+
+            {/* Swachhata Pledge */}
             <button
+              id="swm-hero-pledge-btn"
               onClick={scrollToPledge}
-              className="group relative flex-1 py-3.5 sm:py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-600/90 via-emerald-700/90 to-teal-700/90 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700 backdrop-blur-md text-white font-bold text-sm sm:text-base shadow-xl shadow-emerald-700/20 hover:shadow-2xl hover:shadow-emerald-700/30 active:scale-[0.99] transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 border border-emerald-400/50 ring-1 ring-white/30 overflow-hidden"
+              className="group relative flex flex-1 items-center justify-center gap-2.5 overflow-hidden whitespace-nowrap rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600/90 via-emerald-700/90 to-teal-700/90 px-5 py-3.5 text-sm font-bold text-white shadow-xl shadow-emerald-700/20 ring-1 ring-white/30 transition-all duration-300 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700 hover:shadow-2xl active:scale-[0.99] cursor-pointer"
             >
-              {/* Glossy glass reflection overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none" />
-    
-              <span className="tracking-wide relative z-10 drop-shadow-xs whitespace-nowrap">
-                {isHi ? `स्वच्छता शपथ लें (${count})` : `Take Swachhata Pledge (${count})`}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent" />
+
+              <Award className="relative z-10 h-4 w-4 shrink-0 text-amber-300" />
+
+              <span className="relative z-10 tracking-wide shrink-0">
+                {isHi
+                  ? `स्वच्छता शपथ लें (${count})`
+                  : `Take Swachhata Pledge (${count})`}
               </span>
-              <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1.5 transition-transform shrink-0 relative z-10" />
+
+              <ArrowRight className="relative z-10 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
             </button>
 
-            {/* 2. Commercial Asset & Rental Portal Button (Direct Link to Under Development Showcase) */}
-            <Link
-              to="/rental-portal"
-              className="group relative flex-1 py-3.5 sm:py-4 px-6 rounded-xl bg-gradient-to-r from-blue-700/95 via-blue-800/95 to-[#0b1b36]/95 hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 backdrop-blur-md text-white font-bold text-sm sm:text-base shadow-xl shadow-blue-900/25 hover:shadow-2xl hover:shadow-blue-900/35 active:scale-[0.99] transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 border border-blue-400/40 ring-1 ring-white/30 overflow-hidden"
+            {/* Asset & Rental Portal */}
+            <button
+              id="swm-hero-rental-btn"
+              onClick={openRentalComingSoon}
+              className="group relative flex flex-1 items-center justify-center gap-2.5 overflow-hidden whitespace-nowrap rounded-xl border border-blue-400/40 bg-gradient-to-r from-blue-700/95 via-blue-800/95 to-[#0b1b36]/95 px-5 py-3.5 text-sm font-bold text-white shadow-xl shadow-blue-900/25 ring-1 ring-white/30 transition-all duration-300 hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 hover:shadow-2xl active:scale-[0.99] cursor-pointer"
             >
-              {/* Glossy glass reflection overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent pointer-events-none" />
-              <span className="tracking-wide relative z-10 drop-shadow-xs whitespace-nowrap">
-                {isHi ? 'दुकान आवंटन एवं किराया पोर्टल' : 'Asset & Rental Portal'}
-              </span>
-              <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1.5 transition-transform shrink-0 relative z-10" />
-            </Link>
-          </div>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent" />
 
+              <Building2 className="relative z-10 h-4 w-4 shrink-0 text-blue-200" />
+
+              <span className="relative z-10 tracking-wide shrink-0">
+                {isHi
+                  ? 'दुकान आवंटन एवं किराया पोर्टल'
+                  : 'Asset & Rental Portal'}
+              </span>
+
+              <ArrowRight className="relative z-10 h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
+            </button>
+
+          </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 });
 
