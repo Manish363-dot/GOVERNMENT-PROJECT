@@ -21,24 +21,28 @@ const DEFAULT_LOGOS: TopBarLogoItem[] = [
     id: 'logo-1',
     title: 'उत्तराखंड शासन आधिकारिक राजचिह्न (Emblem of Uttarakhand)',
     file_name: 'logo1.png',
+    logo_url: '/assets/logos/logo1.png',
     sort_order: 1,
   },
   {
     id: 'logo-2',
     title: 'स्वच्छ भारत मिशन ग्रामीण (Swachh Bharat Mission)',
     file_name: 'logo5.png',
+    logo_url: '/assets/logos/logo5.png',
     sort_order: 2,
   },
   {
     id: 'logo-3',
     title: 'कार्यालय जिला पंचायत अल्मोड़ा (Zila Panchayat Almora)',
     file_name: 'logo3.png',
+    logo_url: '/assets/logos/logo3.png',
     sort_order: 3,
   },
   {
     id: 'logo-4',
     title: 'डिजिटल इंडिया एवं स्वच्छ देवभूमि (Digital India)',
     file_name: 'logo4.png',
+    logo_url: '/assets/logos/logo4.png',
     sort_order: 4,
   },
 ];
@@ -62,13 +66,12 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    const withStorageUrls = DEFAULT_LOGOS.map((item) => {
-      return {
-        ...item,
-        logo_url: `${S3_BUCKET}/portal-logos/${item.file_name}`,
-      };
-    });
-    setLogos(withStorageUrls);
+    // Prioritize instant local bundle assets for zero latency
+    const localLogos = DEFAULT_LOGOS.map((item) => ({
+      ...item,
+      logo_url: `/assets/logos/${item.file_name}`,
+    }));
+    setLogos(localLogos);
   }, []);
 
   const handleImageError = (id: string) => {
@@ -100,8 +103,9 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
             height={48}
             onError={(e) => {
               const target = e.currentTarget;
-              if (logo.file_name && !target.src.includes(`/assets/logos/${logo.file_name}`)) {
-                target.src = `/assets/logos/${logo.file_name}`;
+              if (logo.file_name && !target.src.includes(S3_BUCKET)) {
+                // Fallback to S3 if local asset is not available
+                target.src = `${S3_BUCKET}/portal-logos/${logo.file_name}`;
               } else {
                 handleImageError(logo.id);
               }

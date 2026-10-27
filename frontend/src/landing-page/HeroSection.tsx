@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { usePledgeCount } from '@/hooks/usePledgeCount';
 
 const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image6.jpeg'];
 
@@ -65,11 +64,24 @@ const OFFICIALS: Official[] = [
 export const HeroSection = React.memo(() => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
-  const { count } = usePledgeCount();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [img5Error, setImg5Error] = useState(false);
   const [isAlmoraRolling, setIsAlmoraRolling] = useState(false);
   const rollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Progressive slide loading: Start with slide 0 (immediate) and 1, then load subsequent slides as carousel advances
+  const [loadedSlideIndices, setLoadedSlideIndices] = useState<Set<number>>(() => new Set([0, 1]));
+
+  useEffect(() => {
+    setLoadedSlideIndices((prev) => {
+      const nextIdx = (currentImageIndex + 1) % HERO_IMAGES.length;
+      if (prev.has(currentImageIndex) && prev.has(nextIdx)) return prev;
+      const updated = new Set(prev);
+      updated.add(currentImageIndex);
+      updated.add(nextIdx);
+      return updated;
+    });
+  }, [currentImageIndex]);
 
   const handleAlmoraClick = useCallback(() => {
     if (rollTimeoutRef.current) {
@@ -138,7 +150,7 @@ export const HeroSection = React.memo(() => {
             key={imageUrl}
             className={`absolute inset-0 bg-cover bg-center transition-all duration-1000 ease-in-out transform ${idx === currentImageIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-105'
               }`}
-            style={{ backgroundImage: `url(${imageUrl})` }}
+            style={{ backgroundImage: loadedSlideIndices.has(idx) ? `url(${imageUrl})` : 'none' }}
           />
         ))}
 

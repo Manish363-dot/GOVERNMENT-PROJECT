@@ -163,6 +163,7 @@ export const NavbarLandingPage = React.memo(() => {
                     <div className="w-60 bg-white rounded-xl shadow-xl border border-slate-200/90 py-1 overflow-hidden divide-y divide-slate-100">
                       <Link
                         to="/our-initiative"
+                        onMouseEnter={() => import('@/landing-page/OurInitiativePage')}
                         onClick={() => setAboutDropdownOpen(false)}
                         className="block px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-50 transition-colors"
                       >
