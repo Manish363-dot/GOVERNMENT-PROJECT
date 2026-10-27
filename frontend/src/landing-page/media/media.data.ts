@@ -13,13 +13,21 @@ export interface Notice {
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
 
+const notice_1_image = `${S3_BUCKET}/Social-Media-Section/notice 1.webp`;
+const notice_2_image = `${S3_BUCKET}/Social-Media-Section/notice2.webp`;
+const notice_3_image = `${S3_BUCKET}/Social-Media-Section/notice3.webp`;
+const notice_4_image = `${S3_BUCKET}/Social-Media-Section/notice4.webp`;
+const notice_5_image = `${S3_BUCKET}/Social-Media-Section/notice5.webp`;
+const notice_6_image = `${S3_BUCKET}/Social-Media-Section/notice6.webp`;
+const notice_7_image = `${S3_BUCKET}/Social-Media-Section/notice7.webp`;
+
 const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
  export const NOTICES_DATA: Notice[] = [
   {
   id: 'notice-1',
 
-    image: '/assets/notice 1.webp',
+    image: notice_1_image,
   date: '10 Feb 2026',
   titleEn:'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
   titleHi:'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
@@ -28,7 +36,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
 },
 {
   id: 'notice-2',
-  image: '/assets/notice2.jpeg',
+  image: notice_2_image,
   date: '17 Sep 2026',
 
   titleEn:
@@ -44,39 +52,49 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
 },
   {
     id: 'notice-3',
-    image: encodeImg('1790648931953-195645006.jpeg'),
-    date: '20 Sep 2026',
-    titleEn: 'Zero-Tolerance Enforcement on Single-Use Plastic & Open Burning',
-    titleHi: 'सिंगल-यूज़ प्लास्टिक पर पूर्ण प्रतिबंध एवं खुले में कचरा जलाने पर रोक',
-    summaryEn: 'Strict enforcement drives initiated against sale, storage, and distribution of banned polythene and thermocol cutleries. Open burning of waste carries an immediate environmental penalty.',
+    image: notice_3_image,
+    date: '24 Oct 2026',
+    titleEn: '22 Stray Cattle Found in Almora',
+    titleHi: 'अल्मोड़ा में 22 गोवंश पाए गए',
+    summaryEn: 'To address the problem of stray cattle in Kosi Bazaar, Hawalbagh block of Almora, the Zila Panchayat and Animal Husbandry Department conducted a joint drive. During the drive, 22 stray cattle were rescued and sent to a cow shelter.',
     summaryHi: 'अल्मोड़ा के हवालबाग विकासखंड के कोसी बाजार में निराश्रित गोवंश की समस्या से निजात दिलाने के लिए जिला पंचायत और पशुपालन विभाग ने संयुक्त अभियान चलाया। इसके तहत 22 गोवंश को पकड़कर गौशाला भेजा गया। ',
+    link:'https://www.facebook.com/share/v/1CRmFERkNK/'
   },
   {
     id: 'notice-4',
-    image: encodeImg('1790648991473-976248359.jpeg'),
-    date: '14 Sep 2026',
-    titleEn: 'Optimized Morning Door-to-Door GPS Waste Collection Vehicle Timetable',
-    titleHi: 'डोर-टू-डोर जीपीएस कचरा वाहन का नया समय चक्र व प्रातःकालीन रूट रोस्टर',
-    summaryEn: 'Updated morning route schedules for dedicated tippers and compactor trucks (06:30 AM to 11:30 AM). Track vehicle live location directly from the Live GPS Tracking section.',
-    summaryHi: 'समस्त कचरा संग्रहण टिपर व कंपैक्टर वाहनों के नए रूट और प्रातः 06:30 से 11:30 बजे का समय जारी। नागरिक पोर्टल के "लाइव ट्रैकिंग" सेक्शन में वाहन की वास्तविक लोकेशन देख सकते हैं।',
+    image: notice_4_image,
+    titleEn: 'Mann ki Baat with Prime Minister Narendra Modi',
+    titleHi: 'प्रधानमंत्री नरेंद्र मोदी के साथ मन की बात',
+    summaryEn: 'Prime Minister Narendra Modi addressed the nation in his monthly Mann Ki Baat radio programme. He urged citizens to take part in the Swachhata Abhiyan and maintain cleanliness in public places.',
+    summaryHi: 'प्रधानमंत्री नरेंद्र मोदी ने अपने मासिक रेडियो कार्यक्रम मन की बात में देश को संबोधित किया। उन्होंने नागरिकों से स्वच्छता अभियान में भाग लेने और सार्वजनिक स्थानों पर स्वच्छता बनाए रखने का आग्रह किया।',
+    link:'https://www.youtube.com/watch?v=0qR6gK9d8s4'
   },
   {
     id: 'notice-5',
-    image: encodeImg('1790648931752-397379307.jpeg'),
-    date: '08 Sep 2026',
-    titleEn: 'Digital Cleanliness Grievance Redressal: Committed 24 to 48 Hour Resolution',
-    titleHi: 'डिजिटल स्वच्छता शिकायत निवारण: 24 से 48 घंटे में समाधान की प्रतिबद्धता',
-    summaryEn: 'Citizens can report unattended garbage dumps, non-arrival of vehicles, or irregular cleaning via our online complaint form. Track status in real-time with automatic SMS updates.',
-    summaryHi: 'कचरा न उठने, वाहन के न आने अथवा गंदगी की सूचना नागरिक हमारे ऑनलाइन शिकायत पोर्टल पर फोटो सहित दर्ज कर सकते हैं। स्थिति की लाइव ट्रैकिंग व एसएमएस अलर्ट उपलब्ध है।',
+    image: notice_5_image,
+    titleEn: 'Construction of Five New Cow Shelters in Rural Almora',
+    titleHi: 'ग्रामीण क्षेत्रों में पाँच नई गौशालाओं का निर्माण',
+    summaryEn: 'To provide relief to farmers from the problem of stray and abandoned cattle in rural areas of Almora district, five new cow shelters are being constructed, while two existing cow shelters are being expanded to accommodate and care for more cattle.',
+    summaryHi: 'अल्मोड़ा जिले के ग्रामीण क्षेत्रों में निराश्रित और आवारा गोवंश की समस्या से किसानों को राहत दिलाने के लिए पांच नई गौशालाओं का निर्माण किया जा रहा है, जबकि दो गौशालाओं का विस्तारीकरण किया जा रहा है।',
+    link:'https://www.facebook.com/share/v/18YZ6kmwKb/'
   },
   {
     id: 'notice-6',
-    image: encodeImg('1790648931904-641586205.jpeg'),
-    date: '02 Sep 2026',
-    titleEn: 'Safety Equipment & Health Screening Camp for Frontline Paryavaran Mitras',
-    titleHi: 'स्वच्छता कर्मियों (पर्यावरण मित्रों) हेतु सुरक्षा किट वितरण व स्वास्थ्य परीक्षण',
-    summaryEn: 'Distribution of high-visibility safety jackets, puncture-proof safety boots, heavy-duty gloves, and quarterly medical checkup drives for all waste handling staff.',
-    summaryHi: 'कचरा प्रबंधन में सेवारत समस्त पर्यावरण मित्रों को सुरक्षा जैकेट, सुरक्षा जूते, दस्ताने व निशुल्क स्वास्थ्य परीक्षण का व्यापक अभियान संपन्न।',
+    image: notice_6_image,
+    titleEn: 'Masi Traders Association Organizes Cleanliness Drive Under “Swachhata Hi Seva” Campaign',
+    titleHi: 'स्वच्छता ही सेवा के तहत मासी व्यापार मंडल ने चलाया स्वस्थता अभियान',
+    summaryEn: 'The Masi Traders Association organized a cleanliness drive under the Swachhata Hi Seva campaign in Masi Bazaar, Almora. The drive was conducted with the support of the District Panchayat Almora and involved participation from local traders and residents. The initiative aimed to promote cleanliness and hygiene in the market area and raise awareness about the importance of waste management.',
+    summaryHi: 'मासी व्यापार मंडल ने स्वच्छता ही सेवा अभियान के तहत मासी बाजार, अल्मोड़ा में स्वच्छता अभियान चलाया। यह अभियान जिला पंचायत अल्मोड़ा के सहयोग से चलाया गया और इसमें स्थानीय व्यापारियों और निवासियों ने भाग लिया। इस पहल का उद्देश्य बाजार क्षेत्र में स्वच्छता और स्वच्छता को बढ़ावा देना और कचरा प्रबंधन के महत्व के बारे में जागरूकता बढ़ाना था।',
+    link:'https://www.facebook.com/share/v/1FGZx4tChj/?mibextid=wwXIfr'
+  },
+  {
+    id: 'notice-7',
+    image: notice_7_image,
+    titleEn: 'New System of Waste Management, New Path to Cleanliness',
+    titleHi: 'कचरा प्रबंधन की क्या है नई व्यवस्था, स्वच्छता की नई राह',
+    summaryEn: 'Under the new waste management system, people are being encouraged to dispose of waste in different coloured dustbins. This campaign aims to educate people about the importance of separating wet and dry waste and ensuring proper waste management',
+    summaryHi: 'कचरा प्रबंधन की नई व्यवस्था के तहत, कचरे को अलग-अलग रंगों के कूड़ेदानों में फेंकने के लिए जागरूक किया जा रहा है। यह अभियान लोगों को गीले और सूखे कचरे को अलग करने के महत्व के बारे में शिक्षित करने और यह सुनिश्चित करने के लिए डिज़ाइन किया गया है कि कचरे को ठीक से प्रबंधित किया जाए।',
+    link:'https://youtu.be/Ol8WONcr9Tw?si=n3rLeUwBqswtbFn3'
   }
 ];
 

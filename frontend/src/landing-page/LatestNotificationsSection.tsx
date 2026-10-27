@@ -48,8 +48,8 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
                   key={item.id}
                   className="relative bg-white border border-slate-200/90 rounded-xl p-4 sm:p-5 shadow-2xs hover:shadow-md hover:border-slate-300 transition-all duration-200 border-l-4 border-l-blue-600"
                 >
-                  {/* Title (Prominent Bold) */}
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base leading-snug">
+                  {/* Title (Prominent Bold with proper Devanagari line-height) */}
+                  <h3 className={`font-bold text-slate-900 text-sm sm:text-base leading-[1.6] pt-0.5 pb-0.5 ${isHi ? 'font-hind text-[16px]' : ''}`}>
                     {title}
                   </h3>
 

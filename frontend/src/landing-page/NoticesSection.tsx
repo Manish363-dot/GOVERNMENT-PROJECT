@@ -167,8 +167,8 @@ export const NoticesSection = React.memo(() => {
 
                   {/* Card Content */}
                   <div className="p-5">
-                    {/* Title */}
-                    <h3 className="font-poppins text-base font-bold text-navy-900 group-hover:text-navy-700 transition-colors line-clamp-2 leading-snug mb-2.5">
+                    {/* Title (Proper Devanagari line-height and padding so matras never get cut) */}
+                    <h3 className={`text-base font-bold text-navy-900 group-hover:text-navy-700 transition-colors line-clamp-3 leading-[1.65] pt-1 pb-1 mb-2.5 ${isHi ? 'font-hind text-[17px]' : 'font-poppins'}`}>
                       {isHi ? notice.titleHi : notice.titleEn}
                     </h3>
 
@@ -180,7 +180,7 @@ export const NoticesSection = React.memo(() => {
 
                       return (
                         <div className="mb-2">
-                          <p className={`text-slate-600 text-xs sm:text-sm leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'}`}>
+                          <p className={`text-slate-600 text-xs sm:text-sm leading-relaxed transition-all duration-300 ${isExpanded ? '' : 'line-clamp-2'} ${isHi ? 'font-hind leading-relaxed' : ''}`}>
                             {summary}
                           </p>
                           {isLong && (
