@@ -11,5 +11,5 @@ export { OurInitiativePage } from './OurInitiativePage';
 export { VisionMissionPage } from './VisionMissionPage';
 export { AlmoraBlocksPage } from './AlmoraBlocksPage';
 export { MediaGalleryPage } from './MediaGalleryPage';
-export { SocialMediaSection } from './SocialMediaSection';
+export { LatestNotificationsSection } from './LatestNotificationsSection';
 export { DailyWorkSection } from './DailyWorkSection';

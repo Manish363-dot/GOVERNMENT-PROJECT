@@ -6,7 +6,7 @@ import { HeroSection } from './HeroSection';
 const ZilaPanchayatAboutSection = lazy(() => import('./ZilaPanchayatAboutSection').then(m => ({ default: m.ZilaPanchayatAboutSection })));
 const ZilaServicesHubSection = lazy(() => import('./ZilaServicesHubSection').then(m => ({ default: m.ZilaServicesHubSection })));
 const NoticesSection = lazy(() => import('./NoticesSection').then(m => ({ default: m.NoticesSection })));
-const SocialMediaSection = lazy(() => import('./SocialMediaSection').then(m => ({ default: m.SocialMediaSection })));
+const LatestNotificationsSection = lazy(() => import('./LatestNotificationsSection').then(m => ({ default: m.LatestNotificationsSection })));
 
 export const MainLandingPage = React.memo(() => {
   const location = useLocation();
@@ -24,8 +24,8 @@ export const MainLandingPage = React.memo(() => {
       targetId = 'about-zp';
     } else if (h === '#services-hub' || h === '#services') {
       targetId = 'services-hub';
-    } else if (h === '#social-engagement' || h === '#social-media' || h === '#social') {
-      targetId = 'social-engagement';
+    } else if (h === '#updates' || h === '#notifications' || h === '#social-engagement' || h === '#social-media' || h === '#social') {
+      targetId = 'updates';
     }
 
     if (targetId) {
@@ -43,7 +43,7 @@ export const MainLandingPage = React.memo(() => {
         <ZilaPanchayatAboutSection />
         <ZilaServicesHubSection />
         <NoticesSection />
-        <SocialMediaSection />
+        <LatestNotificationsSection />
       </Suspense>
     </>
   );

@@ -96,4 +96,89 @@ fullTextHi:'जिला गंगा सुरक्षा समिति क�
   }
 ];
 
-// social media section
+// -------------------------------------------------------------
+// Latest Updates & Notifications Data (Flexible Fields)
+// -------------------------------------------------------------
+export interface NotificationUpdateItem {
+  id: string;
+  titleEn: string;
+  titleHi?: string;
+  date?: string;          // optional: e.g. "29 May 2026"
+  placeEn?: string;       // optional: e.g. "Almora Headquarter"
+  placeHi?: string;       // optional: e.g. "अल्मोड़ा मुख्यालय"
+  departmentEn?: string;  // optional: e.g. "DoPR Uttarakhand"
+  departmentHi?: string;  // optional: e.g. "पंचायती राज विभाग"
+  descriptionEn?: string; // optional summary
+  descriptionHi?: string; // optional summary
+  tagEn?: string;         // optional: e.g. "Meeting", "Report", "Notice"
+  tagHi?: string;         // optional: e.g. "बैठक", "प्रतिवेदन", "सूचना"
+}
+
+export const LATEST_UPDATES_DATA: NotificationUpdateItem[] = [
+  {
+    id: 'update-1',
+    titleEn: 'DoPR Annual Transfer Meeting Scheduled on Dt 01-06-2026',
+    titleHi: 'पंचायती राज विभाग (DoPR) वार्षिक स्थानांतरण बैठक 01-06-2026 को निर्धारित',
+    date: '29 May 2026',
+    placeEn: 'Almora Headquarter',
+    placeHi: 'अल्मोड़ा मुख्यालय',
+    departmentEn: 'DoPR Uttarakhand',
+    departmentHi: 'पंचायती राज विभाग',
+    tagEn: 'Meeting',
+    tagHi: 'बैठक'
+  },
+  {
+    id: 'update-2',
+    titleEn: 'Report on the committee on enhancing the quality of GPDP',
+    titleHi: 'ग्राम पंचायत विकास योजना (GPDP) की गुणवत्ता संवर्धन समिति का प्रतिवेदन',
+    date: '22 May 2026',
+    tagEn: 'Report',
+    tagHi: 'प्रतिवेदन'
+  },
+  {
+    id: 'update-3',
+    titleEn: 'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
+    titleHi: 'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
+    date: '10 Feb 2026',
+    placeEn: 'River Catchment Zones',
+    placeHi: 'नदी तटीय क्षेत्र',
+    tagEn: 'Order',
+    tagHi: 'आदेश',
+    descriptionEn: 'Almora District Administration issued strict guidelines and notice protocol against dumping of waste in natural water bodies.',
+    descriptionHi: 'प्राकृतिक जल स्रोतों और नदी किनारों पर कचरा फेंकने वालों के विरुद्ध नोटिस व दंडात्मक चालान के सख्त निर्देश।'
+  },
+  {
+    id: 'update-4',
+    titleEn: 'Zero-Tolerance Enforcement on Single-Use Plastic in Commercial Markets',
+    titleHi: 'व्यावसायिक बाजारों में सिंगल-यूज़ प्लास्टिक पर पूर्ण प्रतिबंध एवं सघन चेकिंग अभियान',
+    placeEn: 'All Market Areas, Almora',
+    placeHi: 'समस्त बाजार क्षेत्र, अल्मोड़ा',
+    tagEn: 'Compliance',
+    tagHi: 'निगरानी अभियान'
+  },
+  {
+    id: 'update-5',
+    titleEn: 'Public Advisory on Segregation of Wet and Dry Household Waste at Source',
+    titleHi: 'घरों में गीले व सूखे कचरे के प्राथमिक पृथक्करण हेतु सार्वजनिक परामर्श',
+    tagEn: 'Public Advisory',
+    tagHi: 'जन परामर्श'
+  },
+  {
+    id: 'update-6',
+    titleEn: 'Ashirwad Ka Diya Programme Organized at Jageshwar by Zila Panchayat Almora',
+    titleHi: 'जिला पंचायत अल्मोड़ा द्वारा जागेश्वर में आशीर्वाद का दीया कार्यक्रम आयोजित',
+    date: '17 Sep 2026',
+    placeEn: 'Jageshwar Dham',
+    placeHi: 'जागेश्वर धाम',
+    tagEn: 'Programme',
+    tagHi: 'कार्यक्रम'
+  },
+  {
+    id: 'update-7',
+    titleEn: 'Door-to-Door GPS Waste Collection Vehicle Timetable & Fleet Roster Published',
+    titleHi: 'डोर-टू-डोर जीपीएस कचरा संग्रहण वाहनों की समय सारणी एवं रूट रोस्टर प्रकाशित',
+    date: '14 Sep 2026',
+    departmentEn: 'Solid Waste Management Cell',
+    departmentHi: 'ठोस अपशिष्ट प्रबंधन प्रकोष्ठ'
+  }
+];

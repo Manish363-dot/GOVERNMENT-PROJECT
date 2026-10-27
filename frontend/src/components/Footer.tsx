@@ -20,7 +20,7 @@ export const Footer = React.memo(() => {
     { label: isHi ? '11 विकासखण्ड' : '11 Blocks', href: '/blocks' },
     { label: isHi ? 'हमारा मीडिया' : 'Our Media', href: '/media' },
     { label: isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates', href: '/#Notices' },
-    { label: isHi ? 'सोशल मीडिया जुड़ाव' : 'Social Engagement', href: '/#social-engagement' },
+    { label: isHi ? 'नवीनतम सूचनाएं' : 'Latest Notifications', href: '/#updates' },
     { label: isHi ? 'दैनिक कार्य' : 'Daily Work', href: '/#blogs' },
     { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/complaint' },
     { label: isHi ? 'ठोस अपशिष्ट प्रबन्धन पोर्टल' : 'About SWM Portal', href: '/contact' },
