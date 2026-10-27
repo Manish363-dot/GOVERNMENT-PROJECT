@@ -99,11 +99,12 @@ app.use(cookieParser());
 
 // ── Rate Limiters ───────────────────────────────────────────────
 
-// Global rate limit: 1000 requests per 15 minutes per IP
+// Global rate limit: 1000 requests per 15 minutes per IP (exempt DELETE requests)
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 1000,
   message: { error: 'Too many requests, please try again later.' },
+  skip: (req) => req.method === 'DELETE',
 });
 
 // Auth rate limit: 10 attempts per 15 minutes per IP (brute force protection)
@@ -122,11 +123,12 @@ const complaintLimiter = rateLimit({
   message: { error: 'Too many complaints submitted. Please try again later.' },
 });
 
-// Upload rate limit: 20 per hour per IP (expensive operation)
+// Upload rate limit: 200 per hour per IP for admin media management
 const uploadLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 20,
+  max: 200,
   message: { error: 'Too many files uploaded. Please try again later.' },
+  skip: (req) => req.method === 'DELETE',
 });
 
 // Root entry route
@@ -164,7 +166,11 @@ app.use('/api/complaints', (req, res, next) => {
   next();
 });
 app.use('/api/media', (req, res, next) => {
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method)) {
+  // DELETE operations are completely exempt from rate limiting
+  if (req.method === 'DELETE') {
+    return next();
+  }
+  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
     return uploadLimiter(req, res, next);
   }
   next();
