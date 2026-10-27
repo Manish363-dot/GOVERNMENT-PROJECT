@@ -54,27 +54,27 @@ export const Footer = React.memo(() => {
       </div>
 
       {/* Main 3-Column Grid */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-14">
 
           {/* Col 1: About Portal */}
-          <div className="space-y-2.5">
+          <div className="space-y-3.5">
             <h4 className={cn(
-              "text-xs font-bold text-amber-400 uppercase border-b border-navy-800 pb-1.5",
-              isHi ? "tracking-normal text-sm" : "tracking-widest"
+              "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
+              isHi ? "tracking-normal" : "tracking-wider"
             )}>
               {isHi ? 'पोर्टल के बारे में' : 'About This Portal'}
             </h4>
-            <p className="text-xs sm:text-[13px] text-slate-300 leading-relaxed">
+            <p className="text-sm sm:text-[14.5px] text-slate-300 leading-relaxed">
               {isHi
                 ? 'जिला पंचायत अल्मोड़ा का आधिकारिक पोर्टल डिजिटल सुविधाएँ, कर एवं संपत्ति प्रबंधन, सार्वजनिक सूचनाएँ तथा जनशिकायत निवारण सेवाएँ प्रदान करता है। इसका उद्देश्य पारदर्शी, कुशल और सुलभ प्रशासन के माध्यम से नागरिकों को बेहतर सेवाएँ उपलब्ध कराना है।'
                 : 'Official portal of Zila Panchayat Almora, providing essential digital facilities, tax and property management, public information, and citizen grievance redressal to promote transparent, efficient, and accessible governance.'}
             </p>
-            <div className="flex items-center gap-2 text-xs text-emerald-400 font-semibold italic pt-0.5">
+            <div className="flex items-center gap-2 text-xs sm:text-sm text-emerald-400 font-semibold italic pt-1">
               <span>{isHi ? '“डिजिटल उत्तराखंड • सशक्त उत्तराखंड”' : '"Digital Uttarakhand • Stronger Uttarakhand"'}</span>
             </div>
 
-            <p className="text-xs italic text-amber-300 font-medium">
+            <p className="text-xs sm:text-sm italic text-amber-300 font-medium">
               {isHi ? '“स्वच्छ भारत • स्वच्छ देवभूमि”' : '"Swachh Bharat • Swachh Devbhoomi"'}
             </p>
           </div>
@@ -82,29 +82,29 @@ export const Footer = React.memo(() => {
           {/* Col 2: Quick Navigation */}
           <div>
             <h4 className={cn(
-              "text-xs font-bold text-amber-400 uppercase border-b border-navy-800 pb-1.5 mb-2.5",
-              isHi ? "tracking-normal text-sm" : "tracking-widest"
+              "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
+              isHi ? "tracking-normal" : "tracking-wider"
             )}>
               {isHi ? 'त्वरित लिंक' : 'Quick Links'}
             </h4>
-            <ul className="grid grid-cols-2 gap-y-1.5 gap-x-3">
+            <ul className="grid grid-cols-2 gap-y-2.5 gap-x-8 sm:gap-x-10">
               {navLinks.map((link) => (
                 <li key={link.href}>
                   {link.href.startsWith('/#') ? (
                     <a
                       href={link.href}
-                      className="text-xs sm:text-[13px] text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group"
                     >
-                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
                       {link.label}
                     </a>
                   ) : (
                     <Link
                       to={link.href}
                       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      className="text-xs sm:text-[13px] text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 group"
+                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group"
                     >
-                      <span className="w-1 h-1 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
                       {link.label}
                     </Link>
                   )}
@@ -116,34 +116,34 @@ export const Footer = React.memo(() => {
           {/* Col 3: Contact & Helpline */}
           <div>
             <h4 className={cn(
-              "text-xs font-bold text-amber-400 uppercase border-b border-navy-800 pb-1.5 mb-2.5",
-              isHi ? "tracking-normal text-sm" : "tracking-widest"
+              "text-sm sm:text-base font-bold text-amber-400 uppercase border-b border-navy-800 pb-2 mb-4",
+              isHi ? "tracking-normal" : "tracking-wider"
             )}>
               {isHi ? 'संपर्क एवं हेल्पलाइन' : 'Contact & Helpline'}
             </h4>
 
             {/* Toll-free highlight */}
-            <div className="bg-navy-900 border border-amber-500/40 rounded-lg p-2.5 mb-2.5">
+            <div className="bg-navy-900 border border-amber-500/40 rounded-lg p-3.5 sm:p-4 mb-4">
               <p className={cn(
-                "text-[10px] font-bold uppercase text-amber-400 mb-0.5",
+                "text-xs font-bold uppercase text-amber-400 mb-1",
                 isHi ? "tracking-normal" : "tracking-wider"
               )}>
                 {isHi ? '☎ टोल-फ्री हेल्पलाइन' : '☎ Toll-Free Helpline'}
               </p>
-              <p className="font-mono font-bold text-white text-base tracking-wide">1800-185-1850</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">
+              <p className="font-mono font-bold text-white text-xl sm:text-2xl tracking-wide">1800-185-1850</p>
+              <p className="text-xs text-slate-300 mt-1">
                 {isHi ? 'सोम-शनि: सुबह 9 बजे से शाम 6 बजे तक' : 'Mon-Sat: 9:00 AM – 6:00 PM'}
               </p>
             </div>
 
-            <ul className="space-y-2 text-xs sm:text-[13px] text-slate-300">
-              <li className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <span className="font-mono text-xs">amazpalmora@gmail.com</span>
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li className="flex items-center gap-2.5">
+                <Mail className="w-4 h-4 text-slate-400 shrink-0" />
+                <span className="font-mono text-sm">amazpalmora@gmail.com</span>
               </li>
-              <li className="flex items-start gap-2">
-                <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0 mt-0.5" />
-                <span className="text-xs leading-snug">
+              <li className="flex items-start gap-2.5">
+                <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
+                <span className="text-sm leading-relaxed">
                   {isHi
                     ? ' धारानौला जिला पंचायत अल्मोड़ा, उत्तराखंड - 263601'
                     : 'Dharanaula Zila Panchayat Almora, Uttarakhand - 263601'}
