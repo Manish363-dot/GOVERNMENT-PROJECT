@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { Award, ArrowRight, Building2 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
@@ -46,10 +47,9 @@ export const SafaiHeroBanner = React.memo(() => {
               <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1.5 transition-transform shrink-0 relative z-10" />
             </button>
 
-            {/* 2. Commercial Asset & Rental Portal Button (Coming Soon Dialog) */}
-            <button
-              type="button"
-              onClick={openRentalComingSoon}
+            {/* 2. Commercial Asset & Rental Portal Button (Direct Link to Under Development Showcase) */}
+            <Link
+              to="/rental-portal"
               className="group relative flex-1 py-3.5 sm:py-4 px-6 rounded-xl bg-gradient-to-r from-blue-700/95 via-blue-800/95 to-[#0b1b36]/95 hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 backdrop-blur-md text-white font-bold text-sm sm:text-base shadow-xl shadow-blue-900/25 hover:shadow-2xl hover:shadow-blue-900/35 active:scale-[0.99] transition-all duration-300 cursor-pointer flex items-center justify-center gap-3 border border-blue-400/40 ring-1 ring-white/30 overflow-hidden"
             >
               {/* Glossy glass reflection overlay */}
@@ -58,7 +58,7 @@ export const SafaiHeroBanner = React.memo(() => {
                 {isHi ? 'दुकान आवंटन एवं किराया पोर्टल' : 'Asset & Rental Portal'}
               </span>
               <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1.5 transition-transform shrink-0 relative z-10" />
-            </button>
+            </Link>
           </div>
 
         </div>

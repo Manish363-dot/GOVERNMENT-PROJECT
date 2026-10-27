@@ -222,12 +222,8 @@ export const MediaDailyWorkPage = React.memo(() => {
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold text-navy-900 flex items-center gap-2">
-          <ImageIcon className="w-6 h-6 text-amber-500" />
           {isHi ? 'मीडिया और दैनिक कार्य' : 'Media & Daily Work'}
         </h1>
-        <p className="text-slate-500 text-sm">
-          {isHi ? 'लैंडिंग पेज के ब्लॉग सेक्शन और नए दैनिक कार्य कैलेंडर सेक्शन के लिए फ़ोटो और वीडियो प्रबंधित करें।' : 'Manage photos and videos for the landing page Blogs section and the new Daily Work calendar section.'}
-        </p>
       </div>
 
       <div className="flex gap-4 border-b border-slate-200">
@@ -254,7 +250,6 @@ export const MediaDailyWorkPage = React.memo(() => {
           <Card>
             <CardHeader>
               <CardTitle>{isHi ? 'ब्लॉग गैलरी में अपलोड करें' : 'Upload to Blogs Gallery'}</CardTitle>
-              <CardDescription>{isHi ? 'फ़ोटो या वीडियो अपलोड करें। ये होमपेज पर ब्लॉग सेक्शन में सीधे दिखाई देंगे।' : 'Upload photos or videos. These will appear directly in the Blogs section on the homepage.'}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleBlogUpload} className="flex flex-col gap-6">
@@ -389,7 +384,6 @@ export const MediaDailyWorkPage = React.memo(() => {
           <Card>
             <CardHeader>
               <CardTitle>{isHi ? 'दैनिक कार्य जोड़ें' : 'Add Daily Work'}</CardTitle>
-              <CardDescription>{isHi ? 'एक छोटे विवरण के साथ किसी विशिष्ट तिथि के लिए एक फोटो/वीडियो अपलोड करें। यह होमपेज पर कैलेंडर के बगल में दिखाई देगा।' : 'Upload a photo/video for a specific date with a short description. This will appear on the homepage next to the calendar.'}</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleDailyUpload} className="space-y-4">

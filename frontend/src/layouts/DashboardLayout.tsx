@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router-dom';
-import { TopHeader } from '@/components/TopHeader';
+import { TopHeader } from '@/swm/dashboard/TopHeader';
 import { BackToTop } from '@/components/BackToTop';
 
 export function DashboardLayout() {

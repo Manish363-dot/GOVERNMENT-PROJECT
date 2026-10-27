@@ -15,33 +15,20 @@ export const RentalComingSoonProvider: React.FC<{ children: React.ReactNode }> =
   const navigate = useNavigate();
 
   const openRentalComingSoon = useCallback(() => {
-    setIsOpen(true);
-  }, []);
+    navigate('/rental-portal');
+  }, [navigate]);
 
   const closeRentalComingSoon = useCallback(() => {
     setIsOpen(false);
-    // If the URL had ?rental=coming-soon, clean it up
-    if (location.search.includes('rental=coming-soon')) {
-      const searchParams = new URLSearchParams(location.search);
-      searchParams.delete('rental');
-      const newSearch = searchParams.toString();
-      navigate(
-        {
-          pathname: location.pathname,
-          search: newSearch ? `?${newSearch}` : '',
-        },
-        { replace: true }
-      );
-    }
-  }, [location.pathname, location.search, navigate]);
+  }, []);
 
-  // If redirected with ?rental=coming-soon, automatically open modal
+  // If URL has ?rental=coming-soon, redirect cleanly to /rental-portal
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get('rental') === 'coming-soon') {
-      setIsOpen(true);
+      navigate('/rental-portal', { replace: true });
     }
-  }, [location.search]);
+  }, [location.search, navigate]);
 
   return (
     <RentalComingSoonContext.Provider

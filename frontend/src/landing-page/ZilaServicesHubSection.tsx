@@ -80,14 +80,13 @@ export const ZilaServicesHubSection = React.memo(() => {
             </div>
             {/* Quick Actions */}
             <div className="pt-4 border-t border-indigo-800/60 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={openRentalComingSoon}
+              <Link
+                to="/rental-portal"
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm transition-colors shadow-md cursor-pointer active:scale-95"
               >
                 <span>{isHi ? 'किराया पोर्टल में प्रवेश करें' : 'Open Rental Portal'}</span>
                 <ArrowRight className="w-4 h-4" />
-              </button>
+              </Link>
             </div>
           </div>
 

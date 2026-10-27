@@ -13,7 +13,8 @@ import { gpsDeviceService, GpsDevice } from '@/services/gpsDevice.service';
 import { useTranslation } from 'react-i18next';
 
 export const VehiclesPage = React.memo(() => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isHi = i18n.language === 'hi';
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -118,11 +119,32 @@ export const VehiclesPage = React.memo(() => {
   }
 
   const vehicleTypeLabels: Record<string, string> = {
-    truck: 'Truck',
-    mini_truck: 'Mini Truck',
-    auto: 'Auto',
-    other: 'Other',
+    truck: isHi ? 'ट्रक' : 'Truck',
+    mini_truck: isHi ? 'मिनी ट्रक' : 'Mini Truck',
+    auto: isHi ? 'ऑटो' : 'Auto',
+    other: isHi ? 'अन्य' : 'Other',
   };
+
+  const statusLabels: Record<string, string> = {
+    idle: isHi ? 'स्थिर' : 'idle',
+    active: isHi ? 'सक्रिय' : 'active',
+    maintenance: isHi ? 'मरम्मत में' : 'maintenance',
+    inactive: isHi ? 'निष्क्रिय' : 'inactive',
+  };
+
+  function formatVehicleDate(dateStr: string) {
+    if (!dateStr) return '—';
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    if (isHi) {
+      const hindiMonths = ['जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'];
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = hindiMonths[d.getMonth()];
+      const year = d.getFullYear();
+      return `${day} ${month} ${year}`;
+    }
+    return format(d, 'dd MMM yyyy');
+  }
 
   return (
     <div className="animate-fade-in space-y-4">
@@ -131,7 +153,6 @@ export const VehiclesPage = React.memo(() => {
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#0a1628] px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Truck className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-normal">{t('admin.vehicles.title')}</p>
             </div>
@@ -168,7 +189,7 @@ export const VehiclesPage = React.memo(() => {
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.number')}</Label>
               <Input
-                placeholder="e.g. UK-01-XX-1234"
+                placeholder={isHi ? "वाहन संख्या दर्ज करें" : "Enter Vehicle Number"}
                 value={form.vehicle_number}
                 onChange={(e) => setForm({ ...form, vehicle_number: e.target.value })}
                 required
@@ -178,7 +199,7 @@ export const VehiclesPage = React.memo(() => {
             <div className="space-y-1.5">
               <Label className="text-[11px] font-bold text-slate-700 uppercase tracking-normal">{t('admin.vehicles.form.name')}</Label>
               <Input
-                placeholder="e.g. Ward 5 Truck"
+                placeholder={isHi ? "वाहन का नाम दर्ज करें" : "Enter Vehicle Name"}
                 value={form.vehicle_name}
                 onChange={(e) => setForm({ ...form, vehicle_name: e.target.value })}
                 className="h-8 text-[11px] font-mono border-slate-300 rounded-sm"
@@ -191,10 +212,10 @@ export const VehiclesPage = React.memo(() => {
                 onChange={(e) => setForm({ ...form, vehicle_type: e.target.value })}
                 className="flex h-8 w-full border border-slate-300 bg-white px-2 text-[11px] font-mono text-[#0a1628] focus:border-[#1a3a6b] focus:outline-none rounded-sm"
               >
-                <option value="truck">{t('admin.vehicles.form.types.truck')}</option>
-                <option value="mini_truck">{t('admin.vehicles.form.types.mini_truck')}</option>
-                <option value="auto">{t('admin.vehicles.form.types.auto')}</option>
-                <option value="other">{t('admin.vehicles.form.types.other')}</option>
+                <option value="truck">{vehicleTypeLabels.truck}</option>
+                <option value="mini_truck">{vehicleTypeLabels.mini_truck}</option>
+                <option value="auto">{vehicleTypeLabels.auto}</option>
+                <option value="other">{vehicleTypeLabels.other}</option>
               </select>
             </div>
             <div className="sm:col-span-3 flex gap-2 pt-1 border-t border-slate-200">
@@ -203,7 +224,6 @@ export const VehiclesPage = React.memo(() => {
                 disabled={saving}
                 className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-normal px-4 py-1.5 rounded-sm transition-colors"
               >
-                <Save className="w-3 h-3" />
                 {saving ? t('admin.vehicles.form.btnSaving') : editingVehicle ? t('admin.vehicles.form.btnUpdate') : t('admin.vehicles.form.btnAdd')}
               </button>
               <button
@@ -224,7 +244,6 @@ export const VehiclesPage = React.memo(() => {
           <div className="bg-white border border-slate-300 rounded overflow-hidden w-full max-w-md shadow-2xl">
             <div className="bg-[#0a1628] px-4 py-2.5 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Radio className="w-4 h-4 text-amber-400" />
                 <div>
                   <p className="text-[11px] font-bold text-white uppercase tracking-normal">{t('admin.vehicles.linkModal.title')}</p>
                   <p className="text-[10px] text-slate-400 font-mono">{linkingVehicle.vehicle_number}</p>
@@ -291,7 +310,7 @@ export const VehiclesPage = React.memo(() => {
         <div className="bg-white border border-slate-300 rounded overflow-hidden">
           <div className="bg-[#f0f4f9] border-b border-slate-300 px-4 py-2">
             <p className="text-[14px] font-bold text-[#0a1628] uppercase tracking-normal font-bold">
-              {t('admin.vehicles.register')} — {vehicles.length} Record(s)
+              {t('admin.vehicles.register')} — {vehicles.length} {isHi ? 'रिकॉर्ड' : 'Record'}
             </p>
           </div>
           {/* Desktop Table View */}
@@ -312,12 +331,12 @@ export const VehiclesPage = React.memo(() => {
                   <tr key={vehicle.id} className="hover:bg-[#f7f9fc] transition-colors">
                     <td className="px-4 py-2.5 font-bold text-[12px] text-[#1a3a6b]">{vehicle.vehicle_number}</td>
                     <td className="px-4 py-2.5 text-[12px] text-slate-700">{vehicle.vehicle_name || '—'}</td>
-                    <td className="px-4 py-2.5 text-[12px] text-slate-600 font-bold">{vehicleTypeLabels[vehicle.vehicle_type]}</td>
+                    <td className="px-4 py-2.5 text-[12px] text-slate-600 font-bold">{vehicleTypeLabels[vehicle.vehicle_type] || vehicle.vehicle_type}</td>
                     <td className="px-4 py-2.5">
-                      <Badge variant={vehicle.status as any}>{vehicle.status}</Badge>
+                      <Badge variant={vehicle.status as any}>{statusLabels[vehicle.status] || vehicle.status}</Badge>
                     </td>
                     <td className="px-4 py-2.5 text-[12px] text-slate-500 font-bold">
-                      {format(new Date(vehicle.created_at), 'dd MMM yyyy')}
+                      {formatVehicleDate(vehicle.created_at)}
                     </td>
                     <td className="px-4 py-2.5 text-right">
                       <div className="flex items-center justify-end gap-1">
@@ -358,7 +377,7 @@ export const VehiclesPage = React.memo(() => {
                     <p className="font-bold text-sm text-[#1a3a6b] break-all">{vehicle.vehicle_number}</p>
                   </div>
                   <Badge variant={vehicle.status as any} className="shrink-0">
-                    {vehicle.status}
+                    {statusLabels[vehicle.status] || vehicle.status}
                   </Badge>
                 </div>
 
@@ -366,13 +385,13 @@ export const VehiclesPage = React.memo(() => {
                   <div>
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.type')}</p>
                     <div className="text-[12px] text-slate-700 font-bold">
-                      {vehicleTypeLabels[vehicle.vehicle_type]}
+                      {vehicleTypeLabels[vehicle.vehicle_type] || vehicle.vehicle_type}
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-normal mb-0.5">{t('admin.vehicles.table.date')}</p>
                     <div className="text-[11px] text-slate-600 font-bold">
-                      {format(new Date(vehicle.created_at), 'dd MMM yyyy')}
+                      {formatVehicleDate(vehicle.created_at)}
                     </div>
                   </div>
                 </div>

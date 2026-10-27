@@ -55,7 +55,6 @@ export const DashboardPage = React.memo(() => {
         {/* Top navy strip */}
         <div className="bg-navy-900 border-b border-navy-800 px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-wide">
                 {t('admin.dashboard.commandPanel')}
@@ -78,30 +77,22 @@ export const DashboardPage = React.memo(() => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KPICard
           title={t('admin.dashboard.totalVehicles')}
-          subtitle={t('admin.dashboard.totalVehiclesSub')}
           value={stats.totalVehicles}
-          icon={Truck}
           loading={loading}
         />
         <KPICard
           title={t('admin.dashboard.liveActive')}
-          subtitle={t('admin.dashboard.liveActiveSub')}
           value={stats.liveVehicles}
-          icon={MapPin}
           loading={loading}
         />
         <KPICard
           title={t('admin.dashboard.onlineTelematics')}
-          subtitle={t('admin.dashboard.onlineTelematicsSub')}
           value={stats.onlineDevices}
-          icon={Radio}
           loading={loading}
         />
         <KPICard
           title={t('admin.dashboard.pendingComplaints')}
-          subtitle={t('admin.dashboard.pendingComplaintsSub')}
           value={stats.newComplaints}
-          icon={MessageSquareWarning}
           loading={loading}
         />
       </div>

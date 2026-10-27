@@ -9,6 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Radio, Plus, Trash2, X, Smartphone, Cpu, Save, Pencil, ChevronDown, ChevronUp } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export const GpsDevicesPage = React.memo(() => {
   const { t, i18n } = useTranslation();
@@ -26,6 +38,8 @@ export const GpsDevicesPage = React.memo(() => {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [expandedIds, setExpandedIds] = useState<Record<string, boolean>>({});
+  const [deviceToDelete, setDeviceToDelete] = useState<GpsDevice | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   function toggleExpand(id: string) {
     setExpandedIds(prev => ({ ...prev, [id]: !prev[id] }));
@@ -99,13 +113,25 @@ export const GpsDevicesPage = React.memo(() => {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm(isHi ? 'क्या आप इस उपकरण को हटाना चाहते हैं?' : 'Are you sure you want to delete this device? Unlink it from vehicles first.')) return;
+  async function handleConfirmDelete() {
+    if (!deviceToDelete) return;
+    setIsDeleting(true);
     try {
-      await gpsDeviceService.delete(id);
+      await gpsDeviceService.delete(deviceToDelete.id);
+      toast.success(
+        isHi
+          ? `उपकरण "${deviceToDelete.device_name || deviceToDelete.device_identifier}" सफलतापूर्वक हटा दिया गया`
+          : `GPS device "${deviceToDelete.device_name || deviceToDelete.device_identifier}" deleted successfully`
+      );
+      setDeviceToDelete(null);
       fetchDevices();
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete device:', err);
+      toast.error(
+        err.message || (isHi ? 'उपकरण हटाने में विफल। कृपया पहले इसे वाहन से अलग करें।' : 'Failed to delete device. Please unlink it from any vehicle first.')
+      );
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -123,7 +149,6 @@ export const GpsDevicesPage = React.memo(() => {
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#0a1628] px-4 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Radio className="w-4 h-4 text-amber-400 shrink-0" />
             <div>
               <p className="text-[16px] font-bold text-white uppercase tracking-normal">
                 {t('admin.devices.title')}
@@ -233,7 +258,6 @@ export const GpsDevicesPage = React.memo(() => {
                 disabled={saving}
                 className="flex items-center gap-1.5 bg-[#0a1628] hover:bg-[#1a3a6b] disabled:opacity-60 text-white text-[11px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-sm transition-colors"
               >
-                <Save className="w-3 h-3" />
                 {saving
                   ? (isHi ? 'सहेज रहे हैं...' : 'Saving...')
                   : editingId
@@ -371,7 +395,7 @@ export const GpsDevicesPage = React.memo(() => {
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => handleDelete(device.id)}
+                        onClick={() => setDeviceToDelete(device)}
                         className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-sm transition-colors"
                         title={isHi ? 'हटाएं' : 'Delete'}
                       >
@@ -503,7 +527,7 @@ export const GpsDevicesPage = React.memo(() => {
                           {isHi ? 'संपादित करें' : 'Edit'}
                         </button>
                         <button
-                          onClick={() => handleDelete(device.id)}
+                          onClick={() => setDeviceToDelete(device)}
                           className="flex items-center gap-1.5 px-3 py-1.5 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded text-[11px] font-bold uppercase tracking-normal transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -518,6 +542,56 @@ export const GpsDevicesPage = React.memo(() => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Popup Modal */}
+      <AlertDialog open={!!deviceToDelete} onOpenChange={(open) => !open && !isDeleting && setDeviceToDelete(null)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-red-100 text-red-600">
+              <Trash2 className="w-6 h-6" />
+            </AlertDialogMedia>
+            <AlertDialogTitle>
+              {isHi ? 'जीपीएस उपकरण हटाएं?' : 'Delete GPS Device?'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {isHi ? (
+                <>
+                  क्या आप वाकई उपकरण{' '}
+                  <strong className="text-slate-900 font-mono">
+                    {deviceToDelete?.device_name || deviceToDelete?.device_identifier}
+                  </strong>{' '}
+                  को हटाना चाहते हैं? हटाने से पहले कृपया सुनिश्चित करें कि यह किसी वाहन से अलग (Unlinked) हो।
+                </>
+              ) : (
+                <>
+                  Are you sure you want to delete device{' '}
+                  <strong className="text-slate-900 font-mono">
+                    {deviceToDelete?.device_name || deviceToDelete?.device_identifier}
+                  </strong>
+                  ? Please ensure it is unlinked from any assigned vehicle first.
+                </>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {isHi ? 'रद्द करें' : 'Cancel'}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              {isDeleting
+                ? (isHi ? 'हटाया जा रहा है...' : 'Deleting...')
+                : (isHi ? 'उपकरण हटाएं' : 'Delete Device')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 });

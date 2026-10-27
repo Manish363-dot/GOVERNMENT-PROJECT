@@ -1,24 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
-  Menu, X, Bell, User, ShieldCheck, LogOut,
-  LayoutDashboard, MapPin, History, PlaySquare, MessageSquareWarning,
-  Truck, Radio, Settings, Image
+ X, User, LogOut
 } from 'lucide-react';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { icon: LayoutDashboard, labelKey: 'admin.nav.dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
-  { icon: MapPin, labelKey: 'admin.nav.tracking', label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
-  { icon: History, labelKey: 'admin.nav.history', label: 'History & Replay', labelHi: 'इतिहास व रीप्ले', to: '/dashboard/history' },
-  { icon: MessageSquareWarning, labelKey: 'admin.nav.grievances', label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
-  { icon: Truck, labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' },
-  { icon: Image, labelKey: 'admin.nav.media', label: 'Media', labelHi: 'मीडिया', to: '/dashboard/media' }
+  { labelKey: 'admin.nav.dashboard', label: 'Dashboard', labelHi: 'डैशबोर्ड', to: '/dashboard' },
+  { labelKey: 'admin.nav.tracking', label: 'Tracking', labelHi: 'लाइव ट्रैकिंग', to: '/dashboard/tracking' },
+  { labelKey: 'admin.nav.history', label: 'History & Replay', labelHi: 'इतिहास व रीप्ले', to: '/dashboard/history' },
+  { labelKey: 'admin.nav.grievances', label: 'Grievances', labelHi: 'शिकायतें', to: '/dashboard/complaints' },
+  { labelKey: 'admin.nav.vehicles', label: 'Vehicles', labelHi: 'वाहन', to: '/dashboard/vehicles' },
+  { labelKey: 'admin.nav.media', label: 'Media', labelHi: 'मीडिया', to: '/dashboard/media' }
 ];
 
 export function TopHeader() {
@@ -70,12 +67,6 @@ export function TopHeader() {
                 <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
                   {isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}
                 </p>
-                <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
-                  <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
-                    {isHi ? 'जिला पंचायत सफाई पोर्टल |' : 'Zila Panchayat Safai Portal |'}
-                  </p></span>
-                  <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
-                </div>
               </div>
             </div>
           </div>
@@ -127,17 +118,7 @@ export function TopHeader() {
                   )
                 }
               >
-                {({ isActive }) => (
-                  <>
-                    <item.icon
-                      className={cn(
-                        'w-3.5 h-3.5 shrink-0',
-                        isActive ? 'text-amber-400' : 'text-slate-400'
-                      )}
-                    />
-                    <span>{isHi ? item.labelHi : item.label}</span>
-                  </>
-                )}
+                <span>{isHi ? item.labelHi : item.label}</span>
               </NavLink>
             ))}
           </nav>
@@ -190,19 +171,9 @@ export function TopHeader() {
                     )
                   }
                 >
-                  {({ isActive }) => (
-                    <>
-                      <item.icon
-                        className={cn(
-                          'w-4 h-4 shrink-0',
-                          isActive ? 'text-amber-400' : 'text-slate-400'
-                        )}
-                      />
-                      <span className="tracking-wide uppercase text-xs font-semibold">
-                        {isHi ? item.labelHi : item.label}
-                      </span>
-                    </>
-                  )}
+                  <span className="tracking-wide uppercase text-xs font-semibold">
+                    {isHi ? item.labelHi : item.label}
+                  </span>
                 </NavLink>
               ))}
             </nav>
