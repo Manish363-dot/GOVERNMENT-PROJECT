@@ -10,8 +10,6 @@ import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
 import { RouteSEO } from '@/components/RouteSEO';
 import { RentalComingSoonProvider } from '@/contexts/RentalComingSoonContext';
-import { RentalComingSoonModal } from '@/components/RentalComingSoonModal';
-import { RentalRedirectGuard } from '@/rental/RentalRedirectGuard';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
@@ -30,6 +28,7 @@ const MediaGalleryPage = lazy(() => import('@/landing-page/MediaGalleryPage').th
 const NotFoundPage = lazy(() => import('@/landing-page/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const ServerErrorPage = lazy(() => import('@/landing-page/ServerErrorPage').then(m => ({ default: m.ServerErrorPage })));
 const MaintenancePage = lazy(() => import('@/landing-page/MaintenancePage').then(m => ({ default: m.MaintenancePage })));
+const RentalUnderDevelopmentPage = lazy(() => import('@/landing-page/RentalUnderDevelopmentPage').then(m => ({ default: m.RentalUnderDevelopmentPage })));
 
 // 🟢 2. SWM (Solid Waste Management & Safai Portal) Lazy Pages
 const SafaiPortalPage = lazy(() => import('@/swm/pages/SafaiPortalPage').then(m => ({ default: m.SafaiPortalPage })));
@@ -100,7 +99,6 @@ function App() {
         <RentalComingSoonProvider>
           <AuthRedirectHandler />
           <GooglePasskeyModal />
-          <RentalComingSoonModal />
           <RouteSEO />
           <Suspense fallback={<PageLoader />}>
             <Routes>
@@ -153,6 +151,12 @@ function App() {
               <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
               <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
 
+              {/* Commercial Asset & Rental Management Platform (Under Development Showcase Page) */}
+              <Route path="/rental-portal" element={<RentalUnderDevelopmentPage />} />
+              <Route path="/rental" element={<RentalUnderDevelopmentPage />} />
+              <Route path="/rental-system" element={<RentalUnderDevelopmentPage />} />
+              <Route path="/rental/*" element={<RentalUnderDevelopmentPage />} />
+
             </Route>
 
             {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}
@@ -160,11 +164,6 @@ function App() {
             <Route path="/error" element={<ServerErrorPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/under-maintenance" element={<MaintenancePage />} />
-
-            {/* Commercial Asset & Rental Management Platform (Guarded for Safai Deployment) */}
-            <Route path="/rental" element={<RentalRedirectGuard />} />
-            <Route path="/rental-system" element={<RentalRedirectGuard />} />
-            <Route path="/rental/*" element={<RentalRedirectGuard />} />
 
             {/* 404 Not Found Catch-All Route */}
             <Route path="*" element={<NotFoundPage />} />

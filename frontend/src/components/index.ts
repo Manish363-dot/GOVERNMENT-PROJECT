@@ -28,7 +28,7 @@ export { NavbarSafaiPortal } from '../swm/components/NavbarSafaiPortal';
 // ============================================================================
 export { Navbar } from './Navbar';
 export { Footer } from './Footer';
-export { TopHeader } from './TopHeader';
+export { TopHeader } from '../swm/dashboard/TopHeader';
 export { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from './TopBarLogos';
 export { LanguageSwitcher } from './LanguageSwitcher';
 export { BackToTop } from './BackToTop';

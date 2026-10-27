@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import {
-  Menu, X, Bell, User, ShieldCheck, LogOut
+ X, User, LogOut
 } from 'lucide-react';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -68,12 +67,6 @@ export function TopHeader() {
                 <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
                   {isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}
                 </p>
-                <div className="hidden sm:flex items-center gap-2 mt-0.5 text-[10px] sm:text-[12px] text-slate-300 font-mono">
-                  <span><p className="text-[11px] text-slate-300 font-mono mt-0.5">
-                    {isHi ? 'जिला पंचायत सफाई पोर्टल |' : 'Zila Panchayat Safai Portal |'}
-                  </p></span>
-                  <span className="text-emerald-400 font-semibold">{format(now, 'EEEE, dd MMM yyyy • hh:mm:ss a')}</span>
-                </div>
               </div>
             </div>
           </div>

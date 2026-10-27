@@ -225,13 +225,10 @@ export const NavbarLandingPage = React.memo(() => {
                         </div>
                       </Link>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setServicesDropdownOpen(false);
-                          openRentalComingSoon();
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group"
+                      <Link
+                        to="/rental-portal"
+                        onClick={() => setServicesDropdownOpen(false)}
+                        className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors cursor-pointer group block"
                       >
                         <div className="flex items-center justify-between">
                           <span className="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-blue-600">
@@ -241,7 +238,7 @@ export const NavbarLandingPage = React.memo(() => {
                             {isHi ? 'शीघ्र' : 'Soon'}
                           </span>
                         </div>
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -267,7 +264,7 @@ export const NavbarLandingPage = React.memo(() => {
                   href="/#notices"
                   className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
                 >
-                  <span className="whitespace-nowrap">{isHi ? 'सूचनाएं एवं विज्ञप्तियां' : 'Notices & Updates'}</span>
+                  <span className="whitespace-nowrap">{isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates'}</span>
                 </a>
 
                 {/* 7. Contact Link */}
@@ -365,19 +362,16 @@ export const NavbarLandingPage = React.memo(() => {
                     >
                       <span>{isHi ? 'ठोस अपशिष्ट एवं सफाई पोर्टल' : 'Safai & SWM Portal'}</span>
                     </Link>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setMobileOpen(false);
-                        openRentalComingSoon();
-                      }}
+                    <Link
+                      to="/rental-portal"
+                      onClick={() => setMobileOpen(false)}
                       className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-slate-700 hover:text-navy-900 rounded-md text-left cursor-pointer hover:bg-slate-200"
                     >
                       <span>{isHi ? 'दुकान व परिसंपत्ति किराया प्रणाली' : 'Rental System'}</span>
                       <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300">
                         {isHi ? 'शीघ्र' : 'Soon'}
                       </span>
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>
