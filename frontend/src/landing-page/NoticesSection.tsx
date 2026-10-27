@@ -9,7 +9,8 @@ import {
   ShieldCheck, 
   X, 
   Printer, 
-  MapPin
+  MapPin,
+  ExternalLink
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -206,6 +207,21 @@ export const NoticesSection = React.memo(() => {
                         </div>
                       );
                     })()}
+
+                    {/* Optional Notice Link (Only rendered if notice.link exists) */}
+                    {notice.link && (
+                      <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center">
+                        <a
+                          href={notice.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors cursor-pointer group/link"
+                        >
+                          <span>{isHi ? 'संबंधित लिंक देखें' : 'View Related Link'}</span>
+                          <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-0.5 transition-transform" />
+                        </a>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
