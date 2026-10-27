@@ -26,7 +26,7 @@ export function WebsitePolicyPage() {
           
           <p>
             {isHi ?
-            'इस पोर्टल का उद्देश्य नागरिकों को सफाई एवं स्वच्छता से संबंधित जानकारी और सेवाएं उपलब्ध कराना तथा नागरिकों की शिकायतों एवं सुझावों को संबंधित प्राधिकारी तक पहुँचाना है':'The objective of this portal is to provide information and services related to cleanliness and hygiene to the citizens and to forward the grievances and suggestions of the citizens to the concerned authority.'}
+            'इस पोर्टल का उद्देश्य जिला पंचायत अल्मोड़ा के अंतर्गत नागरिकों को विभिन्न जनसेवाएँ, आवश्यक सूचनाएँ एवं डिजिटल सुविधाएँ उपलब्ध कराना तथा प्रशासनिक कार्यों में पारदर्शिता और सुगमता को बढ़ावा देना है। पोर्टल के माध्यम से नागरिक ठोस अपशिष्ट प्रबंधन, किराया एवं संपत्ति संबंधी सेवाओं तथा अन्य उपलब्ध सुविधाओं का लाभ उठा सकते हैं।':'The objective of this portal is to provide citizens with access to various public services, essential information, and digital facilities under Zila Panchayat Almora, while promoting transparency and convenience in administrative processes. Through this portal, citizens can access services related to Solid Waste Management (SWM), rental and property management, and other available facilities'}
             {isHi ? 'पोर्टल के उपयोग से संबंधित विभिन्न नीतियां नीचे दी गई हैं।' : 'The various policies related to the use of the portal are given below.'}
           </p>
 

@@ -23,9 +23,9 @@ export const Footer = React.memo(() => {
     { label: isHi ? 'नवीनतम सूचनाएं' : 'Latest Notifications', href: '/#updates' },
     { label: isHi ? 'दैनिक कार्य' : 'Daily Work', href: '/#blogs' },
     { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/complaint' },
-    { label: isHi ? 'ठोस अपशिष्ट प्रबन्धन पोर्टल' : 'About SWM Portal', href: '/contact' },
+    { label: isHi ? 'कचरा स्रोत पृथक्करण प्रणाली' :'Waste Source Segregation Protocol', href: '/safai-portal#waste-protocol' },
     { label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href: '/bylaws' },
-    {label:isHi ? "ग्राम पंचायत विवरण" : "Swachhata Pledge", href:"/safai-portal#pledge"}
+    {label:isHi ? "स्वच्छता शपथ" : "Swachhata Pledge", href:"/safai-portal#pledge"}
   ], [isHi]);
 
   return (

@@ -29,9 +29,24 @@ export const MainLandingPage = React.memo(() => {
     }
 
     if (targetId) {
-      const el = document.getElementById(targetId) || document.getElementById(targetId.toLowerCase());
-      if (el) {
-        setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 120);
+      const tryScroll = () => {
+        const el = document.getElementById(targetId!) || document.getElementById(targetId!.toLowerCase());
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+          return true;
+        }
+        return false;
+      };
+
+      if (!tryScroll()) {
+        const t1 = setTimeout(tryScroll, 150);
+        const t2 = setTimeout(tryScroll, 400);
+        const t3 = setTimeout(tryScroll, 800);
+        return () => {
+          clearTimeout(t1);
+          clearTimeout(t2);
+          clearTimeout(t3);
+        };
       }
     }
   }, [location.pathname, location.hash]);

@@ -16,6 +16,7 @@ export const SafaiHeroBanner = React.memo(() => {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
+  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
   return (
     <section
       className="relative w-full overflow-hidden border-b border-slate-200 bg-white min-h-[300px] sm:min-h-[330px] md:min-h-[350px] lg:min-h-[365px] flex items-center"
@@ -73,9 +74,6 @@ export const SafaiHeroBanner = React.memo(() => {
               className="group relative flex flex-1 items-center justify-center gap-2.5 overflow-hidden whitespace-nowrap rounded-xl border border-emerald-400/50 bg-gradient-to-r from-emerald-600/90 via-emerald-700/90 to-teal-700/90 px-5 py-3.5 text-sm font-bold text-white shadow-xl shadow-emerald-700/20 ring-1 ring-white/30 transition-all duration-300 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700 hover:shadow-2xl active:scale-[0.99] cursor-pointer"
             >
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent" />
-
-              <Award className="relative z-10 h-4 w-4 shrink-0 text-amber-300" />
-
               <span className="relative z-10 tracking-wide shrink-0">
                 {isHi
                   ? `स्वच्छता शपथ लें (${count})`
@@ -92,9 +90,6 @@ export const SafaiHeroBanner = React.memo(() => {
               className="group relative flex flex-1 items-center justify-center gap-2.5 overflow-hidden whitespace-nowrap rounded-xl border border-blue-400/40 bg-gradient-to-r from-blue-700/95 via-blue-800/95 to-[#0b1b36]/95 px-5 py-3.5 text-sm font-bold text-white shadow-xl shadow-blue-900/25 ring-1 ring-white/30 transition-all duration-300 hover:from-blue-600 hover:via-blue-700 hover:to-blue-900 hover:shadow-2xl active:scale-[0.99] cursor-pointer"
             >
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/25 via-white/5 to-transparent" />
-
-              <Building2 className="relative z-10 h-4 w-4 shrink-0 text-blue-200" />
-
               <span className="relative z-10 tracking-wide shrink-0">
                 {isHi
                   ? 'दुकान आवंटन एवं किराया पोर्टल'

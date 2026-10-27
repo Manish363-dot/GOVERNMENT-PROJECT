@@ -9,6 +9,18 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'lucide-react',
+      'i18next',
+      'react-i18next',
+      'sonner',
+      '@react-oauth/google',
+    ],
+  },
   build: {
     rollupOptions: {
       output: {
@@ -23,7 +35,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 600,
   },
   server: {
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     port: 5175,
     strictPort: false,
     headers: {
@@ -31,11 +43,11 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
       '/socket.io': {
-        target: 'http://localhost:3001',
+        target: 'http://127.0.0.1:3001',
         ws: true,
         changeOrigin: true,
       },

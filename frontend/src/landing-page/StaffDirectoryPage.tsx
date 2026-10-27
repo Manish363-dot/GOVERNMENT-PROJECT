@@ -1,25 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-  Users, 
-  Shield, 
-  Building2, 
+import {  
   Phone, 
   Mail, 
   MapPin, 
-  Award, 
-  CheckCircle2, 
-  ShieldCheck, 
-  Briefcase,
-  Search,
   Copy,
   Check,
-  HardHat,
-  Truck,
-  Sparkles,
-  ArrowUpRight,
-  Filter,
-  UserCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -31,8 +17,8 @@ interface StaffMember {
   nameHi: string;
   designation: string;
   designationHi: string;
-  email: string;
-  phone: string;
+  email?: string;
+  phone?: string;
   category: 'leadership' | 'office' | 'site';
   department?: string;
   departmentHi?: string;
@@ -76,6 +62,11 @@ export function StaffDirectoryPage() {
 const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
 const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
 
+/* Staff photos from staff-photo folder*/
+const staff_1 = `${S3_BUCKET}/Staff-Photo/staff1.webp`;
+const site_2 = `${S3_BUCKET}/Staff-Photo/site2.webp`;
+
+
   // Top 2 Executive Leaders
   const leadershipStaff: StaffMember[] = useMemo(() => [
     {
@@ -85,8 +76,8 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
       designation: 'Chairperson, Zila Panchayat Almora',
       designationHi: 'अध्यक्ष, जिला पंचायत अल्मोड़ा',
       category: 'leadership',
-      email: 'chairperson.zp-almora@uk.gov.in',
-      phone: '+91 05962-230045',
+      email: 'amazpalmora@gmail.com',
+      phone: '+91 9456596868',
       location: 'Chairperson Secretariat, ZP Bhawan, Mall Road, Almora',
       locationHi: 'अध्यक्ष कक्ष, जिला पंचायत भवन, माल रोड, अल्मोड़ा',
       photo: CH_IMAGE_URL
@@ -98,8 +89,8 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
       designation: 'Additional Chief Officer (AMA)',
       designationHi: 'अपर मुख्य अधिकारी (AMA)',
       category: 'leadership',
-      email: 'ama.zp-almora@uk.gov.in',
-      phone: '+91 05962-230182',
+      email: 'amazpalmora@gmail.com',
+      phone: '+91 9528738674',
       location: 'Executive Wing, Vikas Bhawan / ZP Secretariat, Almora',
       locationHi: 'अपर मुख्य अधिकारी कक्ष, विकास भवन / जिला पंचायत, अल्मोड़ा',
       photo: AMA_IMAGE_URL
@@ -110,13 +101,14 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
   const officeStaff: StaffMember[] = useMemo(() => [
     {
       id: 'off-1',
-      name: 'Shri Prakash Chandra Joshi',
-      nameHi: 'श्री प्रकाश चंद्र जोशी',
-      designation: 'District Panchayati Raj Officer (DPRO)',
-      designationHi: 'जिला पंचायत राज अधिकारी (DPRO)',
+      name: 'Dharmendra Rawat',
+      nameHi: 'धर्मेंद्र रावत',
+      designation: 'Tax Inspector',
+      designationHi: 'कर निरीक्षक',
       category: 'office',
-      email: 'dpro.almora@uk.gov.in',
-      phone: '+91 94120-56201'
+      email: 'dheerajrawat72@gmail.com',
+      phone: '+91 9536009913',
+      photo: staff_1
     },
     {
       id: 'off-2',
@@ -205,13 +197,14 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
     },
     {
       id: 'site-2',
-      name: 'Shri Ramesh Chandra Tewari',
-      nameHi: 'श्री रमेश चंद्र तिवारी',
-      designation: 'MRF Plant Operations Supervisor - Ranikhet',
-      designationHi: 'एमआरएफ प्लांट परिचालन सुपरवाइजर - रानीखेत',
+      name: 'Puran Chandra Paliwal',
+      nameHi: 'पूरन चंद्र पालीवाल',
+      designation: 'Tax Collector',
+      designationHi: 'कर संग्राहक',
       category: 'site',
-      email: 'mrf.ranikhet@uk.gov.in',
-      phone: '+91 98371-22415'
+      email: 'puranchandra9419@gmail.com',
+      phone: '+91 9410304755',
+      photo:site_2
     },
     {
       id: 'site-3',
@@ -242,37 +235,6 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
       category: 'site',
       email: 'field.tarikhet@uk.gov.in',
       phone: '+91 98374-55948'
-    },
-    {
-      id: 'site-6',
-      name: 'Shri Anand Ballabh Pandey',
-      nameHi: 'श्री आनंद बल्लभ पांडे',
-      designation: 'Compactor Fleet & Transfer Station Lead',
-      designationHi: 'कॉम्पैक्टर वाहन व ट्रांसफर स्टेशन संचालक',
-      category: 'site',
-      email: 'transport.almora@uk.gov.in',
-      phone: '+91 98375-66059'
-    },
-    {
-      id: 'site-7',
-      name: 'Shri Jagdish Singh Danu',
-      nameHi: 'श्री जगदीश सिंह दानू',
-      designation: 'Block Sanitation Coordinator - Bhikiyasain',
-      designationHi: 'विकासखंड स्वच्छता समन्वयक - भिकियासैंण',
-      category: 'site',
-      email: 'field.bhikiyasain@uk.gov.in',
-      phone: '+91 98376-77160',
-    
-    },
-    {
-      id: 'site-8',
-      name: 'Shri Nandan Singh Rawat',
-      nameHi: 'श्री नंदन सिंह रावत',
-      designation: 'Composting & Agro-Waste Unit Lead - Chaukhutiya',
-      designationHi: 'कम्पोस्टिंग व कृषि अपशिष्ट इकाई प्रभारी - चौखुटिया',
-      category: 'site',
-      email: 'compost.chaukhutiya@uk.gov.in',
-      phone: '+91 98377-88271'
     }
   ], []);
 
@@ -280,12 +242,15 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
   const filterList = (list: StaffMember[]) => {
     if (!searchQuery.trim()) return list;
     const q = searchQuery.toLowerCase().trim();
+    const qDigits = q.replace(/[^0-9]/g, '');
     return list.filter((item) => {
       const matchName = item.name.toLowerCase().includes(q) || item.nameHi.includes(q);
       const matchDesig = item.designation.toLowerCase().includes(q) || item.designationHi.includes(q);
       const matchDept = (item.department?.toLowerCase().includes(q) ?? false) || (item.departmentHi?.includes(q) ?? false);
-      const matchPhone = item.phone.replace(/[^0-9]/g, '').includes(q.replace(/[^0-9]/g, ''));
-      const matchEmail = item.email.toLowerCase().includes(q);
+      const matchPhone = item.phone
+        ? (qDigits.length > 0 ? item.phone.replace(/[^0-9]/g, '').includes(qDigits) : item.phone.toLowerCase().includes(q))
+        : false;
+      const matchEmail = item.email ? item.email.toLowerCase().includes(q) : false;
       const matchLoc = (item.location?.toLowerCase().includes(q) ?? false) || (item.locationHi?.includes(q) ?? false);
       return matchName || matchDesig || matchDept || matchPhone || matchEmail || matchLoc;
     });
@@ -423,15 +388,13 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                     <div className="pt-4 border-t border-slate-200/80 space-y-3">
                       
                       {/* Phone Row */}
-                      <div className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-sm hover:border-slate-300 transition">
+                      {member.phone ? (
+                        <div className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-sm hover:border-slate-300 transition">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0">
                             <Phone className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
-                              {isHi ? 'आधिकारिक दूरभाष / फोन' : 'Official Phone'}
-                            </span>
                             <a
                               href={`tel:${member.phone.replace(/[^0-9+]/g, '')}`}
                               className="text-xs sm:text-sm font-bold text-navy-900 hover:text-blue-700 hover:underline transition truncate block"
@@ -444,7 +407,7 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleCopy(member.phone, isHi ? 'फोन नंबर' : 'Phone Number', `phone-${member.id}`)}
+                            onClick={() => handleCopy(member.phone!, isHi ? 'फोन नंबर' : 'Phone Number', `phone-${member.id}`)}
                             title={isHi ? 'कॉपी करें' : 'Copy number'}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-navy-900 hover:bg-slate-100 transition"
                           >
@@ -452,17 +415,16 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                           </button>
                         </div>
                       </div>
+                      ) : null}
 
                       {/* Email Row */}
-                      <div className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-sm hover:border-slate-300 transition">
+                      {member.email ? (
+                        <div className="flex items-center justify-between gap-2 bg-white p-2.5 rounded-xl border border-slate-200/90 shadow-sm hover:border-slate-300 transition">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center shrink-0">
                             <Mail className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
-                            <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-semibold">
-                              {isHi ? 'आधिकारिक ईमेल' : 'Official Email'}
-                            </span>
                             <a
                               href={`mailto:${member.email}`}
                               className="text-xs sm:text-sm font-bold text-navy-900 hover:text-blue-700 hover:underline transition truncate block"
@@ -475,7 +437,7 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                         <div className="flex items-center gap-1.5 shrink-0">
                           <button
                             type="button"
-                            onClick={() => handleCopy(member.email, isHi ? 'ईमेल' : 'Email Address', `email-${member.id}`)}
+                            onClick={() => handleCopy(member.email!, isHi ? 'ईमेल' : 'Email Address', `email-${member.id}`)}
                             title={isHi ? 'कॉपी करें' : 'Copy email'}
                             className="p-1.5 rounded-lg text-slate-400 hover:text-navy-900 hover:bg-slate-100 transition"
                           >
@@ -483,6 +445,18 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                           </button>
                         </div>
                       </div>
+                      ) : null}
+
+                      {/* Fallback if neither phone nor email */}
+                      {!member.phone && !member.email && (
+                        <div className="flex items-center justify-between gap-2 bg-slate-50 p-2.5 rounded-xl border border-dashed border-slate-200 text-slate-500 text-xs">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <MapPin className="w-4 h-4 text-amber-600 shrink-0" />
+                            <span className="truncate">{isHi ? 'सचिवालय से संपर्क करें' : 'Contact via Secretariat'}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-slate-400 shrink-0">ZP Almora</span>
+                        </div>
+                      )}
 
                     </div>
                   </div>
@@ -516,14 +490,15 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                   return (
                     <div
                       key={staff.id}
-                      className="group bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400/80 transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                      className="group bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-blue-400/80 transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden"
                     >
 
-                      <div>
-                        {/* Header: Avatar + Badge */}
-                        <div className="flex items-start justify-between gap-3 mb-4 pt-1">
-                          <div className="relative">
-                            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 flex items-center justify-center">
+                      <div className="flex-1 flex flex-col mb-3.5">
+                        {/* Header: Left Image + Right Name & Designation */}
+                        <div className="flex items-center gap-3.5">
+                          {/* Left Avatar */}
+                          <div className="relative shrink-0">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100 flex items-center justify-center">
                               {staff.photo ? (
                                 <img
                                   src={staff.photo}
@@ -536,71 +511,84 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                                   }}
                                 />
                               ) : null}
-                              <div className={`avatar-fallback ${staff.photo ? 'hidden' : ''} w-full h-full bg-gradient-to-br ${getAvatarGradient(staff.category, staff.id)} flex items-center justify-center font-bold text-base`}>
+                              <div className={`avatar-fallback ${staff.photo ? 'hidden' : ''} w-full h-full bg-gradient-to-br ${getAvatarGradient(staff.category, staff.id)} flex items-center justify-center font-bold text-base sm:text-lg`}>
                                 {getInitials(staff.name)}
                               </div>
                             </div>
                           </div>
+
+                          {/* Right: Name + Designation (Normal Text, No Background) */}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-base sm:text-lg text-navy-900 group-hover:text-blue-900 transition-colors leading-snug">
+                              {isHi ? staff.nameHi : staff.name}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 leading-snug">
+                              {isHi ? staff.designationHi : staff.designation}
+                            </p>
+                          </div>
                         </div>
-
-                        {/* Name */}
-                        <h3 className="font-bold text-base text-navy-900 group-hover:text-blue-900 transition-colors leading-snug">
-                          {isHi ? staff.nameHi : staff.name}
-                        </h3>
-
-                        {/* Designation ("Destination") */}
-                        <div className="mt-1.5 mb-2.5">
-                          <span className="inline-block bg-blue-50/90 text-blue-950 font-bold text-xs px-2.5 py-1 rounded-md border border-blue-200/80 leading-tight">
-                            {isHi ? staff.designationHi : staff.designation}
-                          </span>
-                        </div>
-
                       </div>
 
                       {/* Contact Info (Phone & Email) */}
-                      <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                      <div className="pt-3 border-t border-slate-100 space-y-2 text-xs mt-auto">
                         
                         {/* Phone Number */}
-                        <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <a
-                              href={`tel:${staff.phone.replace(/[^0-9+]/g, '')}`}
-                              className="font-bold text-navy-900 hover:text-blue-700 truncate"
+                        {staff.phone ? (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 hover:bg-slate-100/70 hover:border-slate-300 transition">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <a
+                                href={`tel:${staff.phone.replace(/[^0-9+]/g, '')}`}
+                                className="font-bold text-navy-900 hover:text-blue-700 truncate"
+                              >
+                                {staff.phone}
+                              </a>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(staff.phone!, isHi ? 'फोन' : 'Phone', `phone-${staff.id}`)}
+                              title={isHi ? 'कॉपी करें' : 'Copy'}
+                              className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
                             >
-                              {staff.phone}
-                            </a>
+                              {phoneCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(staff.phone, isHi ? 'फोन' : 'Phone', `phone-${staff.id}`)}
-                            title={isHi ? 'कॉपी करें' : 'Copy'}
-                            className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
-                          >
-                            {phoneCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                        ) : null}
 
                         {/* Email */}
-                        <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
-                            <a
-                              href={`mailto:${staff.email}`}
-                              className="font-medium text-navy-900 hover:text-blue-700 truncate text-[11px]"
+                        {staff.email ? (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 hover:bg-slate-100/70 hover:border-slate-300 transition">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Mail className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              <a
+                                href={`mailto:${staff.email}`}
+                                className="font-medium text-navy-900 hover:text-blue-700 truncate text-[11px]"
+                              >
+                                {staff.email}
+                              </a>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(staff.email!, isHi ? 'ईमेल' : 'Email', `email-${staff.id}`)}
+                              title={isHi ? 'कॉपी करें' : 'Copy'}
+                              className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
                             >
-                              {staff.email}
-                            </a>
+                              {emailCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(staff.email, isHi ? 'ईमेल' : 'Email', `email-${staff.id}`)}
-                            title={isHi ? 'कॉपी करें' : 'Copy'}
-                            className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
-                          >
-                            {emailCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                        ) : null}
+
+                        {/* Fallback if neither exists */}
+                        {!staff.phone && !staff.email && (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50/70 p-2.5 rounded-xl border border-dashed border-slate-200 text-slate-500">
+                            <span className="text-[11px] font-medium text-slate-500">
+                              {isHi ? 'कार्यालय से संपर्क करें' : 'Contact via ZP Office'}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400">
+                              Almora
+                            </span>
+                          </div>
+                        )}
 
                       </div>
                     </div>
@@ -634,13 +622,14 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                   return (
                     <div
                       key={worker.id}
-                      className="group bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-emerald-400/80 transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+                      className="group bg-white/95 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-emerald-400/80 transition-all duration-300 flex flex-col justify-between h-full relative overflow-hidden"
                     >
-                      <div>
-                        {/* Header: Avatar + Status */}
-                        <div className="flex items-start justify-between gap-3 mb-4 pt-1">
-                          <div className="relative">
-                            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-slate-200 shadow-sm bg-slate-100 flex items-center justify-center">
+                      <div className="flex-1 flex flex-col mb-3.5">
+                        {/* Header: Left Image + Right Name & Designation */}
+                        <div className="flex items-center gap-3.5">
+                          {/* Left Avatar */}
+                          <div className="relative shrink-0">
+                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden border border-slate-200 shadow-xs bg-slate-100 flex items-center justify-center">
                               {worker.photo ? (
                                 <img
                                   src={worker.photo}
@@ -653,70 +642,84 @@ const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
                                   }}
                                 />
                               ) : null}
-                              <div className={`avatar-fallback ${worker.photo ? 'hidden' : ''} w-full h-full bg-gradient-to-br ${getAvatarGradient(worker.category, worker.id)} flex items-center justify-center font-bold text-base`}>
+                              <div className={`avatar-fallback ${worker.photo ? 'hidden' : ''} w-full h-full bg-gradient-to-br ${getAvatarGradient(worker.category, worker.id)} flex items-center justify-center font-bold text-base sm:text-lg`}>
                                 {getInitials(worker.name)}
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Name */}
-                        <h3 className="font-bold text-base text-navy-900 group-hover:text-emerald-900 transition-colors leading-snug">
-                          {isHi ? worker.nameHi : worker.name}
-                        </h3>
-
-                        {/* Designation ("Destination") */}
-                        <div className="mt-1.5 mb-2.5">
-                          <span className="inline-block bg-emerald-50/90 text-emerald-950 font-bold text-xs px-2.5 py-1 rounded-md border border-emerald-200/80 leading-tight">
-                            {isHi ? worker.designationHi : worker.designation}
-                          </span>
+                          {/* Right: Name + Designation (Normal Text, No Background) */}
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-bold text-base sm:text-lg text-navy-900 group-hover:text-emerald-900 transition-colors leading-snug">
+                              {isHi ? worker.nameHi : worker.name}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5 leading-snug">
+                              {isHi ? worker.designationHi : worker.designation}
+                            </p>
+                          </div>
                         </div>
                       </div>
 
                       {/* Contact Info (Phone & Email) */}
-                      <div className="pt-3 border-t border-slate-100 space-y-2 text-xs">
+                      <div className="pt-3 border-t border-slate-100 space-y-2 text-xs mt-auto">
                         
                         {/* Phone Number */}
-                        <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <a
-                              href={`tel:${worker.phone.replace(/[^0-9+]/g, '')}`}
-                              className="font-bold text-navy-900 hover:text-emerald-700 truncate"
+                        {worker.phone ? (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 hover:bg-slate-100/70 hover:border-slate-300 transition">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Phone className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              <a
+                                href={`tel:${worker.phone.replace(/[^0-9+]/g, '')}`}
+                                className="font-bold text-navy-900 hover:text-emerald-700 truncate"
+                              >
+                                {worker.phone}
+                              </a>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(worker.phone!, isHi ? 'फोन' : 'Phone', `phone-${worker.id}`)}
+                              title={isHi ? 'कॉपी करें' : 'Copy'}
+                              className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
                             >
-                              {worker.phone}
-                            </a>
+                              {phoneCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(worker.phone, isHi ? 'फोन' : 'Phone', `phone-${worker.id}`)}
-                            title={isHi ? 'कॉपी करें' : 'Copy'}
-                            className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
-                          >
-                            {phoneCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                        ) : null}
 
                         {/* Email */}
-                        <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <Mail className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-                            <a
-                              href={`mailto:${worker.email}`}
-                              className="font-medium text-navy-900 hover:text-emerald-700 truncate text-[11px]"
+                        {worker.email ? (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50 p-2 rounded-xl border border-slate-200/60 hover:bg-slate-100/70 hover:border-slate-300 transition">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Mail className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                              <a
+                                href={`mailto:${worker.email}`}
+                                className="font-medium text-navy-900 hover:text-emerald-700 truncate text-[11px]"
+                              >
+                                {worker.email}
+                              </a>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleCopy(worker.email!, isHi ? 'ईमेल' : 'Email', `email-${worker.id}`)}
+                              title={isHi ? 'कॉपी करें' : 'Copy'}
+                              className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
                             >
-                              {worker.email}
-                            </a>
+                              {emailCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => handleCopy(worker.email, isHi ? 'ईमेल' : 'Email', `email-${worker.id}`)}
-                            title={isHi ? 'कॉपी करें' : 'Copy'}
-                            className="p-1 rounded text-slate-400 hover:text-navy-900 transition"
-                          >
-                            {emailCopied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                          </button>
-                        </div>
+                        ) : null}
+
+                        {/* Fallback if neither exists */}
+                        {!worker.phone && !worker.email && (
+                          <div className="flex items-center justify-between gap-1.5 bg-slate-50/70 p-2.5 rounded-xl border border-dashed border-slate-200 text-slate-500">
+                            <span className="text-[11px] font-medium text-slate-500">
+                              {isHi ? 'क्षेत्रीय कार्यालय से संपर्क करें' : 'Contact via Sector Office'}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400">
+                              ZP Site
+                            </span>
+                          </div>
+                        )}
 
                       </div>
                     </div>

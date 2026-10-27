@@ -189,7 +189,8 @@ export const LiveQuotesSection: React.FC = () => {
   ]);
 
   return (
-    <section 
+    <section
+      id = "Livequotes"
       aria-label="Live Quotes Section"
       className="relative bg-gradient-to-b from-[#07162c] via-[#091c38] to-[#07162c] text-white py-14 sm:py-20 overflow-hidden border-b border-blue-900/30"
     >
