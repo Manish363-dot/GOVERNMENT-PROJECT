@@ -18,9 +18,15 @@ export function errorHandler(
 
   // Check for known error types
   if (err.name === 'ZodError') {
+    let details: any;
+    try {
+      details = (err as any).issues || (err as any).errors || JSON.parse(err.message);
+    } catch {
+      details = err.message;
+    }
     res.status(400).json({
       error: 'Validation failed',
-      details: JSON.parse(err.message),
+      details,
     });
     return;
   }

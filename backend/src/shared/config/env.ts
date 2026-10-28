@@ -58,10 +58,12 @@ export function isOriginAllowed(origin?: string): boolean {
     return true;
   }
 
-  // Check localhost & 127.0.0.1 on any port for local development
-  const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?$/.test(normalized);
-  if (isLocalhost) {
-    return true;
+  // Allow localhost & 127.0.0.1 on any port only during development
+  if (env.NODE_ENV !== 'production') {
+    const isLocalhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:[0-9]+)?$/.test(normalized);
+    if (isLocalhost) {
+      return true;
+    }
   }
 
   return false;

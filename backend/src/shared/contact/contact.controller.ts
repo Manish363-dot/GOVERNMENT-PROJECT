@@ -2,6 +2,15 @@ import { Request, Response } from 'express';
 import { ContactFormInput } from './contact.schema';
 import { sendEmail } from '../notifications/email.service';
 
+function escapeHtml(str: string): string {
+  return (str || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function submitInquiry(req: Request, res: Response): Promise<void> {
   try {
     const { name, email, phone, subject, message }: ContactFormInput = req.body;
@@ -13,8 +22,15 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
 
     const adminEmail = process.env.ADMIN_CONTACT_EMAIL || process.env.SMTP_USER || 'ama@zilapanchayatalmora.in';
 
+    // Sanitize user inputs against HTML and header injection attacks
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safePhone = escapeHtml(phone || 'Not provided');
+    const safeMessage = escapeHtml(message);
+    const cleanHeaderName = (name || '').replace(/[\r\n]/g, ' ').trim().slice(0, 60);
+
     // 1. Email notification to District Administration
-    const adminSubject = `[जिला पंचायत अल्मोड़ा - नागरिक संदेश/शिकायत] प्रेषक: ${name}`;
+    const adminSubject = `[जिला पंचायत अल्मोड़ा - नागरिक संदेश/शिकायत] प्रेषक: ${cleanHeaderName}`;
     const adminHtml = `
       <!DOCTYPE html>
       <html>
@@ -49,12 +65,12 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
             <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:12px; color:#0369a1;">
               <strong>दिनांक (Date):</strong> ${dateFormatted}
             </div>
-            <div class="info-row"><span class="label">नागरिक का नाम (Name):</span><span class="value">${name}</span></div>
-            <div class="info-row"><span class="label">ईमेल पता (Email):</span><span class="value">${email}</span></div>
-            <div class="info-row"><span class="label">दूरभाष / मोबाइल (Phone):</span><span class="value">${phone || 'Not provided'}</span></div>
+            <div class="info-row"><span class="label">नागरिक का नाम (Name):</span><span class="value">${safeName}</span></div>
+            <div class="info-row"><span class="label">ईमेल पता (Email):</span><span class="value">${safeEmail}</span></div>
+            <div class="info-row"><span class="label">दूरभाष / मोबाइल (Phone):</span><span class="value">${safePhone}</span></div>
             
             <p style="margin:18px 0 6px; font-size:12px; font-weight:700; color:#475569; text-transform:uppercase;">संदेश / शिकायत विवरण (Message):</p>
-            <div class="message-box">${message}</div>
+            <div class="message-box">${safeMessage}</div>
           </div>
           <div class="footer">
             यह संदेश जिला पंचायत अल्मोड़ा के आधिकारिक वेब पोर्टल के माध्यम से प्राप्त हुआ है।
@@ -93,7 +109,7 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
             <p>नागरिक संवाद एवं शिकायत प्रकोष्ठ • उत्तराखण्ड शासन</p>
           </div>
           <div class="body">
-            <p>आदरणीय <strong>${name}</strong> जी,</p>
+            <p>आदरणीय <strong>${safeName}</strong> जी,</p>
             <p>कार्यालय जिला पंचायत अल्मोड़ा से संपर्क करने के लिए धन्यवाद। आपका संदेश / शिकायत हमें प्राप्त हो गई है।</p>
 
             <p style="font-size:13px; color:#475569; line-height:1.6;">

@@ -36,7 +36,7 @@ export function isValidRealWorldMobile(mobile: string): { valid: boolean; reason
 }
 
 // Memory map for active complaint OTPs
-const complaintOtpMap = new Map<string, { otp: string; expiresAt: number; attempts: number; verified?: boolean }>();
+const complaintOtpMap = new Map<string, { otp: string; expiresAt: number; attempts: number; lastSentAt: number; verified?: boolean }>();
 
 export async function sendComplaintOtp(mobile: string) {
   const check = isValidRealWorldMobile(mobile);
@@ -45,6 +45,12 @@ export async function sendComplaintOtp(mobile: string) {
   }
 
   const cleanMobile = mobile.replace(/\D/g, '');
+  const existingRecord = complaintOtpMap.get(cleanMobile);
+  if (existingRecord && Date.now() - existingRecord.lastSentAt < 60 * 1000) {
+    const remainingSeconds = Math.ceil((60 * 1000 - (Date.now() - existingRecord.lastSentAt)) / 1000);
+    throw new Error(`कृपया नया OTP अनुरोध करने से पहले ${remainingSeconds} सेकंड प्रतीक्षा करें (Please wait ${remainingSeconds}s before requesting a new OTP).`);
+  }
+
   const otp = crypto.randomInt(100000, 999999).toString();
   const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes
 
@@ -52,19 +58,25 @@ export async function sendComplaintOtp(mobile: string) {
     otp,
     expiresAt,
     attempts: 0,
+    lastSentAt: Date.now(),
     verified: false,
   });
 
   // Dispatch OTP to Citizen via WhatsApp Cloud API
   const waResult = await whatsappService.sendWhatsAppOtp(cleanMobile, otp);
 
+  // In production, NEVER expose devOtp in the response to prevent verification bypass
+  const isDev = process.env.NODE_ENV !== 'production';
+
   return {
     success: true,
     message: waResult.success 
       ? `सत्यापन कोड (OTP) आपके WhatsApp नंबर +91 ${cleanMobile} पर भेज दिया गया है।`
-      : `सत्यापन कोड (OTP) उत्पन्न किया गया (+91 ${cleanMobile})`,
+      : isDev
+        ? `सत्यापन कोड (OTP) उत्पन्न किया गया (+91 ${cleanMobile})`
+        : `WhatsApp पर OTP भेजने में समस्या हुई। कृपया सुनिश्चित करें कि नंबर सक्रिय WhatsApp पर है।`,
     whatsappSent: waResult.success,
-    devOtp: waResult.success ? undefined : otp, // Only fallback on screen if WhatsApp delivery was not successful
+    devOtp: (!waResult.success && isDev) ? otp : undefined,
   };
 }
 
