@@ -9,6 +9,7 @@ import { Toaster } from 'sonner';
 import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
 import { RouteSEO } from '@/components/RouteSEO';
+import { WelcomeSplash } from '@/components/WelcomeSplash';
 import { RentalComingSoonProvider } from '@/contexts/RentalComingSoonContext';
 
 // --- Lazy Load Pages ---
@@ -96,6 +97,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <WelcomeSplash />
         <RentalComingSoonProvider>
           <AuthRedirectHandler />
           <GooglePasskeyModal />
