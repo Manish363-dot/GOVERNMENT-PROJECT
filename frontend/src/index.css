@@ -440,4 +440,68 @@ canvas {
 .animate-marquee:hover {
   animation-play-state: paused;
 }
-
+
+/* ============================================================ */
+/* Accessibility � High Contrast Mode (GIGW Standard)           */
+/* ============================================================ */
+
+html.high-contrast {
+  filter: contrast(125%) brightness(98%);
+}
+
+html.high-contrast img,
+html.high-contrast video {
+  filter: contrast(100%);
+}
+
+/* ============================================================ */
+/* Accessibility — Hide Images (Distraction Free / Screen Reader)*/
+/* ============================================================ */
+
+html.hide-images img,
+html.hide-images video,
+html.hide-images [style*="background-image"] {
+  visibility: hidden !important;
+}
+
+/* ============================================================ */
+/* Accessibility — Big Cursor (High Visibility Mouse Pointer)   */
+/* ============================================================ */
+
+html.big-cursor,
+html.big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 36 36'%3E%3Cpath d='M4 4 L4 28 L11 21 L18 33 L22 31 L15 19 L25 19 Z' fill='%23111827' stroke='%23fef08a' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E"), auto !important;
+}
+
+html.big-cursor a,
+html.big-cursor button,
+html.big-cursor [role="button"],
+html.big-cursor input,
+html.big-cursor select,
+html.big-cursor textarea {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='38' viewBox='0 0 38 38'%3E%3Cpath d='M5 5 L5 29 L12 22 L19 34 L23 32 L16 20 L26 20 Z' fill='%23ea580c' stroke='%23ffffff' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E"), pointer !important;
+}
+
+/* ============================================================ */
+/* Accessibility — Highlight Links (High Visibility Anchors)    */
+/* ============================================================ */
+
+html.highlight-links a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2.5px !important;
+  text-underline-offset: 3px !important;
+  background-color: #fef08a !important;
+  color: #0b1b36 !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 0 1px #ca8a04 !important;
+  font-weight: 700 !important;
+}
+
+html.highlight-links button:not([role="toolbar"] *),
+html.highlight-links [role="button"]:not([role="toolbar"] *) {
+  outline: 2px dashed #f59e0b !important;
+  outline-offset: 2px !important;
+}
+
+

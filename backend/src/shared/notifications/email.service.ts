@@ -1,4 +1,5 @@
 import nodemailer, { Transporter } from 'nodemailer';
+import dotenv from 'dotenv';
 
 export interface SendEmailOptions {
   to: string;
@@ -7,11 +8,15 @@ export interface SendEmailOptions {
   text?: string;
 }
 
+let cachedConfigKey = '';
 let transporter: Transporter | null = null;
 
 function getTransporter(): Transporter | null {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587', 10);
+  // Always reload .env with override so changes take effect immediately
+  dotenv.config({ override: true });
+
+  const host = process.env.SMTP_HOST || 'smtpout.secureserver.net';
+  const port = parseInt(process.env.SMTP_PORT || '465', 10);
   const user = process.env.SMTP_USER;
   const pass = process.env.SMTP_PASS;
 
@@ -19,13 +24,15 @@ function getTransporter(): Transporter | null {
     return null;
   }
 
-  if (!transporter) {
+  const currentConfigKey = `${host}:${port}:${user}:${pass}`;
+  if (!transporter || cachedConfigKey !== currentConfigKey) {
     transporter = nodemailer.createTransport({
       host,
       port,
       secure: port === 465,
       auth: { user, pass },
     });
+    cachedConfigKey = currentConfigKey;
   }
 
   return transporter;
@@ -36,7 +43,7 @@ function getTransporter(): Transporter | null {
  */
 export async function sendEmail(options: SendEmailOptions): Promise<{ sent: boolean; devMode: boolean }> {
   const mailer = getTransporter();
-  const from = process.env.SMTP_FROM || `"Zila Panchayat Safai Portal" <${process.env.SMTP_USER || 'no-reply@uk.gov.in'}>`;
+  const from = process.env.SMTP_FROM || `"कार्यालय जिला पंचायत अल्मोड़ा" <${process.env.SMTP_USER || 'ama@zilapanchayatalmora.in'}>`;
 
   if (!mailer) {
     console.log('\n========================================================');
@@ -56,7 +63,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ sent: bool
       text: options.text,
       html: options.html,
     });
-    console.log(`✅ Email successfully sent to ${options.to}`);
+    console.log(`✅ Email successfully sent to ${options.to} via ${process.env.SMTP_USER}`);
     return { sent: true, devMode: false };
   } catch (error: any) {
     console.error('❌ Failed to send email via SMTP:', error.message);
@@ -70,8 +77,8 @@ export async function sendEmail(options: SendEmailOptions): Promise<{ sent: bool
  * Send a 6-digit Verification OTP email with official Uttarakhand Government styling.
  */
 export async function sendVerificationOtpEmail(toEmail: string, fullName: string, otp: string): Promise<boolean> {
-  const subject = `[Zila Panchayat Safai] Your Verification Code`;
-  const text = `Your Zila Panchayat Safai official verification code is: ${otp}. Valid for 15 minutes.`;
+  const subject = `[जिला पंचायत अल्मोड़ा] सत्यापन कोड (Verification Code)`;
+  const text = `कार्यालय जिला पंचायत अल्मोड़ा - आपका सत्यापन कोड: ${otp}। यह कोड 15 मिनट के लिए मान्य है।`;
 
   const html = `
     <!DOCTYPE html>
@@ -103,25 +110,24 @@ export async function sendVerificationOtpEmail(toEmail: string, fullName: string
           <div class="tricolor-saffron" style="background:#ea580c; width:33.4%;"></div>
         </div>
         <div class="header">
-          <h1>Zila Panchayat Safai</h1>
-          <p>Government of Uttarakhand • Command Portal</p>
+          <h1>कार्यालय जिला पंचायत अल्मोड़ा</h1>
+          <p>उत्तराखण्ड शासन • Zila Panchayat Almora</p>
         </div>
         <div class="content">
-          <p>Dear <strong>${fullName || 'Official'}</strong>,</p>
-          <p>You have submitted an administrative registration request for the Zila Panchayat Smart Waste Collection Tracking Portal.</p>
-          <p>To verify your Gmail address and activate your account, please enter the following 6-digit verification code:</p>
+          <p>आदरणीय <strong>${fullName || 'अधिकारी / Official'}</strong>,</p>
+          <p>कार्यालय जिला पंचायत अल्मोड़ा के आधिकारिक पोर्टल पर प्रशासनिक खाते के सत्यापन हेतु आपका 6-अंकीय सत्यापन कोड नीचे दिया गया है:</p>
           
           <div class="otp-box">
             <div class="otp-code">${otp}</div>
-            <p style="margin:8px 0 0 0; font-size:12px; color:#64748b;">Valid for 15 minutes</p>
+            <p style="margin:8px 0 0 0; font-size:12px; color:#64748b;">मान्य समय: 15 मिनट (Valid for 15 minutes)</p>
           </div>
 
           <p style="font-size:13px; color:#64748b;">
-            ⚠️ <strong>Security Notice:</strong> Do not share this passkey or verification code with anyone. If you did not initiate this request, please contact your district IT administrator immediately.
+            ⚠️ <strong>सुरक्षा सूचना:</strong> यह सत्यापन कोड किसी के साथ साझा न करें। यदि आपने यह अनुरोध नहीं किया था, तो कृपया तुरंत जिला आईटी प्रशासन से संपर्क करें।
           </p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Government of Uttarakhand. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन। सर्वाधिकार सुरक्षित।</p>
           <p>NIC Cloud Gateway • 256-Bit SSL Encrypted Communication</p>
         </div>
       </div>
@@ -137,8 +143,8 @@ export async function sendVerificationOtpEmail(toEmail: string, fullName: string
  * Send a 6-digit Password Reset OTP email.
  */
 export async function sendPasswordResetOtpEmail(toEmail: string, otp: string): Promise<boolean> {
-  const subject = `[Zila Panchayat Safai] Password Reset Request`;
-  const text = `Your Zila Panchayat Safai password reset code is: ${otp}. Valid for 10 minutes.`;
+  const subject = `[जिला पंचायत अल्मोड़ा] पासवर्ड रीसेट कोड (Password Reset Code)`;
+  const text = `कार्यालय जिला पंचायत अल्मोड़ा - आपका पासवर्ड रीसेट कोड: ${otp}। यह कोड 10 मिनट के लिए मान्य है।`;
 
   const html = `
     <!DOCTYPE html>
@@ -170,25 +176,25 @@ export async function sendPasswordResetOtpEmail(toEmail: string, otp: string): P
           <div class="tricolor-saffron" style="background:#ea580c; width:33.4%;"></div>
         </div>
         <div class="header">
-          <h1>Zila Panchayat Safai</h1>
-          <p>Government of Uttarakhand • Security Alert</p>
+          <h1>कार्यालय जिला पंचायत अल्मोड़ा</h1>
+          <p>उत्तराखण्ड शासन • Security Alert</p>
         </div>
         <div class="content">
-          <p>Dear <strong>Official</strong>,</p>
-          <p>We received a request to reset the password for your Zila Panchayat Safai Portal account.</p>
-          <p>To proceed, please enter the following 6-digit verification code:</p>
+          <p>आदरणीय <strong>अधिकारी / Official</strong>,</p>
+          <p>कार्यालय जिला पंचायत अल्मोड़ा पोर्टल के आपके प्रशासनिक खाते का पासवर्ड रीसेट करने का अनुरोध प्राप्त हुआ है।</p>
+          <p>आगे बढ़ने के लिए, कृपया निम्नलिखित 6-अंकीय सत्यापन कोड (OTP) दर्ज करें:</p>
           
           <div class="otp-box">
             <div class="otp-code">${otp}</div>
-            <p style="margin:8px 0 0 0; font-size:12px; color:#64748b;">Valid for 10 minutes</p>
+            <p style="margin:8px 0 0 0; font-size:12px; color:#64748b;">मान्य समय: 10 मिनट (Valid for 10 minutes)</p>
           </div>
 
           <p style="font-size:13px; color:#64748b;">
-            ⚠️ <strong>Security Notice:</strong> If you did not request a password reset, you can safely ignore this email. Your password will not be changed.
+            ⚠️ <strong>सुरक्षा सूचना:</strong> यदि आपने पासवर्ड रीसेट का अनुरोध नहीं किया था, तो आप इस ईमेल को सुरक्षित रूप से अनदेखा कर सकते हैं। आपका खाता पूरी तरह सुरक्षित रहेगा।
           </p>
         </div>
         <div class="footer">
-          <p>© ${new Date().getFullYear()} Government of Uttarakhand. All rights reserved.</p>
+          <p>© ${new Date().getFullYear()} कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन। सर्वाधिकार सुरक्षित।</p>
           <p>NIC Cloud Gateway • 256-Bit SSL Encrypted Communication</p>
         </div>
       </div>

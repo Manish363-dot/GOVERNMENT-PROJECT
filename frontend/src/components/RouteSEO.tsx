@@ -11,7 +11,7 @@ interface SEOConfig {
   robots?: string;
 }
 
-const DOMAIN = 'https://almora-swachhata.uk.gov.in';
+const DOMAIN = 'https://zilapanchayatalmora.in';
 
 // Helper to set or create <meta> tags
 function setMetaTag(attrName: 'name' | 'property', attrValue: string, content: string) {
@@ -38,12 +38,20 @@ function setLinkTag(rel: string, href: string) {
 const SEO_MAP: Record<string, SEOConfig> = {
   // ── Public Main Pages ──
   '/': {
-    titleHi: 'जिला पंचायत अल्मोड़ा - डिजिटल स्वच्छता एवं अपशिष्ट प्रबंधन पोर्टल',
-    titleEn: 'Zila Panchayat Almora - Digital Sanitation & Waste Management Portal',
-    descHi: 'कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखंड शासन। लाइव जीपीएस कचरा वाहन ट्रैकिंग, ऑनलाइन नागरिक सफाई शिकायत निवारण एवं स्वच्छता प्रतिज्ञा पोर्टल।',
-    descEn: 'Official Portal of Zila Panchayat Almora, Govt. of Uttarakhand. Live GPS waste vehicle tracking, citizen sanitation grievance redressal, and cleanliness initiatives.',
+    titleHi: 'जिला पंचायत अल्मोड़ा',
+    titleEn: 'Zila Panchayat Almora',
+    descHi: 'कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन। पंचायती राज, 11 विकासखंड, ग्रामीण अवसंरचना, नागरिक सेवाएं एवं संपूर्ण जनपद विवरण।',
+    descEn: 'Official Portal of Zila Panchayat Almora, Govt. of Uttarakhand. Panchayati Raj, 11 Development Blocks, rural infrastructure, citizen services, and administrative governance.',
     canonicalPath: '/',
     robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
+  },
+  '/safai': {
+    titleHi: 'ठोस अपशिष्ट एवं स्वच्छता प्रबंधन पोर्टल | जिला पंचायत अल्मोड़ा',
+    titleEn: 'Solid Waste & Sanitation Management Portal | Zila Panchayat Almora',
+    descHi: 'कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन। लाइव जीपीएस कचरा वाहन ट्रैकिंग, ऑनलाइन नागरिक सफाई शिकायत निवारण एवं स्वच्छता प्रतिज्ञा पोर्टल।',
+    descEn: 'Dedicated Solid Waste Management (SWM) portal of Zila Panchayat Almora. Real-time GPS fleet tracking and citizen grievance redressal.',
+    canonicalPath: '/safai',
+    robots: 'index, follow',
   },
   '/blocks': {
     titleHi: 'जनपद अल्मोड़ा के 11 विकासखंड एवं ग्राम पंचायतें | जिला पंचायत अल्मोड़ा',

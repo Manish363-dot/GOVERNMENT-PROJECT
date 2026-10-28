@@ -130,7 +130,7 @@ export const Footer = React.memo(() => {
               )}>
                 {isHi ? 'टोल-फ्री हेल्पलाइन' : 'Toll-Free Helpline'}
               </p>
-              <p className="font-mono font-bold text-white text-xl sm:text-2xl tracking-wide">1800-185-1850</p>
+              <p className="font-mono font-bold text-white text-xl sm:text-2xl tracking-wide">+91 9456790163</p>
               <p className="text-xs text-slate-300 mt-1">
                 {isHi ? 'सोम-शनि: सुबह 9 बजे से शाम 6 बजे तक' : 'Mon-Sat: 9:00 AM – 6:00 PM'}
               </p>

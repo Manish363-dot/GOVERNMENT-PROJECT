@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { X, ShieldCheck, PhoneCall, ChevronDown } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
@@ -90,11 +91,8 @@ export const NavbarLandingPage = React.memo(() => {
                 {t('nav.govSubtitle', 'पंचायती राज विभाग')}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-slate-300">
-              <div className="hidden lg:flex items-center gap-1.5 text-[11px]">
-                <PhoneCall className="w-3 h-3 text-amber-400" />
-                <span>{t('nav.helpline', 'टोल फ्री हेल्पलाइन')}: <strong className="text-white">1800-185-1850</strong></span>
-              </div>
+            <div className="flex items-center gap-2 sm:gap-3 text-slate-300">
+              <AccessibilityToolbar />
               <LanguageSwitcher />
             </div>
           </div>

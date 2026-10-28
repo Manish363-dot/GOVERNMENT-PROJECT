@@ -1,3 +1,4 @@
+// Server entry point - Zila Panchayat Almora
 import app from './app';
 import { env, isOriginAllowed } from './shared/config/env';
 import { createServer } from 'http';

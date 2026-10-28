@@ -5,17 +5,16 @@ import { sendEmail } from '../notifications/email.service';
 export async function submitInquiry(req: Request, res: Response): Promise<void> {
   try {
     const { name, email, phone, subject, message }: ContactFormInput = req.body;
-    const referenceId = `INQ-${Date.now().toString().slice(-6)}`;
     const dateFormatted = new Date().toLocaleString('en-IN', {
       timeZone: 'Asia/Kolkata',
       dateStyle: 'medium',
       timeStyle: 'short',
     });
 
-    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || 'amazpalmora@gmail.com';
+    const adminEmail = process.env.ADMIN_CONTACT_EMAIL || process.env.SMTP_USER || 'ama@zilapanchayatalmora.in';
 
     // 1. Email notification to District Administration
-    const adminSubject = `[Inquiry #${referenceId}] New Contact Form Submission - ${subject}`;
+    const adminSubject = `[जिला पंचायत अल्मोड़ा - नागरिक संदेश/शिकायत] प्रेषक: ${name}`;
     const adminHtml = `
       <!DOCTYPE html>
       <html>
@@ -43,23 +42,22 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
         <div class="card">
           <div class="tricolor"><div class="saffron"></div><div class="white"></div><div class="green"></div></div>
           <div class="header">
-            <h2>Zila Panchayat Almora — Citizen Inquiry</h2>
-            <p>Solid Waste Management & Tracking Portal</p>
+            <h2>कार्यालय जिला पंचायत अल्मोड़ा</h2>
+            <p>पोर्टल नागरिक संदेश / शिकायत • Uttarakhand Shasan</p>
           </div>
           <div class="body">
-            <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-bottom:18px; font-size:12px; color:#0369a1;">
-              <strong>Ref ID:</strong> ${referenceId} &nbsp;|&nbsp; <strong>Date:</strong> ${dateFormatted}
+            <div style="background:#e0f2fe; border:1px solid #bae6fd; border-radius:8px; padding:10px 14px; margin-bottom:18px; font-size:12px; color:#0369a1;">
+              <strong>दिनांक (Date):</strong> ${dateFormatted}
             </div>
-            <div class="info-row"><span class="label">Sender Name:</span><span class="value">${name}</span></div>
-            <div class="info-row"><span class="label">Email Address:</span><span class="value">${email}</span></div>
-            <div class="info-row"><span class="label">Phone / Mobile:</span><span class="value">${phone || 'Not provided'}</span></div>
-            <div class="info-row"><span class="label">Subject / Topic:</span><span class="value">${subject}</span></div>
+            <div class="info-row"><span class="label">नागरिक का नाम (Name):</span><span class="value">${name}</span></div>
+            <div class="info-row"><span class="label">ईमेल पता (Email):</span><span class="value">${email}</span></div>
+            <div class="info-row"><span class="label">दूरभाष / मोबाइल (Phone):</span><span class="value">${phone || 'Not provided'}</span></div>
             
-            <p style="margin:18px 0 6px; font-size:12px; font-weight:700; color:#475569; text-transform:uppercase;">Message / Query:</p>
+            <p style="margin:18px 0 6px; font-size:12px; font-weight:700; color:#475569; text-transform:uppercase;">संदेश / शिकायत विवरण (Message):</p>
             <div class="message-box">${message}</div>
           </div>
           <div class="footer">
-            This message was sent via the Zila Panchayat Almora Official Web Portal Contact Form.
+            यह संदेश जिला पंचायत अल्मोड़ा के आधिकारिक वेब पोर्टल के माध्यम से प्राप्त हुआ है।
           </div>
         </div>
       </body>
@@ -67,7 +65,7 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
     `;
 
     // 2. Acknowledgment email to the Citizen
-    const citizenSubject = `[Ref #${referenceId}] Your inquiry has been received — Zila Panchayat Almora`;
+    const citizenSubject = `[कार्यालय जिला पंचायत अल्मोड़ा] आपका संदेश प्राप्त हुआ`;
     const citizenHtml = `
       <!DOCTYPE html>
       <html>
@@ -84,7 +82,6 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
           .header h2 { margin: 0; font-size: 18px; letter-spacing: 0.5px; }
           .header p { margin: 4px 0 0; font-size: 12px; color: #94a3b8; }
           .body { padding: 28px 24px; color: #334155; }
-          .ref-banner { background:#f0fdf4; border:1px solid #bbf7d0; border-radius:8px; padding:14px; text-align:center; margin-bottom:20px; }
           .footer { background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 14px; text-align: center; font-size: 11px; color: #64748b; }
         </style>
       </head>
@@ -92,36 +89,30 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
         <div class="card">
           <div class="tricolor"><div class="saffron"></div><div class="white"></div><div class="green"></div></div>
           <div class="header">
-            <h2>District Panchayat Almora</h2>
-            <p>Official Grievance & Citizen Communication Desk</p>
+            <h2>कार्यालय जिला पंचायत अल्मोड़ा</h2>
+            <p>नागरिक संवाद एवं शिकायत प्रकोष्ठ • उत्तराखण्ड शासन</p>
           </div>
           <div class="body">
-            <p>Dear <strong>${name}</strong>,</p>
-            <p>Thank you for contacting the <strong>District Panchayat Almora — Solid Waste Management & Vehicle Tracking Administration</strong>. We have received your inquiry.</p>
-            
-            <div class="ref-banner">
-              <span style="font-size:11px; color:#15803d; text-transform:uppercase; font-weight:700; letter-spacing:1px; display:block;">Inquiry Reference Number</span>
-              <span style="font-size:24px; font-weight:800; color:#14532d; font-family:monospace; letter-spacing:2px;">${referenceId}</span>
-            </div>
+            <p>आदरणीय <strong>${name}</strong> जी,</p>
+            <p>कार्यालय जिला पंचायत अल्मोड़ा से संपर्क करने के लिए धन्यवाद। आपका संदेश / शिकायत हमें प्राप्त हो गई है।</p>
 
             <p style="font-size:13px; color:#475569; line-height:1.6;">
-              Our administrative team reviews all incoming inquiries during standard office hours (Monday – Saturday, 10:00 AM to 5:00 PM). If your message requires departmental action or a formal response, a representative will reach out to you at this email address or your provided phone number.
+              हमारी प्रशासनिक टीम कार्यालय समय (सोमवार से शनिवार, सुबह 10:00 बजे से शाम 5:00 बजे तक) के दौरान प्राप्त सभी संदेशों एवं शिकायतों की समीक्षा करती है। आवश्यक होने पर संबंधित विभाग द्वारा आपके दिए गए विवरण के आधार पर आपसे संपर्क किया जाएगा।
             </p>
 
-            <div style="background:#f8fafc; border-radius:8px; padding:12px; font-size:12px; color:#64748b; margin-top:20px;">
-              <strong>Subject:</strong> ${subject}<br />
-              <strong>Date Submitted:</strong> ${dateFormatted}
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; font-size:12px; color:#64748b; margin-top:20px;">
+              <strong>दिनांक (Date Submitted):</strong> ${dateFormatted}
             </div>
 
             <p style="margin-top:24px; font-size:13px; color:#334155;">
-              Warm regards,<br />
-              <strong>Apar Mukhya Adhikari (AMA) Desk</strong><br />
-              Zila Panchayat Almora, Uttarakhand
+              सादर,<br />
+              <strong>कार्यालय अपर मुख्य अधिकारी (AMA)</strong><br />
+              जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन
             </p>
           </div>
           <div class="footer">
-            Toll-Free Helpline: 1800-185-1850 &nbsp;|&nbsp; Email: amazpalmora@gmail.com<br />
-            Government of Uttarakhand • Swachh Bharat Mission (Grameen)
+            हेल्पलाइन: +91 9456790163 &nbsp;|&nbsp; ईमेल: ama@zilapanchayatalmora.in<br />
+            कार्यालय जिला पंचायत अल्मोड़ा, धारानौला, अल्मोड़ा — 263601
           </div>
         </div>
       </body>
@@ -134,20 +125,19 @@ export async function submitInquiry(req: Request, res: Response): Promise<void> 
         to: adminEmail,
         subject: adminSubject,
         html: adminHtml,
-        text: `New contact form submission from ${name} (${email}, ${phone}):\n\nSubject: ${subject}\n\n${message}`,
+        text: `नागरिक संदेश: ${name} (${email}, ${phone}):\n\n${message}`,
       }),
       sendEmail({
         to: email,
         subject: citizenSubject,
         html: citizenHtml,
-        text: `Dear ${name},\n\nWe have received your inquiry (Ref #${referenceId}). Our team will review your message and respond if needed.\n\nRegards,\nZila Panchayat Almora`,
+        text: `आदरणीय ${name} जी,\n\nकार्यालय जिला पंचायत अल्मोड़ा से संपर्क करने के लिए धन्यवाद। आपका संदेश प्राप्त हो गया है।\n\nकार्यालय अपर मुख्य अधिकारी (AMA)\nजिला पंचायत अल्मोड़ा`,
       }),
     ]);
 
     res.status(200).json({
       success: true,
-      message: 'Your inquiry has been sent successfully. An acknowledgment has been emailed to you.',
-      referenceId,
+      message: 'आपका संदेश सफलतापूर्वक प्रेषित कर दिया गया है।',
     });
   } catch (error: any) {
     console.error('Error submitting contact inquiry:', error);

@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   User,
   AlertCircle,
-  HelpCircle,
   RefreshCw,
   ShieldCheck
 } from 'lucide-react';
@@ -31,14 +30,13 @@ export function ContactPage() {
     name: '',
     email: '',
     phone: '',
-    subject: '',
     message: '',
   });
 
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState<{ referenceId: string } | null>(null);
+  const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [consentGiven, setConsentGiven] = useState(false);
   const [consentTouched, setConsentTouched] = useState(false);
@@ -73,18 +71,9 @@ export function ContactPage() {
         }
         return '';
 
-      case 'subject':
-        if (!value.trim()) {
-          return isHi ? 'कृपया संदेश का विषय या श्रेणी चुनें' : 'Subject is required';
-        }
-        if (value.trim().length < 3) {
-          return isHi ? 'विषय कम से कम 3 अक्षरों का होना चाहिए' : 'Subject must be at least 3 characters';
-        }
-        return '';
-
       case 'message':
         if (!value.trim()) {
-          return isHi ? 'कृपया अपना संदेश या पूछताछ दर्ज करें' : 'Message is required';
+          return isHi ? 'कृपया अपना संदेश या शिकायत दर्ज करें' : 'Message or grievance is required';
         }
         if (value.trim().length < 10) {
           return isHi ? 'संदेश कम से कम 10 अक्षरों का होना चाहिए' : 'Message must be at least 10 characters';
@@ -113,13 +102,6 @@ export function ContactPage() {
     }
   };
 
-  const quickSubjects = [
-    isHi ? 'कचरा गाड़ी नहीं पहुँची' : 'Waste Vehicle Not Arrived',
-    isHi ? 'सफाई एवं कूड़ा निस्तारण समस्या' : 'Garbage Collection Issue',
-    isHi ? 'वाहन जीपीएस ट्रैकिंग पूछताछ' : 'GPS Tracking & Route Query',
-    isHi ? 'सामान्य पूछताछ एवं सुझाव' : 'General Inquiry & Feedback',
-  ];
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitError(null);
@@ -128,7 +110,6 @@ export function ContactPage() {
       name: validateField('name', formData.name),
       email: validateField('email', formData.email),
       phone: validateField('phone', formData.phone || ''),
-      subject: validateField('subject', formData.subject),
       message: validateField('message', formData.message),
     };
 
@@ -136,7 +117,6 @@ export function ContactPage() {
       name: true,
       email: true,
       phone: true,
-      subject: true,
       message: true,
     });
 
@@ -156,11 +136,18 @@ export function ContactPage() {
 
     setIsSubmitting(true);
     try {
-      const res = await contactService.submitInquiry(formData);
+      const res = await contactService.submitInquiry({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: 'जिला पंचायत नागरिक संदेश / शिकायत',
+        message: formData.message,
+      });
+
       if (res.success) {
-        setSubmitSuccess({ referenceId: res.referenceId || `INQ-${Date.now().toString().slice(-6)}` });
+        setSubmitSuccess(true);
         toast.success(isHi ? 'आपका संदेश सफलतापूर्वक भेज दिया गया है!' : 'Your message has been sent successfully!');
-        setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+        setFormData({ name: '', email: '', phone: '', message: '' });
         setTouched({});
         setErrors({});
         setConsentGiven(false);
@@ -210,10 +197,9 @@ export function ContactPage() {
                 {isHi ? 'टोल-फ्री नागरिक हेल्पलाइन' : 'Toll-Free Citizen Helpline'}
               </p>
               <a 
-                href="tel:18001851850" 
                 className="text-xl sm:text-2xl font-extrabold text-navy-900 hover:text-blue-700 transition-colors block mb-2 font-mono"
               >
-                1800-185-1850
+                +91 9456790163
               </a>
             </CardContent>
           </Card>
@@ -228,10 +214,9 @@ export function ContactPage() {
                 {isHi ? 'आधिकारिक ईमेल' : 'Official Email Address'}
               </p>
               <a 
-                href="mailto:amazpalmora@gmail.com" 
                 className="text-lg sm:text-xl font-bold text-navy-900 hover:text-emerald-700 transition-colors block mb-2 break-all"
               >
-                amazpalmora@gmail.com
+                ama@zilapanchayatalmora.in
               </a>
             </CardContent>
           </Card>
@@ -266,50 +251,47 @@ export function ContactPage() {
               {/* Form Title & Description */}
               <div className="border-b border-slate-100 pb-5 mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold font-poppins text-navy-900">
-                  {isHi ? 'प्रशासन को संदेश भेजें' : 'Send an Email Inquiry'}
+                  {isHi ? 'जिला पंचायत प्रशासन को संदेश / शिकायत भेजें' : 'Send Message / Grievance to Administration'}
                 </h2>
                 <p className="text-slate-500 text-xs sm:text-sm mt-1 leading-relaxed">
                   {isHi 
-                    ? 'कृपया नीचे दिए गए प्रपत्र को भरें। आपका संदेश जिला पंचायत अल्मोड़ा प्रशासन को सीधे प्रेषित कर दिया जाएगा।'
-                    : 'Fill out the form below to email the District Panchayat Almora administration directly. An acknowledgment will be sent to your email.'}
+                    ? 'कृपया नीचे दिए गए प्रपत्र को भरें। आपका संदेश अथवा शिकायत जिला पंचायत अल्मोड़ा प्रशासन को सीधे प्रेषित कर दी जाएगी।'
+                    : 'Fill out the form below to submit your grievance or inquiry directly to Zila Panchayat Almora administration.'}
                 </p>
               </div>
 
-              {/* Success Message Banner */}
+              {/* Success Message Banner (No Reference Number) */}
               {submitSuccess && (
-                <div className="mb-6 p-5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 animate-fade-in">
-                  <div className="flex items-start gap-3">
+                <div className="mb-6 p-5 sm:p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 animate-fade-in shadow-xs">
+                  <div className="flex items-start gap-3.5">
                     <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <h3 className="font-bold text-base text-emerald-900">
-                        {isHi ? 'संदेश सफलतापूर्वक प्रेषित!' : 'Inquiry Submitted Successfully!'}
+                      <h3 className="font-bold text-base sm:text-lg text-emerald-950">
+                        {isHi ? 'संदेश सफलतापूर्वक प्रेषित!' : 'Message Sent Successfully!'}
                       </h3>
                       <p className="text-xs sm:text-sm text-emerald-800 mt-1 leading-relaxed">
                         {isHi 
-                          ? 'आपका संदेश संबंधित अधिकारियों को भेज दिया गया है। संदर्भ संख्या सुरक्षित रखें:'
-                          : 'Your message has been emailed to the administration. Please keep your reference number for future tracking:'}
+                          ? 'आपका संदेश कार्यालय जिला पंचायत अल्मोड़ा प्रशासन को प्राप्त हो गया है। संबंधित अधिकारियों द्वारा इस पर संज्ञान लेकर आवश्यक कार्यवाही की जाएगी।'
+                          : 'Your communication has been received by District Panchayat Almora administration and will be addressed shortly.'}
                       </p>
-                      <div className="mt-3 inline-block px-3.5 py-1.5 rounded-lg bg-emerald-100/90 border border-emerald-300 font-mono font-extrabold text-sm text-emerald-900 tracking-wider">
-                        {submitSuccess.referenceId}
-                      </div>
                       <p className="text-[11px] text-emerald-700 mt-2">
                         {isHi 
-                          ? 'एक पुष्टिकरण ईमेल आपके दिए गए पते पर भेज दिया गया है।'
-                          : 'A confirmation receipt has also been dispatched to your email address.'}
+                          ? 'एक पुष्टिकरण ईमेल आपके दिए गए ईमेल पते पर भी भेज दिया गया है।'
+                          : 'A confirmation acknowledgment has also been dispatched to your email address.'}
                       </p>
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setSubmitSuccess(null);
+                          setSubmitSuccess(false);
                           setConsentGiven(false);
                           setConsentTouched(false);
                         }}
-                        className="mt-4 text-xs bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                        className="mt-4 text-xs bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100 cursor-pointer"
                       >
                         <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                        {isHi ? 'अन्य संदेश भेजें' : 'Send Another Inquiry'}
+                        {isHi ? 'अन्य संदेश भेजें' : 'Send Another Message'}
                       </Button>
                     </div>
                   </div>
@@ -421,64 +403,11 @@ export function ContactPage() {
                   )}
                 </div>
 
-                {/* Subject & Quick Suggestions */}
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                    {isHi ? 'विषय / संदर्भ' : 'Subject / Topic'} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                      <HelpCircle className="w-4 h-4" />
-                    </div>
-                    <input
-                      type="text"
-                      value={formData.subject}
-                      onChange={(e) => handleChange('subject', e.target.value)}
-                      onBlur={() => handleBlur('subject')}
-                      placeholder={isHi ? 'उदा. वाहन ट्रैकिंग संबंधी पूछताछ' : 'e.g. Waste collection inquiry in Dharanaula'}
-                      className={`w-full pl-9 pr-3.5 py-2.5 text-sm rounded-lg border bg-slate-50/50 transition-all focus:bg-white focus:outline-none focus:ring-2 ${
-                        touched.subject && errors.subject
-                          ? 'border-red-400 focus:ring-red-200'
-                          : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
-                      }`}
-                    />
-                  </div>
-                  {touched.subject && errors.subject && (
-                    <p className="text-red-600 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.subject}
-                    </p>
-                  )}
-
-                  {/* Quick Topics Tags */}
-                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                    <span className="text-[11px] text-slate-400 font-medium mr-1">
-                      {isHi ? 'त्वरित विषय:' : 'Quick Select:'}
-                    </span>
-                    {quickSubjects.map((subj, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          handleChange('subject', subj);
-                          setTouched((prev) => ({ ...prev, subject: true }));
-                        }}
-                        className={`text-[11px] px-2.5 py-1 rounded-md transition-colors border ${
-                          formData.subject === subj
-                            ? 'bg-blue-600 text-white border-blue-600 font-semibold shadow-xs'
-                            : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 hover:text-slate-800'
-                        }`}
-                      >
-                        {subj}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
                 {/* Message Body */}
                 <div className="flex-1 flex flex-col">
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-xs sm:text-sm font-semibold text-slate-700">
-                      {isHi ? 'विस्तृत संदेश / विवरण' : 'Detailed Message / Description'} <span className="text-red-500">*</span>
+                      {isHi ? 'विस्तृत संदेश / शिकायत विवरण' : 'Detailed Message / Grievance'} <span className="text-red-500">*</span>
                     </label>
                     <span className={`text-[11px] ${formData.message.length > 1900 ? 'text-amber-600 font-semibold' : 'text-slate-400'}`}>
                       {formData.message.length} / 2000
@@ -486,12 +415,12 @@ export function ContactPage() {
                   </div>
                   <div className="relative flex-1 flex flex-col">
                     <textarea
-                      rows={5}
+                      rows={6}
                       value={formData.message}
                       onChange={(e) => handleChange('message', e.target.value)}
                       onBlur={() => handleBlur('message')}
-                      placeholder={isHi ? 'अपनी समस्या, पूछताछ अथवा सुझाव का विस्तारपूर्वक विवरण यहाँ लिखें...' : 'Type your detailed inquiry, problem description, or feedback here...'}
-                      className={`w-full flex-1 min-h-[140px] p-3.5 text-sm rounded-lg border bg-slate-50/50 transition-all focus:bg-white focus:outline-none focus:ring-2 resize-y ${
+                      placeholder={isHi ? 'अपनी समस्या, शिकायत अथवा सुझाव का विस्तारपूर्वक विवरण यहाँ लिखें...' : 'Type your detailed inquiry, grievance, or feedback here...'}
+                      className={`w-full flex-1 min-h-[160px] p-3.5 text-sm rounded-lg border bg-slate-50/50 transition-all focus:bg-white focus:outline-none focus:ring-2 resize-y ${
                         touched.message && errors.message
                           ? 'border-red-400 focus:ring-red-200'
                           : 'border-slate-300 focus:border-blue-600 focus:ring-blue-100'
@@ -533,8 +462,8 @@ export function ContactPage() {
                       </span>
                       <p className="text-slate-600 leading-relaxed text-[11px] sm:text-xs">
                         {isHi
-                          ? 'मैं प्रमाणित करता/करती हूँ कि उपरोक्त विवरण पूर्णतः सत्य है एवं मैं जिला पंचायत प्रशासन द्वारा इस पूछताछ/सुझाव के संदर्भ में संपर्क करने व आवश्यक कार्यवाही हेतु सहमति प्रदान करता/करती हूँ।'
-                          : 'I declare that the information provided is accurate and I give my consent to Zila Panchayat Almora administration to process my inquiry and contact me regarding this matter.'}
+                          ? 'मैं प्रमाणित करता/करती हूँ कि उपरोक्त विवरण पूर्णतः सत्य है एवं मैं जिला पंचायत प्रशासन द्वारा इस संदर्भ में आवश्यक कार्यवाही व संपर्क हेतु सहमति प्रदान करता/करती हूँ।'
+                          : 'I declare that the information provided is accurate and I give my consent to Zila Panchayat Almora administration to process my message and contact me regarding this matter.'}
                       </p>
                     </div>
                   </label>
@@ -556,7 +485,7 @@ export function ContactPage() {
                     {isSubmitting ? (
                       <>
                         <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>{isHi ? 'संदेश भेजा जा रहा है...' : 'Sending Email...'}</span>
+                        <span>{isHi ? 'संदेश भेजा जा रहा है...' : 'Sending Message...'}</span>
                       </>
                     ) : (
                       <>
@@ -644,7 +573,7 @@ export function ContactPage() {
                 </Button>
               </div>
 
-              <div className="flex-1 w-full relative bg-slate-100">
+              <div className="flex-1 w-full relative bg-slate-100 min-h-[220px]">
                 <iframe
                   title="Zila Panchayat Almora Office Location"
                   src="https://maps.google.com/maps?q=Zila%20Panchayat%20Office,%20Dharanaula,%20Almora,%20Uttarakhand&t=&z=15&ie=UTF8&iwloc=&output=embed"
@@ -704,13 +633,13 @@ export function ContactPage() {
               className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all duration-300 group block"
             >
               <p className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
-                {isHi ? 'आपदा प्रबंधन' : 'DDMA Almora'}
+                {isHi ? 'आपदा प्रबंधन अल्मोड़ा' : 'Disaster (DDMA)'}
               </p>
               <p className="font-extrabold text-amber-300 text-lg font-mono tracking-wide mt-0.5">
                 1077
               </p>
               <span className="text-[10px] text-slate-400">
-                {isHi ? 'आपदा नियंत्रण' : 'Disaster Control'}
+                {isHi ? 'जनपद आपातकालीन' : 'District Emergency'}
               </span>
             </a>
 
@@ -720,13 +649,13 @@ export function ContactPage() {
               className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all duration-300 group block"
             >
               <p className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
-                {isHi ? 'पुलिस आपात सेवा' : 'Police Emergency'}
+                {isHi ? 'पुलिस एवं आपात सेवा' : 'Police & Emergency'}
               </p>
               <p className="font-extrabold text-amber-300 text-lg font-mono tracking-wide mt-0.5">
                 112
               </p>
               <span className="text-[10px] text-slate-400">
-                {isHi ? 'सर्व आपातकालीन' : 'All Emergency'}
+                {isHi ? 'अखिल भारतीय डायल' : 'All-India Dial'}
               </span>
             </a>
 
@@ -742,7 +671,7 @@ export function ContactPage() {
                 108
               </p>
               <span className="text-[10px] text-slate-400">
-                {isHi ? 'चिकित्सा सेवा' : 'Medical Service'}
+                {isHi ? 'आपात चिकित्सा' : 'Emergency Medical'}
               </span>
             </a>
 
@@ -758,27 +687,30 @@ export function ContactPage() {
                 1090
               </p>
               <span className="text-[10px] text-slate-400">
-                {isHi ? 'महिला सुरक्षा' : 'Women Safety'}
+                {isHi ? 'सुरक्षा एवं सहायता' : 'Safety & Support'}
               </span>
             </a>
 
-            {/* Childline */}
+            {/* Cyber Crime Helpline */}
             <a 
-              href="tel:1098" 
+              href="tel:1930" 
               className="p-3.5 rounded-xl bg-white/5 border border-white/10 hover:border-amber-400/50 hover:bg-white/10 transition-all duration-300 group block"
             >
               <p className="text-[11px] text-slate-400 group-hover:text-slate-300 transition-colors">
-                {isHi ? 'बाल सहायता' : 'Child Helpline'}
+                {isHi ? 'साइबर अपराध' : 'Cyber Crime'}
               </p>
               <p className="font-extrabold text-amber-300 text-lg font-mono tracking-wide mt-0.5">
-                1098
+                1930
               </p>
               <span className="text-[10px] text-slate-400">
-                {isHi ? 'बाल कल्याण' : 'Child Welfare'}
+                {isHi ? 'वित्तीय धोखाधड़ी' : 'Financial Fraud'}
               </span>
             </a>
+
           </div>
+
         </div>
+
       </div>
     </div>
   );

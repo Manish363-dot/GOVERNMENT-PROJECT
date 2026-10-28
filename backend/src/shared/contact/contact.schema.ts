@@ -20,8 +20,9 @@ export const contactFormSchema = z.object({
     subject: z
       .string()
       .trim()
-      .min(3, 'Subject must be at least 3 characters')
-      .max(150, 'Subject cannot exceed 150 characters'),
+      .max(150, 'Subject cannot exceed 150 characters')
+      .optional()
+      .default('नागरिक संदेश / शिकायत'),
     message: z
       .string()
       .trim()

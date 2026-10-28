@@ -95,7 +95,7 @@ export function WebsitePolicyPage() {
             <div className="bg-slate-50 p-4 rounded border border-slate-200 inline-block mt-2">
               <p><strong>{isHi ? 'संपर्क:' : 'Contact:'}</strong></p>
               <p>{isHi ? 'ई-मेल:' : 'Email:'} amazpalmora@gmail.com</p>
-              <p>{isHi ? 'फोन:' : 'Phone:'} 1800-185-1850</p>
+              <p>{isHi ? 'फोन:' : 'Phone:'} +91 9456790163</p>
               <p>{isHi ? 'कार्यालय: धारानौला जिला पंचायत अल्मोड़ा, उत्तराखंड - 263601' : 'Office: Dharanaula Zila Panchayat Almora, Uttarakhand - 263601'}</p>
             </div>
           </section>
