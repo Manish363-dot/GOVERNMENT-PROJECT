@@ -94,7 +94,7 @@ export function WebsitePolicyPage() {
             {isHi ? 'यदि किसी शिकायत के लिए अतिरिक्त जानकारी या दस्तावेज की आवश्यकता होगी, तो संबंधित प्राधिकारी उपयोगकर्ता से संपर्क कर सकता है।' : 'If additional information or documents are required for any complaint, the concerned authority may contact the user.'}</p>
             <div className="bg-slate-50 p-4 rounded border border-slate-200 inline-block mt-2">
               <p><strong>{isHi ? 'संपर्क:' : 'Contact:'}</strong></p>
-              <p>{isHi ? 'ई-मेल:' : 'Email:'} amazpalmora@gmail.com</p>
+              <p>{isHi ? 'ई-मेल:' : 'Email:'} ama@zilapanchayatalmora.in</p>
               <p>{isHi ? 'फोन:' : 'Phone:'} +91 9456790163</p>
               <p>{isHi ? 'कार्यालय: धारानौला जिला पंचायत अल्मोड़ा, उत्तराखंड - 263601' : 'Office: Dharanaula Zila Panchayat Almora, Uttarakhand - 263601'}</p>
             </div>
@@ -121,7 +121,7 @@ export function WebsitePolicyPage() {
             {isHi ? 'यदि किसी उपयोगकर्ता को पोर्टल में कोई सुरक्षा संबंधी समस्या दिखाई देती है, तो उसे सार्वजनिक रूप से साझा करने के बजाय संबंधित प्राधिकारी को सूचित करना चाहिए।' : 'If a user identifies any security-related issue in the portal, they should inform the concerned authority instead of sharing it publicly.'}</p>
             <div className="bg-slate-50 p-4 rounded border border-slate-200 inline-block mt-2">
               <p><strong>Security Contact:</strong></p>
-              <p>{isHi ? 'ई-मेल:' : 'Email:'} amazpalmora@gmail.com</p>
+              <p>{isHi ? 'ई-मेल:' : 'Email:'} ama@zilapanchayatalmora.in</p>
             </div>
           </section>
 
@@ -148,7 +148,7 @@ export function WebsitePolicyPage() {
             {isHi ? 'यदि किसी उपयोगकर्ता को पोर्टल का उपयोग करने में किसी प्रकार की अभिगम्यता संबंधी समस्या आती है, तो वह नीचे दिए गए संपर्क माध्यम से इसकी जानकारी दे सकता है।' : 'If a user faces any accessibility-related issue while using the portal, they may report it through the contact channel provided below.'}</p>
             <div className="bg-slate-50 p-4 rounded border border-slate-200 inline-block mt-2">
               <p><strong>Accessibility Contact:</strong></p>
-              <p>{isHi ? 'ई-मेल:' : 'Email:'} amazpalmora@gmail.com</p>
+              <p>{isHi ? 'ई-मेल:' : 'Email:'} ama@zilapanchayatalmora.in</p>
             </div>
           </section>
 

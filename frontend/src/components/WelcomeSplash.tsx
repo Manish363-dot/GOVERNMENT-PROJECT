@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 
 export const WelcomeSplash: React.FC = () => {
+  // ONLY show on the starting of the website (home page '/')
+  // Works on every refresh of '/', but NEVER on subpages like /notices, /swm, /contact, etc.
+  const [shouldRun] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname;
+    return path === '/' || path === '';
+  });
+
   const [progress, setProgress] = useState(0);
   const [isFading, setIsFading] = useState(false);
-  const [isMounted, setIsMounted] = useState(true);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isMounted, setIsMounted] = useState(shouldRun);
 
   useEffect(() => {
+    if (!shouldRun) return;
+
+    // Disable background scrolling while splash is active
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
@@ -25,12 +35,10 @@ export const WelcomeSplash: React.FC = () => {
 
       if (current >= 60) {
         clearInterval(interval1);
-        setIsPaused(true);
 
         // Phase 2: Pause at 60% for exactly 2 seconds (2000ms)
         setTimeout(() => {
           if (isCancelled) return;
-          setIsPaused(false);
 
           // Phase 3: 61% -> 100% (~500ms)
           let fastCurrent = 60;
@@ -71,89 +79,75 @@ export const WelcomeSplash: React.FC = () => {
       clearInterval(interval1);
       document.body.style.overflow = originalOverflow;
     };
-  }, []);
+  }, [shouldRun]);
 
-  if (!isMounted) return null;
+  // If not on the starting home page, render nothing
+  if (!shouldRun || !isMounted) return null;
 
   return (
     <div
-      className={`fixed inset-0 z-[999999] flex flex-col justify-between items-center bg-[#fafbfc] select-none transition-all duration-700 ease-out overflow-hidden ${
+      className={`fixed inset-0 z-[999999] flex flex-col justify-between items-center bg-[#f8fafc] text-slate-900 select-none transition-all duration-700 ease-out overflow-hidden ${
         isFading ? 'opacity-0 scale-102 pointer-events-none' : 'opacity-100 scale-100'
       }`}
     >
-      {/* 🔮 Soft Atmospheric Backdrop Glows */}
-      <div className="absolute top-1/4 -left-20 w-80 h-80 bg-blue-300/20 rounded-full blur-3xl pointer-events-none animate-pulse" />
-      <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none animate-pulse" style={{ animationDelay: '1s' }} />
-
-      {/* Top Thin National Accent Border */}
-      <div className="w-full h-1 flex relative z-10">
-        <div className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600" />
-        <div className="flex-1 bg-white" />
-        <div className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600" />
-      </div>
+      {/* 🇮🇳 Top Indian Tricolor Line (Single line: Orange -> White -> Green) */}
+      <div className="absolute top-0 left-0 right-0 h-1 sm:h-1.5 w-full bg-gradient-to-r from-[#FF671F] via-white to-[#046A38] z-50 shadow-xs pointer-events-none" />
 
       {/* Top Spacer */}
-      <div className="h-6" />
+      <div className="h-6 sm:h-12" />
 
-      {/* 🌟 Center Stage: Beautiful Open Gradient Text (No heavy box, matras unclipped) */}
-      <div className="relative z-10 flex flex-col items-center justify-center text-center px-6 max-w-4xl -mt-6">
-    
-
-        {/* 🌈 Line 1: 'जिला पंचायत अल्मोड़ा' (Flowing Shimmering Gradient with ample headroom for matras) */}
-        <h1 className="welcome-title text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-normal leading-[1.35] py-2">
+      {/* 🌟 Center Masterpiece: Big Bold Text with Minimal Inter-line Gap */}
+      <div className="flex flex-col items-center justify-center text-center px-4 w-full max-w-6xl my-auto">
+        
+        {/* Line 1: 'जिला पंचायत' (Big bold text, zero clipping) */}
+        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-none m-0 p-0 whitespace-nowrap">
           <span className="gradient-text-flow">
-            जिला पंचायत अल्मोड़ा
+            जिला पंचायत
           </span>
         </h1>
 
-        {/* 💫 Dynamic Pulse Divider Line */}
-        <div className="w-24 sm:w-36 h-[2.5px] rounded-full my-2 bg-gradient-to-r from-transparent via-emerald-600 to-transparent animate-pulse" />
-
-        {/* ✨ Line 2: 'में आपका स्वागत है' */}
-        <h2 className="welcome-subtitle text-2xl sm:text-3xl md:text-4xl font-semibold tracking-wide leading-[1.4] py-1 mt-1">
-          <span className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-800 bg-clip-text text-transparent">
-            में आपका हार्दिक स्वागत है
+        {/* Line 2: 'अल्मोड़ा' (Natural tight gap with negative margin) */}
+        <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tight leading-none m-0 p-0 -mt-2 sm:-mt-5 md:-mt-7 lg:-mt-9 whitespace-nowrap">
+          <span className="gradient-text-flow">
+            अल्मोड़ा
           </span>
-        </h2>
+        </h1>
+
+        {/* Line 3: 'में आपका हार्दिक स्वागत है' (Subtitle) */}
+        <p className="text-lg sm:text-2xl md:text-3xl font-semibold text-slate-600 tracking-wide mt-4 sm:mt-6 md:mt-8">
+          में आपका हार्दिक स्वागत है
+        </p>
+
       </div>
 
-      {/* 🚀 Bottom Sleek Modern Loading Bar */}
-      <div className="relative z-10 w-full max-w-md px-8 pb-14 flex flex-col items-center">
+      {/* 🚀 Bottom Sleek Progress Bar Section */}
+      <div className="w-full max-w-md px-8 pb-12 sm:pb-16 flex flex-col items-center">
         
-        {/* Progress & Live Status Counter */}
-        <div className="w-full flex items-center justify-between text-xs sm:text-sm font-semibold mb-2.5">
-          <div className="flex items-center gap-2 text-slate-500">
-            <span
-              className={`w-2 h-2 rounded-full transition-colors duration-300 ${
-                isPaused ? 'bg-amber-500 animate-ping' : 'bg-emerald-600'
-              }`}
-            />
+        {/* Top Status & Percentage Line */}
+        <div className="w-full flex items-center justify-between text-xs sm:text-sm font-medium text-slate-600 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
             <span className="tracking-wide">
-              {progress < 60 && 'पोर्टल लोड हो रहा है...'}
-              {progress === 60 && isPaused && 'प्रशासनिक डाटा व सुरक्षा सत्यापन...'}
-              {progress > 60 && progress < 100 && 'प्रारंभ किया जा रहा है...'}
-              {progress === 100 && 'तैयार! स्वागतम्...'}
+              {progress < 100 ? 'पोर्टल लोड हो रहा है...' : 'स्वागतम्! तैयार...'}
             </span>
           </div>
 
-          <div className="font-mono font-black text-slate-900 text-lg sm:text-xl">
+          <div className="font-mono font-bold text-slate-800 text-xs sm:text-sm">
             {progress}%
           </div>
         </div>
 
-        {/* Progress Track */}
-        <div className="relative w-full h-2 bg-slate-200/80 rounded-full overflow-hidden p-[1px] shadow-inner">
+        {/* Minimal Progress Bar */}
+        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-emerald-600 via-teal-500 to-amber-500 transition-all duration-100 ease-out relative overflow-hidden"
+            className="h-full rounded-full bg-gradient-to-r from-teal-600 via-emerald-600 to-teal-700 transition-all duration-100 ease-out"
             style={{ width: `${progress}%` }}
-          >
-            {/* Shimmer sweep animation */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer" />
-          </div>
+          />
         </div>
+
       </div>
 
-      {/* 🎨 Inline Styles for Smooth Animation & Non-Clipping Gradient Text */}
+      {/* 🎨 Flowing Liquid Gradient Animation (Room for matras, zero clipping) */}
       <style>{`
         @keyframes gradientFlow {
           0% { background-position: 0% 50%; }
@@ -161,60 +155,26 @@ export const WelcomeSplash: React.FC = () => {
           100% { background-position: 0% 50%; }
         }
 
-        @keyframes shimmerSweep {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(200%); }
-        }
-
-        @keyframes cinematicEntrance {
-          0% {
-            opacity: 0;
-            transform: translateY(20px) scale(0.97);
-            filter: blur(6px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            filter: blur(0px);
-          }
-        }
-
         .gradient-text-flow {
           background: linear-gradient(
             135deg,
-            #0f172a 0%,
-            #065f46 25%,
-            #0284c7 50%,
-            #047857 75%,
-            #0f172a 100%
+            #0e3a53 0%,
+            #0284c7 25%,
+            #0f766e 50%,
+            #0d9488 75%,
+            #0e3a53 100%
           );
           background-size: 300% 300%;
           animation: gradientFlow 5s ease infinite;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           display: inline-block;
-          /* Essential padding to guarantee zero clipping on Hindi matras */
-          padding-top: 0.18em;
-          padding-bottom: 0.18em;
-          padding-left: 0.05em;
-          padding-right: 0.05em;
-        }
-
-        .welcome-title {
-          animation: cinematicEntrance 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .welcome-subtitle {
-          animation: cinematicEntrance 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
-          opacity: 0;
-        }
-
-        .welcome-tag {
-          animation: cinematicEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-        }
-
-        .animate-shimmer {
-          animation: shimmerSweep 1.5s infinite linear;
+          padding-top: 0.16em;
+          padding-bottom: 0.08em;
+          padding-left: 0.04em;
+          padding-right: 0.04em;
+          line-height: 1.06;
+          overflow: visible;
         }
       `}</style>
     </div>

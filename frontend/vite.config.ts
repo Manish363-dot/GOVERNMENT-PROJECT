@@ -39,7 +39,7 @@ export default defineConfig({
     port: 5175,
     strictPort: false,
     headers: {
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups'
+      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     },
     proxy: {
       '/api': {
@@ -50,8 +50,16 @@ export default defineConfig({
         target: 'http://127.0.0.1:3001',
         ws: true,
         changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', (err: any) => {
+            // Silently suppress standard socket disconnects on page refresh/close
+            if (['ECONNABORTED', 'ECONNRESET', 'EPIPE', 'ECONNREFUSED'].includes(err.code)) {
+              return;
+            }
+            console.warn('[Vite Socket Proxy]:', err.message);
+          });
+        },
       },
     },
   },
 });
-
