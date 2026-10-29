@@ -133,7 +133,6 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
     <div
       className={`w-full relative bg-cover bg-center bg-no-repeat border-b border-slate-200/80 shadow-xs ${className}`}
       style={{
-        backgroundImage: `url('/assets/backgroundbg.png')`,
         backgroundColor: '#faf8f5',
       }}
     >

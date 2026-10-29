@@ -142,7 +142,6 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
       <div
         className={`w-full relative bg-cover bg-center bg-no-repeat flex items-center justify-between px-2 sm:px-6 md:px-8 py-1.5 sm:py-2 ${className} flex-nowrap`}
         style={{
-          backgroundImage: `url('/assets/backgroundbg.png')`,
           backgroundColor: '#faf8f5',
         }}
       >
@@ -198,7 +197,6 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
     <div
       className={`w-full relative bg-cover bg-center bg-no-repeat border-b border-slate-200/80 shadow-xs ${className}`}
       style={{
-        backgroundImage: `url('/assets/backgroundbg.png')`,
         backgroundColor: '#faf8f5',
       }}
     >
