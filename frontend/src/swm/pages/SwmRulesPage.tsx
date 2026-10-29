@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { DocumentsSection } from '../components/DocumentsSection';
-import { ChevronRight, Home, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export function SwmRulesPage() {
   const { i18n } = useTranslation();

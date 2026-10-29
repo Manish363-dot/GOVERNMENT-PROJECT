@@ -2,20 +2,20 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { User, Sparkles } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const BG_IMAGE_NAMES = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image6.jpeg'];
+const BG_IMAGE_NAMES = ['image1.webp','image2.webp', 'image3.webp', 'image4.webp', 'image5.webp','image6.webp'];
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
 const HERO_IMAGES = BG_IMAGE_NAMES.map(
   (filename) => `${S3_BUCKET}/portal-logos/${filename}`
 );
 
 // Dignitary photo image5.jpg from 'portal-logos' bucket
-const DIGNITARY_IMAGE_URL = `${S3_BUCKET}/portal-logos/image5.jpg`;
-const CM_IMAGE_URL = `${S3_BUCKET}/portal-logos/CM.jpg`;
-const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.jpg`;
-const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
-const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
+const DIGNITARY_IMAGE_URL = `${S3_BUCKET}/portal-logos/ModiJi.webp`;
+const CM_IMAGE_URL = `${S3_BUCKET}/portal-logos/CM.webp`;
+const MK_IMAGE_URL = `${S3_BUCKET}/portal-logos/MK.webp`;
+const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.webp`;
+const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.webp`;
 
 interface Official {
   id: number;

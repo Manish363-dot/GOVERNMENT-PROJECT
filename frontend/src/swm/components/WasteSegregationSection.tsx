@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayatimages.s3.ap-south-1.amazonaws.com';
 const S3_DUSTBIN = `${S3_BUCKET}/Dustbin`;
 
 export const WasteSegregationSection = React.memo(() => {
@@ -26,8 +26,8 @@ export const WasteSegregationSection = React.memo(() => {
       headerBg: 'bg-emerald-600',
       accentColor: 'text-emerald-700',
       iconBg: 'bg-emerald-100 text-emerald-800',
-      dustbinImg: `${S3_DUSTBIN}/dustbin_green.png`,
-      exampleImg: `${S3_DUSTBIN}/waste_wet.png`,
+      dustbinImg: `${S3_DUSTBIN}/dustbin_green.webp`,
+      exampleImg: `${S3_DUSTBIN}/waste_wet.webp`,
       exampleAlt: isHi ? 'सब्जी-फल के छिलके, बचा भोजन' : 'Vegetable peels, fruit scraps, food waste',
       description: isHi
         ? 'रसोई एवं बगीचे से निकलने वाला ऐसा अपशिष्ट जो प्राकृतिक रूप से गलकर जैविक खाद में परिवर्तित हो जाता है।'
@@ -64,8 +64,8 @@ export const WasteSegregationSection = React.memo(() => {
       headerBg: 'bg-blue-600',
       accentColor: 'text-blue-700',
       iconBg: 'bg-blue-100 text-blue-800',
-      dustbinImg: `${S3_DUSTBIN}/dustbin_blue.png`,
-      exampleImg: `${S3_DUSTBIN}/waste_dry.png`,
+      dustbinImg: `${S3_DUSTBIN}/dustbin_blue.webp`,
+      exampleImg: `${S3_DUSTBIN}/waste_dry.webp`,
       exampleAlt: isHi ? 'प्लास्टिक बोतल, अखबार, गत्ता, कांच' : 'Plastic bottles, newspapers, cardboard, glass',
       description: isHi
         ? 'गैर-जैव-अपघटनीय सूखा कचरा जिसे पुनः उपयोग या रिसाइकिल करके नए उत्पाद बनाए जा सकते हैं।'
@@ -102,8 +102,8 @@ export const WasteSegregationSection = React.memo(() => {
       headerBg: 'bg-rose-600',
       accentColor: 'text-rose-700',
       iconBg: 'bg-rose-100 text-rose-800',
-      dustbinImg: `${S3_DUSTBIN}/dustbin_red.png`,
-      exampleImg: `${S3_DUSTBIN}/waste_sanitary.png`,
+      dustbinImg: `${S3_DUSTBIN}/dustbin_red.webp`,
+      exampleImg: `${S3_DUSTBIN}/waste_sanitary.webp`,
       exampleAlt: isHi ? 'सेनेटरी पैड, डायपर, मेडिकल बैंडेज' : 'Sanitary pads, diapers, medical bandages',
       description: isHi
         ? 'सैनिटरी एवं व्यक्तिगत स्वच्छता से जुड़ा अपशिष्ट जिसे संक्रमण से बचाव हेतु पृथक व सुरक्षित रखना अनिवार्य है।'
@@ -140,8 +140,8 @@ export const WasteSegregationSection = React.memo(() => {
       headerBg: 'bg-slate-900',
       accentColor: 'text-slate-900',
       iconBg: 'bg-slate-900 text-amber-400',
-      dustbinImg: `${S3_DUSTBIN}/dustbin_black.png`,
-      exampleImg: `${S3_DUSTBIN}/waste_hazardous.png`,
+      dustbinImg: `${S3_DUSTBIN}/dustbin_black.webp`,
+      exampleImg: `${S3_DUSTBIN}/waste_hazardous.webp`,
       exampleAlt: isHi ? 'बैटरी, CFL बल्ब, पुराना चार्जर, दवाइयां' : 'Batteries, CFL bulbs, old chargers, medicines',
       description: isHi
         ? 'रासायनिक, विषाक्त एवं इलेक्ट्रॉनिक अपशिष्ट जो पर्यावरण और भूजल को गंभीर क्षति पहुंचा सकते हैं।'

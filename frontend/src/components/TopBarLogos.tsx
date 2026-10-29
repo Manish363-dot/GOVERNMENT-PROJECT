@@ -11,38 +11,34 @@ export interface TopBarLogoItem {
   sort_order: number;
 }
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayatimages.s3.ap-south-1.amazonaws.com';
 
-export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.png`;
+export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.webp`;
 
 // 4 Default logo slots with descriptive official titles for accessibility (Lighthouse WCAG)
 const DEFAULT_LOGOS: TopBarLogoItem[] = [
   {
     id: 'logo-1',
     title: 'उत्तराखंड शासन आधिकारिक राजचिह्न (Emblem of Uttarakhand)',
-    file_name: 'logo1.png',
-    logo_url: '/assets/logos/logo1.png',
+    file_name: 'logo1.webp',
     sort_order: 1,
   },
   {
     id: 'logo-2',
     title: 'स्वच्छ भारत मिशन ग्रामीण (Swachh Bharat Mission)',
-    file_name: 'logo5.png',
-    logo_url: '/assets/logos/logo5.png',
+    file_name: 'logo5.webp',
     sort_order: 2,
   },
   {
     id: 'logo-3',
     title: 'कार्यालय जिला पंचायत अल्मोड़ा (Zila Panchayat Almora)',
-    file_name: 'logo3.png',
-    logo_url: '/assets/logos/logo3.png',
+    file_name: 'logo3.webp',
     sort_order: 3,
   },
   {
     id: 'logo-4',
     title: 'डिजिटल इंडिया एवं स्वच्छ देवभूमि (Digital India)',
-    file_name: 'logo4.png',
-    logo_url: '/assets/logos/logo4.png',
+    file_name: 'logo4.webp',
     sort_order: 4,
   },
 ];
@@ -67,11 +63,11 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
 
   useEffect(() => {
     // Prioritize instant local bundle assets for zero latency
-    const localLogos = DEFAULT_LOGOS.map((item) => ({
+    const s3Logos = DEFAULT_LOGOS.map((item) => ({
       ...item,
-      logo_url: `/assets/logos/${item.file_name}`,
+      logo_url: `${S3_BUCKET}/portal-logos/${item.file_name}`,
     }));
-    setLogos(localLogos);
+    setLogos(s3Logos);
   }, []);
 
   const handleImageError = (id: string) => {
@@ -88,7 +84,7 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
       ? 'h-5 min-[360px]:h-6 sm:h-7 md:h-9 text-slate-400' 
       : 'h-6 min-[360px]:h-7 sm:h-8 md:h-10 lg:h-12 text-slate-400';
 
-    const primaryUrl = logo.logo_url || `/assets/logos/${logo.file_name}`;
+    const primaryUrl = logo.logo_url || `${S3_BUCKET}/portal-logos/${logo.file_name}`;
 
     return (
       <div 
@@ -103,9 +99,12 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
             height={48}
             onError={(e) => {
               const target = e.currentTarget;
-              if (logo.file_name && !target.src.includes(S3_BUCKET)) {
-                // Fallback to S3 if local asset is not available
-                target.src = `${S3_BUCKET}/portal-logos/${logo.file_name}`;
+              if (target.src.endsWith('.webp')) {
+                // Fallback to png from S3
+                target.src = target.src.replace('.webp', '.png');
+              } else if (!target.src.includes('/assets/logos/')) {
+                // If S3 fails, fallback to local asset
+                target.src = `/assets/logos/${logo.file_name?.replace('.webp', '.png') || 'logo1.png'}`;
               } else {
                 handleImageError(logo.id);
               }

@@ -4,7 +4,7 @@ import {
   Building2,
 } from 'lucide-react';
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
 export interface InitiativeItem {
   id: string;

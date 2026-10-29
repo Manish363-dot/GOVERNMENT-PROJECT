@@ -10,6 +10,7 @@ import { GooglePasskeyModal } from '@/components/GooglePasskeyModal';
 import { AuthRedirectHandler } from '@/components/AuthRedirectHandler';
 import { RouteSEO } from '@/components/RouteSEO';
 import { WelcomeSplash } from '@/components/WelcomeSplash';
+import { ScrollToTop } from '@/components/ScrollToTop';
 import { RentalComingSoonProvider } from '@/contexts/RentalComingSoonContext';
 
 // --- Lazy Load Pages ---
@@ -97,6 +98,7 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <WelcomeSplash />
         <RentalComingSoonProvider>
           <AuthRedirectHandler />

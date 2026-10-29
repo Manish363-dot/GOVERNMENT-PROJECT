@@ -113,8 +113,8 @@ export function SignInPage() {
 
             {/* Back Button */}
             <Link
-              to="/"
-              className="absolute top-6 right-6 lg:left-6 lg:right-auto text-slate-400 hover:text-navy-900 flex items-center gap-1.5 text-sm font-medium transition-colors z-10 bg-white/80 p-2 rounded-md lg:bg-transparent lg:p-0"
+              to="/safai-portal"
+              className="absolute top-6 right-6 lg:left-6 lg:right-auto text-slate-400 hover:text-navy-900 flex items-center gap-1.5 text-sm font-medium transition-colors z-10 bg-w  hite/80 p-2 rounded-md lg:bg-transparent lg:p-0"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">{isHi ? 'मुख्य पृष्ठ पर लौटें' : 'Back to Home'}</span>

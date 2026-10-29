@@ -1,8 +1,6 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
-
-const prisma = new PrismaClient();
+import { prisma } from '../../../shared/config/prisma';
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'ap-south-1',
@@ -44,7 +42,8 @@ export const getBlogMedia = async (req: Request, res: Response) => {
     });
     res.json(media);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching blog media:', error);
+    res.json([]);
   }
 };
 
@@ -108,7 +107,8 @@ export const getDailyWork = async (req: Request, res: Response) => {
     });
     res.json(works);
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('Error fetching daily work:', error);
+    res.json([]);
   }
 };
 
