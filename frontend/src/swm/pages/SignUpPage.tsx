@@ -218,12 +218,6 @@ export function SignUpPage() {
                 </div>
               </div>
             </div>
-
-            {/* Bottom badge */}
-            <div className="relative z-10 pt-12">
-              <p className="text-xs text-slate-400 font-mono uppercase tracking-wider">{isHi ? 'NIC क्लाउड गेटवे' : 'NIC Cloud Gateway'}</p>
-              <p className="text-[10px] text-slate-500 mt-1">{isHi ? '256-बिट SSL एन्क्रिप्टेड · उत्तराखंड सरकार' : '256-Bit SSL Encrypted · Govt. of Uttarakhand'}</p>
-            </div>
           </div>
 
           {/* ── Right Side: Registration / OTP Form ── */}
@@ -231,7 +225,7 @@ export function SignUpPage() {
 
             {/* Back Button */}
             <Link
-              to="/"
+              to="/safai-portal"
               className="absolute top-6 right-6 lg:left-6 lg:right-auto text-slate-400 hover:text-navy-900 flex items-center gap-1.5 text-sm font-medium transition-colors z-10 bg-white/80 p-2 rounded-md lg:bg-transparent lg:p-0"
             >
               <ArrowLeft className="w-4 h-4" />

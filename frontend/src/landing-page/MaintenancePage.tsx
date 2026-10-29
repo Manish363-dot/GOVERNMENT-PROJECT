@@ -15,6 +15,7 @@ export function MaintenancePage() {
     window.location.reload();
   };
 
+  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center justify-between select-none font-sans overflow-x-hidden relative">
 
@@ -24,9 +25,8 @@ export function MaintenancePage() {
         {/* ── Cute Pink Kittens Maintenance Illustration ── */}
         <div className="w-full flex justify-center mb-4 sm:mb-6">
           <picture>
-            <source srcSet="/assets/maintenance-cats.webp" type="image/webp" />
             <img
-              src="/assets/maintenance-cats.jpg"
+              src ={`${S3_BUCKET}/portal-logos/maintenance.webp`}
               alt="Maintenance work up here - Kitties painting sign"
               className="w-full h-auto max-h-[46vh] sm:max-h-[52vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
               loading="eager"

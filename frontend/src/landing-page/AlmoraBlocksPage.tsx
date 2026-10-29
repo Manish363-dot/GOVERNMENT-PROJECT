@@ -1,10 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Sparkles
-} from 'lucide-react';
-import { ZilaServicesCarousel } from './ZilaServicesCarousel';
-
 export interface BlockDetail {
   id: string;
   nameHi: string;

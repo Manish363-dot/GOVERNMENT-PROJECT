@@ -1,5 +1,4 @@
 
-
 export interface Notice {
   id: string;
   image: string;
@@ -11,7 +10,7 @@ export interface Notice {
   link?: string; // Optional: link to official order, news article, or document
 }
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
 const notice_1_image = `${S3_BUCKET}/Social-Media-Section/notice 1.webp`;
 const notice_2_image = `${S3_BUCKET}/Social-Media-Section/notice2.webp`;
