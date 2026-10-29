@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -12,7 +11,6 @@ export function ServerErrorPage() {
   }, []);
 
   const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
-  const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.webp`;
 
   return (
     <div className="min-h-screen w-full bg-white flex flex-col items-center justify-center px-4 py-8 sm:py-12 select-none font-sans overflow-x-hidden">
@@ -45,13 +43,13 @@ export function ServerErrorPage() {
 
         {/* ── Action Button: ONLY 'Go to Homepage' (NO 'Try Again' button) ── */}
         <div className="flex justify-center">
-          <Link
-            to="/"
+          <a
+            href="/"
             className="inline-flex items-center justify-center gap-3 px-8 py-3.5 sm:px-10 sm:py-4 rounded-xl bg-[#0e3b4a] hover:bg-[#082832] active:bg-[#051c23] text-white font-bold text-base sm:text-lg shadow-md hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 tracking-wide"
           >
             <Home className="w-5 h-5 text-emerald-400" />
             <span>{isHi ? 'मुख्य पृष्ठ पर जाएं (Go to Homepage)' : 'Go to Homepage'}</span>
-          </Link>
+          </a>
         </div>
 
       </div>
