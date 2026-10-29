@@ -123,7 +123,6 @@ const site_2 = `${S3_BUCKET}/Staff-Photo/site2.webp`;
       category: 'site',
       email: 'field.hawalbagh@uk.gov.in',
       phone: '+91 98370-11204',
-      photo: '/assets/siteworker_portrait.jpg',
     },
     {
       id: 'site-2',
