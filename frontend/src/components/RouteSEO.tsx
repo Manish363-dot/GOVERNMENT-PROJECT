@@ -45,7 +45,7 @@ const SEO_MAP: Record<string, SEOConfig> = {
     canonicalPath: '/',
     robots: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1',
   },
-  '/safai': {
+  '/safai-portal': {
     titleHi: 'ठोस अपशिष्ट एवं स्वच्छता प्रबंधन पोर्टल | जिला पंचायत अल्मोड़ा',
     titleEn: 'Solid Waste & Sanitation Management Portal | Zila Panchayat Almora',
     descHi: 'कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड शासन। लाइव जीपीएस कचरा वाहन ट्रैकिंग, ऑनलाइन नागरिक सफाई शिकायत निवारण एवं स्वच्छता प्रतिज्ञा पोर्टल।',
@@ -77,7 +77,7 @@ const SEO_MAP: Record<string, SEOConfig> = {
     canonicalPath: '/media',
     robots: 'index, follow',
   },
-  '/notices': {
+  '#Notices': {
     titleHi: 'शासकीय सूचनाएं, आदेश एवं स्वच्छता अपडेट | जिला पंचायत अल्मोड़ा',
     titleEn: 'Official Notices, Orders & Sanitation Updates | Zila Panchayat Almora',
     descHi: 'जिला पंचायत अल्मोड़ा द्वारा जारी नवीनतम शासकीय आदेश, स्वच्छता निविदाएं, सार्वजनिक नोटिस एवं अपशिष्ट प्रबंधन नियम।',

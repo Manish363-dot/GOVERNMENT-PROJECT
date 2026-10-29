@@ -6,9 +6,9 @@ import {
 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
-const PLEDGE_LOGO_S3_URL = `${S3_BUCKET}/portal-logos/logo2.png`;
-const FALLBACK_LOGO_URL = '/assets/logos/logo2.png';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
+const PLEDGE_LOGO_S3_URL = `${S3_BUCKET}/portal-logos/logo2.webp`;
+const FALLBACK_LOGO_URL =  `${S3_BUCKET}/portal-logos/logo2.webp`;
 
 export const SwachhataPledgeSection = React.memo(() => {
   const { i18n } = useTranslation();

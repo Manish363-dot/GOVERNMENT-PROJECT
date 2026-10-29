@@ -11,8 +11,9 @@ export function NotFoundPage() {
     window.scrollTo(0, 0);
   }, []);
 
+  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
   return (
-    <div className="min-h-screen w-full bg-white flex flex-col items-center justify-between select-none font-sans overflow-x-hidden relative">
+    <div className ="min-h-screen w-full bg-white flex flex-col items-center justify-between select-none font-sans overflow-x-hidden relative">
 
       {/* ── Main Content Area (Full Page Layout) ── */}
       <div className="w-full max-w-4xl lg:max-w-5xl flex flex-col items-center text-center animate-fade-in my-auto px-4 py-8 sm:py-12">
@@ -20,9 +21,8 @@ export function NotFoundPage() {
         {/* ── 404 Thieves Stealing Page Illustration ── */}
         <div className="w-full flex justify-center mb-4 sm:mb-6">
           <picture>
-            <source srcSet="/assets/404-thieves.webp" type="image/webp" />
             <img
-              src="/assets/404-thieves.jpg"
+              src={`${S3_BUCKET}/portal-logos/404.webp`}
               alt="404 Page Not Found - Thieves stealing webpage"
               className="w-full h-auto max-h-[48vh] sm:max-h-[55vh] object-contain select-none transition-transform duration-300 hover:scale-[1.01]"
               loading="eager"

@@ -58,9 +58,9 @@ export function StaffDirectoryPage() {
       setTimeout(() => setCopiedKey(null), 2000);
     }
   };
-  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
-const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.jpeg`;
-const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.jpeg`;
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
+const CH_IMAGE_URL = `${S3_BUCKET}/portal-logos/CH.webp`;
+const AMA_IMAGE_URL = `${S3_BUCKET}/portal-logos/AMA.webp`;
 
 /* Staff photos from staff-photo folder*/
 const staff_1 = `${S3_BUCKET}/Staff-Photo/staff1.webp`;

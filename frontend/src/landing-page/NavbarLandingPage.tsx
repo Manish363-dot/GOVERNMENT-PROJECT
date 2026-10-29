@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { X, ShieldCheck, PhoneCall, ChevronDown } from 'lucide-react';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
@@ -11,6 +11,16 @@ export const NavbarLandingPage = React.memo(() => {
   const { t, i18n } = useTranslation();
   const { openRentalComingSoon } = useRentalComingSoon();
   const isHi = i18n.language === 'hi';
+  const location = useLocation();
+
+  const handleHomeClick = (e: React.MouseEvent) => {
+    if (location.pathname === '/' && !location.hash) {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
@@ -107,7 +117,7 @@ export const NavbarLandingPage = React.memo(() => {
               
               {/* Brand Identity */}
               <div className="flex items-center justify-start shrink-0 mr-2 xl:mr-3 2xl:mr-6">
-                <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
+                <Link to="/" onClick={handleHomeClick} className="flex items-center gap-2 sm:gap-3 group">
                   <img 
                     src={PANCHAYATI_RAJ_LOGO_URL} 
                     alt="Zila Panchayat Almora Logo" 
@@ -127,7 +137,8 @@ export const NavbarLandingPage = React.memo(() => {
                 {/* 1. Home Link */}
                 <Link
                   to="/"
-                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
+                  onClick={handleHomeClick}
+                  className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap cursor-pointer"
                 >
                   {t('nav.home', 'मुख्य पृष्ठ')}
                 </Link>
@@ -299,8 +310,11 @@ export const NavbarLandingPage = React.memo(() => {
             <div className="px-4 pb-4 pt-2 space-y-1">
               <Link
                 to="/"
-                onClick={() => setMobileOpen(false)}
-                className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
+                onClick={(e) => {
+                  setMobileOpen(false);
+                  handleHomeClick(e);
+                }}
+                className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md cursor-pointer"
               >
                 {t('nav.home', 'मुख्य पृष्ठ')}
               </Link>

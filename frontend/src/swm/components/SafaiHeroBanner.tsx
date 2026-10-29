@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, Award, Building2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
@@ -16,14 +16,20 @@ export const SafaiHeroBanner = React.memo(() => {
     if (el) el.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+  const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
   return (
     <section
       className="relative w-full overflow-hidden border-b border-slate-200 bg-white min-h-[300px] sm:min-h-[330px] md:min-h-[350px] lg:min-h-[365px] flex items-center"
     >
       {/* Background image — object-cover pinned to bottom so truck, wheels and road are 100% visible */}
       <img
-        src="/swm-hero-bg.png"
+        src={`${S3_BUCKET}/portal-logos/swm-bg.webp`}
+        onError={(e) => {
+          const img = e.currentTarget;
+          if (!img.src.includes("/swm-hero-bg")) {
+            img.src = "/swm-hero-bg.webp";
+          }
+        }}
         alt="Zila Panchayat Almora — Solid Waste Management"
         className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
         style={{

@@ -7,7 +7,6 @@ import {
   ZoomIn,
   ZoomOut,
   Maximize2,
-  BookOpen,
   Gavel,
   Eye,
   CheckCircle2,
@@ -46,18 +45,18 @@ export interface BylawDocument {
   highlights: Highlight[];
 }
 
-const S3_BASE = import.meta.env.VITE_AWS_S3_BUCKET_URL || '';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
 export const BYLAWS: BylawDocument[] = [
   {
     id: 'bylaw-swm-2023',
     pages: [
-      `${S3_BASE}/bylaws/Page1.webp`,
-      `${S3_BASE}/bylaws/Page2.webp`,
-      `${S3_BASE}/bylaws/Page3.webp`,
-      `${S3_BASE}/bylaws/Page4.webp`,
-      `${S3_BASE}/bylaws/Page5.webp`,
-      `${S3_BASE}/bylaws/Page6.webp`,
+      `${S3_BUCKET}/ bylaws/Page1.webp`,
+      `${S3_BUCKET}/ bylaws/Page2.webp`,
+      `${S3_BUCKET}/ bylaws/Page3.webp`,
+      `${S3_BUCKET}/ bylaws/Page4.webp`,
+      `${S3_BUCKET}/ bylaws/Page5.webp`,
+      `${S3_BUCKET}/ bylaws/Page6.webp`,
     ],
     titleEn: 'Rural Solid Waste Management & Cleanliness Bylaw — 2023',
     titleHi: 'ग्रामीण ठोस अपशिष्ट प्रबंधन एवं स्वच्छता उपविधि — 2023',
@@ -110,14 +109,14 @@ export const BYLAWS: BylawDocument[] = [
   {
     id: 'rules-swm-2026',
     pages: [
-      `${S3_BASE}/bylaws/Page7.webp`,
-      `${S3_BASE}/bylaws/Page8.webp`,
-      `${S3_BASE}/bylaws/Page9.webp`,
-      `${S3_BASE}/bylaws/Page10.webp`,
-      `${S3_BASE}/bylaws/Page11.webp`,
-      `${S3_BASE}/bylaws/Page12.webp`,
+      `${S3_BUCKET}/ bylaws/Page7.webp`,
+      `${S3_BUCKET}/ bylaws/Page8.webp`,
+      `${S3_BUCKET}/ bylaws/Page9.webp`,
+      `${S3_BUCKET}/ bylaws/Page10.webp`,
+      `${S3_BUCKET}/ bylaws/Page11.webp`,
+      `${S3_BUCKET}/ bylaws/Page12.webp`,
     ],
-    pdfUrl: `${S3_BASE}/bylaws/solid-waste-management-rules-2026.pdf`,
+    pdfUrl: `${S3_BUCKET}/ bylaws/solid-waste-management-rules-2026.pdf`,
     titleEn: 'Solid Waste Management Rules, 2026',
     titleHi: 'ठोस अपशिष्ट प्रबंधन नियम, 2026 (प्रारूप)',
     gazetteEn: 'The Gazette of India: Extraordinary, Part II, Sec 3',

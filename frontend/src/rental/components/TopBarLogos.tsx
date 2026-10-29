@@ -10,12 +10,12 @@ export interface TopBarLogoItem {
   sort_order: number;
 }
 
-const S3_BUCKET = 'https://zila-panchayat-images.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayatimages.s3.ap-south-1.amazonaws.com';
 
-export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.png`;
+export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.webp`;
 
 // 4 Default logo slots with descriptive official titles for accessibility (Lighthouse WCAG)
-const DEFAULT_LOGOS: TopBarLogoItem[] = [
+const DEFAULT_LOGOS: TopBarLogoItem[]   = [   
   {
     id: 'logo-1',
     title: 'उत्तराखंड शासन आधिकारिक राजचिह्न (Emblem of Uttarakhand)',
@@ -84,7 +84,7 @@ export function TopBarLogos({ variant = 'public', className = '' }: TopBarLogosP
       ? 'h-5 min-[360px]:h-6 sm:h-7 md:h-9 text-slate-400' 
       : 'h-6 min-[360px]:h-7 sm:h-8 md:h-10 lg:h-12 text-slate-400';
 
-    const primaryUrl = logo.logo_url || `/assets/logos/${logo.file_name}`;
+    const primaryUrl = logo.logo_url || `${S3_BUCKET}/portal-logos/${logo.file_name}`;
 
     return (
       <div 
