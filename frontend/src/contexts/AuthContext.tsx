@@ -40,21 +40,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfile(profile);
         setIsNewGoogleUser(false); 
       } catch (err: any) {
-        if (err.status === 404 || err.message?.includes('404') || err.message?.includes('Profile not found')) {
-          setIsNewGoogleUser(true);
-        } else if (
-          err.status === 401 ||
-          err.message?.includes('401') ||
-          err.message?.includes('Unauthorized') ||
-          err.message?.includes('Missing or invalid authentication token')
-        ) {
-          // Expected for guest visitors who are not logged in as admin
-          setProfile(null);
-        } else {
-          // Only log genuine unexpected network or 500 errors
-          console.error('Failed to fetch profile:', err);
-          setProfile(null);
-        }
+        // Guest visitors or unauthenticated users — never force passkey popup
+        setProfile(null);
+        setIsNewGoogleUser(false);
       } finally {
         activeFetchPromise = null;
         setLoading(false);
