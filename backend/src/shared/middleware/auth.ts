@@ -38,6 +38,37 @@ export async function authMiddleware(
 }
 
 /**
+ * Middleware: Optional authentication.
+ * If valid token is present, sets user data on request; otherwise proceeds as guest without 401.
+ */
+export async function optionalAuth(
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = req.cookies?.access_token || (authHeader?.startsWith('Bearer ') ? authHeader.split(' ')[1] : null);
+
+    if (!token) {
+      return next();
+    }
+
+    try {
+      const decoded = jwt.verify(token, env.JWT_SECRET) as any;
+      req.userId = decoded.userId;
+      req.userEmail = decoded.email;
+      req.userRole = decoded.role;
+    } catch {
+      // Ignored for guests
+    }
+    next();
+  } catch {
+    next();
+  }
+}
+
+/**
  * Middleware factory: Require a specific role to access a route.
  * Must be used AFTER authMiddleware.
  */

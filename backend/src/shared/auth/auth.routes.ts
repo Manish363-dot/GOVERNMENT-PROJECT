@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as authController from './auth.controller';
-import { authMiddleware, requireAdmin } from '../middleware/auth';
+import { authMiddleware, optionalAuth, requireAdmin } from '../middleware/auth';
 import { validate } from '../middleware/validate';
 import {
   loginSchema,
@@ -27,7 +27,7 @@ router.post('/verify-reset-otp', validate(verifyOtpSchema), authController.verif
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
 
 // Authenticated: Profile operations
-router.get('/profile', authMiddleware, requireAdmin, authController.getProfile);
+router.get('/profile', optionalAuth, authController.getProfile);
 router.put('/profile', authMiddleware, requireAdmin, validate(updateProfileSchema), authController.updateProfile);
 
 // Public: Finish Google OAuth signup / login

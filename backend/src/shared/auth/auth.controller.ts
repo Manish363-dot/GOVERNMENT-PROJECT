@@ -163,16 +163,21 @@ export async function resendOtp(req: Request, res: Response): Promise<void> {
  */
 export async function getProfile(req: AuthenticatedRequest, res: Response): Promise<void> {
   try {
-    const profile = await authService.getProfile(req.userId!);
+    if (!req.userId) {
+      res.json({ profile: null });
+      return;
+    }
+
+    const profile = await authService.getProfile(req.userId);
 
     if (!profile) {
-      res.status(404).json({ error: 'Profile not found' });
+      res.json({ profile: null });
       return;
     }
 
     res.json({ profile });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to fetch profile' });
+    res.json({ profile: null });
   }
 }
 
