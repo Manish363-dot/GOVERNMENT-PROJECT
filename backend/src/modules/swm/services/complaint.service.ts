@@ -164,36 +164,36 @@ export async function createComplaint(complaint: {
 
 export async function getAllComplaints(status?: string) {
   try {
-    let sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false`;
-    const params: any[] = [];
-
+    const where: any = {};
     if (status === 'archived') {
-      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = true`;
+      where.is_archived = true;
     } else if (status === 'confirmed') {
-      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false AND "user_confirmed" = true`;
+      where.is_archived = false;
+      where.user_confirmed = true;
     } else if (status && status !== 'all') {
-      sql = `SELECT * FROM "Complaint" WHERE "is_archived" = false AND "status"::text = $1`;
-      params.push(status);
+      where.is_archived = false;
+      where.status = status;
+    } else {
+      where.is_archived = false;
     }
 
-    sql += ` ORDER BY "created_at" DESC`;
-
-    return await prisma.$queryRawUnsafe<any[]>(sql, ...params);
+    return await prisma.complaint.findMany({
+      where,
+      orderBy: { created_at: 'desc' }
+    });
   } catch (error: any) {
     console.error('getAllComplaints error:', error);
-    require('fs').writeFileSync('getAllComplaints-error.log', String(error) + '\n' + error.stack);
     throw new Error('Failed to fetch complaints');
   }
 }
 
 export async function getComplaintById(id: string) {
   try {
-    const list = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM "Complaint" WHERE "id" = $1 LIMIT 1
-    `, id);
+    const complaint = await prisma.complaint.findUnique({
+      where: { id }
+    });
 
-    if (!list || list.length === 0) return null;
-    const complaint = list[0];
+    if (!complaint) return null;
 
     const updates = await prisma.complaintUpdate.findMany({
       where: { complaint_id: id },
@@ -209,15 +209,17 @@ export async function getComplaintById(id: string) {
 export async function trackComplaint(trackingId: string) {
   try {
     const cleanQuery = trackingId.trim();
-    const list = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM "Complaint"
-      WHERE UPPER("complaint_number") = UPPER($1) OR "mobile" = $1
-      ORDER BY "created_at" DESC
-      LIMIT 1
-    `, cleanQuery);
+    const complaint = await prisma.complaint.findFirst({
+      where: {
+        OR: [
+          { complaint_number: { equals: cleanQuery, mode: 'insensitive' } },
+          { mobile: cleanQuery }
+        ]
+      },
+      orderBy: { created_at: 'desc' }
+    });
 
-    if (!list || list.length === 0) return null;
-    const complaint = list[0];
+    if (!complaint) return null;
 
     const updates = await prisma.complaintUpdate.findMany({
       where: { complaint_id: complaint.id },
@@ -233,13 +235,15 @@ export async function trackComplaint(trackingId: string) {
 export async function confirmComplaintResolution(identifier: string) {
   try {
     const cleanId = identifier.trim();
-    const existingList = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM "Complaint"
-      WHERE "id" = $1 OR UPPER("complaint_number") = UPPER($1)
-      LIMIT 1
-    `, cleanId);
+    const existing = await prisma.complaint.findFirst({
+      where: {
+        OR: [
+          { id: cleanId },
+          { complaint_number: { equals: cleanId, mode: 'insensitive' } }
+        ]
+      }
+    });
 
-    const existing = existingList[0];
     if (!existing) {
       throw new Error('Complaint not found');
     }
@@ -248,12 +252,13 @@ export async function confirmComplaintResolution(identifier: string) {
       throw new Error('Only complaints marked as RESOLVED by administration can be confirmed by citizens.');
     }
 
-    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
-      UPDATE "Complaint"
-      SET "user_confirmed" = true, "user_confirmed_at" = NOW()
-      WHERE "id" = $1
-      RETURNING *
-    `, existing.id);
+    const updated = await prisma.complaint.update({
+      where: { id: existing.id },
+      data: {
+        user_confirmed: true,
+        user_confirmed_at: new Date()
+      }
+    });
 
     await prisma.complaintUpdate.create({
       data: {
@@ -264,7 +269,7 @@ export async function confirmComplaintResolution(identifier: string) {
       }
     });
 
-    return updatedList[0];
+    return updated;
   } catch (err: any) {
     throw new Error(err.message || 'Failed to confirm resolution');
   }
@@ -283,11 +288,10 @@ export async function updateComplaintStatus(
       resolved: 3
     };
 
-    const existingList = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT * FROM "Complaint" WHERE "id" = $1 LIMIT 1
-    `, complaintId);
+    const existing = await prisma.complaint.findUnique({
+      where: { id: complaintId }
+    });
 
-    const existing = existingList[0];
     if (!existing) {
       throw new Error('Complaint not found');
     }
@@ -303,12 +307,12 @@ export async function updateComplaintStatus(
       throw new Error(`Cannot revert complaint status from '${existing.status}' back to '${status}'. Status can only progress forward (New → In Progress → Resolved).`);
     }
 
-    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
-      UPDATE "Complaint"
-      SET "status" = $1::"ComplaintStatus"
-      WHERE "id" = $2
-      RETURNING *
-    `, status, complaintId);
+    const updatedComplaint = await prisma.complaint.update({
+      where: { id: complaintId },
+      data: {
+        status: status as any
+      }
+    });
 
     await prisma.complaintUpdate.create({
       data: {
@@ -318,8 +322,6 @@ export async function updateComplaintStatus(
         updated_by: updatedBy
       }
     });
-
-    const updatedComplaint = updatedList[0];
 
     // Asynchronously send WhatsApp status update alert to citizen
     whatsappService.sendWhatsAppStatusUpdate(existing.mobile, {
@@ -339,14 +341,13 @@ export async function updateComplaintStatus(
 
 export async function archiveComplaint(id: string, isArchived: boolean = true) {
   try {
-    const updatedList = await prisma.$queryRawUnsafe<any[]>(`
-      UPDATE "Complaint"
-      SET "is_archived" = $1, "archived_at" = (CASE WHEN $1 THEN NOW() ELSE NULL END)
-      WHERE "id" = $2
-      RETURNING *
-    `, isArchived, id);
-
-    const updated = updatedList[0];
+    const updated = await prisma.complaint.update({
+      where: { id },
+      data: {
+        is_archived: isArchived,
+        archived_at: isArchived ? new Date() : null
+      }
+    });
 
     await prisma.complaintUpdate.create({
       data: {
@@ -367,13 +368,9 @@ export async function archiveComplaint(id: string, isArchived: boolean = true) {
 
 export async function deleteComplaint(id: string) {
   try {
-    await prisma.$queryRawUnsafe(`
-      DELETE FROM "ComplaintUpdate" WHERE "complaint_id" = $1
-    `, id);
-    await prisma.$queryRawUnsafe(`
-      DELETE FROM "Complaint" WHERE "id" = $1
-    `, id);
-    return { success: true };
+    await prisma.complaintUpdate.deleteMany({ where: { complaint_id: id } });
+    await prisma.complaint.delete({ where: { id } });
+    return true;
   } catch (error: any) {
     throw new Error('Failed to delete complaint');
   }
@@ -381,34 +378,28 @@ export async function deleteComplaint(id: string) {
 
 export async function getComplaintCounts() {
   try {
-    const activeCounts = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT "status"::text AS status, COUNT(*)::int AS count
-      FROM "Complaint"
-      WHERE "is_archived" = false
-      GROUP BY "status"
-    `);
+    const activeCounts = await prisma.complaint.groupBy({
+      by: ['status'],
+      where: { is_archived: false },
+      _count: { status: true },
+    });
 
     let total = 0, newC = 0, in_progress = 0, resolved = 0;
     for (const c of activeCounts) {
-      total += Number(c.count);
-      if (c.status === 'new') newC = Number(c.count);
-      if (c.status === 'in_progress') in_progress = Number(c.count);
-      if (c.status === 'resolved') resolved = Number(c.count);
+      const cnt = c._count.status;
+      total += cnt;
+      if (c.status === 'new') newC = cnt;
+      if (c.status === 'in_progress') in_progress = cnt;
+      if (c.status === 'resolved') resolved = cnt;
     }
 
-    const confirmedRes = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT COUNT(*)::int AS count 
-      FROM "Complaint" 
-      WHERE "user_confirmed" = true AND "is_archived" = false
-    `);
-    const confirmedCount = Number(confirmedRes[0]?.count || 0);
+    const confirmedCount = await prisma.complaint.count({
+      where: { user_confirmed: true, is_archived: false },
+    });
 
-    const archivedRes = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT COUNT(*)::int AS count 
-      FROM "Complaint" 
-      WHERE "is_archived" = true
-    `);
-    const archivedCount = Number(archivedRes[0]?.count || 0);
+    const archivedCount = await prisma.complaint.count({
+      where: { is_archived: true },
+    });
 
     return { 
       total, 
@@ -425,15 +416,10 @@ export async function getComplaintCounts() {
 
 export async function getNewComplaintCount(): Promise<number> {
   try {
-    const res = await prisma.$queryRawUnsafe<any[]>(`
-      SELECT COUNT(*)::int AS count 
-      FROM "Complaint" 
-      WHERE "status"::text = 'new' AND "is_archived" = false
-    `);
-    return Number(res[0]?.count || 0);
+    return await prisma.complaint.count({
+      where: { status: 'new', is_archived: false },
+    });
   } catch (error) {
     return 0;
   }
 }
-
-

@@ -304,6 +304,11 @@ export async function resetPassword(req: Request, res: Response): Promise<void> 
  * Public — clears the auth cookie
  */
 export async function logout(req: Request, res: Response): Promise<void> {
-  res.clearCookie('access_token');
+  res.clearCookie('access_token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
   res.status(200).json({ message: 'Logged out successfully' });
 }

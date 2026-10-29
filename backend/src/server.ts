@@ -61,7 +61,14 @@ httpServer.listen(PORT, () => {
   `);
 
   // Start automated MilliTrack live GPS sync (every 4 seconds for fast live tracking)
-  millitrackSyncService.startSync(4000);
+  // Cluster safety: In multi-worker / PM2 cluster mode, only instance '0' runs the sync loop
+  const isMasterInstance = !process.env.NODE_APP_INSTANCE || process.env.NODE_APP_INSTANCE === '0';
+  if (isMasterInstance) {
+    millitrackSyncService.startSync(4000);
+    console.log('📡 [MilliTrack] Automated GPS sync loop started on master instance.');
+  } else {
+    console.log('ℹ️ [MilliTrack] Secondary cluster worker: GPS sync loop skipped to prevent duplicate API polling.');
+  }
 });
 
 // Graceful shutdown handling

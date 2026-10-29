@@ -17,6 +17,17 @@ const JWT_EXPIRY = '24h';
 
 // ── Helpers ──────────────────────────────────────────────────────
 
+function isPasskeyValid(providedPasskey?: string): boolean {
+  if (!providedPasskey || !env.ADMIN_PASSKEY) return false;
+  const providedBuffer = Buffer.from(providedPasskey);
+  const expectedBuffer = Buffer.from(env.ADMIN_PASSKEY);
+  if (providedBuffer.length !== expectedBuffer.length) {
+    crypto.timingSafeEqual(expectedBuffer, expectedBuffer);
+    return false;
+  }
+  return crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+}
+
 function generateOtp(): string {
   return crypto.randomInt(100000, 999999).toString();
 }
@@ -79,7 +90,7 @@ export async function signupAdmin(
   password: string,
   passkey: string
 ) {
-  if (passkey !== env.ADMIN_PASSKEY) {
+  if (!isPasskeyValid(passkey)) {
     throw new Error('INVALID_PASSKEY');
   }
 
@@ -404,7 +415,7 @@ export async function googleLogin(idToken: string, passkey?: string) {
     if (!passkey) {
       throw new Error('PASSKEY_REQUIRED');
     }
-    if (passkey !== env.ADMIN_PASSKEY) {
+    if (!isPasskeyValid(passkey)) {
       throw new Error('INVALID_PASSKEY');
     }
     // MED-2: Use a random unguessable hash for Google-only users, not empty string

@@ -179,7 +179,8 @@ export async function sendWhatsAppStatusUpdate(
   }
 ): Promise<{ success: boolean; error?: string }> {
   const formattedTo = formatWhatsAppNumber(mobile);
-  const portalUrl = details.trackingUrl || `http://localhost:5173/complaints?tab=track&query=${details.complaintNumber}`;
+  const baseUrl = (process.env.FRONTEND_URL || 'http://localhost:5173').split(',')[0].trim().replace(/\/+$/, '');
+  const portalUrl = details.trackingUrl || `${baseUrl}/complaints?tab=track&query=${details.complaintNumber}`;
 
   const statusTitleHi = 
     details.newStatus === 'resolved' 
