@@ -13,7 +13,7 @@ export function errorHandler(
   console.error('[Error]', err.message);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.error(err.stack);
+    console.error(err.stack);;
   }
 
   // Check for known error types

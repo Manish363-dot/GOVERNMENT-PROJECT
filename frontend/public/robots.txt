@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Disallow private admin/auth areas
+Disallow: /admin
+Disallow: /rental/admin
+Disallow: /api/
+Disallow: /signin
+Disallow: /signup
+Disallow: /forgot-password
+
+# Sitemap
+Sitemap: https://zilapanchayatalmora.in/sitemap.xml
