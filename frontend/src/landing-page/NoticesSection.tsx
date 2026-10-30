@@ -132,7 +132,7 @@ export const NoticesSection = React.memo(() => {
           <div 
             className="flex transition-transform duration-500 ease-in-out gap-5"
             style={{
-              transform: `translateX(-${currentIndex * (100 / cardsPerView)}%)`
+              transform: cardsPerView === 1 ? `translateX(calc(-${currentIndex * 100}% - ${currentIndex * 20}px))` : `translateX(-${currentIndex * (100 / cardsPerView)}%)`
             }}
           >
             {NOTICES_DATA.map((notice) => (
@@ -140,7 +140,7 @@ export const NoticesSection = React.memo(() => {
                 key={notice.id}
                 className="shrink-0 group bg-white rounded-xl border border-slate-200 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden hover:border-navy-300"
                 style={{
-                  width: `calc(${100 / cardsPerView}% - ${(20 * (cardsPerView - 1)) / cardsPerView}px)`
+                  width: cardsPerView === 1 ? '100%' : `calc(${100 / cardsPerView}% - ${(20 * (cardsPerView - 1)) / cardsPerView}px)`
                 }}
               >
                 <div>
