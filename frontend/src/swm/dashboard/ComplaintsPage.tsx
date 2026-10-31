@@ -180,7 +180,6 @@ export const ComplaintsPage = React.memo(() => {
       {/* ── Page Header ── */}
       <div className="bg-white border border-slate-300 rounded overflow-hidden">
         <div className="bg-[#0a1628] px-4 py-2.5 flex items-center gap-2">
-          <MessageSquareWarning className="w-4 h-4 text-amber-400 shrink-0" />
           <div>
             <p className="text-[15px] sm:text-[16px] font-bold text-white uppercase tracking-normal">
               {isHi ? 'शिकायत निवारण पंजिका' :'Complaint Redressal Register'}

@@ -5,6 +5,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { usePledgeCount } from '@/hooks/usePledgeCount';
+import { LOGO2_BASE64 } from './logo2Base64';
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 const PLEDGE_LOGO_S3_URL = `${S3_BUCKET}/portal-logos/logo2.webp`;
@@ -70,17 +71,17 @@ export const SwachhataPledgeSection = React.memo(() => {
     canvas.width = 1200;
     canvas.height = 800;
 
-    // Preload logo from AWS S3 (with fallback to local)
-    let imgPanchayat = await loadImage(PLEDGE_LOGO_S3_URL);
+    // Preload logo guaranteed via base64 data URI (zero CORS / zero network failure)
+    let imgPanchayat = await loadImage(LOGO2_BASE64);
     if (!imgPanchayat) {
-      imgPanchayat = await loadImage(FALLBACK_LOGO_URL);
+      imgPanchayat = await loadImage(PLEDGE_LOGO_S3_URL);
     }
 
     // 1. Background gradient & frame
     const bgGradient = ctx.createLinearGradient(0, 0, 1200, 800);
-    bgGradient.addColorStop(0, '#061021');
-    bgGradient.addColorStop(0.5, '#0b192e');
-    bgGradient.addColorStop(1, '#061021');
+    bgGradient.addColorStop(0, '#fdfbf7');
+    bgGradient.addColorStop(0.5, '#fffefb');
+    bgGradient.addColorStop(1, '#f9f6ef');
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, 1200, 800);
 
@@ -89,7 +90,7 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.lineWidth = 6;
     ctx.strokeRect(30, 30, 1140, 740);
 
-    ctx.strokeStyle = '#38bdf8';
+    ctx.strokeStyle = '#d97706';
     ctx.lineWidth = 1.5;
     ctx.strokeRect(40, 40, 1120, 720);
 
@@ -103,8 +104,8 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.fillRect(40 + barWidth * 2, 40, barWidth, 6);
 
     // 4. Draw Panchayati Raj Logo & Header Text together in One Line (Centered with clean padding)
-    const titleText = 'जिला पंचायत अल्मोड़ा';
-    const subText = 'स्वच्छ भारत मिशन (ग्रामीण)';
+    const titleText = isHi ? 'जिला पंचायत अल्मोड़ा' : 'Zila Panchayat Almora';
+    const subText = isHi ? 'स्वच्छ भारत मिशन' : 'Swacch Bharat Mission';
 
     ctx.font = 'bold 24px sans-serif';
     const titleWidth = ctx.measureText(titleText).width;
@@ -135,13 +136,23 @@ export const SwachhataPledgeSection = React.memo(() => {
       ctx.lineWidth = 3.5;
       ctx.stroke();
 
-      // Sharp centered Panchayati Raj logo inside circle
+      // Calculate aspect-ratio preserved dimensions (object-contain)
+      const maxW = 54;
+      const maxH = 46;
+      const imgAspect = imgPanchayat.width / imgPanchayat.height;
+      let drawW = maxW;
+      let drawH = drawW / imgAspect;
+      if (drawH > maxH) {
+        drawH = maxH;
+        drawW = drawH * imgAspect;
+      }
+
       ctx.drawImage(
         imgPanchayat,
-        logoCenterX - (logoImgSize / 2),
-        centerY - (logoImgSize / 2),
-        logoImgSize,
-        logoImgSize
+        logoCenterX - (drawW / 2),
+        centerY - (drawH / 2),
+        drawW,
+        drawH
       );
       ctx.restore();
     }
@@ -155,7 +166,7 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.font = 'bold 24px sans-serif';
     ctx.fillText(titleText, textStartX, centerY - 14);
 
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#64748b';
     ctx.font = '600 14px sans-serif';
     ctx.fillText(subText, textStartX, centerY + 14);
 
@@ -163,16 +174,16 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
 
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#0f172a';
     ctx.font = 'bold 36px Georgia, serif';
-    ctx.fillText('CERTIFICATE OF SWACHHATA PLEDGE', 600, 195);
+    ctx.fillText(isHi ? 'स्वच्छता शपथ प्रमाण-पत्र':'CERTIFICATE OF SWACHHATA PLEDGE', 600, 195);
 
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#64748b';
     ctx.font = 'italic 18px sans-serif';
-    ctx.fillText('This certificate is proudly awarded to', 600, 240);
+    ctx.fillText(isHi ? 'यह प्रमाण-पत्र सादर प्रदान किया जाता है' : 'This certificate is proudly awarded to', 600, 240);
 
     // 7. Citizen Name
-    ctx.fillStyle = '#fbbf24';
+    ctx.fillStyle = '#b45309';
     ctx.font = 'bold 44px Georgia, serif';
     ctx.fillText(citizenName.toUpperCase(), 600, 305);
 
@@ -186,25 +197,27 @@ export const SwachhataPledgeSection = React.memo(() => {
 
     // Locality
     if (gramPanchayat) {
-      ctx.fillStyle = '#cbd5e1';
+      ctx.fillStyle = '#475569';
       ctx.font = '600 18px sans-serif';
-      ctx.fillText(`Resident of: ${gramPanchayat}, District Almora (Uttarakhand)`, 600, 355);
+      ctx.fillText(`${isHi ? 'निवासी': 'Resident of'}: ${gramPanchayat}, ${isHi ? 'जनपद अल्मोड़ा, उत्तराखंड':'District Almora Uttarakhand'}`, 600, 355);
     }
 
     // 8. Citation Body (Centered)
-    ctx.fillStyle = '#e2e8f0';
+    ctx.fillStyle = '#334155';
     ctx.font = '16px sans-serif';
     ctx.fillText(
-      'In recognition of your solemn commitment to preserve the pristine ecology, rivers, and scenic valleys',
+      isHi ? 'जिला अल्मोड़ा की स्वच्छ एवं प्राकृतिक सुंदरता, नदियों तथा सुरम्य घाटियों को संरक्षित रखने के प्रति आपकी दृढ़ प्रतिबद्धता के सम्मान में,':'In recognition of your solemn commitment to preserve the pristine ecology, rivers, and scenic valleys',
       600,
       400
     );
     ctx.fillText(
+      isHi ? 'जिसमें स्रोत पर ही कचरे का पृथक्करण करना, एकल उपयोग प्लास्टिक का त्याग करना तथा स्वच्छ,' :
       'of District Almora by practicing waste segregation at source, eliminating single-use plastics, and',
       600,
       430
     );
     ctx.fillText(
+      isHi ? 'हरित एवं सतत देवभूमि के निर्माण में सक्रिय सहभागिता करना शामिल है।' :
       'actively participating in building a Clean, Green & Sustainable Devbhoomi.',
       600,
       460
@@ -217,10 +230,10 @@ export const SwachhataPledgeSection = React.memo(() => {
       year: 'numeric'
     });
     ctx.textAlign = 'left';
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillStyle = '#64748b';
     ctx.font = '14px sans-serif';
-    ctx.fillText(`Certificate ID: ${certificateId}`, 80, 520);
-    ctx.fillText(`Date of Issuance: ${today}`, 80, 545);
+    ctx.fillText(`${isHi ? 'प्रमाण-पत्र क्रमांक': 'Certificate ID'}: ${certificateId}`, 80, 520);
+    ctx.fillText(`${isHi ? 'जारी करने की तिथि' : 'Date of Issuance'}: ${today}`, 80, 545);
 
     // 10. Official Demo Signatures & Titles
     ctx.textAlign = 'center';
@@ -228,9 +241,9 @@ export const SwachhataPledgeSection = React.memo(() => {
     // Signature 1: Chairperson (Demo cursive signature)
     ctx.save();
     ctx.font = 'italic 34px "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive, serif';
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText('Deepa Arya', 320, 630);
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+    ctx.fillStyle = '#0369a1';
+    ctx.fillText('Hema Gaira', 320, 630);
+    ctx.strokeStyle = 'rgba(3, 105, 161, 0.8)';
     ctx.lineWidth = 1.8;
     ctx.beginPath();
     ctx.moveTo(250, 638);
@@ -238,19 +251,19 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = '#f8fafc';
+    ctx.fillStyle = '#0f172a';
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('अध्यक्ष / Chairperson', 320, 670);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(isHi ?'अध्यक्ष' : 'Chairperson', 320, 670);
+    ctx.fillStyle = '#64748b';
     ctx.font = '13px sans-serif';
-    ctx.fillText('जिला पंचायत, अल्मोड़ा', 320, 695);
+    ctx.fillText(isHi ?'जिला पंचायत, अल्मोड़ा' : 'Zila Panchayat, Almora', 320, 695);
 
     // Signature 2: CDO (Demo cursive signature)
     ctx.save();
     ctx.font = 'italic 34px "Brush Script MT", "Segoe Script", "Lucida Handwriting", cursive, serif';
-    ctx.fillStyle = '#38bdf8';
-    ctx.fillText('A. Verma', 880, 630);
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.7)';
+    ctx.fillStyle = '#0369a1';
+    ctx.fillText(' Rajesh Kumar', 880, 630);
+    ctx.strokeStyle = 'rgba(3, 105, 161, 0.8)';
     ctx.lineWidth = 1.8;
     ctx.beginPath();
     ctx.moveTo(815, 638);
@@ -258,12 +271,12 @@ export const SwachhataPledgeSection = React.memo(() => {
     ctx.stroke();
     ctx.restore();
 
-    ctx.fillStyle = '#f8fafc';
+    ctx.fillStyle = '#0f172a';
     ctx.font = 'bold 16px sans-serif';
-    ctx.fillText('मुख्य विकास अधिकारी / CDO', 880, 670);
-    ctx.fillStyle = '#94a3b8';
+    ctx.fillText(isHi ?'अपर मुख्य अधिकारी' : 'Additional Chief Officer', 880, 670);
+    ctx.fillStyle = '#64748b';
     ctx.font = '13px sans-serif';
-    ctx.fillText('जिला प्रशासन, अल्मोड़ा', 880, 695);
+    ctx.fillText(isHi ?'जिला पंचायत, अल्मोड़ा': 'Zila Panchayat Almora', 880, 695);
 
     // Trigger download
     const link = document.createElement('a');
@@ -310,7 +323,7 @@ export const SwachhataPledgeSection = React.memo(() => {
           <div className="lg:col-span-5 bg-slate-50 border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-200">
               <h3 className="font-bold text-base text-navy-900">
-                {isHi ? 'शपथ पत्र प्रविष्टि (Pledge Form)' : 'Citizen Pledge Registration'}
+                {isHi ? 'शपथ पत्र प्रविष्टि' : 'Citizen Pledge Registration'}
               </h3>
             </div>
 
@@ -406,20 +419,20 @@ export const SwachhataPledgeSection = React.memo(() => {
           <div className="lg:col-span-7 flex flex-col items-center">
             <div
               ref={certRef}
-              className="w-full bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950 text-white rounded-2xl border-4 border-amber-500/80 p-5 sm:p-7 shadow-xl relative overflow-hidden"
+              className="w-full bg-gradient-to-br from-[#fdfbf7] via-[#fffefb] to-[#f7f3ea] text-slate-900 rounded-2xl border-4 border-amber-500/80 p-5 sm:p-7 shadow-xl relative overflow-hidden"
             >
               {/* Subtle background texture */}
-              <div className="absolute inset-0 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:20px_20px] opacity-10 pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(#d97706_1px,transparent_1px)] [background-size:20px_20px] opacity-[0.07] pointer-events-none" />
 
               {/* Tricolor top header */}
-              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-white to-emerald-600" />
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-orange-400 to-emerald-600" />
 
               <div className="relative z-10 text-center">
 
                 {/* ── Official Centered Panchayati Raj Logo & Heading in One Line ── */}
-                <div className="flex items-center justify-center gap-3 sm:gap-4.5 mb-5 pb-4 border-b border-slate-700/60">
+                <div className="flex items-center justify-center gap-3 sm:gap-4.5 mb-5 pb-4 border-b border-amber-200/80">
                   {/* Round White Background Logo */}
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white p-2 shadow-xl border-2 border-amber-400 flex items-center justify-center shrink-0">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white p-2 shadow-md border-2 border-amber-400 flex items-center justify-center shrink-0">
                     <img
                       src={PLEDGE_LOGO_S3_URL}
                       onError={(e) => {
@@ -432,47 +445,47 @@ export const SwachhataPledgeSection = React.memo(() => {
 
                   {/* Heading Beside Logo in One Line */}
                   <div className="text-left">
-                    <p className="text-amber-400 font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wide leading-tight">
+                    <p className="text-amber-800 font-extrabold text-sm sm:text-base md:text-lg uppercase tracking-wide leading-tight">
                       {isHi ? 'जिला पंचायत अल्मोड़ा' : 'ZILA PANCHAYAT ALMORA'}
                     </p>
-                    <span className="text-[11px] sm:text-xs text-slate-300 uppercase tracking-wider block mt-0.5 font-medium">
-                      {isHi ? 'स्वच्छ भारत मिशन (ग्रामीण)' : 'Swachh Bharat Mission (Grameen)'}
+                    <span className="text-[11px] sm:text-xs text-slate-600 uppercase tracking-wider block mt-0.5 font-semibold">
+                      {isHi ? 'स्वच्छ भारत मिशन ग्रामीण' : 'Swachh Bharat Mission Grameen'}
                     </span>
                   </div>
                 </div>
 
                 {/* Certificate Title */}
-                <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-white tracking-wide mb-1">
+                <h3 className="font-serif text-lg sm:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-wide mb-1">
                   {isHi ? 'स्वच्छता संकल्प प्रमाणपत्र' : 'CERTIFICATE OF SWACHHATA PLEDGE'}
                 </h3>
-                <p className="text-slate-400 text-xs italic mb-3">
+                <p className="text-slate-500 text-xs italic mb-3">
                   {isHi ? 'यह प्रमाणपत्र गर्वपूर्वक प्रदान किया जाता है' : 'This certificate is proudly awarded to'}
                 </p>
 
                 {/* Citizen Name on Certificate */}
-                <div className="py-2 px-4 sm:px-6 my-2 inline-block border-b-2 border-amber-400 max-w-full w-full">
-                  <span className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-amber-300 break-words block text-center">
+                <div className="py-2 px-4 sm:px-6 my-2 inline-block border-b-2 border-amber-500 max-w-full w-full">
+                  <span className="font-serif text-xl sm:text-3xl lg:text-4xl font-bold text-amber-800 break-words block text-center">
                     {citizenName ? citizenName.toUpperCase() : 'YOUR NAME HERE'}
                   </span>
                 </div>
 
                 {gramPanchayat && (
-                  <p className="text-xs text-slate-300 font-medium mt-1">
+                  <p className="text-xs text-slate-600 font-semibold mt-1">
                     {isHi ? `निवासी: ${gramPanchayat}, अल्मोड़ा (उत्तराखंड)` : `Resident of: ${gramPanchayat}, Almora (Uttarakhand)`}
                   </p>
                 )}
 
                 {/* Body Citation */}
-                <p className="text-slate-300 text-xs sm:text-sm mt-3.5 leading-relaxed max-w-xl mx-auto">
+                <p className="text-slate-700 text-xs sm:text-sm mt-3.5 leading-relaxed max-w-xl mx-auto font-normal">
                   {isHi
                     ? 'अल्मोड़ा की प्राकृतिक वादियों, देवभूमि की नदियों एवं ग्रामीण अंचलों को स्वच्छ रखने, 4-कलर स्रोत पृथक्करण करने एवं पर्यावरण संरक्षण के प्रति आपके पावन संकल्प के सम्मान में।'
                     : 'In recognition of your dedicated commitment to protect the Himalayan ecology, segregate waste at source in 4 bins, and actively participate in Swachh Bharat Mission (Grameen).'}
                 </p>
 
                 {/* Certificate Meta */}
-                <div className="mt-5 pt-3 border-t border-slate-700/80 flex flex-wrap items-center justify-between text-[11px] text-slate-400 gap-2">
-                  <span>ID: {certificateId || 'ZPA-SBMG-2026-XXXX'}</span>
-                  <span>
+                <div className="mt-5 pt-3 border-t border-amber-200/80 flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2">
+                  <span className="font-medium">ID: {certificateId || 'ZPA-SBMG-2026-XXXX'}</span>
+                  <span className="font-medium">
                     {isHi ? 'जारी तिथि:' : 'Date:'} {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </span>
                 </div>
@@ -482,15 +495,15 @@ export const SwachhataPledgeSection = React.memo(() => {
                   <div className="flex flex-col items-center">
                     {/* Demo Signature 1 */}
                     <div className="h-9 flex flex-col items-center justify-center">
-                      <span className="font-serif italic text-base sm:text-lg text-sky-400 font-semibold tracking-wider select-none -rotate-2">
-                        Deepa Arya
+                      <span className="font-serif italic text-base sm:text-lg text-sky-700 font-semibold tracking-wider select-none -rotate-2">
+                        Hema Gaira
                       </span>
-                      <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent -mt-0.5" />
+                      <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-sky-700/60 to-transparent -mt-0.5" />
                     </div>
-                    <p className="text-xs font-bold text-slate-200 mt-1">
+                    <p className="text-xs font-bold text-slate-800 mt-1">
                       {isHi ? 'अध्यक्ष' : 'Chairperson'}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-slate-500 font-medium">
                       {isHi ? 'जिला पंचायत, अल्मोड़ा' : 'Zila Panchayat Almora'}
                     </p>
                   </div>
@@ -498,16 +511,16 @@ export const SwachhataPledgeSection = React.memo(() => {
                   <div className="flex flex-col items-center">
                     {/* Demo Signature 2 */}
                     <div className="h-9 flex flex-col items-center justify-center">
-                      <span className="font-serif italic text-base sm:text-lg text-sky-400 font-semibold tracking-wider select-none -rotate-1">
-                        A. Verma
+                      <span className="font-serif italic text-base sm:text-lg text-sky-700 font-semibold tracking-wider select-none -rotate-1">
+                        Rajesh Kumar
                       </span>
-                      <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-sky-400/70 to-transparent -mt-0.5" />
+                      <div className="w-20 h-0.5 bg-gradient-to-r from-transparent via-sky-700/60 to-transparent -mt-0.5" />
                     </div>
-                    <p className="text-xs font-bold text-slate-200 mt-1">
-                      {isHi ? 'मुख्य विकास अधिकारी (CDO)' : 'Chief Development Officer'}
+                    <p className="text-xs font-bold text-slate-800 mt-1">
+                      {isHi ? 'अपर मुख्य अधिकारी' : 'Additional Chief Officer'}
                     </p>
-                    <p className="text-[10px] text-slate-400">
-                      {isHi ? 'जिला प्रशासन, अल्मोड़ा' : 'District Administration'}
+                    <p className="text-[10px] text-slate-500 font-medium">
+                      {isHi ? 'जिला पंचायत, अल्मोड़ा' : 'Zila Panchayat Almora'}
                     </p>
                   </div>
                 </div>

@@ -7,6 +7,11 @@ import {
 } from 'lucide-react';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
+
+// Default or S3 Image URL for Safai Portal card middle space
+export const SAFAI_PORTAL_CARD_IMG = `${S3_BUCKET}/portal-logos/Services1.webp`;
+
 export const ZilaServicesHubSection = React.memo(() => {
   const { i18n } = useTranslation();
   const { openRentalComingSoon } = useRentalComingSoon();
@@ -38,11 +43,31 @@ export const ZilaServicesHubSection = React.memo(() => {
                 </h3>
               </div>
 
-              <p className="text-slate-200 text-sm leading-relaxed mb-6">
+              <p className="text-slate-200 text-sm leading-relaxed mb-4">
                 {isHi
                   ? 'जनपद अल्मोड़ा के ग्रामीण व उपनगरीय क्षेत्रों में कचरा संकलन, शिकायत पंजीकरण, जीपीएस वाहन लाइव ट्रैकिंग, कचरा पृथक्करण दिशा-निर्देश, एवं स्वच्छता शपथ प्रणाली।'
                   : 'District-wide rural waste collection, live GPS sanitation fleet tracking, instant citizen grievance registration & tracking, and Swachhata pledge.'}
               </p>
+            </div>
+
+            {/* Middle Feature Image from S3 - Vertically & Horizontally Centered */}
+            <div className="flex-1 flex flex-col justify-center my-4 sm:my-5">
+              <div className="w-full rounded-xl overflow-hidden border border-emerald-500/25 bg-emerald-950/40 shadow-inner group/img relative">
+                <img
+                  src={SAFAI_PORTAL_CARD_IMG}
+                  alt={isHi ? 'ठोस अपशिष्ट प्रबंधन एवं सफाई पोर्टल' : 'Safai Portal Preview'}
+                  className="w-full h-40 sm:h-48 object-cover"
+                  style={{ objectPosition: '32% center' }}
+                  loading="lazy"
+                  onError={(e) => {
+                    // Fallback to local image or gradient if not yet uploaded to S3
+                    const target = e.currentTarget;
+                    if (!target.src.includes('/swm-hero-bg.webp')) {
+                      target.src = '/swm-hero-bg.webp';
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             {/* Quick Actions */}

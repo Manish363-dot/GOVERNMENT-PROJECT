@@ -1,20 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Trash2,
-  Building2,
-  ShieldCheck,
-  Store,
-  Hotel,
-  HardHat,
-  PawPrint
-} from 'lucide-react';
 
 export interface ServiceWorkItem {
   id: string;
-  fallbackIcon: React.ComponentType<{ className?: string }>;
-  iconBg?: string;
-  iconColor?: string;
   headingHi: string;
   headingEn: string;
 }
@@ -22,65 +10,42 @@ export interface ServiceWorkItem {
 export const ZILA_SERVICES_DATA: ServiceWorkItem[] = [
   {
     id: 'solid-waste',
-    fallbackIcon: Trash2,
-    iconBg: 'bg-emerald-50 border-emerald-100',
-    iconColor: 'text-emerald-700',
     headingHi: 'ठोस अपशिष्ट एवं स्वच्छता प्रबंधन',
     headingEn: 'Solid Waste & Sanitation'
   },
   {
     id: 'rural-roads',
-    fallbackIcon: Building2,
-    iconBg: 'bg-blue-50 border-blue-100',
-    iconColor: 'text-blue-700',
+   
     headingHi: 'ग्रामीण संपर्क मार्ग एवं अवसंरचना',
     headingEn: 'Rural Roads & Infrastructure'
   },
   {
     id: 'commercial-asset',
-    fallbackIcon: Building2,
-    iconBg: 'bg-amber-50 border-amber-100',
-    iconColor: 'text-amber-700',
     headingHi: 'पंचायती परिसंपत्ति एवं दुकान प्रबंधन',
     headingEn: 'Commercial Asset Management'
   },
   {
     id: 'citizen-services',
-    fallbackIcon: ShieldCheck,
-    iconBg: 'bg-indigo-50 border-indigo-100',
-    iconColor: 'text-indigo-700',
     headingHi: 'नागरिक सेवाएं',
     headingEn: 'Citizen Services'
   },
   {
     id: 'shop-licensing',
-    fallbackIcon: Store,
-    iconBg: 'bg-purple-50 border-purple-100',
-    iconColor: 'text-purple-700',
     headingHi: 'दुकान लाइसेंस एवं व्यापार कर',
     headingEn: 'Shop Licensing & Trade Tax'
   },
   {
     id: 'land-hotel-map',
-    fallbackIcon: Hotel,
-    iconBg: 'bg-cyan-50 border-cyan-100',
-    iconColor: 'text-cyan-700',
     headingHi: 'भूमि एवं होटल मानचित्र स्वीकृति',
     headingEn: 'Land & Hotel Map Approval'
   },
   {
     id: 'contractor-licensing',
-    fallbackIcon: HardHat,
-    iconBg: 'bg-orange-50 border-orange-100',
-    iconColor: 'text-orange-700',
     headingHi: 'ठेकेदारी लाइसेंसिंग',
     headingEn: 'Contractor Licensing'
   },
   {
     id: 'animal-shed',
-    fallbackIcon: PawPrint,
-    iconBg: 'bg-teal-50 border-teal-100',
-    iconColor: 'text-teal-700',
     headingHi: 'पशु शेड योजना',
     headingEn: 'Animal Shed Scheme'
   }
@@ -143,21 +108,15 @@ export const ZilaServicesCarousel: React.FC<ZilaServicesCarouselProps> = ({
             }}
           >
             {doubleServices.map((item, idx) => {
-              const FallbackIcon = item.fallbackIcon;
               return (
                 <div
                   key={`${item.id}-${idx}`}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 px-4 py-3 sm:px-4.5 sm:py-3.5 flex items-center gap-3.5 shrink-0"
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 px-4 py-3 sm:px-4.5 sm:py-3.5 flex items-center justify-center text-center shrink-0"
                   style={{ minWidth: '290px', maxWidth: '380px' }}
                 >
-                  {/* Circular Icon */}
-                  <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border flex items-center justify-center shrink-0 shadow-2xs ${item.iconBg || 'bg-slate-50 border-slate-100'}`}>
-                    <FallbackIcon className={`w-5 h-5 ${item.iconColor || 'text-navy-900'}`} />
-                  </div>
-
-                  {/* Heading on Right with proper Hindi font-hind and line-height */}
-                  <div className="min-w-0 flex-1 py-1">
-                    <h4 className={`text-navy-900 text-xs sm:text-[13.5px] leading-normal whitespace-nowrap pt-1 pb-0.5 ${
+                  {/* Heading centered with proper Hindi font-hind and line-height */}
+                  <div className="min-w-0 flex-1 py-1 text-center">
+                    <h4 className={`text-navy-900 text-xs sm:text-[13.5px] leading-normal whitespace-nowrap text-center pt-1 pb-0.5 ${
                       isHi 
                         ? 'font-hind font-semibold sm:font-bold tracking-normal' 
                         : 'font-poppins font-bold tracking-tight'
