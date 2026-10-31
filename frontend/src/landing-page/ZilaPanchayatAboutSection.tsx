@@ -18,7 +18,7 @@ export const ZilaPanchayatAboutSection = React.memo(() => {
     },
     {
       label: isHi ? 'जिला पंचायत वार्ड' : 'Zila Panchayat Wards',
-      value: '11',
+      value: '45',
     },
     {
       label: isHi ? 'सक्रिय विकास कार्य' : 'Active Civic Projects',
