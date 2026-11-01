@@ -22,9 +22,7 @@ import {
   Image as ImageIcon,
   Trash2,
   ShieldCheck,
-  Paperclip,
-  MessageCircle,
-  KeyRound
+  Paperclip
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ComplaintTrack } from './ComplaintTrack';
@@ -131,23 +129,6 @@ export const ComplaintForm: React.FC<ComplaintFormProps> = React.memo(({
   // Real-time Field-level Validation States
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
-  // WhatsApp OTP Verification States
-  const [otpSent, setOtpSent] = useState(false);
-  const [enteredOtp, setEnteredOtp] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
-  const [otpMessage, setOtpMessage] = useState<string | null>(null);
-  const [otpError, setOtpError] = useState<string | null>(null);
-  const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
-  const [resendCountdown, setResendCountdown] = useState(0);
-
-  useEffect(() => {
-    if (resendCountdown > 0) {
-      const timer = setTimeout(() => setResendCountdown((prev) => prev - 1), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCountdown]);
 
   const validateField = useCallback((field: string, value: any): string => {
     let err = '';
@@ -305,15 +286,6 @@ export const ComplaintForm: React.FC<ComplaintFormProps> = React.memo(({
       return;
     }
 
-    if (!otpVerified) {
-      const verifyMsg = isHi
-        ? 'कृपया शिकायत प्रेषित करने से पूर्व अपने मोबाइल नंबर को WhatsApp OTP द्वारा सत्यापित करें।'
-        : 'Please verify your mobile number via WhatsApp OTP before submitting the complaint.';
-      setError(verifyMsg);
-      document.getElementById('complaint-mobile')?.focus();
-      return;
-    }
-
     setLoading(true);
 
     // Combine Almora block and specific area/ward into the area field
@@ -370,86 +342,13 @@ export const ComplaintForm: React.FC<ComplaintFormProps> = React.memo(({
       setDeclarationAccepted(false);
       setTouched({});
       setFieldErrors({});
-      setOtpSent(false);
-      setEnteredOtp('');
-      setOtpVerified(false);
-      setDevOtpHint(null);
-      setOtpMessage(null);
-      setOtpError(null);
     } catch (err: any) {
       console.error('Failed to submit complaint:', err);
       setError(err.message || (isHi ? 'शिकायत दर्ज करने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to register complaint. Please try again.'));
     } finally {
       setLoading(false);
     }
-  }, [form, attachedFile, declarationAccepted, isHi, validateField, handleRemoveFile, fileError, otpVerified]);
-
-  const handleSendWhatsAppOtp = useCallback(async () => {
-    setOtpError(null);
-    setOtpMessage(null);
-    setDevOtpHint(null);
-
-    const check = validateRealMobile(form.mobile);
-    if (!check.valid) {
-      setFieldErrors((prev) => ({ ...prev, mobile: check.reason || 'अमान्य मोबाइल नंबर' }));
-      return;
-    }
-
-    setOtpLoading(true);
-    try {
-      const res = await complaintService.sendOtp(form.mobile);
-      setOtpSent(true);
-      setOtpMessage(res.message);
-      if (res.devOtp) {
-        setDevOtpHint(res.devOtp);
-      }
-      setResendCountdown(60);
-    } catch (err: any) {
-      setOtpError(err.message || (isHi ? 'OTP भेजने में विफल। कृपया पुनः प्रयास करें।' : 'Failed to send OTP. Please try again.'));
-    } finally {
-      setOtpLoading(false);
-    }
-  }, [form.mobile, isHi]);
-
-  const handleVerifyWhatsAppOtp = useCallback(async () => {
-    if (enteredOtp.trim().length !== 6) {
-      setOtpError(isHi ? 'कृपया 6 अंकों का सुरक्षा OTP दर्ज करें।' : 'Please enter 6-digit OTP.');
-      return;
-    }
-
-    setOtpLoading(true);
-    setOtpError(null);
-    try {
-      await complaintService.verifyOtp(form.mobile, enteredOtp.trim());
-      setOtpVerified(true);
-      setOtpMessage(isHi ? 'WhatsApp नंबर सफलतापूर्वक सत्यापित हो गया!' : 'WhatsApp number verified successfully!');
-      setDevOtpHint(null);
-    } catch (err: any) {
-      setOtpError(err.message || (isHi ? 'गलत OTP दर्ज किया गया है।' : 'Invalid OTP code.'));
-    } finally {
-      setOtpLoading(false);
-    }
-  }, [form.mobile, enteredOtp, isHi]);
-
-  const handleOpenWhatsAppReceipt = useCallback((complaintNumber: string, area: string, name: string, phone: string) => {
-    const trackingUrl = `${window.location.origin}/complaints?tab=track&query=${complaintNumber}`;
-    const text = 
-`🏛️ *ग्राम पंचायत - नागरिक स्वच्छता शिकायत पावती*
-━━━━━━━━━━━━━━━━━━━━━━━━
-📋 *शिकायत संख्या:* #${complaintNumber}
-👤 *शिकायतकर्ता:* ${name}
-📞 *सत्यापित मोबाइल:* +91 ${phone}
-📍 *स्थान / वार्ड:* ${area}
-📅 *तारीख:* ${new Date().toLocaleDateString('hi-IN')}
-
-🔗 *लाइव ट्रैकिंग लिंक:*
-${trackingUrl}
-━━━━━━━━━━━━━━━━━━━━━━━━
-_यह पावती भविष्य के संदर्भ के लिए सुरक्षित रखें।_`;
-
-    const waUrl = `https://wa.me/91${phone}?text=${encodeURIComponent(text)}`;
-    window.open(waUrl, '_blank');
-  }, []);
+  }, [form, attachedFile, declarationAccepted, isHi, validateField, handleRemoveFile, fileError]);
 
   const handleCopyId = useCallback((id: string) => {
     navigator.clipboard.writeText(id);
@@ -686,8 +585,6 @@ _यह पावती भविष्य के संदर्भ के ल�
                         onChange={(e) => {
                           const val = e.target.value.replace(/\D/g, '').slice(0, 10);
                           setForm((prev) => ({ ...prev, mobile: val }));
-                          if (otpVerified) setOtpVerified(false);
-                          if (otpSent) setOtpSent(false);
                           if (val.length === 10 || touched.mobile) {
                             validateField('mobile', val);
                           } else if (fieldErrors.mobile) {
@@ -701,9 +598,7 @@ _यह पावती भविष्य के संदर्भ के ल�
                         className={`h-11 text-sm rounded-xl font-mono transition-colors ${
                           touched.mobile && fieldErrors.mobile
                             ? 'border-red-400 bg-red-50/25 focus:border-red-500 focus:ring-red-100'
-                            : otpVerified
-                            ? 'border-emerald-500 bg-emerald-50/30 font-bold'
-                            : form.mobile.length === 10 && !fieldErrors.mobile
+                            : touched.mobile && !fieldErrors.mobile && form.mobile.length === 10
                             ? 'border-emerald-500 bg-white'
                             : 'bg-slate-50/50 border-slate-300 focus:bg-white focus:border-navy-900'
                         }`}
@@ -715,107 +610,6 @@ _यह पावती भविष्य के संदर्भ के ल�
                           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>{fieldErrors.mobile}</span>
                         </p>
-                      )}
-
-                      {/* WhatsApp OTP Verification Widget */}
-                      {form.mobile.length === 10 && !fieldErrors.mobile && (
-                        <div className="mt-2 animate-fade-in">
-                          {otpVerified ? (
-                            <div className="py-2 px-3 bg-emerald-100/90 border border-emerald-300 text-emerald-900 rounded-xl flex items-center justify-between text-xs font-bold shadow-xs">
-                              <span className="flex items-center gap-1.5">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
-                                <span>{isHi ? 'WhatsApp नंबर सफलतापूर्वक सत्यापित है' : 'WhatsApp Number Verified'}</span>
-                              </span>
-                              <span className="text-[10px] font-mono text-emerald-800 bg-white px-2 py-0.5 rounded-md border border-emerald-200">
-                                Verified ✓
-                              </span>
-                            </div>
-                          ) : (
-                            <div className="space-y-2">
-                              {!otpSent ? (
-                                <button
-                                  type="button"
-                                  onClick={handleSendWhatsAppOtp}
-                                  disabled={otpLoading}
-                                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm transition-all"
-                                >
-                                  <MessageCircle className="w-4 h-4 text-white" />
-                                  <span>
-                                    {otpLoading
-                                      ? (isHi ? 'WhatsApp पर OTP भेजा जा रहा है...' : 'Sending WhatsApp OTP...')
-                                      : (isHi ? '📱 WhatsApp पर OTP भेजें (Verify Number)' : '📱 Send OTP on WhatsApp')}
-                                  </span>
-                                </button>
-                              ) : (
-                                <div className="p-3 bg-emerald-50/80 border border-emerald-300 rounded-xl space-y-2.5">
-                                  <div className="flex items-center justify-between text-xs">
-                                    <span className="font-bold text-emerald-950 flex items-center gap-1">
-                                      <KeyRound className="w-3.5 h-3.5 text-emerald-700" />
-                                      <span>{isHi ? 'WhatsApp 6-अंकीय OTP दर्ज करें:' : 'Enter 6-digit WhatsApp OTP:'}</span>
-                                    </span>
-                                    {resendCountdown > 0 ? (
-                                      <span className="text-[10px] text-slate-500 font-mono">
-                                        {isHi ? `पुनः भेजें (${resendCountdown}s)` : `Resend (${resendCountdown}s)`}
-                                      </span>
-                                    ) : (
-                                      <button
-                                        type="button"
-                                        onClick={handleSendWhatsAppOtp}
-                                        disabled={otpLoading}
-                                        className="text-[10px] text-emerald-700 hover:text-emerald-900 font-bold underline cursor-pointer"
-                                      >
-                                        {isHi ? 'पुनः OTP भेजें' : 'Resend OTP'}
-                                      </button>
-                                    )}
-                                  </div>
-
-                                  <div className="flex items-center gap-2">
-                                    <Input
-                                      type="text"
-                                      maxLength={6}
-                                      placeholder="123456"
-                                      value={enteredOtp}
-                                      onChange={(e) => setEnteredOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                      className="h-10 text-center font-mono font-extrabold tracking-widest text-base bg-white border-emerald-400 focus:ring-emerald-500"
-                                    />
-                                    <Button
-                                      type="button"
-                                      size="sm"
-                                      disabled={otpLoading || enteredOtp.length !== 6}
-                                      onClick={handleVerifyWhatsAppOtp}
-                                      className="h-10 px-5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs shrink-0 cursor-pointer shadow-xs"
-                                    >
-                                      {otpLoading ? (isHi ? 'जांच...' : 'Verifying...') : (isHi ? 'वेरीफाई करें' : 'Verify')}
-                                    </Button>
-                                  </div>
-
-                                  {devOtpHint && (
-                                    <div className="text-[11px] bg-amber-50 text-amber-900 p-2 rounded-lg border border-amber-200 flex items-center justify-between">
-                                      <span>💡 <strong>Sandbox/Dev OTP:</strong> <code className="font-mono font-bold text-amber-950 text-xs">{devOtpHint}</code></span>
-                                      <button
-                                        type="button"
-                                        onClick={() => setEnteredOtp(devOtpHint)}
-                                        className="text-[10px] text-amber-700 font-bold underline hover:text-amber-900 cursor-pointer"
-                                      >
-                                        {isHi ? 'ऑटो-भरें' : 'Auto-fill'}
-                                      </button>
-                                    </div>
-                                  )}
-
-                                  {otpError && (
-                                    <p className="text-[11px] text-red-600 font-semibold flex items-center gap-1">
-                                      <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                                      <span>{otpError}</span>
-                                    </p>
-                                  )}
-                                  {otpMessage && !otpError && (
-                                    <p className="text-[11px] text-emerald-700 font-semibold">{otpMessage}</p>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
                       )}
                     </div>
 

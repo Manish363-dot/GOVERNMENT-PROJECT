@@ -27,34 +27,6 @@ export async function uploadAttachment(req: Request, res: Response): Promise<voi
 }
 
 /**
- * POST /api/complaints/send-otp
- * Public — Citizen requests a 6-digit verification OTP on their WhatsApp.
- */
-export async function sendOtp(req: Request, res: Response): Promise<void> {
-  try {
-    const { mobile } = req.body;
-    const result = await complaintService.sendComplaintOtp(mobile);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message || 'Failed to send OTP' });
-  }
-}
-
-/**
- * POST /api/complaints/verify-otp
- * Public — Citizen verifies their 6-digit WhatsApp OTP.
- */
-export async function verifyOtp(req: Request, res: Response): Promise<void> {
-  try {
-    const { mobile, otp } = req.body;
-    const result = await complaintService.verifyComplaintOtp(mobile, otp);
-    res.json(result);
-  } catch (err: any) {
-    res.status(400).json({ error: err.message || 'Failed to verify OTP' });
-  }
-}
-
-/**
  * POST /api/complaints
  * Public — citizens can submit complaints.
  */
@@ -230,4 +202,3 @@ export async function deleteComplaint(req: Request, res: Response): Promise<void
     res.status(400).json({ error: err.message || 'Failed to delete complaint' });
   }
 }
-

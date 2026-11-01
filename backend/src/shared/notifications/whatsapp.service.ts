@@ -7,7 +7,7 @@ try {
 
 /**
  * Meta WhatsApp Cloud API Service
- * Handles sending WhatsApp OTPs, complaint confirmation receipts, and status update notifications.
+ * Handles sending complaint confirmation receipts and status update notifications.
  */
 
 interface WhatsAppConfig {
@@ -83,48 +83,6 @@ async function sendMetaGraphMessage(payload: any): Promise<{ success: boolean; d
     console.error('❌ [WhatsApp Network Error]:', err.message);
     return { success: false, error: err.message };
   }
-}
-
-/**
- * Send WhatsApp Verification OTP to citizen
- */
-export async function sendWhatsAppOtp(mobile: string, otp: string): Promise<{ success: boolean; devOtp?: string; error?: string }> {
-  const formattedTo = formatWhatsAppNumber(mobile);
-
-  console.log(`\n========================================`);
-  console.log(`📲 [WHATSAPP OTP] To: +${formattedTo}`);
-  console.log(`🔑 Verification Code: ${otp}`);
-  console.log(`⏰ Valid for 5 Minutes`);
-  console.log(`========================================\n`);
-
-  // Meta Cloud API template payload (guaranteed delivery for outbound business messages)
-  const templatePayload = {
-    messaging_product: 'whatsapp',
-    to: formattedTo,
-    type: 'template',
-    template: {
-      name: process.env.WHATSAPP_OTP_TEMPLATE || 'jaspers_market_order_confirmation_v1',
-      language: { code: 'en_US' },
-      components: [
-        {
-          type: 'body',
-          parameters: [
-            { type: 'text', text: 'नागरिक (Citizen)' },
-            { type: 'text', text: `OTP: ${otp}` },
-            { type: 'text', text: '5 Minutes' },
-          ],
-        },
-      ],
-    },
-  };
-
-  const result = await sendMetaGraphMessage(templatePayload);
-
-  return {
-    success: result.success,
-    devOtp: otp,
-    error: result.error,
-  };
 }
 
 /**

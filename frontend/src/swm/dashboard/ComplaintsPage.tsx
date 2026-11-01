@@ -5,6 +5,18 @@ import { useRealtime } from '@/hooks/useRealtime';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { MessageSquareWarning, X, Clock, User, MapPin, Phone, FileText, Save, Paperclip, ExternalLink, Image as ImageIcon, Archive, Trash2, RotateCcw, BadgeCheck, CheckCircle2, Maximize2, ChevronDown, ChevronUp, ChevronRight, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Complaint, ComplaintUpdate } from '@/types';
@@ -121,31 +133,25 @@ export const ComplaintsPage = React.memo(() => {
 
   async function handleArchive(isArchived: boolean = true) {
     if (!selectedComplaint) return;
-    const msg = isArchived
-      ? 'क्या आप इस शिकायत को सुरक्षित रूप से आर्काइव करना चाहते हैं? यह सक्रिय सूची से हट जाएगी, लेकिन सरकारी ऑडिट अभिलेख सुरक्षित रहेंगे। (Archive complaint safely?)'
-      : 'क्या आप इस शिकायत को पुनः सक्रिय रजिस्टर में पुनर्स्थापित करना चाहते हैं? (Restore complaint to active?)';
-    if (!window.confirm(msg)) return;
-
     try {
+      setUpdateError(null);
       await complaintService.archive(selectedComplaint.id, isArchived);
       setSelectedComplaint(null);
       fetchComplaints();
     } catch (err: any) {
-      alert(err.message || 'Failed to archive complaint');
+      setUpdateError(err.message || 'Failed to archive complaint');
     }
   }
 
   async function handleDeletePermanently() {
     if (!selectedComplaint) return;
-    const msg = '⚠️ स्थायी रूप से हटाने की पुष्टि करें: क्या आप सचमुच इस शिकायत को हमेशा के लिए हटाना चाहते हैं? यह क्रिया पूर्ववत नहीं की जा सकती। (Permanently delete this complaint record?)';
-    if (!window.confirm(msg)) return;
-
     try {
+      setUpdateError(null);
       await complaintService.delete(selectedComplaint.id);
       setSelectedComplaint(null);
       fetchComplaints();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete complaint');
+      setUpdateError(err.message || 'Failed to delete complaint');
     }
   }
 
@@ -647,40 +653,101 @@ export const ComplaintsPage = React.memo(() => {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
-                    {selectedComplaint.is_archived ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleArchive(false)}
-                        className="h-8 text-xs bg-navy-900 hover:bg-navy-800 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>{isHi ? 'सक्रिय रजिस्टर में पुनर्स्थापित करें' : 'Restore to Active'}</span>
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        size="sm"
-                        onClick={() => handleArchive(true)}
-                        className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
-                        title="Safe Government Archive"
-                      >
-                        <Archive className="w-3.5 h-3.5" />
-                        <span>{isHi ? 'आर्काइव करें' : 'Archive'}</span>
-                      </Button>
-                    )}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        {selectedComplaint.is_archived ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-8 text-xs bg-navy-900 hover:bg-navy-800 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'सक्रिय रजिस्टर में पुनर्स्थापित करें' : 'Restore to Active'}</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="h-8 text-xs bg-amber-600 hover:bg-amber-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                            title="Safe Government Archive"
+                          >
+                            <Archive className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'आर्काइव करें' : 'Archive'}</span>
+                          </Button>
+                        )}
+                      </AlertDialogTrigger>
+                      <AlertDialogContent size="sm">
+                        <AlertDialogHeader>
+                          <AlertDialogMedia className={selectedComplaint.is_archived ? "bg-blue-100 text-blue-700" : "bg-amber-100 text-amber-700"}>
+                            {selectedComplaint.is_archived ? <RotateCcw className="w-6 h-6" /> : <Archive className="w-6 h-6" />}
+                          </AlertDialogMedia>
+                          <AlertDialogTitle>
+                            {selectedComplaint.is_archived 
+                              ? (isHi ? 'शिकायत पुनर्स्थापित करें?' : 'Restore complaint?') 
+                              : (isHi ? 'शिकायत आर्काइव करें?' : 'Archive complaint?')}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {selectedComplaint.is_archived
+                              ? (isHi 
+                                  ? `क्या आप शिकायत #${selectedComplaint.complaint_number} को पुनः सक्रिय रजिस्टर में पुनर्स्थापित करना चाहते हैं?` 
+                                  : `Do you want to restore complaint #${selectedComplaint.complaint_number} back to the active register?`)
+                              : (isHi 
+                                  ? `क्या आप शिकायत #${selectedComplaint.complaint_number} को सुरक्षित रूप से आर्काइव करना चाहते हैं? यह सक्रिय सूची से हट जाएगी, लेकिन सरकारी ऑडिट अभिलेख में सुरक्षित रहेगी।` 
+                                  : `Do you want to safely archive complaint #${selectedComplaint.complaint_number}? It will be removed from the active view while preserving official audit records.`)}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{isHi ? 'रद्द करें' : 'Cancel'}</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleArchive(!selectedComplaint.is_archived)}
+                            className={selectedComplaint.is_archived ? "bg-navy-900 hover:bg-navy-800 text-white font-bold" : "bg-amber-600 hover:bg-amber-700 text-white font-bold"}
+                          >
+                            {selectedComplaint.is_archived 
+                              ? (isHi ? 'हाँ, पुनर्स्थापित करें' : 'Yes, Restore') 
+                              : (isHi ? 'हाँ, आर्काइव करें' : 'Yes, Archive')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="destructive"
-                      onClick={handleDeletePermanently}
-                      className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
-                      title="Permanently remove from database"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>{isHi ? 'स्थायी रूप से हटाएं' : 'Delete Permanently'}</span>
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="destructive"
+                          className="h-8 text-xs bg-red-600 hover:bg-red-700 text-white font-bold gap-1.5 cursor-pointer shadow-xs"
+                          title="Permanently remove from database"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>{isHi ? 'स्थायी रूप से हटाएं' : 'Delete Permanently'}</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent size="sm">
+                        <AlertDialogHeader>
+                          <AlertDialogMedia className="bg-red-100 text-red-600">
+                            <Trash2 className="w-6 h-6" />
+                          </AlertDialogMedia>
+                          <AlertDialogTitle className="text-red-700">
+                            {isHi ? 'स्थायी रूप से हटाएं?' : 'Delete permanently?'}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {isHi 
+                              ? `चेतावनी: क्या आप सचमुच शिकायत #${selectedComplaint.complaint_number} को डेटाबेस से हमेशा के लिए हटाना चाहते हैं? यह क्रिया पूर्ववत (Undo) नहीं की जा सकती।` 
+                              : `Warning: Are you sure you want to permanently delete complaint #${selectedComplaint.complaint_number}? This action cannot be undone.`}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{isHi ? 'रद्द करें' : 'Cancel'}</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeletePermanently}
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                          >
+                            {isHi ? 'हाँ, स्थायी हटाएं' : 'Yes, Delete'}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
 
                   <p className="text-[10px] text-slate-500 leading-tight">

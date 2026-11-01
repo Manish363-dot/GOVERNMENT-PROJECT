@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Phone, Mail, MapPin, X, CheckCircle2, Building2 } from 'lucide-react';
 import { PANCHAYATI_RAJ_LOGO_URL } from './TopBarLogos';
 import { cn } from '@/lib/utils';
+
 export const Footer = React.memo(() => {
   const { i18n } = useTranslation();
   const [showDeveloperContact, setShowDeveloperContact] = useState(false);
@@ -16,16 +17,16 @@ export const Footer = React.memo(() => {
     { label: isHi ? 'विज़न और मिशन' : 'Vision & Mission', href: '/vision-mission' },
     { label: isHi ? 'अधिकारी विवरण' : 'Staff Directory', href: '/staff-directory' },
     { label: isHi ? 'ठोस अपशिष्ट प्रबन्धन' : 'SWM Portal', href: '/safai-portal' },
-    { label: isHi ? 'किराया प्रबंधन पोर्टल' : 'Rental Management Portal', href: '/rental-portal' },
+    { label: isHi ? 'किराया प्रबंधन पोर्टल' : 'Rental Portal', href: '/rental-portal' },
     { label: isHi ? '11 विकासखण्ड' : '11 Blocks', href: '/blocks' },
     { label: isHi ? 'हमारा मीडिया' : 'Our Media', href: '/media' },
     { label: isHi ? 'सूचनाएं एवं अपडेट' : 'Notices & Updates', href: '/#Notices' },
     { label: isHi ? 'नवीनतम सूचनाएं' : 'Latest Notifications', href: '/#updates' },
     { label: isHi ? 'दैनिक कार्य' : 'Daily Work', href: '/#blogs' },
     { label: isHi ? 'शिकायत दर्ज करें' : 'Register Complaint', href: '/complaint' },
-    { label: isHi ? 'कचरा स्रोत पृथक्करण प्रणाली' :'Waste Source Segregation Protocol', href: '/safai-portal#waste-protocol' },
+    { label: isHi ? 'कचरा पृथक्करण नियम' : 'Waste Segregation', href: '/safai-portal#waste-protocol' },
     { label: isHi ? 'शासकीय उपविधि एवं नियम' : 'Bylaws & Rules', href: '/bylaws' },
-    {label:isHi ? "स्वच्छता शपथ" : "Swachhata Pledge", href:"/safai-portal#pledge"}
+    { label: isHi ? 'स्वच्छता शपथ' : 'Swachhata Pledge', href: '/safai-portal#pledge' }
   ], [isHi]);
 
   return (
@@ -54,7 +55,7 @@ export const Footer = React.memo(() => {
       </div>
 
       {/* Main 3-Column Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10">
 
           {/* Col 1: About Portal */}
@@ -87,25 +88,25 @@ export const Footer = React.memo(() => {
             )}>
               {isHi ? 'त्वरित लिंक' : 'Quick Links'}
             </h4>
-            <ul className="grid grid-cols-2 gap-y-2.5 gap-x-6 sm:gap-x-8">
+            <ul className="grid grid-cols-2 gap-y-2.5 sm:gap-y-3 gap-x-3 sm:gap-x-6 lg:gap-x-8">
               {navLinks.map((link) => (
-                <li key={link.href}>
+                <li key={link.href} className="min-w-0">
                   {link.href.startsWith('/#') ? (
                     <a
                       href={link.href}
-                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group whitespace-nowrap"
+                      className="text-xs sm:text-sm text-slate-300 hover:text-white transition-colors flex items-start gap-1.5 sm:gap-2 group leading-snug"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                      <span>{link.label}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0 mt-1 sm:mt-1.5" />
+                      <span className="break-words min-w-0">{link.label}</span>
                     </a>
                   ) : (
                     <Link
                       to={link.href}
                       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                      className="text-sm text-slate-300 hover:text-white transition-colors flex items-center gap-2 group whitespace-nowrap"
+                      className="text-xs sm:text-sm text-slate-300 hover:text-white transition-colors flex items-start gap-1.5 sm:gap-2 group leading-snug"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0" />
-                      <span>{link.label}</span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600 group-hover:bg-amber-400 transition-colors shrink-0 mt-1 sm:mt-1.5" />
+                      <span className="break-words min-w-0">{link.label}</span>
                     </Link>
                   )}
                 </li>
@@ -136,14 +137,14 @@ export const Footer = React.memo(() => {
               </p>
             </div>
 
-            <ul className="space-y-3 text-sm text-slate-300">
+            <ul className="space-y-3 text-xs sm:text-sm text-slate-300">
               <li className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="font-mono text-sm">ama@zilapanchayatalmora.in</span>
+                <span className="font-mono text-xs sm:text-sm break-all">ama@zilapanchayatalmora.in</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-slate-400 shrink-0 mt-0.5" />
-                <span className="text-sm leading-relaxed">
+                <span className="text-xs sm:text-sm leading-relaxed">
                   {isHi
                     ? ' धारानौला जिला पंचायत अल्मोड़ा, उत्तराखंड - 263601'
                     : 'Dharanaula Zila Panchayat Almora, Uttarakhand - 263601'}
@@ -157,8 +158,8 @@ export const Footer = React.memo(() => {
       {/* Policy Bar */}
       <div className="border-t border-navy-900 bg-navy-900/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-3 gap-y-1">
-            <span className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 sm:gap-x-3 gap-y-1">
+            <span className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/about-website"
                 className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
@@ -167,7 +168,7 @@ export const Footer = React.memo(() => {
               </Link>
               <span className="text-navy-700 text-[10px]">|</span>
             </span>
-            <span className="flex items-center gap-3">
+            <span className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/terms-of-use"
                 className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
@@ -176,7 +177,7 @@ export const Footer = React.memo(() => {
               </Link>
               <span className="text-navy-700 text-[10px]">|</span>
             </span>
-            <span className="flex items-center gap-3">
+            <span className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/website-policy"
                 className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
@@ -185,7 +186,7 @@ export const Footer = React.memo(() => {
               </Link>
               <span className="text-navy-700 text-[10px]">|</span>
             </span>
-            <span className="flex items-center gap-3">
+            <span className="flex items-center gap-2 sm:gap-3">
               <Link
                 to="/sitemap"
                 className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
@@ -194,23 +195,23 @@ export const Footer = React.memo(() => {
               </Link>
               <span className="text-navy-700 text-[10px]">|</span>
             </span>
-             <Link
-                to="/contact"
-                className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
-              >
-                {isHi ? 'संपर्क' : 'Contact Us'}
-              </Link>
+            <Link
+              to="/contact"
+              className="text-[11px] text-slate-300 hover:text-amber-300 transition-colors hover:underline"
+            >
+              {isHi ? 'संपर्क' : 'Contact Us'}
+            </Link>
           </div>
           <p className="text-[10px] text-slate-400 shrink-0">
             © {new Date().getFullYear()} {isHi ? 'जिला पंचायत अल्मोड़ा • उत्तराखंड सरकार' : 'District Panchayat Almora • Govt. of Uttarakhand'}
           </p>
         </div>
 
-        {/*Developer Programme */}
-        <div className="border-t border-navy-900 py-2 text-center">
+        {/* Developer Programme */}
+        <div className="border-t border-navy-900 py-2 text-center px-4">
           <p className="text-[10px] text-slate-400 flex items-center justify-center gap-1.5 flex-wrap">
             {isHi
-              ?'डिज़ाइन, विकास, होस्टिंग एवं प्रबंधन जिला पंचायत विभाग, अल्मोड़ा, उत्तराखंड द्वारा।'
+              ? 'डिज़ाइन, विकास, होस्टिंग एवं प्रबंधन जिला पंचायत विभाग, अल्मोड़ा, उत्तराखंड द्वारा।'
               : 'Design, Development, Hosting and Managed by Department Of Zila Panchayat Almora, Uttarakhand'}
           </p>
         </div>

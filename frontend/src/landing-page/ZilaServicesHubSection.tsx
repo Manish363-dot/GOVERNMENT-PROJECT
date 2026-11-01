@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import {
   ArrowRight,
-  Clock
 } from 'lucide-react';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
@@ -56,15 +55,9 @@ export const ZilaServicesHubSection = React.memo(() => {
                 <img
                   src={SAFAI_PORTAL_CARD_IMG}
                   alt={isHi ? 'ठोस अपशिष्ट प्रबंधन एवं सफाई पोर्टल' : 'Safai Portal Preview'}
-                  className="w-full h-40 sm:h-48 object-cover"
-                  style={{ objectPosition: '32% center' }}
+                  className="w-full h-40 sm:h-48 object-cover [object-position:32%_center] max-sm:[object-position:20%_center]"
                   loading="lazy"
                   onError={(e) => {
-                    // Fallback to local image or gradient if not yet uploaded to S3
-                    const target = e.currentTarget;
-                    if (!target.src.includes('/swm-hero-bg.webp')) {
-                      target.src = '/swm-hero-bg.webp';
-                    }
                   }}
                 />
               </div>
@@ -92,7 +85,6 @@ export const ZilaServicesHubSection = React.memo(() => {
                   {isHi ? 'दुकान आवंटन, संपत्ति एवं किराया प्रबंधन पोर्टल' : 'Commercial Asset, Shop Allotment & Rental Management Portal'}
                 </h3>
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-xs font-semibold">
-                  <Clock className="w-3 h-3" />
                   {isHi ? 'शीघ्र उपलब्ध' : 'Coming Soon'}
                 </span>
               </div>

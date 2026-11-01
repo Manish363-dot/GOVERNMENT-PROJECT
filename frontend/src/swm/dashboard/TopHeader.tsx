@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
- X, User, LogOut
+  X, User, LogOut, ArrowLeft
 } from 'lucide-react';
 import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
@@ -44,11 +44,11 @@ export function TopHeader() {
         <TopBarLogos variant="dashboard" className="border-b border-slate-200 flex" />
 
         {/* Main Header Bar */}
-        <div className="flex items-center justify-between h-14 px-3 sm:px-6 bg-navy-900 border-b border-navy-800">
-          {/* Left: Mobile Menu + Title */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="flex items-center justify-between h-14 px-2.5 sm:px-6 bg-navy-900 border-b border-navy-800 gap-2">
+          {/* Left: Mobile Menu + Logo + Title */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 min-w-0">
             <button
-              className="lg:hidden p-2 rounded text-slate-300 hover:bg-navy-800 hover:text-white transition-colors touch-target flex items-center justify-center"
+              className="lg:hidden p-1.5 sm:p-2 rounded text-slate-300 hover:bg-navy-800 hover:text-white transition-colors touch-target flex items-center justify-center shrink-0"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle Navigation Menu"
             >
@@ -61,38 +61,48 @@ export function TopHeader() {
               )}
             </button>
 
-            <div className="flex items-center gap-2 sm:gap-2.5">
-              <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-9 h-9 sm:w-11 sm:h-11 object-contain rounded shrink-0" />
+            <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
+              <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Safai Logo" className="w-7 h-7 sm:w-10 sm:h-10 object-contain rounded shrink-0" />
               <div>
-                <p className="text-xs sm:text-[16px] font-bold text-white leading-tight uppercase tracking-wide">
-                  {isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}
+                <p className="font-bold text-white leading-tight uppercase tracking-wide whitespace-nowrap">
+                  <span className="sm:hidden text-xs">{isHi ? 'एडमिन' : 'Admin'}</span>
+                  <span className="hidden sm:inline text-xs sm:text-[15px]">{isHi ? 'एडमिन नियंत्रण कक्ष' : 'Admin Control Panel'}</span>
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Right: Status + Language Switcher + User */}
-          <div className="flex items-center gap-2 sm:gap-4">
+          {/* Right: Back to Safai Portal + Language Switcher + User */}
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+            {/* Go Back to Safai Portal Button with Arrow */}
+            <Link
+              to="/safai-portal"
+              className="h-8 px-2 sm:px-3 text-xs font-bold text-amber-300 hover:text-navy-950 bg-navy-800 hover:bg-amber-400 border border-amber-400/40 rounded-lg transition-all inline-flex items-center justify-center gap-1 sm:gap-1.5 shadow-2xs group cursor-pointer whitespace-nowrap shrink-0"
+              title={isHi ? 'सफाई पोर्टल पर वापस जाएं' : 'Back to Safai Portal'}
+            >
+              <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-0.5 transition-transform shrink-0" />
+              <span className="text-[11px] sm:text-xs whitespace-nowrap">{isHi ? 'सफाई पोर्टल' : 'Safai Portal'}</span>
+            </Link>
 
             {/* Hindi / English Language Switcher */}
-            <div className="scale-90 sm:scale-100">
+            <div className="shrink-0">
               <LanguageSwitcher />
             </div>
 
-            <div className="w-px h-6 bg-navy-700 hidden sm:block" />
+            <div className="w-px h-6 bg-navy-700 hidden sm:block shrink-0" />
 
             {/* User Profile */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden sm:block text-right">
-                <p className="text-[11px] font-bold text-white leading-none">{profile?.full_name || (isHi ? 'प्रशासनिक अधिकारी' : 'Admin Officer')}</p>
+            <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+              <div className="hidden md:block text-right">
+                <p className="text-[11px] font-bold text-white leading-none whitespace-nowrap">{profile?.full_name || (isHi ? 'प्रशासनिक अधिकारी' : 'Admin Officer')}</p>
               </div>
-              <div className="w-8 h-8 rounded bg-navy-800 border border-navy-700 text-amber-400 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded bg-navy-800 border border-navy-700 text-amber-400 hidden sm:flex items-center justify-center shrink-0">
                 <User className="w-4 h-4" />
               </div>
               <button
                 onClick={handleLogout}
                 title={isHi ? 'साइन आउट' : 'Sign Out'}
-                className="p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors ml-0.5 touch-target flex items-center justify-center"
+                className="p-1.5 sm:p-2 text-red-400 hover:text-red-300 hover:bg-red-950/40 rounded transition-colors touch-target flex items-center justify-center shrink-0"
                 aria-label="Sign Out"
               >
                 <LogOut className="w-4 h-4" />
@@ -156,6 +166,17 @@ export function TopHeader() {
             </div>
             {/* Nav Links */}
             <nav className="flex flex-col py-2 flex-1">
+              <Link
+                to="/safai-portal"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-3 px-5 py-3 text-xs font-bold text-amber-300 bg-navy-900 border-l-4 border-amber-400 mb-2 hover:bg-navy-800 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 shrink-0" />
+                <span className="tracking-wide uppercase text-xs font-bold">
+                  {isHi ? 'सफाई पोर्टल पर वापस जाएं' : 'Back to Safai Portal'}
+                </span>
+              </Link>
+
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}

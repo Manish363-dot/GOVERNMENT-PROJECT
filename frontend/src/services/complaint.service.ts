@@ -9,14 +9,6 @@ export const complaintService = {
     return api.upload<{ url: string; originalName: string; size: number; mimetype: string }>('/complaints/upload', formData);
   },
 
-  // Public: Send verification OTP to WhatsApp
-  sendOtp: (mobile: string) =>
-    api.post<{ success: boolean; message: string; whatsappSent: boolean; devOtp?: string }>('/complaints/send-otp', { mobile }),
-
-  // Public: Verify WhatsApp OTP
-  verifyOtp: (mobile: string, otp: string) =>
-    api.post<{ success: boolean; message: string }>('/complaints/verify-otp', { mobile, otp }),
-
   // Public: submit complaint
   create: (data: {
     name: string;
