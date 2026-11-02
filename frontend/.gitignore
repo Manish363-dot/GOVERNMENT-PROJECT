@@ -6,3 +6,5 @@ dist/
 .env.production
 *.log
 tsconfig.tsbuildinfo
+*.pem
+*.key

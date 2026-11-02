@@ -1,5 +1,10 @@
-# ── Project Root ──
+# ── Project Root & Security Keys ──
 *.pem
+*.key
+*.cer
+*.crt
+*.pfx
+*.p12
 *.tar.gz
 *.zip
 deploy.sh
