@@ -104,82 +104,38 @@ export interface NotificationUpdateItem {
   id: string;
   titleEn: string;
   titleHi?: string;
-  date?: string;          // optional: e.g. "29 May 2026"
-  placeEn?: string;       // optional: e.g. "Almora Headquarter"
-  placeHi?: string;       // optional: e.g. "अल्मोड़ा मुख्यालय"
-  departmentEn?: string;  // optional: e.g. "DoPR Uttarakhand"
-  departmentHi?: string;  // optional: e.g. "पंचायती राज विभाग"
-  descriptionEn?: string; // optional summary
-  descriptionHi?: string; // optional summary
-  tagEn?: string;         // optional: e.g. "Meeting", "Report", "Notice"
-  tagHi?: string;         // optional: e.g. "बैठक", "प्रतिवेदन", "सूचना"
+  date?: string;
+  placeEn?: string;
+  placeHi?: string;    
+  departmentEn?: string;  
+  departmentHi?: string;  
+  descriptionEn?: string; 
+  descriptionHi?: string; 
+  timeEn?: string;
+  timeHi?: string;             
 }
 
 export const LATEST_UPDATES_DATA: NotificationUpdateItem[] = [
   {
     id: 'update-1',
-    titleEn: 'DoPR Annual Transfer Meeting Scheduled on Dt 01-06-2026',
-    titleHi: 'पंचायती राज विभाग (DoPR) वार्षिक स्थानांतरण बैठक 01-06-2026 को निर्धारित',
-    date: '29 May 2026',
-    placeEn: 'Almora Headquarter',
-    placeHi: 'अल्मोड़ा मुख्यालय',
-    departmentEn: 'DoPR Uttarakhand',
-    departmentHi: 'पंचायती राज विभाग',
-    tagEn: 'Meeting',
-    tagHi: 'बैठक'
+    titleEn: 'A special Cleanliness Fortnight Programme is being organized in Almora district to promote cleanliness and environmental conservation. The main objective of this programme is to raise public awareness about cleanliness and ensure that public places remain clean and well-maintained.',
+    titleHi: 'अल्मोड़ा जिले में स्वच्छता और पर्यावरण संरक्षण को बढ़ावा देने के लिए एक विशेष स्वच्छता पखवाड़ा कार्यक्रम का आयोजन किया जा रहा है। इस कार्यक्रम का मुख्य उद्देश्य आम जनता को स्वच्छता के प्रति जागरूक करना और सार्वजनिक स्थलों को साफ-सुथरा बनाना है',
+    date: '3 Nov 2026',
+    placeEn: 'From Kosi Mahadev Temple to Kosi Market, Almora.',
+    placeHi: 'कोसी महादेव मंदिर से कोसी मार्केट, अल्मोड़ा तक',
+    departmentEn:'District Ganga Protection Committee, Almora & Zila Panchayat, Almora.',
+    departmentHi:'जिला गंगा सुरक्षा समिति अल्मोड़ा एवं जिला पंचायत अल्मोड़ा',
+    descriptionEn: 'Major Activities and Objectives – Cleanliness Drive: <br />Waste collection and cleaning activities will be carried out from the premises of Kosi Mahadev Temple to the Kosi Market area. Local shopkeepers, residents, and tourists will be encouraged not to litter and to stop using single-use plastics.<br/>Officials and members of the Zila Panchayat and DGC, along with local volunteers, will actively contribute to this campaign. We request all residents of the area to extend their support for this noble cause and participate in the programme to make it a success. <strong>"Clean Almora, Beautiful Almora"</strong>',
+    descriptionHi: 'प्रमुख गतिविधियां और उद्देश्य - सफाई अभियान: <br />कोसी महादेव मंदिर परिसर से लेकर कोसी बाजार क्षेत्र तक कचरा संग्रहण और साफ-सफाई की जाएगी। स्थानीय दुकानदारों, निवासियों और पर्यटकों को कूड़ा न फैलाने तथा सिंगल-यूज प्लास्टिक का उपयोग बंद करने के लिए प्रेरित किया जाएगा।<br/>जिला पंचायत और डीजीसी के पदाधिकारियों, सदस्यों और स्थानीय स्वयंसेवकों द्वारा इस अभियान में सक्रिय योगदान दिया जाएगा। आप सभी क्षेत्रवासियों से अनुरोध है कि इस पुनीत कार्य में अपना सहयोग दें और कार्यक्रम में शामिल होकर इसे सफल बनाएं। <strong> "स्वच्छ अल्मोड़ा, सुंदर अल्मोड़ा"</strong>',
+    timeEn : 'From 11:00 AM to 01:00 PM.',
+    timeHi : 'सुबह 11:00 बजे से दोपहर 01:00 बजे तक',
   },
   {
     id: 'update-2',
-    titleEn: 'Report on the committee on enhancing the quality of GPDP',
-    titleHi: 'ग्राम पंचायत विकास योजना (GPDP) की गुणवत्ता संवर्धन समिति का प्रतिवेदन',
-    date: '22 May 2026',
-    tagEn: 'Report',
-    tagHi: 'प्रतिवेदन'
-  },
-  {
-    id: 'update-3',
-    titleEn: 'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
-    titleHi: 'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
-    date: '10 Feb 2026',
-    placeEn: 'River Catchment Zones',
-    placeHi: 'नदी तटीय क्षेत्र',
-    tagEn: 'Order',
-    tagHi: 'आदेश',
-    descriptionEn: 'Almora District Administration issued strict guidelines and notice protocol against dumping of waste in natural water bodies.',
-    descriptionHi: 'प्राकृतिक जल स्रोतों और नदी किनारों पर कचरा फेंकने वालों के विरुद्ध नोटिस व दंडात्मक चालान के सख्त निर्देश।'
-  },
-  {
-    id: 'update-4',
-    titleEn: 'Zero-Tolerance Enforcement on Single-Use Plastic in Commercial Markets',
-    titleHi: 'व्यावसायिक बाजारों में सिंगल-यूज़ प्लास्टिक पर पूर्ण प्रतिबंध एवं सघन चेकिंग अभियान',
-    placeEn: 'All Market Areas, Almora',
-    placeHi: 'समस्त बाजार क्षेत्र, अल्मोड़ा',
-    tagEn: 'Compliance',
-    tagHi: 'निगरानी अभियान'
-  },
-  {
-    id: 'update-5',
-    titleEn: 'Public Advisory on Segregation of Wet and Dry Household Waste at Source',
-    titleHi: 'घरों में गीले व सूखे कचरे के प्राथमिक पृथक्करण हेतु सार्वजनिक परामर्श',
-    tagEn: 'Public Advisory',
-    tagHi: 'जन परामर्श'
-  },
-  {
-    id: 'update-6',
     titleEn: 'Ashirwad Ka Diya Programme Organized at Jageshwar by Zila Panchayat Almora',
     titleHi: 'जिला पंचायत अल्मोड़ा द्वारा जागेश्वर में आशीर्वाद का दीया कार्यक्रम आयोजित',
     date: '17 Sep 2026',
     placeEn: 'Jageshwar Dham',
     placeHi: 'जागेश्वर धाम',
-    tagEn: 'Programme',
-    tagHi: 'कार्यक्रम'
-  },
-  {
-    id: 'update-7',
-    titleEn: 'Door-to-Door GPS Waste Collection Vehicle Timetable & Fleet Roster Published',
-    titleHi: 'डोर-टू-डोर जीपीएस कचरा संग्रहण वाहनों की समय सारणी एवं रूट रोस्टर प्रकाशित',
-    date: '14 Sep 2026',
-    departmentEn: 'Solid Waste Management Cell',
-    departmentHi: 'ठोस अपशिष्ट प्रबंधन प्रकोष्ठ'
   }
 ];
