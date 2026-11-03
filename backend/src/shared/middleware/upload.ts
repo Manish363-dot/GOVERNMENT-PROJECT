@@ -15,8 +15,8 @@ const s3 = new S3Client({
 });
 
 const allowedTypes = [
-  'image/jpeg', 'image/png', 'image/webp', 'image/gif', 
-  'video/mp4', 'video/webm', 'video/quicktime',
+  'image/jpeg', 'image/jpg', 'image/pjpeg', 'image/png', 'image/webp', 'image/gif', 'image/bmp', 'image/heic', 'image/heif', 'image/heic-sequence', 'image/heif-sequence', 'image/avif', 'image/tiff',
+  'video/mp4', 'video/webm', 'video/quicktime', 'video/x-m4v', 'video/3gpp', 'video/mpeg',
   'application/pdf',
   'application/msword', // doc
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
@@ -28,7 +28,11 @@ const allowedTypes = [
 ];
 
 const mediaFileFilter = (req: any, file: any, cb: any) => {
-  if (allowedTypes.includes(file.mimetype)) {
+  const mime = (file.mimetype || '').toLowerCase();
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const isImageOrVideo = mime.startsWith('image/') || mime.startsWith('video/') || /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif|mp4|mov|webm|m4v|3gp)$/i.test(ext);
+
+  if (allowedTypes.includes(mime) || isImageOrVideo) {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type. Only images, videos, documents, and zips are allowed.'));
@@ -39,12 +43,20 @@ const complaintAllowedMimeTypes = [
   'image/jpeg',
   'image/png',
   'image/jpg',
+  'image/pjpeg',
   'image/webp',
+  'image/heic',
+  'image/heif',
+  'image/avif',
   'application/pdf'
 ];
 
 const complaintFileFilter = (req: any, file: any, cb: any) => {
-  if (complaintAllowedMimeTypes.includes(file.mimetype)) {
+  const mime = (file.mimetype || '').toLowerCase();
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  const isAllowedImage = mime.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(ext);
+
+  if (complaintAllowedMimeTypes.includes(mime) || isAllowedImage || mime === 'application/pdf' || ext === '.pdf') {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type. Only JPG, PNG, WEBP, and PDF files are allowed for complaints.'));
