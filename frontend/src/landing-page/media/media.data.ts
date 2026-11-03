@@ -23,8 +23,16 @@ const notice_7_image = `${S3_BUCKET}/Social-Media-Section/notice7.webp`;
 const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
  export const NOTICES_DATA: Notice[] = [
+  {id: 'notice-1',
+  image: notice_1_image,
+  date: '10 Feb 2026',
+  titleEn:'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
+  titleHi:'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
+summaryEn:'Almora District Magistrate Anshul Singh ordered notices for people littering in public places and challans for repeated violations. The district administration also reviewed riverbank cleaning, solid-waste disposal, sewerage improvement, and public awareness measures.',
+summaryHi:'अल्मोड़ा जिलाधिकारी अंशुल सिंह ने सार्वजनिक स्थानों पर कूड़ा फेंकने वालों को पहले नोटिस और नियमों का उल्लंघन जारी रखने पर चालान करने के निर्देश दिए। बैठक में नदी तटों की सफाई, ठोस कचरा निस्तारण, सीवरेज व्यवस्था और जन-जागरूकता पर भी चर्चा हुई।',
+},
   {
-  id: 'notice-1',
+  id: 'notice-2',
 
     image: notice_1_image,
   date: '10 Feb 2026',
@@ -34,7 +42,7 @@ summaryEn:'Almora District Magistrate Anshul Singh ordered notices for people li
 summaryHi:'अल्मोड़ा जिलाधिकारी अंशुल सिंह ने सार्वजनिक स्थानों पर कूड़ा फेंकने वालों को पहले नोटिस और नियमों का उल्लंघन जारी रखने पर चालान करने के निर्देश दिए। बैठक में नदी तटों की सफाई, ठोस कचरा निस्तारण, सीवरेज व्यवस्था और जन-जागरूकता पर भी चर्चा हुई।',
 },
 {
-  id: 'notice-2',
+  id: 'notice-3',
   image: notice_2_image,
   date: '17 Sep 2026',
 
@@ -50,7 +58,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     'सेवा संकल्प अभियान के तहत जिला पंचायत अल्मोड़ा द्वारा जागेश्वर में आशीर्वाद का दीया कार्यक्रम आयोजित किया गया। यह कार्यक्रम प्रधानमंत्री नरेंद्र मोदी के जन्मदिवस और सार्वजनिक जीवन में 25 वर्षों की सेवा पूर्ण होने के अवसर पर आयोजित हुआ।',
 },
   {
-    id: 'notice-3',
+    id: 'notice-4',
     image: notice_3_image,
     date: '24 Oct 2026',
     titleEn: '22 Stray Cattle Found in Almora',
@@ -60,7 +68,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/1CRmFERkNK/'
   },
   {
-    id: 'notice-4',
+    id: 'notice-5',
     image: notice_4_image,
     titleEn: 'Mann ki Baat with Prime Minister Narendra Modi',
     titleHi: 'प्रधानमंत्री नरेंद्र मोदी के साथ मन की बात',
@@ -69,7 +77,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.youtube.com/watch?v=0qR6gK9d8s4'
   },
   {
-    id: 'notice-5',
+    id: 'notice-6',
     image: notice_5_image,
     titleEn: 'Construction of Five New Cow Shelters in Rural Almora',
     titleHi: 'ग्रामीण क्षेत्रों में पाँच नई गौशालाओं का निर्माण',
@@ -78,7 +86,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/18YZ6kmwKb/'
   },
   {
-    id: 'notice-6',
+    id: 'notice-7',
     image: notice_6_image,
     titleEn: 'Masi Traders Association Organizes Cleanliness Drive Under “Swachhata Hi Seva” Campaign',
     titleHi: 'स्वच्छता ही सेवा के तहत मासी व्यापार मंडल ने चलाया स्वस्थता अभियान',
@@ -87,7 +95,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/1FGZx4tChj/?mibextid=wwXIfr'
   },
   {
-    id: 'notice-7',
+    id: 'notice-8',
     image: notice_7_image,
     titleEn: 'New System of Waste Management, New Path to Cleanliness',
     titleHi: 'कचरा प्रबंधन की क्या है नई व्यवस्था, स्वच्छता की नई राह',
