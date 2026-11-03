@@ -12,6 +12,7 @@ export interface Notice {
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
+const notice_kosi = `${S3_BUCKET}/Social-Media-Section/notice_kosi.webp`
 const notice_1_image = `${S3_BUCKET}/Social-Media-Section/notice 1.webp`;
 const notice_2_image = `${S3_BUCKET}/Social-Media-Section/notice2.webp`;
 const notice_3_image = `${S3_BUCKET}/Social-Media-Section/notice3.webp`;
@@ -24,12 +25,13 @@ const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
  export const NOTICES_DATA: Notice[] = [
   {id: 'notice-1',
-  image: notice_1_image,
-  date: '10 Feb 2026',
-  titleEn:'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
-  titleHi:'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
-summaryEn:'Almora District Magistrate Anshul Singh ordered notices for people littering in public places and challans for repeated violations. The district administration also reviewed riverbank cleaning, solid-waste disposal, sewerage improvement, and public awareness measures.',
-summaryHi:'अल्मोड़ा जिलाधिकारी अंशुल सिंह ने सार्वजनिक स्थानों पर कूड़ा फेंकने वालों को पहले नोटिस और नियमों का उल्लंघन जारी रखने पर चालान करने के निर्देश दिए। बैठक में नदी तटों की सफाई, ठोस कचरा निस्तारण, सीवरेज व्यवस्था और जन-जागरूकता पर भी चर्चा हुई।',
+  image: notice_kosi,
+  date: '3 Oct 2026',
+  titleEn:'Successful Special Cleanliness Drive in Kosi, Almora',
+  titleHi:'कोसी क्षेत्र में विशेष स्वच्छता अभियान का सफल आयोजन',
+  summaryEn:'A cleanliness drive was jointly organized by the District Panchayat and District Ganga Protection Committee, Almora, to promote a clean and beautiful Kosi region. Environment Mitras, office staff, and local residents actively participated in the campaign, spreading awareness about cleanliness and environmental conservation.',
+summaryHi:'कोसी क्षेत्र को स्वच्छ एवं सुंदर बनाने के उद्देश्य से जिला पंचायत एवं जिला गंगा सुरक्षा समिति, अल्मोड़ा द्वारा संयुक्त रूप से स्वच्छता अभियान चलाया गया। अभियान में पर्यावरण मित्रों, कार्यालय कर्मचारियों एवं स्थानीय लोगों ने बढ़-चढ़कर भाग लिया और स्वच्छता एवं पर्यावरण संरक्षण का संदेश दिया।',
+link : 'https://www.facebook.com/reel/2344732526302820/?mibextid=rS40aB7S9Ucbxw6v'
 },
   {
   id: 'notice-2',
