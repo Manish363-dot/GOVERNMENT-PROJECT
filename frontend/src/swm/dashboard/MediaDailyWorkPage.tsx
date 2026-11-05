@@ -22,6 +22,70 @@ import {
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
+/**
+ * Automatically compress and resize large mobile camera photos before upload
+ * Keeps uploads ultra-fast, converts mobile formats, and avoids Nginx 413 limits.
+ */
+async function compressImageIfNeeded(file: File, maxDimension = 1920, quality = 0.85): Promise<File> {
+  const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|heic|heif|avif)$/i.test(file.name);
+  if (!isImage) return file;
+  if (file.type === 'image/gif' || file.type === 'image/svg+xml') return file;
+  if (file.size <= 1024 * 1024) return file; // Skip compression for already small files (< 1MB)
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return resolve(file);
+
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) {
+            resolve(file);
+          } else {
+            const cleanName = file.name.replace(/\.[^/.]+$/, '') + '.jpg';
+            resolve(new File([blob], cleanName, { type: 'image/jpeg' }));
+          }
+        },
+        'image/jpeg',
+        quality
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file); // fallback to original on error
+    };
+    img.src = url;
+  });
+}
+
+function getAuthHeaders(): HeadersInit {
+  const token = localStorage.getItem('access_token');
+  const headers: Record<string, string> = {};
+  if (token && token !== 'null' && token !== 'undefined') {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+
 export const MediaDailyWorkPage = React.memo(() => {
   const { i18n } = useTranslation();
   const isHi = i18n.language === 'hi';
@@ -93,19 +157,40 @@ export const MediaDailyWorkPage = React.memo(() => {
     setBlogUploading(true);
     let successCount = 0;
     let errorCount = 0;
-    const token = localStorage.getItem('access_token');
+    let lastErrorMsg = '';
+    const headers = getAuthHeaders();
 
     try {
-      const uploadPromises = blogFiles.map(async (file) => {
-        const formData = new FormData();
-        formData.append('file', file);
-        const res = await fetch(`${API_URL}/media/blog`, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}` },
-          body: formData,
-        });
-        if (res.ok) successCount++;
-        else errorCount++;
+      const uploadPromises = blogFiles.map(async (rawFile) => {
+        try {
+          const file = await compressImageIfNeeded(rawFile);
+          const formData = new FormData();
+          formData.append('file', file);
+          const res = await fetch(`${API_URL}/media/blog`, {
+            method: 'POST',
+            credentials: 'include',
+            headers,
+            body: formData,
+          });
+          if (res.ok) {
+            successCount++;
+          } else {
+            errorCount++;
+            try {
+              const err = await res.json();
+              if (err.error) lastErrorMsg = err.error;
+            } catch {
+              if (res.status === 413) {
+                lastErrorMsg = isHi ? 'फ़ाइल का आकार बहुत बड़ा है (सर्वर सीमा)' : 'File size is too large (Server limit)';
+              } else if (res.status === 401 || res.status === 403) {
+                lastErrorMsg = isHi ? 'सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।' : 'Session expired. Please log in again.';
+              }
+            }
+          }
+        } catch (itemErr: any) {
+          errorCount++;
+          lastErrorMsg = itemErr?.message || (isHi ? 'अपलोड विफल रहा' : 'Upload failed');
+        }
       });
 
       await Promise.all(uploadPromises);
@@ -116,10 +201,10 @@ export const MediaDailyWorkPage = React.memo(() => {
         fetchBlogMedia();
       }
       if (errorCount > 0) {
-        toast.error(isHi ? `${errorCount} अपलोड विफल रहे` : `${errorCount} uploads failed`);
+        toast.error(lastErrorMsg || (isHi ? `${errorCount} अपलोड विफल रहे` : `${errorCount} uploads failed`));
       }
-    } catch (e) {
-      toast.error(isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload');
+    } catch (e: any) {
+      toast.error(e?.message || (isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload'));
     } finally {
       setBlogUploading(false);
     }
@@ -127,10 +212,10 @@ export const MediaDailyWorkPage = React.memo(() => {
 
   const handleBlogDelete = async (id: String) => {
     try {
-      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/blog/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         toast.success(isHi ? 'मीडिया हटा दिया गया' : 'Media deleted');
@@ -170,16 +255,18 @@ export const MediaDailyWorkPage = React.memo(() => {
     if (!dailyDate) return toast.error(isHi ? 'कृपया एक तिथि चुनें' : 'Please select a date');
 
     setDailyUploading(true);
-    const formData = new FormData();
-    formData.append('file', dailyFile);
-    formData.append('date', dailyDate);
-    formData.append('description', dailyDesc);
 
     try {
-      const token = localStorage.getItem('access_token');
+      const fileToUpload = await compressImageIfNeeded(dailyFile);
+      const formData = new FormData();
+      formData.append('file', fileToUpload);
+      formData.append('date', dailyDate);
+      formData.append('description', dailyDesc);
+
       const res = await fetch(`${API_URL}/media/daily-work`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
         body: formData,
       });
 
@@ -190,11 +277,21 @@ export const MediaDailyWorkPage = React.memo(() => {
         setDailyDesc('');
         fetchDailyWorks();
       } else {
-        const err = await res.json();
-        toast.error(err.error || (isHi ? 'अपलोड विफल रहा' : 'Upload failed'));
+        let errMsg = isHi ? 'अपलोड विफल रहा' : 'Upload failed';
+        try {
+          const err = await res.json();
+          if (err.error) errMsg = err.error;
+        } catch {
+          if (res.status === 413) {
+            errMsg = isHi ? 'फ़ाइल का आकार बहुत बड़ा है (सर्वर सीमा)' : 'File size is too large (Server limit)';
+          } else if (res.status === 401 || res.status === 403) {
+            errMsg = isHi ? 'सत्र समाप्त हो गया है। कृपया पुनः लॉगिन करें।' : 'Session expired. Please log in again.';
+          }
+        }
+        toast.error(errMsg);
       }
-    } catch (e) {
-      toast.error(isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload');
+    } catch (e: any) {
+      toast.error(e?.message || (isHi ? 'अपलोड के दौरान कोई त्रुटि हुई' : 'An error occurred during upload'));
     } finally {
       setDailyUploading(false);
     }
@@ -202,10 +299,10 @@ export const MediaDailyWorkPage = React.memo(() => {
 
   const handleDailyDelete = async (id: String) => {
     try {
-      const token = localStorage.getItem('access_token');
       const res = await fetch(`${API_URL}/media/daily-work/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         toast.success(isHi ? 'कार्य प्रविष्टि हटा दी गई' : 'Work entry deleted');
@@ -267,7 +364,7 @@ export const MediaDailyWorkPage = React.memo(() => {
                       type="file" 
                       multiple
                       className="hidden"
-                      accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip"
+                      accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.heic,.heif"
                       onChange={(e) => setBlogFiles(Array.from(e.target.files || []))}
                     />
                   </label>
@@ -399,7 +496,7 @@ export const MediaDailyWorkPage = React.memo(() => {
                         id="daily-file" 
                         type="file" 
                         className="hidden"
-                        accept="image/*,video/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-powerpoint,application/vnd.openxmlformats-officedocument.presentationml.presentation,application/zip"
+                        accept="image/*,video/*,.pdf,.doc,.docx,.xls,.xlsx,.zip,.heic,.heif"
                         onChange={(e) => setDailyFile(e.target.files?.[0] || null)}
                       />
                     </label>

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, MapPin, ChevronDown, ChevronUp ,Clock ,Building2} from 'lucide-react';
 import { LATEST_UPDATES_DATA, NotificationUpdateItem } from './media/media.data';
 
 export const LatestNotificationsSection: React.FC = React.memo(() => {
@@ -39,9 +39,9 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
               const place = isHi ? (item.placeHi || item.placeEn) : (item.placeEn || item.placeHi);
               const department = isHi ? (item.departmentHi || item.departmentEn) : (item.departmentEn || item.departmentHi);
               const description = isHi ? (item.descriptionHi || item.descriptionEn) : (item.descriptionEn || item.descriptionHi);
-              const tag = isHi ? (item.tagHi || item.tagEn) : (item.tagEn || item.tagHi);
+              const time = isHi ? (item.timeHi || item.timeEn) : (item.timeEn || item.timeHi);
 
-              const hasMeta = Boolean(item.date || place || department || tag);
+              const hasMeta = Boolean(item.date || place || department || time);
 
               return (
                 <div
@@ -74,15 +74,18 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
 
                       {/* Department (if available) */}
                       {department && (
-                        <span className="font-medium text-slate-500">
-                          • {department}
+                        <span className="flex items-center gap-1 font-medium text-slate-500">
+                          <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{department}</span>
                         </span>
                       )}
+                     
 
-                      {/* Tag/Pill (if available) */}
-                      {tag && (
-                        <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-semibold border border-blue-200/60">
-                          {tag}
+                      {/* time/Pill (if available) */}
+                      {time && (
+                        <span className="flex items-center gap-1 font-medium text-slate-500">
+                          <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                          <span>{time}</span>
                         </span>
                       )}
                     </div>
@@ -90,8 +93,8 @@ export const LatestNotificationsSection: React.FC = React.memo(() => {
 
                   {/* Description / Summary (if available) */}
                   {description && (
-                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                      {description}
+                    <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed whitespace-pre-line" 
+                    dangerouslySetInnerHTML={{__html: description}}>
                     </p>
                   )}
                 </div>
