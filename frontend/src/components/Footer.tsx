@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShieldCheck, Phone, Mail, MapPin, X, CheckCircle2, Building2 } from 'lucide-react';
+import { Mail, MapPin, Facebook } from 'lucide-react';
 import { PANCHAYATI_RAJ_LOGO_URL } from './TopBarLogos';
 import { cn } from '@/lib/utils';
+
+const FACEBOOK_PAGE_URL = 'https://www.facebook.com/profile.php?id=61595890664499';
 
 export const Footer = React.memo(() => {
   const { i18n } = useTranslation();
@@ -34,9 +36,9 @@ export const Footer = React.memo(() => {
       {/* Tricolor top ribbon */}
       <div className="uk-tricolor-line" />
 
-      {/* Horizontal divider with Dept Name */}
+      {/* Horizontal divider with Dept Name & Official Social Handle */}
       <div className="border-b border-navy-800 bg-navy-900/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <img src={PANCHAYATI_RAJ_LOGO_URL} alt="Zila Panchayat Logo" className="w-8 h-8 object-contain rounded bg-white p-0.5 border border-slate-300 shrink-0" />
             <div>
@@ -151,6 +153,32 @@ export const Footer = React.memo(() => {
                 </span>
               </li>
             </ul>
+
+            {/* Official Social Media Connection */}
+            <div className="pt-3.5 mt-3.5 border-t border-navy-800/80">
+              <p className={cn(
+                "text-[11px] sm:text-xs font-bold text-amber-400 uppercase mb-2",
+                isHi ? "tracking-normal" : "tracking-wider"
+              )}>
+                {isHi ? 'सोशल मीडिया पर जुड़ें' : 'Connect With Us'}
+              </p>
+              <a
+                href={FACEBOOK_PAGE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={isHi ? 'जिला पंचायत अल्मोड़ा आधिकारिक फेसबुक पेज' : 'Zila Panchayat Almora Official Facebook Page'}
+                className="flex items-center gap-2.5 p-2 rounded-lg bg-navy-900/90 hover:bg-[#1877F2]/20 border border-slate-700/60 hover:border-[#1877F2]/60 text-slate-200 hover:text-white transition-all duration-200 group w-full shadow-xs"
+              >
+                <div className="w-8 h-8 rounded-md bg-[#1877F2] text-white flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                  <Facebook className="w-4 h-4 fill-white text-white" />
+                </div>
+                <div className="flex flex-col text-left min-w-0">
+                  <span className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors leading-snug truncate">
+                    {isHi ? 'जिला पंचायत अल्मोड़ा' : 'Zila Panchayat Almora'}
+                  </span>
+                </div>
+              </a>
+            </div>
           </div>
         </div>
       </div>
