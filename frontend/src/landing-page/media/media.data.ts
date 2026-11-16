@@ -128,6 +128,20 @@ export interface NotificationUpdateItem {
 export const LATEST_UPDATES_DATA: NotificationUpdateItem[] = [
   {
     id: 'update-1',
+    titleEn: 'Door-to-Door Waste Collection Initiative Launched in Masi',
+    titleHi: 'मासी में घर-घर कूड़ा संग्रहण अभियान का शुभारंभ',
+    date: '16 Nov 2026',
+    placeEn: 'Masi, Somnath Colony, Narkoti and Lower Market, Almora, Uttarakhand',
+    placeHi: 'मासी, सोमनाथ कॉलोनी, नारकोटी एवं नीचे बाज़ार, अल्मोड़ा, उत्तराखंड',
+    departmentEn:'Zila Panchayat Almora & Masi Traders Association.',
+    departmentHi:'जिला पंचायत अल्मोड़ा एवं व्यापार संघ मासी',
+    descriptionEn:'Door-to-door waste collection services are commencing in the Masi area from 16 November. Under this initiative, the waste collection vehicle will cover different localities between 7:00 AM and 9:00 AM. Residents and shopkeepers are encouraged to segregate wet and dry waste and actively cooperate in maintaining cleanliness in the area.',
+    descriptionHi: 'मासी क्षेत्र में 16 नवम्बर से घर-घर कूड़ा संग्रहण व्यवस्था शुरू की जा रही है। इस पहल के अंतर्गत सुबह 7 से 9 बजे तक कूड़ा वाहन विभिन्न क्षेत्रों में पहुँचेगा। स्थानीय व्यापारियों एवं क्षेत्रवासियों से गीले और सूखे कचरे को अलग-अलग रखने तथा स्वच्छता व्यवस्था में सहयोग करने की अपील की गई है।',
+    timeEn : 'From 07:00 AM to 09:00 PM.',
+    timeHi : 'सुबह 07:00 बजे से 09:00 बजे तक',
+  },
+  {
+    id: 'update-2',
     titleEn: 'A special Cleanliness Fortnight Programme is being organized in Almora district to promote cleanliness and environmental conservation. The main objective of this programme is to raise public awareness about cleanliness and ensure that public places remain clean and well-maintained.',
     titleHi: 'अल्मोड़ा जिले में स्वच्छता और पर्यावरण संरक्षण को बढ़ावा देने के लिए एक विशेष स्वच्छता पखवाड़ा कार्यक्रम का आयोजन किया जा रहा है। इस कार्यक्रम का मुख्य उद्देश्य आम जनता को स्वच्छता के प्रति जागरूक करना और सार्वजनिक स्थलों को साफ-सुथरा बनाना है',
     date: '3 Nov 2026',
@@ -141,7 +155,7 @@ export const LATEST_UPDATES_DATA: NotificationUpdateItem[] = [
     timeHi : 'सुबह 11:00 बजे से दोपहर 01:00 बजे तक',
   },
   {
-    id: 'update-2',
+    id: 'update-3',
     titleEn: 'Ashirwad Ka Diya Programme Organized at Jageshwar by Zila Panchayat Almora',
     titleHi: 'जिला पंचायत अल्मोड़ा द्वारा जागेश्वर में आशीर्वाद का दीया कार्यक्रम आयोजित',
     date: '17 Sep 2026',
