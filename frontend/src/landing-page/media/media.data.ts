@@ -12,6 +12,7 @@ export interface Notice {
 
 const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
+const notice_nukkad_natak = `${S3_BUCKET}/Social-Media-Section/nukkad-natak-notice.webp`
 const notice_kosi = `${S3_BUCKET}/Social-Media-Section/notice_kosi.webp`
 const notice_1_image = `${S3_BUCKET}/Social-Media-Section/notice 1.webp`;
 const notice_2_image = `${S3_BUCKET}/Social-Media-Section/notice2.webp`;
@@ -24,7 +25,17 @@ const notice_7_image = `${S3_BUCKET}/Social-Media-Section/notice7.webp`;
 const encodeImg = (filename: string) => `${S3_BUCKET}/media/${filename}`;
 
  export const NOTICES_DATA: Notice[] = [
-  {id: 'notice-1',
+  {id : 'notice-1',
+   image: notice_nukkad_natak,
+   date: '16 Nov 2026',
+   titleEn: "Almora Zila Panchayat's Cleanliness Campaign in Rural Areas: Spreading Awareness Through Nukkad Natak",
+   titleHi: 'अल्मोड़ा जिला पंचायत का ग्रामीण क्षेत्रों में स्वच्छता अभियान, नुक्कड़ नाटकों से किया जा रहा जागरूक',
+   summaryEn: 'People in Almora are being made aware of cleanliness through Nukkad Natak. The initiative focuses on discouraging the use of single-use plastic and encouraging people to dispose of waste properly in designated dustbins. This information was shared during a conversation with Mr. Rajesh Kumar, Additional Chief Officer, Zila Panchayat Almora.',
+   summaryHi: 'अल्मोड़ा में नुक्कड़ नाटक के माध्यम से लोगों को स्वच्छता के प्रति जागरूक किया जा रहा है। कार्यक्रम के तहत सिंगल यूज प्लास्टिक का उपयोग न करने और कूड़े को उचित डस्टबिन में डालने का संदेश दिया जा रहा है। जिला पंचायत, अल्मोड़ा के अपर मुख्य अधिकारी श्री राजेश कुमार जी से बातचीत में इस जागरूकता अभियान की जानकारी प्राप्त हुई।',
+   link: 'https://www.facebook.com/reel/1121460013852820',
+
+  },
+  {id: 'notice-2',
   image: notice_kosi,
   date: '3 Oct 2026',
   titleEn:'Successful Special Cleanliness Drive in Kosi, Almora',
@@ -34,9 +45,8 @@ summaryHi:'कोसी क्षेत्र को स्वच्छ एव�
 link : 'https://www.facebook.com/reel/2344732526302820/?mibextid=rS40aB7S9Ucbxw6v'
 },
   {
-  id: 'notice-2',
-
-    image: notice_1_image,
+  id: 'notice-3',
+  image: notice_1_image,
   date: '10 Feb 2026',
   titleEn:'Action Ordered Against Littering to Protect Kosi and Ramganga Rivers',
   titleHi:'कोसी और रामगंगा नदियों की सुरक्षा के लिए कूड़ा फैलाने वालों पर कार्रवाई के निर्देश',
@@ -44,7 +54,7 @@ summaryEn:'Almora District Magistrate Anshul Singh ordered notices for people li
 summaryHi:'अल्मोड़ा जिलाधिकारी अंशुल सिंह ने सार्वजनिक स्थानों पर कूड़ा फेंकने वालों को पहले नोटिस और नियमों का उल्लंघन जारी रखने पर चालान करने के निर्देश दिए। बैठक में नदी तटों की सफाई, ठोस कचरा निस्तारण, सीवरेज व्यवस्था और जन-जागरूकता पर भी चर्चा हुई।',
 },
 {
-  id: 'notice-3',
+  id: 'notice-4',
   image: notice_2_image,
   date: '17 Sep 2026',
 
@@ -60,7 +70,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     'सेवा संकल्प अभियान के तहत जिला पंचायत अल्मोड़ा द्वारा जागेश्वर में आशीर्वाद का दीया कार्यक्रम आयोजित किया गया। यह कार्यक्रम प्रधानमंत्री नरेंद्र मोदी के जन्मदिवस और सार्वजनिक जीवन में 25 वर्षों की सेवा पूर्ण होने के अवसर पर आयोजित हुआ।',
 },
   {
-    id: 'notice-4',
+    id: 'notice-5',
     image: notice_3_image,
     date: '24 Oct 2026',
     titleEn: '22 Stray Cattle Found in Almora',
@@ -70,7 +80,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/1CRmFERkNK/'
   },
   {
-    id: 'notice-5',
+    id: 'notice-6',
     image: notice_4_image,
     titleEn: 'Mann ki Baat with Prime Minister Narendra Modi',
     titleHi: 'प्रधानमंत्री नरेंद्र मोदी के साथ मन की बात',
@@ -79,7 +89,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.youtube.com/watch?v=0qR6gK9d8s4'
   },
   {
-    id: 'notice-6',
+    id: 'notice-7',
     image: notice_5_image,
     titleEn: 'Construction of Five New Cow Shelters in Rural Almora',
     titleHi: 'ग्रामीण क्षेत्रों में पाँच नई गौशालाओं का निर्माण',
@@ -88,7 +98,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/18YZ6kmwKb/'
   },
   {
-    id: 'notice-7',
+    id: 'notice-8',
     image: notice_6_image,
     titleEn: 'Masi Traders Association Organizes Cleanliness Drive Under “Swachhata Hi Seva” Campaign',
     titleHi: 'स्वच्छता ही सेवा के तहत मासी व्यापार मंडल ने चलाया स्वस्थता अभियान',
@@ -97,7 +107,7 @@ summaryHi:'अल्मोड़ा जिलाधिकारी अंशु�
     link:'https://www.facebook.com/share/v/1FGZx4tChj/?mibextid=wwXIfr'
   },
   {
-    id: 'notice-8',
+    id: 'notice-9',
     image: notice_7_image,
     titleEn: 'New System of Waste Management, New Path to Cleanliness',
     titleHi: 'कचरा प्रबंधन की क्या है नई व्यवस्था, स्वच्छता की नई राह',
