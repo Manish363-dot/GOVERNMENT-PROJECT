@@ -43,5 +43,6 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
+          cd frontend
           npx wrangler pages project create zila-panchayat-almora --production-branch=main || true
-          npx wrangler pages deploy frontend/dist --project-name=zila-panchayat-almora --branch=main --commit-dirty=true
+          npx wrangler pages deploy dist --project-name=zila-panchayat-almora --branch=main --commit-dirty=true
