@@ -1,7 +1,7 @@
 export async function onRequest(context) {
   const url = new URL(context.request.url);
-  // Forward to Backend EC2 on port 80
-  const backendUrl = `http://13.203.49.89${url.pathname}${url.search}`;
+  // Forward to Backend EC2 via api subdomain (domain name required by Cloudflare Workers)
+  const backendUrl = `http://api.zilapanchayatalmora.in${url.pathname}${url.search}`;
 
   const requestHeaders = new Headers(context.request.headers);
   requestHeaders.set('X-Forwarded-Host', url.host);
@@ -13,7 +13,6 @@ export async function onRequest(context) {
     redirect: 'follow',
   };
 
-  // Only attach body for non-GET / non-HEAD requests
   if (context.request.method !== 'GET' && context.request.method !== 'HEAD') {
     init.body = context.request.body;
   }
