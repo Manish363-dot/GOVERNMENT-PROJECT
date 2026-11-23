@@ -13,6 +13,7 @@ import {
   ArrowLeft,
   ShieldCheck,
   Store,
+  Phone,
 } from 'lucide-react';
 import { RentalNavbar } from '../components/RentalNavbar';
 import { useLanguage } from '../context/LanguageContext';
@@ -28,11 +29,35 @@ export const RentalCheckStatusPage: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Search dues & ledger by mobile number or shop number
+  // Handle strictly 10-digit numeric mobile number input
+  const handleMobileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+    setQuery(val);
+    if (errorMsg) setErrorMsg('');
+  };
+
+  // Search dues & ledger strictly by 10-digit mobile number
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleanQ = query.trim();
-    if (!cleanQ) return;
+    const cleanMobile = query.replace(/\D/g, '').slice(0, 10);
+
+    if (cleanMobile.length !== 10) {
+      setErrorMsg(
+        isHi
+          ? 'कृपया पूरा 10-अंकीय पंजीकृत मोबाइल नंबर दर्ज करें।'
+          : 'Please enter a complete 10-digit registered mobile number.'
+      );
+      return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
+      setErrorMsg(
+        isHi
+          ? 'कृपया मान्य 10-अंकीय भारतीय मोबाइल नंबर दर्ज करें (6, 7, 8 या 9 से शुरू होने वाला)।'
+          : 'Please enter a valid 10-digit Indian mobile number.'
+      );
+      return;
+    }
 
     setSearched(true);
     setSearching(true);
@@ -40,22 +65,22 @@ export const RentalCheckStatusPage: React.FC = () => {
     setResult(null);
 
     try {
-      const res = await rentalBillingApi.searchDues(cleanQ);
+      const res = await rentalBillingApi.searchDues(cleanMobile);
       if (res.data && (res.data.tenant || (res.data.allBills && res.data.allBills.length > 0))) {
         setResult(res.data);
       } else {
         setErrorMsg(
           isHi
-            ? 'दर्ज किए गए मोबाइल नंबर या दुकान संख्या के लिए कोई व्यावसायिक किरायेदार रिकॉर्ड नहीं मिला। कृपया अपने 10-अंकीय पंजीकृत मोबाइल नंबर की जांच करें।'
-            : 'No commercial records found matching the entered mobile or shop number. Please verify your registered 10-digit mobile number.'
+            ? 'इस मोबाइल नंबर पर कोई पंजीकृत किरायेदार खाता नहीं मिला। कृपया अपने 10-अंकीय पंजीकृत मोबाइल नंबर की जांच करें या कार्यालय से संपर्क करें।'
+            : 'No registered tenant account found for this mobile number. Please verify your registered mobile number or contact the office.'
         );
       }
     } catch (err: any) {
       console.error('Search dues error:', err);
       setErrorMsg(
         isHi
-          ? 'बकाया राशि खोजने में असमर्थ। कृपया सही मोबाइल नंबर या दुकान संख्या दर्ज करें।'
-          : 'Unable to fetch rental status. Please verify the mobile number or shop number.'
+          ? 'बकाया राशि खोजने में असमर्थ। कृपया अपने पंजीकृत मोबाइल नंबर की जांच करें।'
+          : 'Unable to fetch rental status. Please verify your registered mobile number.'
       );
     } finally {
       setSearching(false);
@@ -274,8 +299,8 @@ export const RentalCheckStatusPage: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm mb-8 text-center relative overflow-hidden">
             <div className="uk-tricolor-line absolute top-0 left-0 right-0" />
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold mb-3">
-              <Store className="w-3.5 h-3.5 text-blue-700" />
-              <span>{isHi ? 'दुकान एवं संपत्ति किराया स्थिति' : 'Shop & Commercial Asset Status'}</span>
+              <Phone className="w-3.5 h-3.5 text-blue-700" />
+              <span>{isHi ? 'पंजीकृत मोबाइल नंबर द्वारा किराया खोज' : 'Registered Mobile Number Inquiry'}</span>
             </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight">
@@ -285,31 +310,40 @@ export const RentalCheckStatusPage: React.FC = () => {
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto font-medium">
               {isHi
-                ? 'अपने पंजीकृत मोबाइल नंबर या दुकान संख्या से अपने चालू माह के किराये की स्थिति जांचें और रसीद व खाता विवरण (Ledger) डाउनलोड करें।'
-                : 'Search using your registered mobile number or shop number to check your current rent status and download receipts or ledger.'}
+                ? 'अपने 10-अंकीय पंजीकृत मोबाइल नंबर से अपने चालू माह के किराये की स्थिति जांचें और रसीद व खाता विवरण (Ledger) डाउनलोड करें।'
+                : 'Enter your 10-digit registered mobile number to check rent status and download official receipts or ledger.'}
             </p>
 
-            {/* Search Input Form */}
+            {/* Search Input Form (Strictly 10-digit Mobile Number) */}
             <form onSubmit={handleSearch} className="mt-6 max-w-xl mx-auto">
               <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <div className="relative flex-1 flex items-center">
+                  <div className="absolute left-3.5 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-600 select-none pointer-events-none">
+                    <span>🇮🇳</span>
+                    <span>+91</span>
+                    <span className="text-slate-300 ml-1">|</span>
+                  </div>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={10}
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={handleMobileChange}
                     placeholder={
                       isHi
-                        ? '10-अंकों का मोबाइल नंबर या दुकान सं. (उदा. 9876543210)'
-                        : '10-digit Mobile No. or Shop No. (e.g. 9876543210)'
+                        ? '10-अंकों का पंजीकृत मोबाइल नंबर (उदा. 9876543210)'
+                        : '10-digit registered mobile number (e.g. 9876543210)'
                     }
-                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm text-slate-900 font-medium placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
+                    className="w-full pl-22 pr-16 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
                     required
                   />
+                  <span className="absolute right-3 text-[11px] font-bold text-slate-400 select-none pointer-events-none">
+                    {query.length}/10 {isHi ? 'अंक' : ''}
+                  </span>
                 </div>
                 <button
                   type="submit"
-                  disabled={searching || !query.trim()}
+                  disabled={searching || query.length !== 10}
                   className="px-6 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                 >
                   {searching ? (
