@@ -1,27 +1,21 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
-  Search,
-  CheckCircle2,
   AlertCircle,
-  FileText,
   Download,
-  Building2,
-  Calendar,
-  UserCheck,
-  Printer,
   ArrowLeft,
-  ShieldCheck,
-  Store,
   Phone,
 } from 'lucide-react';
 import { RentalNavbar } from '../components/RentalNavbar';
+import { Footer } from '@/components/Footer';
 import { useLanguage } from '../context/LanguageContext';
 import { rentalBillingApi, DuesSearchResult } from '../services/rentalBilling.service';
 
 export const RentalCheckStatusPage: React.FC = () => {
+  const { i18n } = useTranslation();
   const { t, language } = useLanguage();
-  const isHi = language === 'hi';
+  const isHi = i18n.language === 'hi' || (language === 'hi' && !i18n.language?.startsWith('en'));
 
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<DuesSearchResult | null>(null);
@@ -288,41 +282,27 @@ export const RentalCheckStatusPage: React.FC = () => {
               <ArrowLeft className="w-4 h-4" />
               <span>{isHi ? 'किराया पोर्टल मुख्य पृष्ठ' : 'Back to Rental Portal'}</span>
             </Link>
-
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              {isHi ? 'आधिकारिक नागरिक सेवा' : 'Official Citizen Service'}
-            </span>
           </div>
 
           {/* Page Header Banner */}
           <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm mb-8 text-center relative overflow-hidden">
             <div className="uk-tricolor-line absolute top-0 left-0 right-0" />
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold mb-3">
-              <Phone className="w-3.5 h-3.5 text-blue-700" />
-              <span>{isHi ? 'पंजीकृत मोबाइल नंबर द्वारा किराया खोज' : 'Registered Mobile Number Inquiry'}</span>
-            </div>
 
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight">
               {isHi
-                ? 'मासिक किराया स्थिति एवं खाता बही (लेजर)'
+                ? 'मासिक किराया स्थिति एवं खाता बही'
                 : 'Monthly Rent Status & Ledger Statement'}
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto font-medium">
               {isHi
-                ? 'अपने 10-अंकीय पंजीकृत मोबाइल नंबर से अपने चालू माह के किराये की स्थिति जांचें और रसीद व खाता विवरण (Ledger) डाउनलोड करें।'
-                : 'Enter your 10-digit registered mobile number to check rent status and download official receipts or ledger.'}
+                ? 'अपने 10-अंकीय पंजीकृत मोबाइल नंबर से अपने चालू माह के किराये की स्थिति जांचें और रसीद, खाता विवरण डाउनलोड करें।'
+                : 'Enter your 10-digit registered mobile number to check rent status and download receipts or ledger.'}
             </p>
 
             {/* Search Input Form (Strictly 10-digit Mobile Number) */}
             <form onSubmit={handleSearch} className="mt-6 max-w-xl mx-auto">
               <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
                 <div className="relative flex-1 flex items-center">
-                  <div className="absolute left-3.5 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-600 select-none pointer-events-none">
-                    <span>🇮🇳</span>
-                    <span>+91</span>
-                    <span className="text-slate-300 ml-1">|</span>
-                  </div>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -331,15 +311,13 @@ export const RentalCheckStatusPage: React.FC = () => {
                     onChange={handleMobileChange}
                     placeholder={
                       isHi
-                        ? '10-अंकों का पंजीकृत मोबाइल नंबर (उदा. 9876543210)'
-                        : '10-digit registered mobile number (e.g. 9876543210)'
+                        ? '10-अंकों का पंजीकृत मोबाइल नंबर'
+                        : '10-digit registered mobile number'
                     }
-                    className="w-full pl-22 pr-16 py-3 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
+                    className="w-full pr-16 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
+                    style={{ paddingLeft: '5.5rem' }}
                     required
                   />
-                  <span className="absolute right-3 text-[11px] font-bold text-slate-400 select-none pointer-events-none">
-                    {query.length}/10 {isHi ? 'अंक' : ''}
-                  </span>
                 </div>
                 <button
                   type="submit"
@@ -353,7 +331,6 @@ export const RentalCheckStatusPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <Search className="w-4 h-4" />
                       <span>{isHi ? 'किराया स्थिति जांचें' : 'Check Status'}</span>
                     </>
                   )}
@@ -363,7 +340,6 @@ export const RentalCheckStatusPage: React.FC = () => {
 
             {errorMsg && (
               <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 max-w-xl mx-auto">
-                <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -376,33 +352,13 @@ export const RentalCheckStatusPage: React.FC = () => {
               <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
                   <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
-                      <UserCheck className="w-6 h-6 text-blue-700" />
-                    </div>
                     <div>
-                      <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        {isHi ? 'पंजीकृत किरायेदार' : 'Registered Tenant'}
-                      </div>
                       <h2 className="text-lg sm:text-xl font-extrabold text-navy-950">
-                        {result.tenant?.name || 'Almora Commercial Tenant'}
+                        {result.tenant?.name}
                       </h2>
                       <div className="text-xs text-slate-600 font-medium mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
-                        <span>📱 {result.tenant?.mobile || query}</span>
-                        <span>•</span>
-                        <span>🏷️ {result.tenant?.code}</span>
+                        <span>{result.tenant?.mobile || query}</span>
                       </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 sm:text-right">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase">
-                      {isHi ? 'आवंटित दुकान / परिसर' : 'Allotted Shop & Location'}
-                    </div>
-                    <div className="text-sm font-extrabold text-navy-900 mt-0.5">
-                      {result.tenant?.shopNo}
-                    </div>
-                    <div className="text-xs text-slate-600 font-medium">
-                      {result.tenant?.location}
                     </div>
                   </div>
                 </div>
@@ -412,13 +368,8 @@ export const RentalCheckStatusPage: React.FC = () => {
                   {isComplete ? (
                     // STATUS: COMPLETE / PAID
                     <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0 text-emerald-700">
-                        <CheckCircle2 className="w-6 h-6" />
-                      </div>
+                      
                       <div>
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-extrabold uppercase border border-emerald-300">
-                          {isHi ? '✓ चालू माह का किराया पूर्ण है' : '✓ This Month Rent Completed (Paid)'}
-                        </div>
                         <p className="text-xs sm:text-sm text-slate-700 font-semibold mt-1">
                           {isHi
                             ? 'इस माह का किराया पूर्ण रूप से प्राप्त हो चुका है। कोई बकाया नहीं है।'
@@ -437,12 +388,9 @@ export const RentalCheckStatusPage: React.FC = () => {
                   ) : (
                     // STATUS: PENDING / DUE
                     <div className="flex items-start gap-3.5">
-                      <div className="w-10 h-10 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center shrink-0 text-amber-700">
-                        <AlertCircle className="w-6 h-6" />
-                      </div>
                       <div>
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold uppercase border border-amber-300">
-                          {isHi ? '⚠ चालू माह का किराया बकाया है' : '⚠ Rent Pending (Due)'}
+                          {isHi ? 'चालू माह का किराया बकाया है' : 'Rent Pending'}
                         </div>
                         <p className="text-xs sm:text-sm text-slate-800 font-bold mt-1">
                           {isHi
@@ -473,7 +421,6 @@ export const RentalCheckStatusPage: React.FC = () => {
                         }
                         className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
                       >
-                        <Download className="w-4 h-4" />
                         <span>{isHi ? 'रसीद डाउनलोड करें' : 'Download Receipt'}</span>
                       </button>
                     )}
@@ -484,8 +431,8 @@ export const RentalCheckStatusPage: React.FC = () => {
                       onClick={handlePrintLedger}
                       className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
                     >
-                      <Printer className="w-4 h-4" />
-                      <span>{isHi ? 'खाता विवरण (Ledger) डाउनलोड करें' : 'Download Ledger Statement'}</span>
+                     
+                      <span>{isHi ? 'खाता विवरण डाउनलोड करें' : 'Download Ledger Statement'}</span>
                     </button>
                   </div>
                 </div>
@@ -496,24 +443,9 @@ export const RentalCheckStatusPage: React.FC = () => {
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
                   <div>
                     <h3 className="text-base sm:text-lg font-extrabold text-navy-950 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-blue-700" />
-                      <span>{isHi ? 'माहवार किराया खाता बही (Ledger Trail)' : 'Monthly Rent Ledger Trail'}</span>
+                      <span>{isHi ? 'माहवार किराया खाता बही' : 'Monthly Rent Ledger Trail'}</span>
                     </h3>
-                    <p className="text-xs text-slate-500 font-medium">
-                      {isHi
-                        ? 'विगत माहों के बिल, भुगतान एवं रसीद विवरण'
-                        : 'Past monthly bill invoices, payments and receipt audit history.'}
-                    </p>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={handlePrintLedger}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
-                  >
-                    <Download className="w-3.5 h-3.5 text-blue-700" />
-                    <span>{isHi ? 'प्रिंट / डाउनलोड लेजर' : 'Print / Export Ledger'}</span>
-                  </button>
                 </div>
 
                 {/* Table */}
@@ -587,7 +519,6 @@ export const RentalCheckStatusPage: React.FC = () => {
 
                 {/* Important Notice Footer Box */}
                 <div className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <p>
                     {isHi
                       ? 'सूचना: जिला पंचायत अल्मोड़ा के नियमों के तहत मासिक किराया प्रत्येक माह की 20 तारीख तक कार्यालय काउंटर पर अनिवार्य रूप से जमा किया जाना चाहिए। किसी भी त्रुटि या संशोधन हेतु कर निरीक्षक से संपर्क करें।'
@@ -600,12 +531,8 @@ export const RentalCheckStatusPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-[#0b1b36] text-slate-400 text-xs py-6 border-t border-slate-800 text-center">
-        <div className="max-w-5xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} Zila Panchayat Almora • Commercial Asset & Rental Cell</p>
-        </div>
-      </footer>
+      {/* 🏛️ Official Website Footer */}
+      <Footer />
     </div>
   );
 };

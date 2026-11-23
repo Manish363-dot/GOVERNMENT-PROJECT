@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
-import {RentalNavbar} from './components/RentalNavbar'
+import { RentalNavbar } from './components/RentalNavbar';
 import { HeroSimple } from './components/HeroSection';
 import { AboutSection } from './components/AboutSection';
 import { NoticesSection } from './components/NoticesSection';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { AuthProvider } from './context/AuthContext';
-
+import { Footer } from '@/components/Footer';
 
 const RentalLandingContent: React.FC = () => {
   const { t, language } = useLanguage();
@@ -26,7 +26,7 @@ const RentalLandingContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] w-full overflow-x-hidden font-sans">
-      <RentalNavbar/>
+      <RentalNavbar />
       {/* 🚀 Main Page Content */}
       <main className="flex-1 w-full">
         {/* 1. Official Government Hero Section */}
@@ -39,9 +39,10 @@ const RentalLandingContent: React.FC = () => {
 
         {/* 3. Public Notices & Orders */}
         <NoticesSection />
-
-
       </main>
+
+      {/* 🏛️ Official Website Footer */}
+      <Footer />
     </div>
   );
 };

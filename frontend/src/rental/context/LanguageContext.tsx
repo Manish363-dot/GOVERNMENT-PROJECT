@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Language, translations } from '../translations/translations';
-import i18n from '@/i18n/config';
 
 interface LanguageContextType {
   language: Language;
@@ -12,10 +12,34 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('rental_lang') || localStorage.getItem('app_lang');
-    return (saved === 'en' || saved === 'hi') ? saved : 'hi';
-  });
+  const { i18n } = useTranslation();
+
+  const getResolvedLang = (): Language => {
+    if (i18n.language?.startsWith('en')) return 'en';
+    const saved = localStorage.getItem('app_lang') || localStorage.getItem('rental_lang');
+    return saved === 'en' ? 'en' : 'hi';
+  };
+
+  const [language, setLanguageState] = useState<Language>(getResolvedLang);
+
+  // Synchronize state immediately whenever i18n language switches
+  useEffect(() => {
+    const handleLangChange = (lng: string) => {
+      const nextLang: Language = lng.startsWith('en') ? 'en' : 'hi';
+      setLanguageState(nextLang);
+      localStorage.setItem('rental_lang', nextLang);
+      localStorage.setItem('app_lang', nextLang);
+      document.documentElement.lang = nextLang;
+    };
+
+    // Set initial sync
+    handleLangChange(i18n.language || 'hi');
+
+    i18n.on('languageChanged', handleLangChange);
+    return () => {
+      i18n.off('languageChanged', handleLangChange);
+    };
+  }, [i18n]);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -32,15 +56,11 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     setLanguage(nextLang);
   };
 
-  useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
-
   const value = {
     language,
     setLanguage,
     toggleLanguage,
-    t: translations[language]
+    t: translations[language] || translations['hi'],
   };
 
   return (

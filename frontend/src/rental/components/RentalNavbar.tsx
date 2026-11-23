@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { X, User, LogOut, ArrowLeft } from 'lucide-react';
 import { OfficialGovTopBar } from '@/components/OfficialGovTopBar';
 import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
@@ -8,9 +9,10 @@ import { useAuth } from '../context/AuthContext';
 
 export const RentalNavbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { i18n } = useTranslation();
   const { language, t } = useLanguage();
   const { user, isAuthenticated, logout } = useAuth();
-  const isHi = language === 'hi';
+  const isHi = i18n.language === 'hi' || (language === 'hi' && !i18n.language?.startsWith('en'));
 
   return (
     <OfficialGovTopBar>
