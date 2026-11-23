@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { RentalNavbar } from './components/RentalNavbar';
+import {RentalNavbar} from './components/RentalNavbar'
 import { HeroSimple } from './components/HeroSection';
 import { AnnouncementTicker } from './components/AnnouncementTicker';
 import { CitizenServicesHub } from './components/CitizenServicesHub';
@@ -31,9 +31,7 @@ const RentalLandingContent: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] w-full overflow-x-hidden font-sans">
-      {/* 🏛️ Official 3-Tier Government Rental Navbar */}
-      <RentalNavbar />
-
+      <RentalNavbar/>
       {/* 🚀 Main Page Content */}
       <main className="flex-1 w-full">
         {/* 1. Official Government Hero Section */}

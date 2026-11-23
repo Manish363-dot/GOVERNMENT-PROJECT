@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X, ShieldCheck, PhoneCall, ChevronDown } from 'lucide-react';
-import { LanguageSwitcher } from '@/components/LanguageSwitcher';
-import { AccessibilityToolbar } from '@/components/AccessibilityToolbar';
-import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
+import { OfficialGovTopBar } from '@/components/OfficialGovTopBar';
+import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useTranslation } from 'react-i18next';
 import { useRentalComingSoon } from '@/contexts/RentalComingSoonContext';
 
@@ -79,37 +78,9 @@ export const NavbarLandingPage = React.memo(() => {
   }, []);
 
   return (
-    <>
-      {/* Top Bar - Non-Sticky (Smoothly hides on scroll) */}
-      <div className={`grid transition-all duration-500 ease-in-out ${isScrolled ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
-        <div className="overflow-hidden bg-[#faf8f5]">
-          <TopBarLogos variant="public" />
-        </div>
-      </div>
-
-      {/* Sticky Header */}
-      <header className="sticky top-0 z-50 flex flex-col">
-        {/* Official Government Strip */}
-        <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800 shadow-sm">
-          <div className="max-w-[1600px] mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2 font-medium">
-              <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded  text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">
-                {t('nav.govBadgeHi', 'उत्तराखण्ड शासन')}
-              </span>
-              <span className="hidden md:inline text-slate-300">|</span>
-              <span className="hidden sm:inline text-slate-300">
-                {t('nav.govSubtitle', 'पंचायती राज विभाग')}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-3 text-slate-300">
-              <AccessibilityToolbar />
-              <LanguageSwitcher />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Navbar */}
-        <div className="bg-white border-b border-slate-200 shadow-xs">
+    <OfficialGovTopBar>
+      {/* Main Navbar */}
+      <div className="bg-white border-b border-slate-200 shadow-xs">
           <div className="uk-tricolor-line" />
 
           <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-8 2xl:px-12">
@@ -427,9 +398,8 @@ export const NavbarLandingPage = React.memo(() => {
             </div>
           </div>
         </div>
-      </header>
-    </>
-  );
-});
+      </OfficialGovTopBar>
+    );
+  });
 
 NavbarLandingPage.displayName = 'NavbarLandingPage';

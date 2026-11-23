@@ -155,12 +155,43 @@ function App() {
               <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
               <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
 
-              {/* Commercial Asset & Rental Management Platform (Under Development Showcase Page) */}
-              <Route path="/rental-portal" element={<RentalUnderDevelopmentPage />} />
-              <Route path="/rental" element={<RentalUnderDevelopmentPage />} />
-              <Route path="/rental-system" element={<RentalUnderDevelopmentPage />} />
-              <Route path="/rental/*" element={<RentalUnderDevelopmentPage />} />
+            </Route>
 
+            {/* Commercial Asset & Rental Management Platform (Isolated Root Layout) */}
+            <Route element={<RentalRootLayout />}>
+              <Route path="/rental" element={<RentalPortalPage />} />
+              <Route path="/rental-portal" element={<RentalPortalPage />} />
+              <Route path="/rental-system" element={<RentalPortalPage />} />
+              <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
+              <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
+              <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
+              <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
+
+              {/* Admin Panel Routes */}
+              <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/rental/admin" element={<AdminDashboardPage />} />
+              <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
+              <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
+              <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
+              <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
+              <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
+              <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
+              <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
+              <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
+              <Route path="/rental/admin/tenants" element={<TenantListPage />} />
+              <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
+              <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
+              <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
+              <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
+
+              {/* User / Tenant Panel Routes */}
+              <Route path="/rental/user/dashboard" element={<UserDashboardPage />} />
+              <Route path="/rental/user" element={<UserDashboardPage />} />
+              <Route path="/rental/user/bills" element={<UserBillsPage />} />
+              <Route path="/rental/user/receipts" element={<UserReceiptsPage />} />
+              <Route path="/rental/user/notices" element={<UserNoticesPage />} />
+              <Route path="/rental/user/profile" element={<UserProfilePage />} />
+              <Route path="/rental/profile" element={<UserProfilePage />} />
             </Route>
 
             {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}

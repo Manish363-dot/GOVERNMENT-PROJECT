@@ -11,7 +11,7 @@ export interface TopBarLogoItem {
   sort_order: number;
 }
 
-const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL || 'https://zila-panchayatimages.s3.ap-south-1.amazonaws.com';
+const S3_BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_URL;
 
 export const PANCHAYATI_RAJ_LOGO_URL = `${S3_BUCKET}/portal-logos/logo2.webp`;
 

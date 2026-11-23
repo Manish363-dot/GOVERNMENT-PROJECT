@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
 import { rentalAuthApi } from '../services/rentalAuth.service';
-import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '../components/TopBarLogos';
+import { TopBarLogos, PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import {
   Eye,
   EyeOff,
