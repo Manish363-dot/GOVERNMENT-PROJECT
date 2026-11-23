@@ -41,107 +41,14 @@ export const RentalCheckStatusPage: React.FC = () => {
 
     try {
       const res = await rentalBillingApi.searchDues(cleanQ);
-      if (res.data && (res.data.tenant || (res.data.pendingBills && res.data.pendingBills.length > 0) || (res.data.allBills && res.data.allBills.length > 0))) {
+      if (res.data && (res.data.tenant || (res.data.allBills && res.data.allBills.length > 0))) {
         setResult(res.data);
       } else {
-        // Fallback for demonstration if database has no matching records
-        const isMockPaid = cleanQ.endsWith('0') || cleanQ.toLowerCase().includes('paid');
-        setResult({
-          totalOutstanding: isMockPaid ? 0 : 4500,
-          billCount: isMockPaid ? 0 : 1,
-          isThisMonthComplete: isMockPaid,
-          currentMonth: new Date().toISOString().slice(0, 7),
-          tenant: {
-            name: isHi ? 'रमेश चंद्र जोशी' : 'Ramesh Chandra Joshi',
-            code: 'ALM-RENT-2026-0104',
-            mobile: cleanQ.length === 10 ? cleanQ : '9876543210',
-            shopNo: cleanQ.toUpperCase().startsWith('SHOP') ? cleanQ.toUpperCase() : 'SHOP-102',
-            location: isHi ? 'धारानौला मुख्य बाजार परिसर, अल्मोड़ा' : 'Dharanaula Main Market Complex, Almora',
-          },
-          currentMonthBill: {
-            billNumber: 'BILL-2026-11-0104',
-            billingMonth: '2026-11',
-            rentAmount: 4500,
-            totalAmountDue: 4500,
-            amountPaid: isMockPaid ? 4500 : 0,
-            balanceDue: isMockPaid ? 0 : 4500,
-            status: isMockPaid ? 'PAID' : 'PENDING',
-            dueDate: '2026-11-20',
-            receipt: isMockPaid
-              ? {
-                  receipt_number: 'ZPA-REC-2026-0089',
-                  amount_paid: 4500,
-                  issued_at: new Date().toISOString(),
-                }
-              : null,
-          },
-          pendingBills: isMockPaid
-            ? []
-            : [
-                {
-                  id: 'bill-mock-1',
-                  billNumber: 'BILL-2026-11-0104',
-                  billingMonth: '2026-11',
-                  totalAmountDue: 4500,
-                  amountPaid: 0,
-                  balanceDue: 4500,
-                  dueDate: '2026-11-20',
-                  status: 'PENDING',
-                  tenantName: isHi ? 'रमेश चंद्र जोशी' : 'Ramesh Chandra Joshi',
-                  tenantCode: 'ALM-RENT-2026-0104',
-                  propertyNumber: 'SHOP-102',
-                  location: isHi ? 'धारानौला मुख्य बाजार' : 'Dharanaula Main Market',
-                },
-              ],
-          allBills: [
-            {
-              id: 'bill-mock-1',
-              billNumber: 'BILL-2026-11-0104',
-              billingMonth: '2026-11',
-              rentAmount: 4500,
-              totalAmountDue: 4500,
-              amountPaid: isMockPaid ? 4500 : 0,
-              balanceDue: isMockPaid ? 0 : 4500,
-              dueDate: '2026-11-20',
-              status: isMockPaid ? 'PAID' : 'PENDING',
-              receiptNumber: isMockPaid ? 'ZPA-REC-2026-0089' : null,
-            },
-            {
-              id: 'bill-mock-2',
-              billNumber: 'BILL-2026-10-0104',
-              billingMonth: '2026-10',
-              rentAmount: 4500,
-              totalAmountDue: 4500,
-              amountPaid: 4500,
-              balanceDue: 0,
-              dueDate: '2026-10-20',
-              status: 'PAID',
-              receiptNumber: 'ZPA-REC-2026-0042',
-            },
-            {
-              id: 'bill-mock-3',
-              billNumber: 'BILL-2026-09-0104',
-              billingMonth: '2026-09',
-              rentAmount: 4500,
-              totalAmountDue: 4500,
-              amountPaid: 4500,
-              balanceDue: 0,
-              dueDate: '2026-09-20',
-              status: 'PAID',
-              receiptNumber: 'ZPA-REC-2026-0018',
-            },
-          ],
-          receipts: [
-            {
-              receiptNumber: isMockPaid ? 'ZPA-REC-2026-0089' : 'ZPA-REC-2026-0042',
-              amountPaid: 4500,
-              issuedAt: new Date().toISOString(),
-              billingMonth: isMockPaid ? '2026-11' : '2026-10',
-              propertyNumber: 'SHOP-102',
-              tenantName: isHi ? 'रमेश चंद्र जोशी' : 'Ramesh Chandra Joshi',
-            },
-          ],
-        });
+        setErrorMsg(
+          isHi
+            ? 'दर्ज किए गए मोबाइल नंबर या दुकान संख्या के लिए कोई व्यावसायिक किरायेदार रिकॉर्ड नहीं मिला। कृपया अपने 10-अंकीय पंजीकृत मोबाइल नंबर की जांच करें।'
+            : 'No commercial records found matching the entered mobile or shop number. Please verify your registered 10-digit mobile number.'
+        );
       }
     } catch (err: any) {
       console.error('Search dues error:', err);
