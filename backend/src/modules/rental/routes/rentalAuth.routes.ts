@@ -3,12 +3,8 @@ import { rentalAuthController } from '../controllers/rentalAuth.controller';
 import {
   rentalAdminAuth,
   requireRentalSuperAdmin,
-  rentalUserAuth,
 } from '../middleware/rentalAuth.middleware';
-import {
-  rentalAdminLoginLimiter,
-  rentalUserLoginLimiter,
-} from '../middleware/rentalRateLimit';
+import { rentalAdminLoginLimiter } from '../middleware/rentalRateLimit';
 
 const router = Router();
 
@@ -48,19 +44,6 @@ router.put(
   rentalAdminAuth,
   requireRentalSuperAdmin,
   (req, res) => rentalAuthController.toggleSubAdminStatus(req, res)
-);
-
-// ── Registered Tenant / User Authentication Routes (Rate Limited) ───────────
-router.post('/user/login', rentalUserLoginLimiter, (req, res) =>
-  rentalAuthController.userLogin(req, res)
-);
-
-router.get('/user/me', rentalUserAuth, (req, res) =>
-  rentalAuthController.getUserProfile(req, res)
-);
-
-router.post('/user/change-password', rentalUserAuth, (req, res) =>
-  rentalAuthController.changeUserPassword(req, res)
 );
 
 export default router;

@@ -50,18 +50,18 @@ export const RentalNavbar: React.FC = () => {
                 <ArrowLeft className="w-3.5 h-3.5" />
                 <span>{isHi ? 'मुख्य पोर्टल' : 'Main Portal'}</span>
               </Link>
-              <a
-                href="#home"
+              <Link
+                to="/rental"
                 className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
               >
                 {t.nav.home}
-              </a>
-              <a
-                href="#properties"
+              </Link>
+              <Link
+                to="/rental/check-status"
                 className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
               >
-                {t.nav.properties}
-              </a>
+                <span>{isHi ? 'किराया स्थिति' : 'Check Rent Status'}</span>
+              </Link>
               <a
                 href="#notices"
                 className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5"
@@ -72,12 +72,6 @@ export const RentalNavbar: React.FC = () => {
                 </span>
               </a>
               <a
-                href="#documents"
-                className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
-              >
-                {t.nav.documents}
-              </a>
-              <a
                 href="/contact"
                 className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
               >
@@ -85,22 +79,19 @@ export const RentalNavbar: React.FC = () => {
               </a>
             </nav>
 
-            {/* Desktop Action Buttons */}
+            {/* Desktop Action Buttons: Admin Login only */}
             {isAuthenticated && user ? (
               <div className="hidden md:flex items-center gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-md text-xs font-bold text-navy-900">
+                <Link
+                  to="/rental/admin/dashboard"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md text-xs font-bold text-blue-950 hover:bg-blue-100 transition-colors"
+                >
                   <User className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                  <span className="max-w-[140px] truncate">{user.name}</span>
-                  {user.role === 'admin' ? (
-                    <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded border border-amber-200">
-                      Admin
-                    </span>
-                  ) : (
-                    <span className="text-[10px] bg-emerald-100 text-emerald-900 font-bold px-1.5 py-0.2 rounded border border-emerald-200">
-                      {user.shopNo || 'Tenant'}
-                    </span>
-                  )}
-                </div>
+                  <span className="max-w-[140px] truncate">{user.name || 'Admin'}</span>
+                  <span className="text-[10px] bg-navy-900 text-white font-bold px-1.5 py-0.2 rounded">
+                    Dashboard
+                  </span>
+                </Link>
                 <button
                   type="button"
                   onClick={logout}
@@ -114,15 +105,9 @@ export const RentalNavbar: React.FC = () => {
               <div className="hidden md:flex items-center justify-end gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
                 <Link
                   to="/rental/signin?role=admin"
-                  className="inline-flex items-center justify-center border border-slate-300 text-navy-900 hover:bg-slate-50 font-bold px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm whitespace-nowrap shrink-0 transition-colors shadow-xs cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 bg-navy-900 hover:bg-navy-800 text-white font-bold px-4 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap shrink-0 transition-colors shadow-xs cursor-pointer"
                 >
-                  {t.nav.adminSignIn}
-                </Link>
-                <Link
-                  to="/rental/signin"
-                  className="inline-flex items-center justify-center bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold px-4 py-2 rounded-md text-xs sm:text-sm whitespace-nowrap shrink-0 transition-colors cursor-pointer"
-                >
-                  {t.nav.login}
+                  <span>{isHi ? 'विभागीय लॉगिन (Admin)' : 'Admin Login'}</span>
                 </Link>
               </div>
             )}
@@ -149,33 +134,26 @@ export const RentalNavbar: React.FC = () => {
         {/* Mobile Navigation Drawer */}
         {mobileOpen && (
           <div className="xl:hidden bg-slate-50 border-t border-slate-200 px-4 pb-4 pt-2 space-y-1">
-            <a
-              href="#home"
+            <Link
+              to="/rental"
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
               {t.nav.home}
-            </a>
-            <a
-              href="#properties"
+            </Link>
+            <Link
+              to="/rental/check-status"
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
-              {t.nav.properties}
-            </a>
+              {isHi ? 'किराया स्थिति' : 'Check Rent Status'}
+            </Link>
             <a
               href="#notices"
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
               {t.nav.notices}
-            </a>
-            <a
-              href="#documents"
-              onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
-            >
-              {t.nav.documents}
             </a>
             <a
               href="/contact"
@@ -209,22 +187,13 @@ export const RentalNavbar: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link
-                    to="/rental/signin?role=admin"
-                    onClick={() => setMobileOpen(false)}
-                    className="w-full text-center border border-slate-300 py-2 rounded-md font-bold text-xs text-navy-900 bg-white hover:bg-slate-50 shadow-xs"
-                  >
-                    {t.nav.adminSignIn}
-                  </Link>
-                  <Link
-                    to="/rental/signin"
-                    onClick={() => setMobileOpen(false)}
-                    className="w-full text-center bg-navy-900 hover:bg-navy-800 py-2 rounded-md font-bold text-xs text-white shadow-xs"
-                  >
-                    {t.nav.login}
-                  </Link>
-                </>
+                <Link
+                  to="/rental/signin?role=admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="w-full text-center bg-navy-900 hover:bg-navy-800 py-2.5 rounded-lg font-bold text-xs text-white shadow-xs"
+                >
+                  {isHi ? 'विभागीय लॉगिन (Admin Login)' : 'Admin Login'}
+                </Link>
               )}
             </div>
           </div>

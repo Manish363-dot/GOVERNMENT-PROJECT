@@ -365,7 +365,12 @@ export class RentalBillingService {
               { mobile: { equals: clean } },
             ],
           },
-          select: { id: true },
+          include: {
+            assignments: {
+              where: { is_active: true },
+              include: { property: true },
+            },
+          },
         }),
         rentalPrisma.rentalProperty.findMany({
           where: {
@@ -374,28 +379,47 @@ export class RentalBillingService {
               { property_id: { equals: clean, mode: 'insensitive' } },
             ],
           },
-          select: { id: true },
+          include: {
+            assignments: {
+              where: { is_active: true },
+              include: { user: true },
+            },
+          },
         }),
       ]);
 
-      const userIds = tenants.map((t) => t.id);
-      const propertyIds = properties.map((p) => p.id);
+      const userIds = [
+        ...tenants.map((t) => t.id),
+        ...properties.flatMap((p) => p.assignments.map((a) => a.user_id)),
+      ];
+      const propertyIds = [
+        ...properties.map((p) => p.id),
+        ...tenants.flatMap((t) => t.assignments.map((a) => a.property_id)),
+      ];
+
+      // Extract resolved tenant and shop details
+      const primaryTenant = tenants[0] || properties[0]?.assignments[0]?.user;
+      const primaryProperty = properties[0] || tenants[0]?.assignments[0]?.property;
 
       if (userIds.length === 0 && propertyIds.length === 0) {
         return {
           totalOutstanding: 0,
+          billCount: 0,
           pendingBills: [],
+          allBills: [],
+          tenant: null,
+          isThisMonthComplete: true,
           message: 'No active commercial records found matching the search criteria.',
         };
       }
 
-      const pendingBills = await rentalPrisma.rentalBill.findMany({
+      // Fetch all bills (both pending and paid) for complete ledger & status
+      const allBills = await rentalPrisma.rentalBill.findMany({
         where: {
           OR: [
             { user_id: { in: userIds } },
             { property_id: { in: propertyIds } },
           ],
-          status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
         },
         include: {
           user: {
@@ -404,15 +428,63 @@ export class RentalBillingService {
           property: {
             select: { id: true, property_id: true, property_number: true, location: true },
           },
+          receipts: {
+            select: { id: true, receipt_number: true, amount_paid: true, issued_at: true, receipt_pdf_url: true },
+            orderBy: { issued_at: 'desc' },
+          },
         },
-        orderBy: { due_date: 'asc' },
+        orderBy: { billing_month: 'desc' },
       });
 
+      const pendingBills = allBills.filter((b) =>
+        ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(b.status)
+      );
+      const paidBills = allBills.filter((b) => b.status === 'PAID');
       const totalOutstanding = pendingBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
+
+      // Current month determination (e.g. "2026-11")
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const currentMonthBill = allBills.find((b) => b.billing_month === currentMonthStr) || allBills[0];
+      const isThisMonthComplete = currentMonthBill ? currentMonthBill.status === 'PAID' : totalOutstanding === 0;
+
+      // Extract all receipts for download
+      const allReceipts = allBills.flatMap((b) =>
+        b.receipts.map((r) => ({
+          receiptNumber: r.receipt_number,
+          amountPaid: Number(r.amount_paid),
+          issuedAt: r.issued_at,
+          billingMonth: b.billing_month,
+          propertyNumber: b.property.property_number,
+          tenantName: b.user.full_name,
+        }))
+      );
 
       return {
         totalOutstanding,
         billCount: pendingBills.length,
+        isThisMonthComplete,
+        currentMonth: currentMonthStr,
+        tenant: {
+          name: primaryTenant?.full_name || 'Almora Commercial Tenant',
+          code: primaryTenant?.user_id || 'ALM-TENANT',
+          mobile: primaryTenant?.mobile || clean,
+          shopNo: primaryProperty?.property_number || 'SHOP-TBD',
+          location: primaryProperty?.location || 'Almora Market',
+        },
+        currentMonthBill: currentMonthBill
+          ? {
+              billNumber: currentMonthBill.bill_number,
+              billingMonth: currentMonthBill.billing_month,
+              rentAmount: Number(currentMonthBill.rent_amount),
+              totalAmountDue: Number(currentMonthBill.total_amount_due),
+              amountPaid: Number(currentMonthBill.amount_paid),
+              balanceDue: Number(currentMonthBill.balance_due),
+              status: currentMonthBill.status,
+              dueDate: currentMonthBill.due_date,
+              receipt: currentMonthBill.receipts[0] || null,
+            }
+          : null,
         pendingBills: pendingBills.map((b) => ({
           id: b.id,
           billNumber: b.bill_number,
@@ -427,6 +499,19 @@ export class RentalBillingService {
           propertyNumber: b.property.property_number,
           location: b.property.location,
         })),
+        allBills: allBills.map((b) => ({
+          id: b.id,
+          billNumber: b.bill_number,
+          billingMonth: b.billing_month,
+          rentAmount: Number(b.rent_amount),
+          totalAmountDue: Number(b.total_amount_due),
+          amountPaid: Number(b.amount_paid),
+          balanceDue: Number(b.balance_due),
+          dueDate: b.due_date,
+          status: b.status,
+          receiptNumber: b.receipts[0]?.receipt_number || null,
+        })),
+        receipts: allReceipts,
       };
     });
   }

@@ -19,16 +19,6 @@ const subAdminCreateSchema = z.object({
   permissions: z.array(z.string()).optional(),
 });
 
-const userLoginSchema = z.object({
-  identifier: z.string().min(3, 'User ID or Mobile number is required'),
-  password: z.string().min(6, 'Password is required'),
-});
-
-const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-});
-
 export class RentalAuthController {
   /**
    * POST /api/rental/auth/admin/login
@@ -169,77 +159,6 @@ export class RentalAuthController {
       return sendSuccess(res, result, `Sub Admin account ${status.toLowerCase()}d successfully`);
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to update Sub Admin status', 400);
-    }
-  }
-
-  /**
-   * POST /api/rental/auth/user/login
-   * Tenant / Registered User Login with rate limiting
-   */
-  async userLogin(req: AuthenticatedRentalRequest, res: Response) {
-    try {
-      const parsed = userLoginSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return sendError(res, parsed.error.issues[0]?.message || 'Invalid login details', 400);
-      }
-
-      const result = await rentalAuthService.userLogin(parsed.data.identifier, parsed.data.password);
-
-      // Set HTTP-only secure cookie for tenant session
-      res.cookie('rental_user_token', result.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        maxAge: 12 * 60 * 60 * 1000, // 12 hours
-      });
-
-      return sendSuccess(res, result, 'Tenant signed in successfully');
-    } catch (err: any) {
-      return sendError(res, err.message || 'Authentication failed', 401);
-    }
-  }
-
-  /**
-   * GET /api/rental/auth/user/me
-   * Get Current Tenant Profile
-   */
-  async getUserProfile(req: AuthenticatedRentalRequest, res: Response) {
-    try {
-      if (!req.rentalUser) {
-        return sendError(res, 'Unauthorized tenant access', 401);
-      }
-
-      const profile = await rentalAuthService.getUserProfile(req.rentalUser.userId);
-      return sendSuccess(res, profile, 'Tenant profile fetched successfully');
-    } catch (err: any) {
-      return sendError(res, err.message || 'Failed to fetch tenant profile', 500);
-    }
-  }
-
-  /**
-   * POST /api/rental/auth/user/change-password
-   * Change Tenant Password
-   */
-  async changeUserPassword(req: AuthenticatedRentalRequest, res: Response) {
-    try {
-      if (!req.rentalUser) {
-        return sendError(res, 'Unauthorized tenant access', 401);
-      }
-
-      const parsed = changePasswordSchema.safeParse(req.body);
-      if (!parsed.success) {
-        return sendError(res, parsed.error.issues[0]?.message || 'Invalid password data', 400);
-      }
-
-      const result = await rentalAuthService.changeUserPassword(
-        req.rentalUser.userId,
-        parsed.data.currentPassword,
-        parsed.data.newPassword
-      );
-
-      return sendSuccess(res, result, 'Password changed successfully');
-    } catch (err: any) {
-      return sendError(res, err.message || 'Failed to change password', 400);
     }
   }
 }

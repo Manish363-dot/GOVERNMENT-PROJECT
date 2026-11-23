@@ -334,21 +334,6 @@ exports.Prisma.RentalAdminAuditLogScalarFieldEnum = {
   created_at: 'created_at'
 };
 
-exports.Prisma.RentalDesignatedOfficerScalarFieldEnum = {
-  id: 'id',
-  full_name: 'full_name',
-  designation: 'designation',
-  department: 'department',
-  office_phone: 'office_phone',
-  official_email: 'official_email',
-  office_address: 'office_address',
-  working_hours: 'working_hours',
-  contact_instructions: 'contact_instructions',
-  is_active: 'is_active',
-  updated_by: 'updated_by',
-  updated_at: 'updated_at'
-};
-
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -462,8 +447,7 @@ exports.Prisma.ModelName = {
   RentalReceipt: 'RentalReceipt',
   PaymentAuditTrail: 'PaymentAuditTrail',
   RentalNotice: 'RentalNotice',
-  RentalAdminAuditLog: 'RentalAdminAuditLog',
-  RentalDesignatedOfficer: 'RentalDesignatedOfficer'
+  RentalAdminAuditLog: 'RentalAdminAuditLog'
 };
 
 /**
