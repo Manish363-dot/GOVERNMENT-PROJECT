@@ -204,19 +204,10 @@ export const UserBillsPage: React.FC = () => {
                             setSelectedBill(bill);
                             setIsInvoiceModalOpen(true);
                           }}
-                          className="px-2.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-medium transition"
+                          className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold transition"
                         >
                           {isHi ? 'चालान देखें' : 'View Bill'}
                         </button>
-
-                        {bill.balanceDue > 0 && (
-                          <button
-                            onClick={() => handleOpenPayModal(bill)}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs"
-                          >
-                            {isHi ? 'भुगतान करें' : 'Pay Online'}
-                          </button>
-                        )}
                       </td>
                     </tr>
                   ))}

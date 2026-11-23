@@ -7,6 +7,7 @@ import {
   BillListItem,
 } from '../services/rentalBilling.service';
 import { rentalPaymentApi } from '../services/rentalPayment.service';
+import { rentalUserApi, TenantListItem } from '../services/rentalUser.service';
 import {
   FileText,
   Search,
@@ -26,6 +27,11 @@ import {
   DollarSign,
   PlusCircle,
   Clock,
+  User,
+  Store,
+  X,
+  ChevronRight,
+  Wallet,
 } from 'lucide-react';
 
 export const BillingManagementPage: React.FC = () => {
@@ -61,6 +67,14 @@ export const BillingManagementPage: React.FC = () => {
   const [remarks, setRemarks] = useState('');
   const [submittingPayment, setSubmittingPayment] = useState(false);
   const [issuedReceipt, setIssuedReceipt] = useState<any | null>(null);
+
+  // Tenant Counter Search & Selection State
+  const [tenantSearchQuery, setTenantSearchQuery] = useState('');
+  const [tenantSearchResults, setTenantSearchResults] = useState<TenantListItem[]>([]);
+  const [searchingTenants, setSearchingTenants] = useState(false);
+  const [selectedTenant, setSelectedTenant] = useState<TenantListItem | null>(null);
+  const [tenantBills, setTenantBills] = useState<BillListItem[]>([]);
+  const [loadingTenantBills, setLoadingTenantBills] = useState(false);
 
   const fetchBills = async () => {
     setLoading(true);
@@ -132,11 +146,73 @@ export const BillingManagementPage: React.FC = () => {
           : `Payment recorded successfully! Official Receipt: ${res.data.receiptNumber}`
       );
       fetchBills();
+      if (selectedTenant) {
+        refreshSelectedTenantBills(selectedTenant.id);
+      }
     } catch (err: any) {
       setError(err.message || 'Failed to process counter payment.');
     } finally {
       setSubmittingPayment(false);
     }
+  };
+
+  const handleSearchTenants = async (q: string) => {
+    setTenantSearchQuery(q);
+    if (!q.trim() || q.trim().length < 2) {
+      setTenantSearchResults([]);
+      return;
+    }
+    setSearchingTenants(true);
+    try {
+      const res = await rentalUserApi.listTenants({ search: q.trim(), limit: 10, page: 1 });
+      setTenantSearchResults(res.data.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSearchingTenants(false);
+    }
+  };
+
+  const handleSelectTenant = async (tenant: TenantListItem) => {
+    setSelectedTenant(tenant);
+    setTenantSearchResults([]);
+    setTenantSearchQuery('');
+    setLoadingTenantBills(true);
+    try {
+      const res = await rentalBillingApi.listBills({ userId: tenant.id, limit: 50 });
+      setTenantBills(res.data.data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load tenant bills.');
+    } finally {
+      setLoadingTenantBills(false);
+    }
+  };
+
+  const refreshSelectedTenantBills = async (userId: string) => {
+    try {
+      const res = await rentalBillingApi.listBills({ userId, limit: 50 });
+      setTenantBills(res.data.data);
+      const updatedTenant = await rentalUserApi.getTenantDetails(userId);
+      if (updatedTenant && updatedTenant.data) {
+        setSelectedTenant((prev) =>
+          prev
+            ? {
+                ...prev,
+                outstandingBalance: updatedTenant.data.outstanding_balance ?? prev.outstandingBalance,
+              }
+            : null
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleClearSelectedTenant = () => {
+    setSelectedTenant(null);
+    setTenantBills([]);
+    setTenantSearchQuery('');
+    setTenantSearchResults([]);
   };
 
   const handleOpenInvoiceModal = (bill: BillListItem) => {
@@ -257,6 +333,341 @@ export const BillingManagementPage: React.FC = () => {
               <h3 className="text-2xl font-bold text-red-600 mt-1">₹{totalBalanceDue.toLocaleString('en-IN')}</h3>
             </div>
 
+          </div>
+        </div>
+
+        {/* =========================================================================
+            कार्यालय काउंटर किराया वसूली (Office Counter Rent Collection)
+            Step 1: Search Tenant -> Step 2: Select Tenant -> Step 3: Select Month & Pay
+            ========================================================================= */}
+        <div className="bg-white rounded-2xl border-2 border-indigo-200/90 shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
+                <Receipt className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold tracking-wide flex items-center gap-2">
+                  <span>{isHi ? 'कार्यालय काउंटर किराया वसूली' : 'Office Counter Rent Collection'}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    {isHi ? 'प्रत्यक्ष जमा' : 'Counter Pay'}
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-300 mt-0.5">
+                  {isHi
+                    ? 'किरायेदार खोजें, उसका चयन करें एवं जिस माह का किराया आया है उस माह के आगे वसूली दर्ज करें।'
+                    : 'Search & select tenant, view monthly dues, and record payment for the specific month.'}
+                </p>
+              </div>
+            </div>
+
+            {selectedTenant && (
+              <button
+                type="button"
+                onClick={handleClearSelectedTenant}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition border border-white/20 self-start sm:self-auto cursor-pointer"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>{isHi ? 'अन्य किरायेदार खोजें' : 'Change Tenant'}</span>
+              </button>
+            )}
+          </div>
+
+          <div className="p-4 sm:p-6 space-y-5">
+            {/* ── STEP 1: SEARCH & SELECT TENANT (When none selected) ── */}
+            {!selectedTenant ? (
+              <div className="max-w-2xl mx-auto space-y-3 py-2">
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600">
+                  {isHi ? '१. किरायेदार खोजें (नाम, मोबाइल नंबर, या दुकान संख्या):' : '1. Search Tenant (Name, Mobile, or Shop Number):'}
+                </label>
+                <div className="relative">
+                  <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={tenantSearchQuery}
+                    onChange={(e) => handleSearchTenants(e.target.value)}
+                    placeholder={
+                      isHi
+                        ? 'किरायेदार का नाम, मोबाइल नंबर, दुकान सं. (जैसे S-102) या कोड लिखें...'
+                        : 'Type tenant name, 10-digit mobile, shop number, or code...'
+                    }
+                    className="w-full pl-11 pr-10 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-sm font-semibold text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:bg-white transition"
+                  />
+                  {searchingTenants && (
+                    <RefreshCw className="w-4 h-4 text-indigo-600 animate-spin absolute right-3.5 top-1/2 -translate-y-1/2" />
+                  )}
+                  {tenantSearchQuery && !searchingTenants && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTenantSearchQuery('');
+                        setTenantSearchResults([]);
+                      }}
+                      className="w-6 h-6 rounded-full hover:bg-slate-200 text-slate-500 flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Instant Search Results Dropdown List */}
+                {tenantSearchResults.length > 0 && (
+                  <div className="border border-slate-200 rounded-xl bg-white shadow-xl overflow-hidden divide-y divide-slate-100">
+                    <div className="px-3 py-1.5 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      {isHi ? `मिले परिणाम (${tenantSearchResults.length}) — कृपया किरायेदार पर क्लिक करें:` : `Matches (${tenantSearchResults.length}) — Click to select:`}
+                    </div>
+                    {tenantSearchResults.map((t) => (
+                      <div
+                        key={t.id}
+                        onClick={() => handleSelectTenant(t)}
+                        className="p-3.5 hover:bg-indigo-50/80 cursor-pointer transition flex items-center justify-between gap-3 group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 group-hover:bg-indigo-100 text-slate-700 group-hover:text-indigo-700 flex items-center justify-center font-black text-sm shrink-0">
+                            {t.fullName ? t.fullName[0].toUpperCase() : 'U'}
+                          </div>
+                          <div>
+                            <div className="text-sm font-bold text-slate-900 group-hover:text-indigo-900">
+                              {t.fullName}
+                              <span className="text-xs text-slate-500 font-mono font-normal ml-2">({t.userCode})</span>
+                            </div>
+                            <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                              <span>📱 {t.mobile}</span>
+                              {t.assignedProperty && (
+                                <>
+                                  <span>•</span>
+                                  <span className="font-semibold text-slate-700">
+                                    🏢 {t.assignedProperty.propertyNumber} ({t.assignedProperty.location})
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="text-[11px] text-slate-400 font-semibold">{isHi ? 'कुल बकाया:' : 'Dues:'}</div>
+                          <div className={`text-sm font-extrabold font-mono ${t.outstandingBalance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            ₹{Number(t.outstandingBalance || 0).toLocaleString('en-IN')}
+                          </div>
+                          <div className="text-[10px] text-indigo-600 font-bold group-hover:underline flex items-center justify-end gap-0.5 mt-0.5">
+                            <span>{isHi ? 'चयन करें' : 'Select'}</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {tenantSearchQuery.trim().length >= 2 && !searchingTenants && tenantSearchResults.length === 0 && (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-xs text-slate-500">
+                    {isHi ? 'इस नाम, मोबाइल या दुकान सं. से कोई किरायेदार नहीं मिला।' : 'No tenant found matching this search.'}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* ── STEP 2 & 3: SELECTED TENANT SUMMARY & MONTHLY BILLS ── */
+              <div className="space-y-5">
+                {/* Selected Tenant Profile Header Card */}
+                <div className="p-4 sm:p-5 rounded-xl bg-slate-50 border border-slate-200/90 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-start sm:items-center gap-3.5">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-black text-lg shadow-sm shrink-0">
+                      {selectedTenant.fullName ? selectedTenant.fullName[0].toUpperCase() : 'T'}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-base font-extrabold text-slate-900">{selectedTenant.fullName}</h4>
+                        <span className="font-mono text-xs px-2 py-0.5 bg-slate-200 text-slate-800 rounded font-semibold">
+                          {selectedTenant.userCode}
+                        </span>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                          {selectedTenant.status}
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-600 flex flex-wrap items-center gap-3 mt-1">
+                        <span>📱 <strong className="font-mono">{selectedTenant.mobile}</strong></span>
+                        {selectedTenant.assignedProperty && (
+                          <span>
+                            🏢 <strong className="text-slate-900">{selectedTenant.assignedProperty.propertyNumber}</strong> • {selectedTenant.assignedProperty.location}
+                          </span>
+                        )}
+                        {selectedTenant.assignedProperty?.monthlyRent && (
+                          <span>
+                            💵 {isHi ? 'मासिक तय किराया:' : 'Base Rent:'} <strong className="font-mono text-emerald-700">₹{Number(selectedTenant.assignedProperty.monthlyRent).toLocaleString('en-IN')}</strong> / माह
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 bg-white px-4 py-2.5 rounded-xl border border-slate-200 shadow-2xs shrink-0 justify-between md:justify-end">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
+                        {isHi ? 'वर्तमान कुल बकाया' : 'Total Outstanding'}
+                      </span>
+                      <span className={`text-xl font-black font-mono ${selectedTenant.outstandingBalance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                        ₹{Number(selectedTenant.outstandingBalance || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refreshSelectedTenantBills(selectedTenant.id)}
+                      className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-100 rounded-lg transition"
+                      title={isHi ? 'ताज़ा करें' : 'Refresh'}
+                    >
+                      <RefreshCw className={`w-4 h-4 ${loadingTenantBills ? 'animate-spin text-indigo-600' : ''}`} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Monthly Bills Breakdown Table */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-indigo-600" />
+                      <span>{isHi ? 'माहवार देय किराया विवरण एवं वसूली (Monthly Bills):' : 'Monthly Rent Demand & Collection:'}</span>
+                    </h5>
+                    <span className="text-xs text-slate-500 font-medium">
+                      {isHi ? `कुल जारी बिल: ${tenantBills.length}` : `Total Bills: ${tenantBills.length}`}
+                    </span>
+                  </div>
+
+                  <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs bg-white">
+                    {loadingTenantBills ? (
+                      <div className="p-8 text-center text-slate-400">
+                        <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-indigo-600" />
+                        <span className="text-xs">{isHi ? 'बिलों की सूची लोड हो रही है...' : 'Loading monthly bills...'}</span>
+                      </div>
+                    ) : tenantBills.length === 0 ? (
+                      <div className="p-8 text-center text-slate-400">
+                        <FileText className="w-8 h-8 text-slate-300 mx-auto mb-1.5" />
+                        <p className="text-xs font-bold text-slate-700">{isHi ? 'इस किरायेदार का कोई बिल उपलब्ध नहीं है।' : 'No bills found for this tenant.'}</p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse text-xs">
+                          <thead>
+                            <tr className="bg-slate-100/80 border-b border-slate-200 text-[11px] font-bold text-slate-700 uppercase">
+                              <th className="py-3 px-4">{isHi ? 'बिल संख्या एवं माह' : 'Bill No. & Month'}</th>
+                              <th className="py-3 px-4">{isHi ? 'किराया मांग (₹)' : 'Demand (₹)'}</th>
+                              <th className="py-3 px-4">{isHi ? 'जमा राशि (₹)' : 'Paid (₹)'}</th>
+                              <th className="py-3 px-4">{isHi ? 'अवशेष बकाया (₹)' : 'Balance Due (₹)'}</th>
+                              <th className="py-3 px-4">{isHi ? 'अंतिम तिथि' : 'Due Date'}</th>
+                              <th className="py-3 px-4 text-center">{isHi ? 'स्थिति' : 'Status'}</th>
+                              <th className="py-3 px-4 text-right">{isHi ? 'वसूली कार्यवाही' : 'Action'}</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {tenantBills.map((b) => (
+                              <tr key={b.id} className="hover:bg-slate-50/70 transition">
+                                <td className="py-3 px-4 whitespace-nowrap">
+                                  <div className="font-bold text-indigo-700 font-mono">{b.billNumber}</div>
+                                  <div className="text-[11px] font-bold text-slate-800 flex items-center gap-1 mt-0.5">
+                                    <Calendar className="w-3 h-3 text-slate-400" />
+                                    <span>{b.billingMonth}</span>
+                                  </div>
+                                </td>
+
+                                <td className="py-3 px-4 whitespace-nowrap">
+                                  <div className="font-bold text-slate-900 font-mono">₹{b.totalAmountDue.toLocaleString('en-IN')}</div>
+                                  <div className="text-[10px] text-slate-400">
+                                    Rent: ₹{b.rentAmount.toLocaleString('en-IN')}{b.arrearsAmount > 0 ? ` + Arr: ₹${b.arrearsAmount.toLocaleString('en-IN')}` : ''}
+                                  </div>
+                                </td>
+
+                                <td className="py-3 px-4 whitespace-nowrap font-bold text-emerald-700 font-mono">
+                                  ₹{b.amountPaid.toLocaleString('en-IN')}
+                                </td>
+
+                                <td className="py-3 px-4 whitespace-nowrap font-black font-mono">
+                                  <span className={b.balanceDue > 0 ? 'text-red-600' : 'text-slate-400'}>
+                                    ₹{b.balanceDue.toLocaleString('en-IN')}
+                                  </span>
+                                </td>
+
+                                <td className="py-3 px-4 whitespace-nowrap text-slate-500 font-medium">
+                                  {new Date(b.dueDate).toLocaleDateString()}
+                                </td>
+
+                                <td className="py-3 px-4 text-center whitespace-nowrap">
+                                  <span
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                                      b.status === 'PAID'
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                        : b.status === 'PARTIALLY_PAID'
+                                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                          : b.status === 'OVERDUE'
+                                            ? 'bg-red-100 text-red-800 border border-red-300'
+                                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    }`}
+                                  >
+                                    <span
+                                      className={`w-1.5 h-1.5 rounded-full ${
+                                        b.status === 'PAID'
+                                          ? 'bg-emerald-600'
+                                          : b.status === 'PARTIALLY_PAID'
+                                            ? 'bg-blue-600'
+                                            : b.status === 'OVERDUE'
+                                              ? 'bg-red-600'
+                                              : 'bg-amber-600'
+                                      }`}
+                                    />
+                                    {b.status}
+                                  </span>
+                                </td>
+
+                                <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleOpenInvoiceModal(b)}
+                                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"
+                                    title={isHi ? 'चालान देखें' : 'View Bill'}
+                                  >
+                                    <FileText className="w-4 h-4 inline" />
+                                  </button>
+
+                                  {b.balanceDue > 0 ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenCounterModal(b)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                                    >
+                                      <Receipt className="w-3.5 h-3.5" />
+                                      <span>{isHi ? 'किराया जमा करें' : 'Accept Payment'}</span>
+                                    </button>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>{isHi ? 'पूर्ण जमा' : 'Paid'}</span>
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* =========================================================================
+            समग्र बिल रजिस्टर (All Municipal Bills Overview & Master Filter)
+            ========================================================================= */}
+        <div className="pt-2">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-2">
+              <FileText className="w-4 h-4 text-slate-500" />
+              <span>{isHi ? 'समग्र जारी बिल रजिस्टर (All Bills Register)' : 'All Issued Municipal Bills'}</span>
+            </h4>
+            <span className="text-xs text-slate-500">
+              {isHi ? `कुल रिकॉर्ड्स: ${total}` : `Total Records: ${total}`}
+            </span>
           </div>
         </div>
 

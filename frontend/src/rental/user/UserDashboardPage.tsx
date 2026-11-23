@@ -150,14 +150,14 @@ export const UserDashboardPage: React.FC = () => {
                 </p>
               </div>
 
-              {totalOutstanding > 0 && latestPendingBill && (
+              {totalOutstanding > 0 && (
                 <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3">
                   <button
-                    onClick={() => handleOpenPayModal(latestPendingBill)}
-                    className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold rounded-xl text-sm flex items-center justify-center gap-2 transition shadow-lg"
+                    onClick={() => navigate('/rental/user/bills')}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-white/20 hover:bg-white/30 text-white font-extrabold rounded-xl text-sm flex items-center justify-center gap-2 transition"
                   >
-                    <CreditCard className="w-4 h-4" />
-                    <span>{isHi ? 'अभी ऑनलाइन भुगतान करें' : 'Pay Online Now'}</span>
+                    <FileText className="w-4 h-4" />
+                    <span>{isHi ? 'बिलों का विवरण देखें' : 'View Bills'}</span>
                   </button>
                 </div>
               )}
@@ -320,21 +320,12 @@ export const UserDashboardPage: React.FC = () => {
                           </span>
                         </td>
                         <td className="py-3 text-right">
-                          {b.balanceDue > 0 ? (
-                            <button
-                              onClick={() => handleOpenPayModal(b)}
-                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-[11px] shadow-xs"
-                            >
-                              {isHi ? 'भुगतान करें' : 'Pay Now'}
-                            </button>
-                          ) : (
-                            <button
-                              onClick={() => navigate('/rental/user/receipts')}
-                              className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
-                            >
-                              {isHi ? 'रसीद देखें' : 'View Receipt'}
-                            </button>
-                          )}
+                          <button
+                            onClick={() => navigate('/rental/user/bills')}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-[11px] transition"
+                          >
+                            {isHi ? 'विवरण देखें' : 'View Bill'}
+                          </button>
                         </td>
                       </tr>
                     ))}
