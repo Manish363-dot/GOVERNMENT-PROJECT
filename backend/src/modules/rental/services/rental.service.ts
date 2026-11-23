@@ -1,3 +1,5 @@
+import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
+
 export interface TenantDueRecord {
   shopNo: string;
   tenantName: string;
@@ -63,6 +65,25 @@ export class RentalService {
         item.market.toLowerCase().includes(q)
     );
     return matched.length > 0 ? matched : sampleTenantData;
+  }
+
+  /**
+   * Get public live statistics for rental portal (real-time registered shops and tenants)
+   */
+  async getPublicStats() {
+    return withRentalDbRetry(async () => {
+      const [totalShops, totalTenants] = await Promise.all([
+        rentalPrisma.rentalProperty.count(),
+        rentalPrisma.rentalUser.count(),
+      ]);
+
+      return {
+        blocks: 11,
+        digitalReceipts: '100%',
+        totalShops,
+        totalTenants,
+      };
+    });
   }
 
   /**

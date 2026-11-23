@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { X, User, LogOut, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { X, LogOut, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { OfficialGovTopBar } from '@/components/OfficialGovTopBar';
 import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,22 +11,27 @@ import { useAuth } from '../context/AuthContext';
 export const RentalNavbar: React.FC = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { i18n } = useTranslation();
-  const { language, t } = useLanguage();
+  const { language } = useLanguage();
   const { user, isAuthenticated, logout } = useAuth();
   const isHi = i18n.language === 'hi' || (language === 'hi' && !i18n.language?.startsWith('en'));
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      (user?.role === 'SUPER_ADMIN' || user?.role === 'SUB_ADMIN' || user?.adminRole)
+  );
 
   return (
     <OfficialGovTopBar>
-      {/* 🏛️ Commercial Asset & Rental White Navbar */}
+      {/* 🏛️ Commercial Asset & Rental White Navbar (Matches SWM Navbar exactly) */}
       <div className="bg-white border-b border-slate-200 shadow-xs">
         {/* Uttarakhand Accent Tricolor Line */}
         <div className="uk-tricolor-line" />
 
         <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-6 xl:px-8 2xl:px-12">
           <div className="flex items-center justify-between h-14 sm:h-20 gap-2">
+            
             {/* Brand Logo & Title on Left (Matches Safai & Main Portal) */}
             <div className="flex items-center justify-start shrink-0 mr-2 xl:mr-3 2xl:mr-6">
-              <a href="#home" className="flex items-center gap-2 sm:gap-3 group">
+              <Link to="/rental" className="flex items-center gap-2 sm:gap-3 group">
                 <img
                   src={PANCHAYATI_RAJ_LOGO_URL}
                   alt="Zila Panchayat Logo"
@@ -36,13 +42,13 @@ export const RentalNavbar: React.FC = () => {
                 />
                 <div className="flex flex-col justify-center">
                   <span className="font-poppins font-bold text-navy-900 text-[13px] sm:text-base xl:text-lg 2xl:text-xl tracking-tight leading-none mb-[2px] sm:mb-0 whitespace-nowrap">
-                    {isHi ? 'संपत्ति एवं किराया प्रकोष्ठ' : 'Commercial Asset & Rental Cell'}
+                    {isHi ? 'वाणिज्यिक परिसंपत्ति एवं किराया प्रकोष्ठ' : 'Commercial Asset & Rental Cell'}
                   </span>
                 </div>
-              </a>
+              </Link>
             </div>
 
-            {/* Desktop Navigation Links */}
+            {/* Desktop Navigation Links (Exact SWM Navbar fonts, weights and sizes) */}
             <nav className="hidden xl:flex items-center justify-end gap-1 2xl:gap-2 shrink-0 ml-auto mr-3 xl:mr-4 2xl:mr-6">
               {/* Back to Main Zila Panchayat Portal */}
               <Link
@@ -54,65 +60,67 @@ export const RentalNavbar: React.FC = () => {
               </Link>
               <Link
                 to="/rental"
-                className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
+                className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
               >
-                {t.nav.home}
+                <span>{isHi ? 'मुख्य पृष्ठ' : 'Home'}</span>
               </Link>
               <Link
                 to="/rental/check-status"
-                className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
+                className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
               >
                 <span>{isHi ? 'किराया स्थिति' : 'Check Rent Status'}</span>
               </Link>
               <a
                 href="#notices"
-                className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap flex items-center gap-1.5"
+                className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
               >
-                <span>{t.nav.notices}</span>
-                <span className="bg-amber-500 text-slate-950 text-[10px] font-extrabold px-1.5 py-0.2 rounded-full uppercase">
-                  {t.common.newBadge}
-                </span>
+                <span>{isHi ? 'सूचनाएं' : 'Notices'}</span>
               </a>
-              <a
-                href="/contact"
-                className="px-2.5 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-100 rounded-md transition-colors whitespace-nowrap"
+              <Link
+                to="/contact"
+                className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
               >
-                {t.nav.contact}
-              </a>
+                <span>{isHi ? 'संपर्क' : 'Contact Us'}</span>
+              </Link>
             </nav>
 
-            {/* Desktop Action Buttons: Admin Login only */}
-            {isAuthenticated && user ? (
-              <div className="hidden md:flex items-center gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
-                <Link
-                  to="/rental/admin/dashboard"
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 rounded-md text-xs font-bold text-blue-950 hover:bg-blue-100 transition-colors"
+            {/* Desktop Action Buttons: Exactly matching SWM Navbar Button design */}
+            <div className="hidden md:flex items-center justify-end gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
+              {isAdmin ? (
+                <>
+                  <Button
+                    size="sm"
+                    className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center gap-2 whitespace-nowrap shrink-0"
+                    asChild
+                  >
+                    <Link to="/rental/admin/dashboard">
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>{isHi ? 'विभागीय डैशबोर्ड' : 'Admin Dashboard'}</span>
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={logout}
+                    className="border-rose-200 text-rose-700 hover:bg-rose-50 font-bold whitespace-nowrap shrink-0 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>{isHi ? 'लॉगआउट' : 'Logout'}</span>
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  size="sm"
+                  className="bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center gap-2 whitespace-nowrap shrink-0 cursor-pointer"
+                  asChild
                 >
-                  <User className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                  <span className="max-w-[140px] truncate">{user.name || 'Admin'}</span>
-                  <span className="text-[10px] bg-navy-900 text-white font-bold px-1.5 py-0.2 rounded">
-                    Dashboard
-                  </span>
-                </Link>
-                <button
-                  type="button"
-                  onClick={logout}
-                  className="inline-flex items-center gap-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer"
-                >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>{isHi ? 'लॉगआउट' : 'Logout'}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="hidden md:flex items-center justify-end gap-2.5 shrink-0 md:ml-auto xl:ml-0 whitespace-nowrap">
-                <Link
-                  to="/rental/signin?role=admin"
-                  className="inline-flex items-center justify-center gap-1.5 bg-navy-900 hover:bg-navy-800 text-white font-bold px-4 py-2 rounded-lg text-xs sm:text-sm whitespace-nowrap shrink-0 transition-colors shadow-xs cursor-pointer"
-                >
-                  <span>{isHi ? 'विभागीय लॉगिन (Admin)' : 'Admin Login'}</span>
-                </Link>
-              </div>
-            )}
+                  <Link to="/rental/signin?role=admin">
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>{isHi ? 'विभागीय लॉगिन' : 'Admin Login'}</span>
+                  </Link>
+                </Button>
+              )}
+            </div>
 
             {/* Mobile/Tablet Menu Button */}
             <button
@@ -141,7 +149,7 @@ export const RentalNavbar: React.FC = () => {
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
-              {t.nav.home}
+              {isHi ? 'मुख्य पृष्ठ' : 'Home'}
             </Link>
             <Link
               to="/rental/check-status"
@@ -155,47 +163,53 @@ export const RentalNavbar: React.FC = () => {
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
-              {t.nav.notices}
+              {isHi ? 'सूचनाएं' : 'Notices'}
             </a>
-            <a
-              href="/contact"
+            <Link
+              to="/contact"
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
-              {t.nav.contact}
-            </a>
+              {isHi ? 'संपर्क' : 'Contact Us'}
+            </Link>
 
             <div className="flex flex-col gap-2 pt-3 border-t border-slate-200 mt-2">
-              {isAuthenticated && user ? (
+              {isAdmin ? (
                 <>
-                  <div className="flex items-center justify-between p-2.5 bg-slate-200/80 rounded-md text-xs font-bold text-navy-900">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <User className="w-3.5 h-3.5 text-blue-700 shrink-0" />
-                      <span className="truncate">{user.name}</span>
-                    </div>
-                    <span className="text-[10px] bg-navy-900 text-white px-2 py-0.5 rounded uppercase">
-                      {user.role}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
+                  <Button
+                    size="sm"
+                    className="w-full bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center justify-center gap-2"
+                    asChild
+                  >
+                    <Link to="/rental/admin/dashboard" onClick={() => setMobileOpen(false)}>
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>{isHi ? 'विभागीय डैशबोर्ड' : 'Admin Dashboard'}</span>
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => {
                       logout();
                       setMobileOpen(false);
                     }}
-                    className="w-full text-center bg-rose-600 hover:bg-rose-700 py-2 rounded-md font-bold text-xs text-white shadow-xs"
+                    className="w-full border-rose-200 text-rose-700 hover:bg-rose-50 font-bold"
                   >
-                    {isHi ? 'लॉगआउट करें' : 'Sign Out'}
-                  </button>
+                    <LogOut className="w-3.5 h-3.5 mr-1" />
+                    <span>{isHi ? 'लॉगआउट करें' : 'Sign Out'}</span>
+                  </Button>
                 </>
               ) : (
-                <Link
-                  to="/rental/signin?role=admin"
-                  onClick={() => setMobileOpen(false)}
-                  className="w-full text-center bg-navy-900 hover:bg-navy-800 py-2.5 rounded-lg font-bold text-xs text-white shadow-xs"
+                <Button
+                  size="sm"
+                  className="w-full bg-navy-900 hover:bg-navy-800 text-white shadow-xs font-bold flex items-center justify-center gap-2"
+                  asChild
                 >
-                  {isHi ? 'विभागीय लॉगिन (Admin Login)' : 'Admin Login'}
-                </Link>
+                  <Link to="/rental/signin?role=admin" onClick={() => setMobileOpen(false)}>
+                    <ShieldCheck className="w-4 h-4 text-amber-400" />
+                    <span>{isHi ? 'विभागीय लॉगिन (Admin Login)' : 'Admin Login'}</span>
+                  </Link>
+                </Button>
               )}
             </div>
           </div>

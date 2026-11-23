@@ -271,10 +271,10 @@ export const RentalCheckStatusPage: React.FC = () => {
       {/* 🏛️ Master Government Navbar */}
       <RentalNavbar />
 
-      <main className="flex-1 w-full py-8 sm:py-12">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 w-full py-6 sm:py-10 md:py-12">
+        <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
           {/* Breadcrumb / Back Navigation */}
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-4 sm:mb-6 flex items-center justify-between">
             <Link
               to="/rental"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-2xs"
@@ -285,24 +285,28 @@ export const RentalCheckStatusPage: React.FC = () => {
           </div>
 
           {/* Page Header Banner */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm mb-8 text-center relative overflow-hidden">
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm mb-6 sm:mb-8 text-center relative overflow-hidden">
             <div className="uk-tricolor-line absolute top-0 left-0 right-0" />
 
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-extrabold text-navy-950 tracking-tight leading-snug">
               {isHi
                 ? 'मासिक किराया स्थिति एवं खाता बही'
                 : 'Monthly Rent Status & Ledger Statement'}
             </h1>
-            <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto font-medium">
+            <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl mx-auto font-medium px-1 sm:px-0 leading-relaxed">
               {isHi
                 ? 'अपने 10-अंकीय पंजीकृत मोबाइल नंबर से अपने चालू माह के किराये की स्थिति जांचें और रसीद, खाता विवरण डाउनलोड करें।'
                 : 'Enter your 10-digit registered mobile number to check rent status and download receipts or ledger.'}
             </p>
 
             {/* Search Input Form (Strictly 10-digit Mobile Number) */}
-            <form onSubmit={handleSearch} className="mt-6 max-w-xl mx-auto">
-              <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
-                <div className="relative flex-1 flex items-center">
+            <form onSubmit={handleSearch} className="mt-5 sm:mt-6 max-w-xl mx-auto w-full">
+              <div className="flex flex-col sm:flex-row items-stretch gap-2.5 sm:gap-3 w-full">
+                <div className="relative flex-1 flex items-center w-full min-w-0">
+                  <div className="absolute left-3 sm:left-3.5 flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-slate-500 select-none pointer-events-none">
+                    <span className="text-slate-500 font-bold">+91</span>
+                    <span className="text-slate-300">|</span>
+                  </div>
                   <input
                     type="tel"
                     inputMode="numeric"
@@ -314,15 +318,15 @@ export const RentalCheckStatusPage: React.FC = () => {
                         ? '10-अंकों का पंजीकृत मोबाइल नंबर'
                         : '10-digit registered mobile number'
                     }
-                    className="w-full pr-16 py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
-                    style={{ paddingLeft: '5.5rem' }}
+                    className="w-full pr-14 sm:pr-16 py-3 sm:py-3.5 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold tracking-wider text-slate-900 placeholder:text-slate-400 placeholder:font-normal placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-inner"
+                    style={{ paddingLeft: '5.25rem' }}
                     required
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={searching || query.length !== 10}
-                  className="px-6 py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                  className="w-full sm:w-auto px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs sm:text-sm shadow-md transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                 >
                   {searching ? (
                     <>
@@ -339,7 +343,7 @@ export const RentalCheckStatusPage: React.FC = () => {
             </form>
 
             {errorMsg && (
-              <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 max-w-xl mx-auto">
+              <div className="mt-4 p-3 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold rounded-lg flex items-center justify-center gap-2 max-w-xl mx-auto text-center px-4">
                 <span>{errorMsg}</span>
               </div>
             )}
@@ -347,13 +351,13 @@ export const RentalCheckStatusPage: React.FC = () => {
 
           {/* Results Display */}
           {searched && result && (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-300">
               {/* 1. Tenant & Shop Overview Card */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-4 sm:pb-5 border-b border-slate-100">
                   <div className="flex items-start gap-3">
                     <div>
-                      <h2 className="text-lg sm:text-xl font-extrabold text-navy-950">
+                      <h2 className="text-base sm:text-xl font-extrabold text-navy-950 break-words">
                         {result.tenant?.name}
                       </h2>
                       <div className="text-xs text-slate-600 font-medium mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -364,11 +368,10 @@ export const RentalCheckStatusPage: React.FC = () => {
                 </div>
 
                 {/* 2. Current Month Status Hero Box */}
-                <div className="mt-5 p-5 rounded-xl border flex flex-col md:flex-row items-start md:items-center justify-between gap-5 bg-gradient-to-r shadow-xs">
+                <div className="mt-4 sm:mt-5 p-4 sm:p-5 rounded-xl border flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-5 bg-gradient-to-r shadow-xs">
                   {isComplete ? (
                     // STATUS: COMPLETE / PAID
-                    <div className="flex items-start gap-3.5">
-                      
+                    <div className="flex items-start gap-3.5 flex-1 min-w-0">
                       <div>
                         <p className="text-xs sm:text-sm text-slate-700 font-semibold mt-1">
                           {isHi
@@ -376,7 +379,7 @@ export const RentalCheckStatusPage: React.FC = () => {
                             : 'Rent for this month has been fully cleared. Zero outstanding balance.'}
                         </p>
                         {result.currentMonthBill?.receipt && (
-                          <div className="text-xs text-slate-500 mt-0.5 font-medium">
+                          <div className="text-xs text-slate-500 mt-0.5 font-medium break-all">
                             {isHi ? 'रसीद संख्या:' : 'Receipt No:'}{' '}
                             <strong className="text-slate-800 font-mono">
                               {result.currentMonthBill.receipt.receipt_number}
@@ -387,17 +390,17 @@ export const RentalCheckStatusPage: React.FC = () => {
                     </div>
                   ) : (
                     // STATUS: PENDING / DUE
-                    <div className="flex items-start gap-3.5">
+                    <div className="flex items-start gap-3.5 flex-1 min-w-0">
                       <div>
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-extrabold uppercase border border-amber-300">
                           {isHi ? 'चालू माह का किराया बकाया है' : 'Rent Pending'}
                         </div>
-                        <p className="text-xs sm:text-sm text-slate-800 font-bold mt-1">
+                        <p className="text-xs sm:text-sm text-slate-800 font-bold mt-1 break-words">
                           {isHi
                             ? `इस माह की बकाया राशि: ₹${totalOutstanding.toLocaleString('en-IN')}`
                             : `Current Outstanding Dues: ₹${totalOutstanding.toLocaleString('en-IN')}`}
                         </p>
-                        <p className="text-xs text-amber-800 font-medium mt-0.5">
+                        <p className="text-xs text-amber-800 font-medium mt-0.5 leading-relaxed">
                           {isHi
                             ? 'कृपया निर्धारित तिथि से पूर्व कार्यालय काउंटर पर नकद / चेक द्वारा भुगतान करें।'
                             : 'Please deposit the due amount at the Zila Panchayat office counter before due date.'}
@@ -407,7 +410,7 @@ export const RentalCheckStatusPage: React.FC = () => {
                   )}
 
                   {/* Action Buttons for Current Month */}
-                  <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2.5 w-full md:w-auto shrink-0 mt-2 md:mt-0">
                     {/* If Paid: Download Receipt */}
                     {isComplete && result.currentMonthBill?.receipt && (
                       <button
@@ -419,8 +422,9 @@ export const RentalCheckStatusPage: React.FC = () => {
                             result.currentMonthBill!.amountPaid
                           )
                         }
-                        className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                        className="w-full sm:w-auto flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
                       >
+                        <Download className="w-3.5 h-3.5" />
                         <span>{isHi ? 'रसीद डाउनलोड करें' : 'Download Receipt'}</span>
                       </button>
                     )}
@@ -429,9 +433,9 @@ export const RentalCheckStatusPage: React.FC = () => {
                     <button
                       type="button"
                       onClick={handlePrintLedger}
-                      className="flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
+                      className="w-full sm:w-auto flex-1 md:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 sm:py-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer"
                     >
-                     
+                      <Download className="w-3.5 h-3.5" />
                       <span>{isHi ? 'खाता विवरण डाउनलोड करें' : 'Download Ledger Statement'}</span>
                     </button>
                   </div>
@@ -439,86 +443,90 @@ export const RentalCheckStatusPage: React.FC = () => {
               </div>
 
               {/* 3. Detailed Rent Ledger & Past Bills Table */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-sm">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-slate-100">
                   <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-navy-950 flex items-center gap-2">
+                    <h3 className="text-sm sm:text-base md:text-lg font-extrabold text-navy-950 flex items-center gap-2">
                       <span>{isHi ? 'माहवार किराया खाता बही' : 'Monthly Rent Ledger Trail'}</span>
                     </h3>
                   </div>
                 </div>
 
                 {/* Table */}
-                <div className="mt-4 overflow-x-auto">
-                  <table className="w-full text-left text-xs border-collapse">
-                    <thead>
-                      <tr className="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] tracking-wider border-y border-slate-200">
-                        <th className="py-3 px-3">{isHi ? 'माह' : 'Month'}</th>
-                        <th className="py-3 px-3">{isHi ? 'बिल संख्या' : 'Bill No'}</th>
-                        <th className="py-3 px-3 text-right">{isHi ? 'देय राशि' : 'Rent Due'}</th>
-                        <th className="py-3 px-3 text-right">{isHi ? 'जमा राशि' : 'Paid'}</th>
-                        <th className="py-3 px-3 text-right">{isHi ? 'बकाया' : 'Balance'}</th>
-                        <th className="py-3 px-3 text-center">{isHi ? 'स्थिति' : 'Status'}</th>
-                        <th className="py-3 px-3 text-center">{isHi ? 'रसीद' : 'Receipt'}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
-                      {result.allBills && result.allBills.length > 0 ? (
-                        result.allBills.map((bill) => (
-                          <tr key={bill.id} className="hover:bg-slate-50/80 transition-colors">
-                            <td className="py-3 px-3 font-bold text-navy-950">{bill.billingMonth}</td>
-                            <td className="py-3 px-3 text-slate-600 font-mono text-[11px]">{bill.billNumber}</td>
-                            <td className="py-3 px-3 text-right text-slate-800">
-                              ₹{bill.totalAmountDue.toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-3 px-3 text-right text-emerald-700 font-bold">
-                              ₹{bill.amountPaid.toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-3 px-3 text-right font-bold text-slate-900">
-                              ₹{bill.balanceDue.toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              {bill.status === 'PAID' ? (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                                  {isHi ? 'पूर्ण' : 'PAID'}
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
-                                  {isHi ? 'लंबित' : 'PENDING'}
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-3 text-center">
-                              {bill.status === 'PAID' && bill.receiptNumber ? (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    handlePrintReceipt(bill.receiptNumber!, bill.billingMonth, bill.amountPaid)
-                                  }
-                                  className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
-                                >
-                                  <Download className="w-3 h-3" />
-                                  <span>{bill.receiptNumber}</span>
-                                </button>
-                              ) : (
-                                <span className="text-slate-400">-</span>
-                              )}
-                            </td>
+                <div className="mt-4 -mx-4 sm:mx-0 overflow-x-auto px-4 sm:px-0">
+                  <div className="inline-block min-w-full align-middle">
+                    <div className="overflow-hidden border border-slate-200 rounded-xl">
+                      <table className="min-w-full divide-y divide-slate-200 text-left text-xs border-collapse">
+                        <thead>
+                          <tr className="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] sm:text-[11px] tracking-wider">
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 whitespace-nowrap">{isHi ? 'माह' : 'Month'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 whitespace-nowrap">{isHi ? 'बिल संख्या' : 'Bill No'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'देय राशि' : 'Rent Due'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'जमा राशि' : 'Paid'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'बकाया' : 'Balance'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-center whitespace-nowrap">{isHi ? 'स्थिति' : 'Status'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-center whitespace-nowrap">{isHi ? 'रसीद' : 'Receipt'}</th>
                           </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={7} className="py-6 text-center text-slate-500">
-                            {isHi ? 'कोई बिल रिकॉर्ड नहीं मिला' : 'No past bill history available'}
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 font-medium bg-white">
+                          {result.allBills && result.allBills.length > 0 ? (
+                            result.allBills.map((bill) => (
+                              <tr key={bill.id} className="hover:bg-slate-50/80 transition-colors">
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 font-bold text-navy-950 whitespace-nowrap">{bill.billingMonth}</td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-slate-600 font-mono text-[11px] whitespace-nowrap">{bill.billNumber}</td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-slate-800 whitespace-nowrap">
+                                  ₹{bill.totalAmountDue.toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-emerald-700 font-bold whitespace-nowrap">
+                                  ₹{bill.amountPaid.toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right font-bold text-slate-900 whitespace-nowrap">
+                                  ₹{bill.balanceDue.toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-center whitespace-nowrap">
+                                  {bill.status === 'PAID' ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                      {isHi ? 'पूर्ण' : 'PAID'}
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                                      {isHi ? 'लंबित' : 'PENDING'}
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-center whitespace-nowrap">
+                                  {bill.status === 'PAID' && bill.receiptNumber ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        handlePrintReceipt(bill.receiptNumber!, bill.billingMonth, bill.amountPaid)
+                                      }
+                                      className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 hover:text-blue-900 hover:underline cursor-pointer"
+                                    >
+                                      <Download className="w-3 h-3" />
+                                      <span>{bill.receiptNumber}</span>
+                                    </button>
+                                  ) : (
+                                    <span className="text-slate-400">-</span>
+                                  )}
+                                </td>
+                              </tr>
+                            ))
+                          ) : (
+                            <tr>
+                              <td colSpan={7} className="py-6 text-center text-slate-500">
+                                {isHi ? 'कोई बिल रिकॉर्ड नहीं मिला' : 'No past bill history available'}
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Important Notice Footer Box */}
-                <div className="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5">
+                <div className="mt-5 sm:mt-6 p-3.5 sm:p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 flex items-start gap-2.5 leading-relaxed">
                   <p>
                     {isHi
                       ? 'सूचना: जिला पंचायत अल्मोड़ा के नियमों के तहत मासिक किराया प्रत्येक माह की 20 तारीख तक कार्यालय काउंटर पर अनिवार्य रूप से जमा किया जाना चाहिए। किसी भी त्रुटि या संशोधन हेतु कर निरीक्षक से संपर्क करें।'

@@ -8,6 +8,15 @@ export class RentalController {
     return res.json(health);
   }
 
+  async getPublicStats(_req: Request, res: Response) {
+    try {
+      const stats = await rentalService.getPublicStats();
+      return sendSuccess(res, stats, 'Public stats fetched successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to fetch public stats', 500);
+    }
+  }
+
   async getRoot(_req: Request, res: Response) {
     return res.send('🏛️ Zila Panchayat Almora — Commercial Rental & Asset Management API is running.');
   }
