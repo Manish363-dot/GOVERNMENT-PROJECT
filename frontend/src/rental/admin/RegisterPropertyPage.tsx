@@ -3,7 +3,8 @@ import { useNavigate, NavLink } from "react-router-dom";
 import { AdminLayout } from "./AdminLayout";
 import { useLanguage } from "../context/LanguageContext";
 import { rentalPropertyApi, CreatePropertyInput } from "../services/rentalProperty.service";
-import { CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
+import { CheckCircle2, AlertCircle, ArrowLeft, RefreshCw } from "lucide-react";
+import { api } from "@/services/api";
 
 const PROPERTY_TYPES: Array<{
   value: CreatePropertyInput["propertyType"];
@@ -38,6 +39,27 @@ export const RegisterPropertyPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<{ propertyNumber: string; propertyName: string } | null>(null);
+  const [transliterating, setTransliterating] = useState<string | null>(null);
+
+  const handleAutoTransliterate = async (
+    field: "propertyName" | "location" | "address",
+    value: string
+  ) => {
+    if (!value || !value.trim() || !/[a-zA-Z]/.test(value)) return;
+    setTransliterating(field);
+    try {
+      const res = await api.post<{ success: boolean; hindi: string }>("/rental/transliterate", {
+        text: value.trim(),
+      });
+      if (res && res.hindi && res.hindi.trim()) {
+        set(field, res.hindi);
+      }
+    } catch (err) {
+      console.warn("Transliteration failed", err);
+    } finally {
+      setTransliterating(null);
+    }
+  };
 
   const set = <K extends keyof CreatePropertyInput>(key: K, val: CreatePropertyInput[K]) =>
     setForm((prev) => ({ ...prev, [key]: val }));
@@ -119,8 +141,34 @@ export const RegisterPropertyPage = () => {
 
           <div className="px-6 py-6 space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "संपत्ति / दुकान का नाम *" : "Property / Shop Name *"}</label>
-              <input type="text" required value={form.propertyName} onChange={(e) => set("propertyName", e.target.value)} placeholder={isHi ? "उदा. दुकान नं. 12, भूतल, माल रोड" : "e.g., Shop No. 12, Ground Floor, Mall Road"} className={IC} />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700">
+                  {isHi ? "संपत्ति / दुकान का नाम *" : "Property / Shop Name *"}
+                </label>
+                {transliterating === "propertyName" ? (
+                  <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
+                    <RefreshCw className="w-2.5 h-2.5 animate-spin" /> {isHi ? "हिंदी में बदल रहा है..." : "Translating..."}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoTransliterate("propertyName", form.propertyName)}
+                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    title="English नाम को हिंदी में बदलने के लिए क्लिक करें"
+                  >
+                    <span>🌐 अ ऑटो-हिंदी</span>
+                  </button>
+                )}
+              </div>
+              <input
+                type="text"
+                required
+                value={form.propertyName}
+                onChange={(e) => set("propertyName", e.target.value)}
+                onBlur={() => handleAutoTransliterate("propertyName", form.propertyName)}
+                placeholder={isHi ? "उदा. Shop No. 12, Mall Road (English लिखने पर स्वतः हिंदी)" : "e.g., Shop No. 12, Ground Floor, Mall Road"}
+                className={IC}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -139,8 +187,34 @@ export const RegisterPropertyPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "स्थान / बाजार का नाम *" : "Location / Market Name *"}</label>
-                <input type="text" required value={form.location} onChange={(e) => set("location", e.target.value)} placeholder={isHi ? "उदा. माल रोड, अल्मोड़ा" : "e.g., Mall Road, Almora"} className={IC} />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-xs font-bold text-slate-700">
+                    {isHi ? "स्थान / बाजार का नाम *" : "Location / Market Name *"}
+                  </label>
+                  {transliterating === "location" ? (
+                    <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
+                      <RefreshCw className="w-2.5 h-2.5 animate-spin" /> {isHi ? "हिंदी..." : "Translating..."}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleAutoTransliterate("location", form.location)}
+                      className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                      title="English स्थान को हिंदी में बदलने के लिए क्लिक करें"
+                    >
+                      <span>🌐 अ</span>
+                    </button>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  required
+                  value={form.location}
+                  onChange={(e) => set("location", e.target.value)}
+                  onBlur={() => handleAutoTransliterate("location", form.location)}
+                  placeholder={isHi ? "उदा. Mall Road, Almora" : "e.g., Mall Road, Almora"}
+                  className={IC}
+                />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "क्षेत्रफल (वर्ग फुट — वैकल्पिक)" : "Area in Sq. Ft (Optional)"}</label>
@@ -149,8 +223,34 @@ export const RegisterPropertyPage = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "पूरा पता (विस्तृत) *" : "Detailed Address *"}</label>
-              <textarea required rows={2} value={form.address} onChange={(e) => set("address", e.target.value)} placeholder={isHi ? "उदा. गांधी चौक के पास, माल रोड, अल्मोड़ा, उत्तराखंड — 263601" : "e.g., Near Gandhi Chowk, Mall Road, Almora, Uttarakhand — 263601"} className={IC} />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-xs font-bold text-slate-700">
+                  {isHi ? "पूरा पता (विस्तृत) *" : "Detailed Address *"}
+                </label>
+                {transliterating === "address" ? (
+                  <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
+                    <RefreshCw className="w-2.5 h-2.5 animate-spin" /> {isHi ? "हिंदी में बदल रहा है..." : "Translating..."}
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleAutoTransliterate("address", form.address)}
+                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                    title="English पते को हिंदी में बदलने के लिए क्लिक करें"
+                  >
+                    <span>🌐 अ ऑटो-हिंदी</span>
+                  </button>
+                )}
+              </div>
+              <textarea
+                required
+                rows={2}
+                value={form.address}
+                onChange={(e) => set("address", e.target.value)}
+                onBlur={() => handleAutoTransliterate("address", form.address)}
+                placeholder={isHi ? "उदा. Near Gandhi Chowk, Mall Road, Almora (English लिखने पर स्वतः हिंदी)" : "e.g., Near Gandhi Chowk, Mall Road, Almora, Uttarakhand — 263601"}
+                className={IC}
+              />
             </div>
 
             <div className="max-w-xs">

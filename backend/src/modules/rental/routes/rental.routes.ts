@@ -14,6 +14,10 @@ router.get('/dues/search', (req, res) => rentalController.searchDues(req, res));
 // Citizen Feedback / Grievance for Rental Properties
 router.post('/feedback', (req, res) => rentalController.submitFeedback(req, res));
 
+// English to Hindi Transliteration Utility
+router.post('/transliterate', (req, res) => rentalController.transliterateText(req, res));
+router.get('/transliterate', (req, res) => rentalController.transliterateText(req, res));
+
 // ── Rental Authentication & Role-Based Management Routes ───────────────────
 import rentalAuthRoutes from './rentalAuth.routes';
 router.use('/auth', rentalAuthRoutes);

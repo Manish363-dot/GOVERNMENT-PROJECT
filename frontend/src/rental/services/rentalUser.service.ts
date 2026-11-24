@@ -18,6 +18,7 @@ export interface RegisterTenantFormData {
   panFile?: File | null;
   domicileFile?: File | null;
   gstFile?: File | null;
+  shopPhotoFile?: File | null;
 }
 
 export interface TenantListItem {
@@ -27,6 +28,8 @@ export interface TenantListItem {
   mobile: string;
   email?: string;
   profilePhotoUrl?: string;
+  permanentAddress?: string;
+  currentAddress?: string;
   status: string;
   createdAt: string;
   assignedProperty?: {
@@ -34,6 +37,7 @@ export interface TenantListItem {
     propertyName: string;
     propertyNumber: string;
     location: string;
+    address?: string;
     monthlyRent: number;
   } | null;
   outstandingBalance: number;
@@ -68,6 +72,7 @@ export const rentalUserApi = {
     if (formData.panFile) data.append('pan_doc', formData.panFile);
     if (formData.domicileFile) data.append('domicile_doc', formData.domicileFile);
     if (formData.gstFile) data.append('gst_doc', formData.gstFile);
+    if (formData.shopPhotoFile) data.append('shop_photo', formData.shopPhotoFile);
 
     return api.upload<{ success: boolean; data: any; message: string }>(
       '/rental/users/admin/register',
@@ -121,11 +126,16 @@ export const rentalUserApi = {
     if (formData.panFile) data.append('pan_doc', formData.panFile);
     if (formData.domicileFile) data.append('domicile_doc', formData.domicileFile);
     if (formData.gstFile) data.append('gst_doc', formData.gstFile);
+    if (formData.shopPhotoFile) data.append('shop_photo', formData.shopPhotoFile);
 
     return api.upload<{ success: boolean; data: any; message: string }>(
       `/rental/users/admin/${userId}`,
       data,
       'PUT'
     );
+  },
+
+  deleteTenant: (userId: string) => {
+    return api.delete<{ success: boolean; message: string }>(`/rental/users/admin/${userId}`);
   },
 };

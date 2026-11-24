@@ -12,6 +12,7 @@ const registrationUpload = uploadRentalRegistrationDocs.fields([
   { name: 'pan_doc', maxCount: 1 },
   { name: 'domicile_doc', maxCount: 1 },
   { name: 'gst_doc', maxCount: 1 },
+  { name: 'shop_photo', maxCount: 1 },
 ]);
 
 // ── Admin: Register New Tenant with S3 Documents ────────────────────────────
@@ -49,6 +50,13 @@ router.patch(
   '/admin/:id/status',
   rentalAdminAuth,
   (req, res) => rentalUserController.updateTenantStatus(req, res)
+);
+
+// ── Admin: Permanently Delete Tenant ─────────────────────────────────────────
+router.delete(
+  '/admin/:id',
+  rentalAdminAuth,
+  (req, res) => rentalUserController.deleteTenant(req, res)
 );
 
 // ── Secure Private S3 Document Expiring URL (Admin or owning Tenant) ────────
