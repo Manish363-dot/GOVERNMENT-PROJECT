@@ -194,6 +194,30 @@ export class RentalPropertyController {
   }
 
   /**
+   * DELETE /api/rental/properties/:id
+   * Delete a commercial property asset permanently
+   */
+  async deleteProperty(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Administrator authentication required', 401);
+      }
+
+      const { id } = req.params;
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const result = await rentalPropertyService.deleteProperty(
+        req.rentalAdmin.adminId,
+        id,
+        clientIp
+      );
+
+      return sendSuccess(res, result, 'Property deleted successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to delete property', 400);
+    }
+  }
+
+  /**
    * GET /api/rental/properties/:id/rent-history
    * Get chronological rent revision audit logs for a property
    */

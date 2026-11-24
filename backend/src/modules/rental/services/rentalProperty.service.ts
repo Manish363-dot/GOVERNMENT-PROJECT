@@ -436,6 +436,81 @@ export class RentalPropertyService {
   }
 
   /**
+   * Delete a commercial property asset permanently
+   */
+  async deleteProperty(adminId: string, propertyId: string, clientIp?: string) {
+    return withRentalDbRetry(async () => {
+      const property = await rentalPrisma.rentalProperty.findUnique({
+        where: { id: propertyId },
+        include: {
+          assignments: true,
+          rentChangeHistory: true,
+        },
+      });
+
+      if (!property) {
+        throw new Error('Property not found');
+      }
+
+      return rentalPrisma.$transaction(async (tx) => {
+        // 1. Delete all related records for this property
+        await tx.propertyAssignment.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.rentChangeHistory.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.rentalReceipt.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.paymentAuditTrail.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.rentalLedgerEntry.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.rentalPayment.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        await tx.rentalBill.deleteMany({
+          where: { property_id: propertyId },
+        });
+
+        // 2. Delete the property itself
+        await tx.rentalProperty.delete({
+          where: { id: propertyId },
+        });
+
+        // 3. Write admin audit log
+        await tx.rentalAdminAuditLog.create({
+          data: {
+            admin_id: adminId,
+            action: 'PROPERTY_DELETED',
+            target_entity: 'RentalProperty',
+            target_id: propertyId,
+            reason: `Property ${property.property_number} (${property.property_name}) deleted by admin`,
+            before_state: JSON.stringify({
+              propertyNumber: property.property_number,
+              propertyName: property.property_name,
+              location: property.location,
+            }),
+            after_state: JSON.stringify({ deleted: true }),
+            ip_address: clientIp || 'Unknown',
+          },
+        });
+
+        return { success: true, message: 'Property deleted successfully' };
+      });
+    });
+  }
+
+  /**
    * Get Chronological Rent Change Audit History for a property or tenant
    */
   async getRentHistory(filter: { propertyId?: string; userId?: string }) {

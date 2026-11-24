@@ -179,6 +179,7 @@ function App() {
               <Route path="/rental/admin/audit" element={<RentalAdminGuard><RecordsAuditPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/register-tenant" element={<RentalAdminGuard><RegisterTenantPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/tenants" element={<RentalAdminGuard><TenantListPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/tenants/:id" element={<RentalAdminGuard><TenantProfilePage /></RentalAdminGuard>} />
               <Route path="/rental/admin/tenant/:id" element={<RentalAdminGuard><TenantProfilePage /></RentalAdminGuard>} />
               <Route path="/rental/admin/properties" element={<RentalAdminGuard><PropertyManagementPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/billing" element={<RentalAdminGuard><BillingManagementPage /></RentalAdminGuard>} />

@@ -51,4 +51,11 @@ router.get(
   (req: any, res: any) => rentalPropertyController.getRentHistory(req, res)
 );
 
+// ── Admin: Delete Property Asset ────────────────────────────────────────────
+router.delete(
+  '/:id',
+  rentalAdminAuth,
+  (req: any, res: any) => rentalPropertyController.deleteProperty(req, res)
+);
+
 export default router;

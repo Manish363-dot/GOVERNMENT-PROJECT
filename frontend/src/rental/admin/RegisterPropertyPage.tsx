@@ -11,12 +11,12 @@ const PROPERTY_TYPES: Array<{
   labelHi: string;
   labelEn: string;
 }> = [
-  { value: "COMMERCIAL_SHOP", labelHi: "व्यावसायिक दुकान (Commercial Shop)", labelEn: "Commercial Shop" },
-  { value: "ROADSIDE_STALL", labelHi: "सड़क किनारे स्टॉल (Roadside Stall)", labelEn: "Roadside Stall" },
-  { value: "WAREHOUSE_GODOWN", labelHi: "गोदाम / वेयरहाउस (Warehouse / Godown)", labelEn: "Warehouse / Godown" },
-  { value: "LAND_PARCEL", labelHi: "भूखंड / जमीन (Land Parcel)", labelEn: "Land Parcel" },
-  { value: "OFFICE_SPACE", labelHi: "कार्यालय स्थान (Office Space)", labelEn: "Office Space" },
-  { value: "OTHER", labelHi: "अन्य (Other)", labelEn: "Other" },
+  { value: "COMMERCIAL_SHOP", labelHi: "व्यावसायिक दुकान ", labelEn: "Commercial Shop" },
+  { value: "ROADSIDE_STALL", labelHi: "सड़क किनारे स्टॉल ", labelEn: "Roadside Stall" },
+  { value: "WAREHOUSE_GODOWN", labelHi: "गोदाम / वेयरहाउस", labelEn: "Warehouse / Godown" },
+  { value: "LAND_PARCEL", labelHi: "भूखंड", labelEn: "Land" },
+  { value: "OFFICE_SPACE", labelHi: "कार्यालय ", labelEn: "Office Space" },
+  { value: "OTHER", labelHi: "अन्य", labelEn: "Other" },
 ];
 
 const IC = "w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 bg-white transition";
@@ -111,9 +111,8 @@ export const RegisterPropertyPage = () => {
 
   return (
     <AdminLayout
-      title={isHi ? "नई दुकान / संपत्ति पंजीकृत करें" : "Register New Shop / Property"}
-      subtitle={isHi ? "जिला पंचायत अल्मोड़ा — संपत्ति रजिस्टर" : "Zila Panchayat Almora — Property Register"}
-      breadcrumbs={[{ label: isHi ? "संपत्ति प्रबंधन" : "Property Management", to: "/rental/admin/properties" }, { label: isHi ? "नई संपत्ति पंजीकृत करें" : "Register New Property" }]}
+      title={isHi ? "संपत्ति पंजीकृत करें" : "Register New Shop"}
+    
     >
       <div className="max-w-2xl mx-auto">
         <div className="flex items-center gap-3 mb-6">
@@ -122,7 +121,6 @@ export const RegisterPropertyPage = () => {
           </NavLink>
           <div>
             <h1 className="text-lg font-extrabold text-slate-900 leading-tight">{isHi ? "नई दुकान / परिसंपत्ति पंजीकृत करें" : "Register New Shop / Property"}</h1>
-            <p className="text-xs text-slate-500 mt-0.5">{isHi ? "जिला पंचायत अल्मोड़ा — संपत्ति रजिस्टर" : "Zila Panchayat Almora — Property Register"}</p>
           </div>
         </div>
 
@@ -143,7 +141,7 @@ export const RegisterPropertyPage = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-700">
-                  {isHi ? "संपत्ति / दुकान का नाम *" : "Property / Shop Name *"}
+                  {isHi ? "संपत्ति / दुकान का नाम" : "Property / Shop Name"}
                 </label>
                 {transliterating === "propertyName" ? (
                   <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
@@ -156,7 +154,7 @@ export const RegisterPropertyPage = () => {
                     className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     title="English नाम को हिंदी में बदलने के लिए क्लिक करें"
                   >
-                    <span>🌐 अ ऑटो-हिंदी</span>
+                    <span>🌐</span>
                   </button>
                 )}
               </div>
@@ -166,19 +164,17 @@ export const RegisterPropertyPage = () => {
                 value={form.propertyName}
                 onChange={(e) => set("propertyName", e.target.value)}
                 onBlur={() => handleAutoTransliterate("propertyName", form.propertyName)}
-                placeholder={isHi ? "उदा. Shop No. 12, Mall Road (English लिखने पर स्वतः हिंदी)" : "e.g., Shop No. 12, Ground Floor, Mall Road"}
                 className={IC}
               />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "दुकान / संपत्ति संख्या (कोड) *" : "Property Number / Code *"}</label>
-                <input type="text" required value={form.propertyNumber} onChange={(e) => set("propertyNumber", e.target.value.toUpperCase())} placeholder="e.g., SHOP-12" className={`${IC} font-mono uppercase`} />
-                <p className="text-[10px] text-slate-400 mt-1">{isHi ? "* यह कोड आवंटन में उपयोग होगा" : "* This code is used in allotment records"}</p>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "संपत्ति संख्या / कोड " : "Property Number / Code "}</label>
+                <input type="text" required value={form.propertyNumber} onChange={(e) => set("propertyNumber", e.target.value.toUpperCase())} className={`${IC} font-mono uppercase`} />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "संपत्ति का प्रकार *" : "Property Type *"}</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "संपत्ति का प्रकार" : "Property Type "}</label>
                 <select value={form.propertyType} onChange={(e) => set("propertyType", e.target.value as CreatePropertyInput["propertyType"])} className={IC}>
                   {PROPERTY_TYPES.map((pt) => <option key={pt.value} value={pt.value}>{isHi ? pt.labelHi : pt.labelEn}</option>)}
                 </select>
@@ -189,7 +185,7 @@ export const RegisterPropertyPage = () => {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="block text-xs font-bold text-slate-700">
-                    {isHi ? "स्थान / बाजार का नाम *" : "Location / Market Name *"}
+                    {isHi ? "स्थान" : "Location"}
                   </label>
                   {transliterating === "location" ? (
                     <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
@@ -202,7 +198,7 @@ export const RegisterPropertyPage = () => {
                       className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
                       title="English स्थान को हिंदी में बदलने के लिए क्लिक करें"
                     >
-                      <span>🌐 अ</span>
+                      <span>🌐</span>
                     </button>
                   )}
                 </div>
@@ -212,12 +208,12 @@ export const RegisterPropertyPage = () => {
                   value={form.location}
                   onChange={(e) => set("location", e.target.value)}
                   onBlur={() => handleAutoTransliterate("location", form.location)}
-                  placeholder={isHi ? "उदा. Mall Road, Almora" : "e.g., Mall Road, Almora"}
+                  placeholder={isHi ? "e.g, कोसी" : "e.g, Kosi"}
                   className={IC}
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "क्षेत्रफल (वर्ग फुट — वैकल्पिक)" : "Area in Sq. Ft (Optional)"}</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "क्षेत्रफल वर्ग फुट (वैकल्पिक)" : "Area in Sq. Ft (Optional)"}</label>
                 <input type="number" min={0} value={form.dimensionsSqft ?? ""} onChange={(e) => set("dimensionsSqft", e.target.value ? Number(e.target.value) : undefined)} placeholder="e.g., 120" className={`${IC} font-mono`} />
               </div>
             </div>
@@ -225,7 +221,7 @@ export const RegisterPropertyPage = () => {
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="block text-xs font-bold text-slate-700">
-                  {isHi ? "पूरा पता (विस्तृत) *" : "Detailed Address *"}
+                  {isHi ? "पूरा पता" : "Detailed Address "}
                 </label>
                 {transliterating === "address" ? (
                   <span className="text-[10px] text-amber-600 font-bold animate-pulse flex items-center gap-1">
@@ -238,7 +234,7 @@ export const RegisterPropertyPage = () => {
                     className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
                     title="English पते को हिंदी में बदलने के लिए क्लिक करें"
                   >
-                    <span>🌐 अ ऑटो-हिंदी</span>
+                    <span>🌐</span>
                   </button>
                 )}
               </div>
@@ -248,18 +244,16 @@ export const RegisterPropertyPage = () => {
                 value={form.address}
                 onChange={(e) => set("address", e.target.value)}
                 onBlur={() => handleAutoTransliterate("address", form.address)}
-                placeholder={isHi ? "उदा. Near Gandhi Chowk, Mall Road, Almora (English लिखने पर स्वतः हिंदी)" : "e.g., Near Gandhi Chowk, Mall Road, Almora, Uttarakhand — 263601"}
                 className={IC}
               />
             </div>
 
             <div className="max-w-xs">
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "आधार मासिक किराया (₹/माह) *" : "Base Monthly Rent (₹/month) *"}</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1.5">{isHi ? "आधार मासिक किराया (₹/माह)" : "Base Monthly Rent (₹/month)"}</label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-sm select-none">₹</span>
                 <input type="number" required min={1} value={form.baseMonthlyRent || ""} onChange={(e) => set("baseMonthlyRent", Number(e.target.value))} placeholder="2500" className={`${IC} pl-8 font-mono font-semibold`} />
               </div>
-              <p className="text-[10px] text-slate-400 mt-1">{isHi ? "* यह आवंटन के समय डिफ़ॉल्ट किराया होगा" : "* This will be the default rent at time of allotment"}</p>
             </div>
           </div>
 
@@ -270,10 +264,6 @@ export const RegisterPropertyPage = () => {
             </button>
           </div>
         </form>
-
-        <p className="text-[10px] text-center text-slate-400 mt-5 leading-relaxed">
-          {isHi ? "यह रिकॉर्ड जिला पंचायत अल्मोड़ा के संपत्ति रजिस्टर में स्थायी रूप से दर्ज होगा। कृपया सभी जानकारी सत्यापित करके ही सबमिट करें।" : "This record will be permanently entered into the Zila Panchayat Almora property register. Please verify all details before submission."}
-        </p>
       </div>
     </AdminLayout>
   );

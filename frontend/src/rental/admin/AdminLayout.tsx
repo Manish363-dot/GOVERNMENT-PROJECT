@@ -13,7 +13,6 @@ import {
   Bell,
   LogOut,
   UserPlus,
-  ChevronRight,
   ClipboardList,
   FileSpreadsheet,
   BookOpen,
@@ -297,68 +296,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </aside>
 
         {/* ───────────────────────────────────────────────────────────────────────
-            MAIN VIEWPORT (Page Content + Sub-Footer)
+            MAIN VIEWPORT (Page Content)
         ──────────────────────────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0">
-
-          {/* Breadcrumbs & Section Title Header Strip */}
-          {!hideHeader && (
-            <div className="bg-white border-b border-slate-200/90 px-4 sm:px-8 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
-              <div>
-                {!hideBreadcrumbs && (
-                  <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-0.5">
-                    <NavLink
-                      to="/rental/admin/dashboard"
-                      className="font-semibold text-slate-700 hover:text-amber-600 transition"
-                    >
-                      {isHi ? 'जिला पंचायत अल्मोड़ा' : 'Zila Panchayat Almora'}
-                    </NavLink>
-                    <ChevronRight className="w-3 h-3 text-slate-400" />
-                    <span className="text-slate-600 font-medium">
-                      {isHi ? 'वाणिज्यिक किराया प्रशासन' : 'Rental Admin'}
-                    </span>
-                    {breadcrumbs?.map((b, idx) => (
-                      <React.Fragment key={idx}>
-                        <ChevronRight className="w-3 h-3 text-slate-400" />
-                        {b.to ? (
-                          <NavLink to={b.to} className="hover:text-amber-600 font-medium">
-                            {b.label}
-                          </NavLink>
-                        ) : (
-                          <span className="text-slate-900 font-bold">{b.label}</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                )}
-                <h1 className="text-base sm:text-lg font-extrabold text-[#0b1b36] tracking-tight">
-                  {title}
-                </h1>
-              </div>
-            </div>
-          )}
 
           {/* Main Content Area */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
             {children}
           </main>
-
-          {/* Sub-Footer */}
-          {!hideFooter && (
-            <footer className="bg-white border-t border-slate-200 py-3.5 px-6 text-xs text-slate-600 flex flex-col sm:flex-row items-center justify-between gap-2 mt-auto">
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-                <span>
-                  {isHi
-                    ? 'कार्यालय जिला पंचायत अल्मोड़ा — वाणिज्यिक किराया नियंत्रण एवं राजस्व पोर्टल (उत्तराखंड शासन)'
-                    : 'Office of Zila Panchayat Almora — Commercial Rental Management & Revenue System (Govt. of Uttarakhand)'}
-                </span>
-              </div>
-              <div className="font-mono text-[11px] text-slate-500">
-                {isHi ? 'अधिकृत शासकीय प्रशासन' : 'Official Administration'} • 2026
-              </div>
-            </footer>
-          )}
         </div>
       </div>
     </div>

@@ -114,4 +114,7 @@ export const rentalPropertyApi = {
 
   getRentHistory: (id: string) =>
     api.get<{ success: boolean; data: RentHistoryEntry[] }>(`/rental/properties/${id}/rent-history`),
+
+  deleteProperty: (id: string) =>
+    api.delete<{ success: boolean; data: any; message: string }>(`/rental/properties/${id}`),
 };

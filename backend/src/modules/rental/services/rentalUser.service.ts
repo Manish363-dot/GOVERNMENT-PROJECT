@@ -721,6 +721,18 @@ export class RentalUserService {
             verification_status: 'PENDING' as const,
           });
         }
+        if (files?.shopPhoto) {
+          docsToCreate.push({
+            user_id: user.id,
+            doc_type: 'OTHER' as const,
+            file_url: files.shopPhoto.location,
+            s3_key: files.shopPhoto.key,
+            file_name: files.shopPhoto.originalname || 'Shop_Photo.webp',
+            file_size: files.shopPhoto.size,
+            mime_type: files.shopPhoto.mimetype,
+            verification_status: 'PENDING' as const,
+          });
+        }
 
         if (docsToCreate.length > 0) {
           await tx.rentalUserDocument.createMany({
