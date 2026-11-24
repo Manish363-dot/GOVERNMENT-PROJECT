@@ -249,9 +249,9 @@ export const CollectRentPage: React.FC = () => {
           </div>
         ) : paymentStage === 'receipt' && recordedResult ? (
           /* ════════ STAGE 2: BADGE SLIDES UP TO TOP BANNER + RECEIPT REVEALS FROM UNDERNEATH ════════ */
-          <div className="space-y-6">
-            {/* Sleek Top Banner (Badge has moved up to top) */}
-            <div className="no-print bg-emerald-50/90 border border-emerald-300/80 rounded-xl p-3.5 sm:p-4 flex items-center justify-between shadow-xs transition-all duration-700 ease-out animate-in fade-in slide-in-from-top-4">
+          <div className="space-y-4">
+            {/* Sleek Top Banner (Aligned to Receipt Width) */}
+            <div className="max-w-2xl mx-auto no-print bg-emerald-50/90 border border-emerald-300/80 rounded-lg px-4 py-3 flex items-center justify-between shadow-2xs transition-all duration-700 ease-out animate-in fade-in slide-in-from-top-4">
               <div className="flex items-center gap-3.5">
                 <PaymentSuccessIllustration size={46} className="shrink-0" />
                 <div>
