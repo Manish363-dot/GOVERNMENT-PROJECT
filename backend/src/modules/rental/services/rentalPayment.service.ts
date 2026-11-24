@@ -176,10 +176,23 @@ export class RentalPaymentService {
           },
         });
 
-        // 3. Issue Official Sequential Municipal Receipt
-        const totalReceipts = await tx.rentalReceipt.count();
-        const currentYear = new Date().getFullYear();
-        const receiptNumber = `ZPA-REC-${currentYear}-${(totalReceipts + 1).toString().padStart(5, '0')}`;
+        // 3. Issue Official Sequential Municipal Receipt (Sequential +1)
+        const latestReceipt = await tx.rentalReceipt.findFirst({
+          orderBy: { issued_at: 'desc' },
+          select: { receipt_number: true },
+        });
+
+        let nextReceiptNum = 286480;
+        if (latestReceipt?.receipt_number) {
+          const parsed = parseInt(latestReceipt.receipt_number.replace(/\D/g, ''), 10);
+          if (!isNaN(parsed) && parsed >= 100) {
+            nextReceiptNum = parsed + 1;
+          } else {
+            const totalReceipts = await tx.rentalReceipt.count();
+            nextReceiptNum = 286480 + totalReceipts + 1;
+          }
+        }
+        const receiptNumber = String(nextReceiptNum);
 
         const receipt = await tx.rentalReceipt.create({
           data: {
@@ -318,10 +331,23 @@ export class RentalPaymentService {
           },
         });
 
-        // 3. Generate Official Numbered Receipt
-        const totalReceipts = await tx.rentalReceipt.count();
-        const currentYear = new Date().getFullYear();
-        const receiptNumber = `ZPA-REC-${currentYear}-${(totalReceipts + 1).toString().padStart(5, '0')}`;
+        // 3. Generate Official Numbered Receipt (Sequential +1)
+        const latestReceipt = await tx.rentalReceipt.findFirst({
+          orderBy: { issued_at: 'desc' },
+          select: { receipt_number: true },
+        });
+
+        let nextReceiptNum = 286480;
+        if (latestReceipt?.receipt_number) {
+          const parsed = parseInt(latestReceipt.receipt_number.replace(/\D/g, ''), 10);
+          if (!isNaN(parsed) && parsed >= 100) {
+            nextReceiptNum = parsed + 1;
+          } else {
+            const totalReceipts = await tx.rentalReceipt.count();
+            nextReceiptNum = 286480 + totalReceipts + 1;
+          }
+        }
+        const receiptNumber = String(nextReceiptNum);
 
         const receipt = await tx.rentalReceipt.create({
           data: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { AdminLayout } from './AdminLayout';
 import { useLanguage } from '../context/LanguageContext';
@@ -37,6 +37,7 @@ import {
 } from 'lucide-react';
 
 export const RentLedgerPage: React.FC = () => {
+  const navigate = useNavigate();
   const { language } = useLanguage();
   const isHi = language === 'hi';
   const [searchParams, setSearchParams] = useSearchParams();
@@ -1322,6 +1323,7 @@ export const RentLedgerPage: React.FC = () => {
                             <th className="py-2.5 px-3 text-right">{isHi ? 'शेष बकाया (₹)' : 'Balance Due'}</th>
                             <th className="py-2.5 px-3">{isHi ? 'अंतिम देय तिथि' : 'Due Date'}</th>
                             <th className="py-2.5 px-3 text-center">{isHi ? 'स्थिति' : 'Status'}</th>
+                            <th className="py-2.5 px-3 text-center">{isHi ? 'कार्यवाही' : 'Action'}</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 font-mono">
@@ -1342,6 +1344,20 @@ export const RentLedgerPage: React.FC = () => {
                                 }`}>
                                   {b.status}
                                 </span>
+                              </td>
+                              <td className="py-2.5 px-3 text-center font-sans">
+                                {b.balanceDue > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/rental/admin/collect-rent/${b.id}`)}
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[11px] font-bold transition shadow-2xs cursor-pointer"
+                                  >
+                                    <Receipt className="w-3 h-3" />
+                                    <span>{isHi ? 'किराया जमा करें' : 'Pay'}</span>
+                                  </button>
+                                ) : (
+                                  <span className="text-[11px] font-bold text-emerald-700">✓ {isHi ? 'पूर्ण' : 'Paid'}</span>
+                                )}
                               </td>
                             </tr>
                           ))}

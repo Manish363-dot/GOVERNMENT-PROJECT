@@ -51,22 +51,11 @@ export const BillingManagementPage: React.FC = () => {
 
   // Modals state
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
-  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
-  const [isCounterModalOpen, setIsCounterModalOpen] = useState(false);
-  const [selectedBill, setSelectedBill] = useState<BillListItem | null>(null);
 
   // Generate Bills Form
   const currentMonthStr = new Date().toISOString().slice(0, 7); // "YYYY-MM"
   const [generateMonth, setGenerateMonth] = useState(currentMonthStr);
   const [generating, setGenerating] = useState(false);
-
-  // Counter Payment Form
-  const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS'>('CASH');
-  const [referenceNumber, setReferenceNumber] = useState('');
-  const [remarks, setRemarks] = useState('');
-  const [submittingPayment, setSubmittingPayment] = useState(false);
-  const [issuedReceipt, setIssuedReceipt] = useState<any | null>(null);
 
   // Tenant Counter Search & Selection State
   const [tenantSearchQuery, setTenantSearchQuery] = useState('');
@@ -116,45 +105,7 @@ export const BillingManagementPage: React.FC = () => {
     }
   };
 
-  const handleOpenCounterModal = (bill: BillListItem) => {
-    setSelectedBill(bill);
-    setPaymentAmount(bill.balanceDue);
-    setPaymentMethod('CASH');
-    setReferenceNumber('');
-    setRemarks('');
-    setIssuedReceipt(null);
-    setIsCounterModalOpen(true);
-  };
 
-  const handleRecordCounterPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedBill) return;
-    setSubmittingPayment(true);
-    setError('');
-    try {
-      const res = await rentalPaymentApi.recordCounterPayment({
-        billId: selectedBill.id,
-        amount: paymentAmount,
-        paymentMethod,
-        referenceNumber: referenceNumber || undefined,
-        remarks: remarks || undefined,
-      });
-      setIssuedReceipt(res.data);
-      setSuccessMsg(
-        isHi
-          ? `भुगतान सफलतापूर्वक दर्ज किया गया! रसीद संख्या: ${res.data.receiptNumber}`
-          : `Payment recorded successfully! Official Receipt: ${res.data.receiptNumber}`
-      );
-      fetchBills();
-      if (selectedTenant) {
-        refreshSelectedTenantBills(selectedTenant.id);
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to process counter payment.');
-    } finally {
-      setSubmittingPayment(false);
-    }
-  };
 
   const handleSearchTenants = async (q: string) => {
     setTenantSearchQuery(q);
@@ -197,9 +148,9 @@ export const BillingManagementPage: React.FC = () => {
         setSelectedTenant((prev) =>
           prev
             ? {
-                ...prev,
-                outstandingBalance: updatedTenant.data.outstanding_balance ?? prev.outstandingBalance,
-              }
+              ...prev,
+              outstandingBalance: updatedTenant.data.outstanding_balance ?? prev.outstandingBalance,
+            }
             : null
         );
       }
@@ -216,8 +167,7 @@ export const BillingManagementPage: React.FC = () => {
   };
 
   const handleOpenInvoiceModal = (bill: BillListItem) => {
-    setSelectedBill(bill);
-    setIsInvoiceModalOpen(true);
+    navigate(`/rental/admin/demand-challan/${bill.id}`);
   };
 
   const handlePrint = () => {
@@ -343,15 +293,11 @@ export const BillingManagementPage: React.FC = () => {
         <div className="bg-white rounded-2xl border-2 border-indigo-200/90 shadow-sm overflow-hidden">
           <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 p-4 sm:p-5 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-400 shrink-0">
-                <Receipt className="w-5 h-5" />
-              </div>
+
               <div>
                 <h3 className="text-base font-extrabold tracking-wide flex items-center gap-2">
                   <span>{isHi ? 'कार्यालय काउंटर किराया वसूली' : 'Office Counter Rent Collection'}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                    {isHi ? 'प्रत्यक्ष जमा' : 'Counter Pay'}
-                  </span>
+
                 </h3>
                 <p className="text-xs text-slate-300 mt-0.5">
                   {isHi
@@ -572,7 +518,7 @@ export const BillingManagementPage: React.FC = () => {
                                 <td className="py-3 px-4 whitespace-nowrap">
                                   <div className="font-bold text-slate-900 font-mono">₹{b.totalAmountDue.toLocaleString('en-IN')}</div>
                                   <div className="text-[10px] text-slate-400">
-                                    Rent: ₹{b.rentAmount.toLocaleString('en-IN')}{b.arrearsAmount > 0 ? ` + Arr: ₹${b.arrearsAmount.toLocaleString('en-IN')}` : ''}
+                                    {isHi ? 'किराया:' : 'Rent:'} ₹{b.rentAmount.toLocaleString('en-IN')}{b.arrearsAmount > 0 ? ` + ${isHi ? 'बकाया:' : 'Arr:'} ₹${b.arrearsAmount.toLocaleString('en-IN')}` : ''}
                                   </div>
                                 </td>
 
@@ -591,30 +537,37 @@ export const BillingManagementPage: React.FC = () => {
                                 </td>
 
                                 <td className="py-3 px-4 text-center whitespace-nowrap">
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
-                                      b.status === 'PAID'
-                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                        : b.status === 'PARTIALLY_PAID'
-                                          ? 'bg-blue-100 text-blue-800 border border-blue-300'
-                                          : b.status === 'OVERDUE'
-                                            ? 'bg-red-100 text-red-800 border border-red-300'
-                                            : 'bg-amber-100 text-amber-800 border border-amber-300'
-                                    }`}
+                                  <button
+                                    type="button"
+                                    onClick={() => navigate(`/rental/admin/demand-challan/${b.id}`)}
+                                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold cursor-pointer transition hover:opacity-85 ${b.status === 'PAID'
+                                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                      : b.status === 'PARTIALLY_PAID'
+                                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                                        : b.status === 'OVERDUE'
+                                          ? 'bg-red-100 text-red-800 border border-red-300'
+                                          : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                      }`}
+                                    title={isHi ? 'मांग चालान एवं स्थिति देखें' : 'View Demand Challan'}
                                   >
                                     <span
-                                      className={`w-1.5 h-1.5 rounded-full ${
-                                        b.status === 'PAID'
-                                          ? 'bg-emerald-600'
-                                          : b.status === 'PARTIALLY_PAID'
-                                            ? 'bg-blue-600'
-                                            : b.status === 'OVERDUE'
-                                              ? 'bg-red-600'
-                                              : 'bg-amber-600'
-                                      }`}
+                                      className={`w-1.5 h-1.5 rounded-full ${b.status === 'PAID'
+                                        ? 'bg-emerald-600'
+                                        : b.status === 'PARTIALLY_PAID'
+                                          ? 'bg-blue-600'
+                                          : b.status === 'OVERDUE'
+                                            ? 'bg-red-600'
+                                            : 'bg-amber-600'
+                                        }`}
                                     />
-                                    {b.status}
-                                  </span>
+                                    {b.status === 'PAID'
+                                      ? (isHi ? 'पूर्ण चुकता' : 'PAID')
+                                      : b.status === 'PARTIALLY_PAID'
+                                        ? (isHi ? 'आंशिक भुगतान' : 'PARTIALLY PAID')
+                                        : b.status === 'OVERDUE'
+                                          ? (isHi ? 'अतिदेय' : 'OVERDUE')
+                                          : (isHi ? 'लंबित' : 'PENDING')}
+                                  </button>
                                 </td>
 
                                 <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
@@ -630,7 +583,7 @@ export const BillingManagementPage: React.FC = () => {
                                   {b.balanceDue > 0 ? (
                                     <button
                                       type="button"
-                                      onClick={() => handleOpenCounterModal(b)}
+                                      onClick={() => navigate(`/rental/admin/collect-rent/${b.id}`)}
                                       className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
                                     >
                                       <Receipt className="w-3.5 h-3.5" />
@@ -785,10 +738,17 @@ export const BillingManagementPage: React.FC = () => {
                   {bills.map((bill) => (
                     <tr key={bill.id} className="hover:bg-slate-50/80 transition">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-indigo-700">{bill.billNumber}</div>
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/rental/admin/demand-challan/${bill.id}`)}
+                          className="text-sm font-bold text-indigo-700 hover:text-indigo-900 hover:underline cursor-pointer text-left block"
+                          title={isHi ? 'मांग चालान एवं स्थिति देखें' : 'View Demand Challan'}
+                        >
+                          {bill.billNumber}
+                        </button>
                         <div className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1">
                           <Calendar className="w-3 h-3 text-slate-400" />
-                          {bill.billingMonth} • Due: {new Date(bill.dueDate).toLocaleDateString()}
+                          {bill.billingMonth} • {isHi ? 'अंतिम तिथि:' : 'Due:'} {new Date(bill.dueDate).toLocaleDateString()}
                         </div>
                       </td>
 
@@ -804,10 +764,10 @@ export const BillingManagementPage: React.FC = () => {
                           ₹{bill.totalAmountDue.toLocaleString('en-IN')}
                         </div>
                         <div className="text-[11px] text-slate-500">
-                          Rent: ₹{bill.rentAmount.toLocaleString('en-IN')}{' '}
+                          {isHi ? 'किराया:' : 'Rent:'} ₹{bill.rentAmount.toLocaleString('en-IN')}{' '}
                           {bill.arrearsAmount > 0 && (
                             <span className="text-amber-600 font-semibold">
-                              + Arrears: ₹{bill.arrearsAmount.toLocaleString('en-IN')}
+                              + {isHi ? 'बकाया:' : 'Arrears:'} ₹{bill.arrearsAmount.toLocaleString('en-IN')}
                             </span>
                           )}
                         </div>
@@ -821,13 +781,15 @@ export const BillingManagementPage: React.FC = () => {
                           className={`text-xs font-semibold ${bill.balanceDue > 0 ? 'text-red-600' : 'text-slate-400'
                             }`}
                         >
-                          Due: ₹{bill.balanceDue.toLocaleString('en-IN')}
+                          {isHi ? 'देय:' : 'Due:'} ₹{bill.balanceDue.toLocaleString('en-IN')}
                         </div>
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${bill.status === 'PAID'
+                        <button
+                          type="button"
+                          onClick={() => navigate(`/rental/admin/demand-challan/${bill.id}`)}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer transition hover:opacity-85 ${bill.status === 'PAID'
                             ? 'bg-emerald-100 text-emerald-800'
                             : bill.status === 'PARTIALLY_PAID'
                               ? 'bg-blue-100 text-blue-800'
@@ -835,6 +797,7 @@ export const BillingManagementPage: React.FC = () => {
                                 ? 'bg-red-100 text-red-800'
                                 : 'bg-amber-100 text-amber-800'
                             }`}
+                          title={isHi ? 'मांग चालान एवं स्थिति देखें' : 'View Status Challan'}
                         >
                           <span
                             className={`w-1.5 h-1.5 rounded-full ${bill.status === 'PAID'
@@ -846,8 +809,14 @@ export const BillingManagementPage: React.FC = () => {
                                   : 'bg-amber-600'
                               }`}
                           />
-                          {bill.status}
-                        </span>
+                          {bill.status === 'PAID'
+                            ? (isHi ? 'पूर्ण चुकता' : 'PAID')
+                            : bill.status === 'PARTIALLY_PAID'
+                              ? (isHi ? 'आंशिक भुगतान' : 'PARTIALLY PAID')
+                              : bill.status === 'OVERDUE'
+                                ? (isHi ? 'अतिदेय' : 'OVERDUE')
+                                : (isHi ? 'लंबित' : 'PENDING')}
+                        </button>
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
@@ -862,8 +831,8 @@ export const BillingManagementPage: React.FC = () => {
 
                           {bill.balanceDue > 0 && (
                             <button
-                              onClick={() => handleOpenCounterModal(bill)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition shadow-xs"
+                              onClick={() => navigate(`/rental/admin/collect-rent/${bill.id}`)}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition shadow-xs cursor-pointer"
                             >
                               <Receipt className="w-3.5 h-3.5" />
                               {isHi ? 'वसूली दर्ज करें' : 'Accept Payment'}
@@ -949,289 +918,7 @@ export const BillingManagementPage: React.FC = () => {
           </div>
         )}
 
-        {/* Modal 2: Official Invoice View */}
-        {isInvoiceModalOpen && selectedBill && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b pb-3">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-indigo-600" />
-                  {isHi ? 'सरकारी किराया चालान / बिल' : 'Commercial Rent Invoice'}
-                </h3>
-                <button
-                  onClick={() => setIsInvoiceModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 font-bold text-xl"
-                >
-                  ×
-                </button>
-              </div>
 
-              {/* Printable Invoice Container */}
-              <div id="printable-invoice" className="p-4 bg-slate-50 border rounded-xl text-xs space-y-4">
-                <div className="text-center border-b pb-3">
-                  <h4 className="text-sm font-extrabold text-slate-900 uppercase tracking-wide">
-                    {isHi ? 'कार्यालय जिला पंचायत अल्मोड़ा, उत्तराखण्ड' : 'Office of Zila Panchayat Almora, Uttarakhand'}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {isHi ? 'व्यावसायिक किराया मांग पत्र (Demand Bill)' : 'Commercial Rent Demand Bill & Receipt'}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div>
-                    <span className="text-slate-400">Bill Number:</span>{' '}
-                    <span className="font-bold text-indigo-700">{selectedBill.billNumber}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-400">Billing Month:</span>{' '}
-                    <span className="font-bold text-slate-800">{selectedBill.billingMonth}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400">Tenant Name:</span>{' '}
-                    <span className="font-semibold text-slate-800">{selectedBill.tenant.fullName}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-400">Due Date:</span>{' '}
-                    <span className="font-semibold text-slate-800">
-                      {new Date(selectedBill.dueDate).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400">Property:</span>{' '}
-                    <span className="font-semibold text-slate-800">{selectedBill.property.propertyNumber}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-slate-400">Location:</span>{' '}
-                    <span className="font-semibold text-slate-800">{selectedBill.property.location}</span>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg overflow-hidden bg-white">
-                  <table className="w-full divide-y divide-slate-200">
-                    <thead className="bg-slate-100 text-[11px]">
-                      <tr>
-                        <th className="px-3 py-2 text-left font-semibold text-slate-600">Description</th>
-                        <th className="px-3 py-2 text-right font-semibold text-slate-600">Amount (₹)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-200 text-[11px]">
-                      <tr>
-                        <td className="px-3 py-2 text-slate-700">Monthly Commercial Rent</td>
-                        <td className="px-3 py-2 text-right font-bold">
-                          ₹{selectedBill.rentAmount.toLocaleString('en-IN')}
-                        </td>
-                      </tr>
-                      {selectedBill.arrearsAmount > 0 && (
-                        <tr>
-                          <td className="px-3 py-2 text-amber-700">Arrears / Past Unpaid Dues</td>
-                          <td className="px-3 py-2 text-right font-bold text-amber-700">
-                            ₹{selectedBill.arrearsAmount.toLocaleString('en-IN')}
-                          </td>
-                        </tr>
-                      )}
-                      <tr className="bg-slate-50 font-bold">
-                        <td className="px-3 py-2 text-slate-900">Total Amount Payable</td>
-                        <td className="px-3 py-2 text-right text-indigo-700">
-                          ₹{selectedBill.totalAmountDue.toLocaleString('en-IN')}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="px-3 py-2 text-emerald-700">Amount Paid</td>
-                        <td className="px-3 py-2 text-right font-bold text-emerald-700">
-                          ₹{selectedBill.amountPaid.toLocaleString('en-IN')}
-                        </td>
-                      </tr>
-                      <tr className="font-bold">
-                        <td className="px-3 py-2 text-red-600">Net Balance Due</td>
-                        <td className="px-3 py-2 text-right text-red-600">
-                          ₹{selectedBill.balanceDue.toLocaleString('en-IN')}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                {selectedBill.receipts.length > 0 && (
-                  <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100 space-y-1">
-                    <div className="text-[11px] font-bold text-emerald-900">Issued Official Receipts:</div>
-                    {selectedBill.receipts.map((r) => (
-                      <div key={r.id} className="flex justify-between text-[11px] text-emerald-800">
-                        <span>Receipt No: {r.receiptNumber}</span>
-                        <span>
-                          ₹{r.amountPaid.toLocaleString('en-IN')} ({new Date(r.issuedAt).toLocaleDateString()})
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="flex justify-end gap-3 pt-3 border-t">
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
-                >
-                  <Printer className="w-4 h-4" />
-                  {isHi ? 'प्रिंट करें' : 'Print Invoice'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsInvoiceModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium bg-indigo-700 hover:bg-indigo-800 text-white rounded-lg transition"
-                >
-                  {isHi ? 'बंद करें' : 'Close'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Modal 3: Accept Counter Payment */}
-        {isCounterModalOpen && selectedBill && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-              <div className="flex items-center justify-between border-b pb-3">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-emerald-600" />
-                  {isHi ? 'कार्यालय काउंटर वसूली एवं रसीद जारी करें' : 'Accept Office Counter Payment'}
-                </h3>
-                <button
-                  onClick={() => setIsCounterModalOpen(false)}
-                  className="text-slate-400 hover:text-slate-600 font-bold text-xl"
-                >
-                  ×
-                </button>
-              </div>
-
-              {issuedReceipt ? (
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-center space-y-3">
-                  <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-7 h-7" />
-                  </div>
-                  <div>
-                    <h4 className="text-base font-bold text-emerald-900">
-                      {isHi ? 'भुगतान सफलतापूर्वक प्राप्त हुआ!' : 'Payment Recorded Successfully!'}
-                    </h4>
-                    <p className="text-xs text-emerald-700 mt-1">
-                      {isHi ? 'सरकारी रसीद संख्या:' : 'Official Municipal Receipt No:'}{' '}
-                      <span className="font-mono font-bold text-emerald-950 text-sm">
-                        {issuedReceipt.receiptNumber}
-                      </span>
-                    </p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Amount: ₹{issuedReceipt.amountPaid} • Remaining Balance: ₹{issuedReceipt.remainingBalance}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsCounterModalOpen(false);
-                      setIssuedReceipt(null);
-                    }}
-                    className="px-5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-sm font-semibold transition"
-                  >
-                    {isHi ? 'पूर्ण हुआ' : 'Done'}
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleRecordCounterPayment} className="space-y-4">
-                  <div className="p-3 bg-slate-50 rounded-lg border text-xs space-y-1">
-                    <div className="font-bold text-slate-900">
-                      {selectedBill.billNumber} • {selectedBill.tenant.fullName}
-                    </div>
-                    <div className="text-slate-500">
-                      Shop: {selectedBill.property.propertyNumber} ({selectedBill.property.location})
-                    </div>
-                    <div className="text-slate-700 font-medium">
-                      Current Outstanding: <span className="font-bold text-red-600">₹{selectedBill.balanceDue}</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        {isHi ? 'प्राप्त राशि (₹) *' : 'Amount Received (₹) *'}
-                      </label>
-                      <input
-                        type="number"
-                        required
-                        min="1"
-                        max={selectedBill.balanceDue}
-                        value={paymentAmount}
-                        onChange={(e) => setPaymentAmount(Number(e.target.value))}
-                        className="w-full px-3 py-2 border rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
-                        {isHi ? 'भुगतान का माध्यम *' : 'Payment Mode *'}
-                      </label>
-                      <select
-                        value={paymentMethod}
-                        onChange={(e) => setPaymentMethod(e.target.value as any)}
-                        className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
-                      >
-                        <option value="CASH">Cash (नकद)</option>
-                        <option value="CHEQUE_DD">Cheque / Demand Draft</option>
-                        <option value="POS_MACHINE">POS Machine (Card Swipe)</option>
-                        <option value="NEFT_RTGS">Direct Bank Transfer / NEFT</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'चेक संख्या / बैंक संदर्भ (वैकल्पिक)' : 'Cheque No. / Transaction Ref'}
-                    </label>
-                    <input
-                      type="text"
-                      value={referenceNumber}
-                      onChange={(e) => setReferenceNumber(e.target.value)}
-                      placeholder="e.g., CHQ-928312 or SBI-TXN-10294"
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'कार्यालयीय टिप्पणी' : 'Officer Remarks'}
-                    </label>
-                    <input
-                      type="text"
-                      value={remarks}
-                      onChange={(e) => setRemarks(e.target.value)}
-                      placeholder="e.g., Deposited at Almora main counter"
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-emerald-500"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-3 border-t">
-                    <button
-                      type="button"
-                      onClick={() => setIsCounterModalOpen(false)}
-                      className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg"
-                    >
-                      {isHi ? 'रद्द करें' : 'Cancel'}
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={submittingPayment}
-                      className="px-5 py-2 text-sm font-semibold bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition disabled:opacity-50"
-                    >
-                      {submittingPayment
-                        ? isHi
-                          ? 'दर्ज कर रहे हैं...'
-                          : 'Processing...'
-                        : isHi
-                          ? 'वसूली दर्ज करें एवं रसीद दें'
-                          : 'Record & Issue Receipt'}
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
       </div>
     </AdminLayout>
   );

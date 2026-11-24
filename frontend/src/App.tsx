@@ -59,6 +59,8 @@ const TenantListPage = lazy(() => import('@/rental/admin/TenantListPage').then(m
 const TenantProfilePage = lazy(() => import('@/rental/admin/TenantProfilePage').then(m => ({ default: m.TenantProfilePage })));
 const PropertyManagementPage = lazy(() => import('@/rental/admin/PropertyManagementPage').then(m => ({ default: m.PropertyManagementPage })));
 const BillingManagementPage = lazy(() => import('@/rental/admin/BillingManagementPage').then(m => ({ default: m.BillingManagementPage })));
+const CollectRentPage = lazy(() => import('@/rental/admin/CollectRentPage').then(m => ({ default: m.CollectRentPage })));
+const DemandChallanPage = lazy(() => import('@/rental/admin/DemandChallanPage').then(m => ({ default: m.DemandChallanPage })));
 
 // Admin Panel Pages
 const AdminDashboardPage = lazy(() => import('@/rental/admin/AdminDashboardPage').then(m => ({ default: m.AdminDashboardPage })));
@@ -106,127 +108,130 @@ function App() {
           <RouteSEO />
           <Suspense fallback={<PageLoader />}>
             <Routes>
-            {/* Public routes */}
-            <Route element={<PublicLayout />}>
-              {/* Official Zila Panchayat Almora Main Portal */}
-              <Route path="/" element={<HomePage />} />
+              {/* Public routes */}
+              <Route element={<PublicLayout />}>
+                {/* Official Zila Panchayat Almora Main Portal */}
+                <Route path="/" element={<HomePage />} />
 
-              {/* Dedicated Safai & Solid Waste Management Portal */}
-              <Route path="/safai-portal" element={<SafaiPortalPage />} />
-              <Route path="/swm" element={<SafaiPortalPage />} />
-              <Route path="/pledge" element={<SafaiPortalPage />} />
-              <Route path="/swachhata-pledge" element={<SafaiPortalPage />} />
-              <Route path="/daily-work" element={<HomePage />} />
-              <Route path="/dailywork" element={<HomePage />} />
-              <Route path="/waste-protocol" element={<SafaiPortalPage />} />
-              <Route path="/waste-segregation" element={<SafaiPortalPage />} />
+                {/* Dedicated Safai & Solid Waste Management Portal */}
+                <Route path="/safai-portal" element={<SafaiPortalPage />} />
+                <Route path="/swm" element={<SafaiPortalPage />} />
+                <Route path="/pledge" element={<SafaiPortalPage />} />
+                <Route path="/swachhata-pledge" element={<SafaiPortalPage />} />
+                <Route path="/daily-work" element={<HomePage />} />
+                <Route path="/dailywork" element={<HomePage />} />
+                <Route path="/waste-protocol" element={<SafaiPortalPage />} />
+                <Route path="/waste-segregation" element={<SafaiPortalPage />} />
 
-              {/* Official Portal Sub-Pages */}
-              <Route path="/our-initiative" element={<OurInitiativePage />} />
-              <Route path="/initiative" element={<OurInitiativePage />} />
-              <Route path="/vision-mission" element={<VisionMissionPage />} />
-              <Route path="/blocks" element={<AlmoraBlocksPage />} />
-              <Route path="/almora-blocks" element={<AlmoraBlocksPage />} />
-              <Route path="/development-blocks" element={<AlmoraBlocksPage />} />
-              <Route path="/staff-directory" element={<StaffDirectoryPage />} />
-              <Route path="/staff-info" element={<StaffDirectoryPage />} />
-              <Route path="/gallery" element={<MediaGalleryPage />} />
-              <Route path="/media" element={<MediaGalleryPage />} />
-              <Route path="/media-gallery" element={<MediaGalleryPage />} />
-              <Route path="/blogs" element={<MediaGalleryPage />} />
-              <Route path="/terms-of-use" element={<TermsOfUsePage />} />
-              <Route path="/about-website" element={<AboutWebsitePage />} />
-              <Route path="/website-policy" element={<WebsitePolicyPage />} />
-              <Route path="/sitemap" element={<SiteMapPage />} />
-              <Route path="/contact" element={<ContactPage />} />
-              <Route path="/notices" element={<HomePage />} />
-              <Route path="/notices-and-updates" element={<HomePage />} />
-              <Route path="/complaint" element={<ComplaintPage />} />
-              <Route path="/complaints" element={<ComplaintPage />} />
-              <Route path="/complaint/register" element={<ComplaintPage />} />
-              <Route path="/complaints/register" element={<ComplaintPage />} />
-              <Route path="/complaint/track" element={<ComplaintPage />} />
-              <Route path="/complaints/track" element={<ComplaintPage />} />
-              <Route path="/bylaws" element={<CleanlinessBylawsPage />} />
-              <Route path="/cleanliness-bylaws" element={<CleanlinessBylawsPage />} />
-              <Route path="/bylaws/cleanliness" element={<CleanlinessBylawsPage />} />
-              <Route path="/rules" element={<SwmRulesPage />} />
-              <Route path="/swm-rules-2026" element={<SwmRulesPage />} />
-              <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
-              <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
+                {/* Official Portal Sub-Pages */}
+                <Route path="/our-initiative" element={<OurInitiativePage />} />
+                <Route path="/initiative" element={<OurInitiativePage />} />
+                <Route path="/vision-mission" element={<VisionMissionPage />} />
+                <Route path="/blocks" element={<AlmoraBlocksPage />} />
+                <Route path="/almora-blocks" element={<AlmoraBlocksPage />} />
+                <Route path="/development-blocks" element={<AlmoraBlocksPage />} />
+                <Route path="/staff-directory" element={<StaffDirectoryPage />} />
+                <Route path="/staff-info" element={<StaffDirectoryPage />} />
+                <Route path="/gallery" element={<MediaGalleryPage />} />
+                <Route path="/media" element={<MediaGalleryPage />} />
+                <Route path="/media-gallery" element={<MediaGalleryPage />} />
+                <Route path="/blogs" element={<MediaGalleryPage />} />
+                <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+                <Route path="/about-website" element={<AboutWebsitePage />} />
+                <Route path="/website-policy" element={<WebsitePolicyPage />} />
+                <Route path="/sitemap" element={<SiteMapPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/notices" element={<HomePage />} />
+                <Route path="/notices-and-updates" element={<HomePage />} />
+                <Route path="/complaint" element={<ComplaintPage />} />
+                <Route path="/complaints" element={<ComplaintPage />} />
+                <Route path="/complaint/register" element={<ComplaintPage />} />
+                <Route path="/complaints/register" element={<ComplaintPage />} />
+                <Route path="/complaint/track" element={<ComplaintPage />} />
+                <Route path="/complaints/track" element={<ComplaintPage />} />
+                <Route path="/bylaws" element={<CleanlinessBylawsPage />} />
+                <Route path="/cleanliness-bylaws" element={<CleanlinessBylawsPage />} />
+                <Route path="/bylaws/cleanliness" element={<CleanlinessBylawsPage />} />
+                <Route path="/rules" element={<SwmRulesPage />} />
+                <Route path="/swm-rules-2026" element={<SwmRulesPage />} />
+                <Route path="/bylaws/swm-rules-2026" element={<SwmRulesPage />} />
+                <Route path="/bylaws/rules-2026" element={<SwmRulesPage />} />
 
-            </Route>
+              </Route>
 
-            {/* Commercial Asset & Rental Management Platform (Isolated Root Layout) */}
-            <Route element={<RentalRootLayout />}>
-              <Route path="/rental" element={<RentalPortalPage />} />
-              <Route path="/rental-portal" element={<RentalPortalPage />} />
-              <Route path="/rental-system" element={<RentalPortalPage />} />
-              <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
-              <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
-              <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
-              <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
+              {/* Commercial Asset & Rental Management Platform (Isolated Root Layout) */}
+              <Route element={<RentalRootLayout />}>
+                <Route path="/rental" element={<RentalPortalPage />} />
+                <Route path="/rental-portal" element={<RentalPortalPage />} />
+                <Route path="/rental-system" element={<RentalPortalPage />} />
+                <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="user" />} />
+                <Route path="/rental/login" element={<RentalAdminSignInPage initialRole="user" />} />
+                <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
+                <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
 
-              {/* Admin Panel Routes */}
-              <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
-              <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
-              <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
-              <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
-              <Route path="/rental/admin/tenants" element={<TenantListPage />} />
-              <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
-              <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
-              <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
-              <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
+                {/* Admin Panel Routes */}
+                <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
+                <Route path="/rental/admin" element={<AdminDashboardPage />} />
+                <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
+                <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
+                <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
+                <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
+                <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
+                <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
+                <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
+                <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
+                <Route path="/rental/admin/tenants" element={<TenantListPage />} />
+                <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
+                <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
+                <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
+                <Route path="/rental/admin/collect-rent/:billId" element={<CollectRentPage />} />
+                <Route path="/rental/admin/demand-challan/:billId" element={<DemandChallanPage />} />
+                <Route path="/rental/admin/bill/:billId" element={<DemandChallanPage />} />
+                <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
 
-              {/* User / Tenant Panel Routes */}
-              <Route path="/rental/user/dashboard" element={<UserDashboardPage />} />
-              <Route path="/rental/user" element={<UserDashboardPage />} />
-              <Route path="/rental/user/bills" element={<UserBillsPage />} />
-              <Route path="/rental/user/receipts" element={<UserReceiptsPage />} />
-              <Route path="/rental/user/notices" element={<UserNoticesPage />} />
-              <Route path="/rental/user/profile" element={<UserProfilePage />} />
-              <Route path="/rental/profile" element={<UserProfilePage />} />
-            </Route>
+                {/* User / Tenant Panel Routes */}
+                <Route path="/rental/user/dashboard" element={<UserDashboardPage />} />
+                <Route path="/rental/user" element={<UserDashboardPage />} />
+                <Route path="/rental/user/bills" element={<UserBillsPage />} />
+                <Route path="/rental/user/receipts" element={<UserReceiptsPage />} />
+                <Route path="/rental/user/notices" element={<UserNoticesPage />} />
+                <Route path="/rental/user/profile" element={<UserProfilePage />} />
+                <Route path="/rental/profile" element={<UserProfilePage />} />
+              </Route>
 
-            {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}
-            <Route path="/500" element={<ServerErrorPage />} />
-            <Route path="/error" element={<ServerErrorPage />} />
-            <Route path="/maintenance" element={<MaintenancePage />} />
-            <Route path="/under-maintenance" element={<MaintenancePage />} />
+              {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}
+              <Route path="/500" element={<ServerErrorPage />} />
+              <Route path="/error" element={<ServerErrorPage />} />
+              <Route path="/maintenance" element={<MaintenancePage />} />
+              <Route path="/under-maintenance" element={<MaintenancePage />} />
 
-            {/* 404 Not Found Catch-All Route */}
-            <Route path="*" element={<NotFoundPage />} />
+              {/* 404 Not Found Catch-All Route */}
+              <Route path="*" element={<NotFoundPage />} />
 
-            {/* Auth routes (no layout) */}
-            <Route path="/signup" element={<SignUpPage />} />
-            <Route path="/signin" element={<SignInPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              {/* Auth routes (no layout) */}
+              <Route path="/signup" element={<SignUpPage />} />
+              <Route path="/signin" element={<SignInPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-            {/* Protected dashboard routes */}
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<DashboardPage />} />
-              <Route path="tracking" element={<LiveTrackingPage />} />
-              <Route path="history" element={<VehicleHistoryPage />} />
-              <Route path="route-replay" element={<Navigate to="/dashboard/history" replace />} />
-              <Route path="complaints" element={<ComplaintsPage />} />
-              <Route path="vehicles" element={<VehiclesPage />} />
-              <Route path="media" element={<MediaDailyWorkPage />} />
-            </Route>
-          </Routes>
-        </Suspense>
+              {/* Protected dashboard routes */}
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<DashboardPage />} />
+                <Route path="tracking" element={<LiveTrackingPage />} />
+                <Route path="history" element={<VehicleHistoryPage />} />
+                <Route path="route-replay" element={<Navigate to="/dashboard/history" replace />} />
+                <Route path="complaints" element={<ComplaintsPage />} />
+                <Route path="vehicles" element={<VehiclesPage />} />
+                <Route path="media" element={<MediaDailyWorkPage />} />
+              </Route>
+            </Routes>
+          </Suspense>
         </RentalComingSoonProvider>
       </BrowserRouter>
       <Toaster position="top-right" richColors />

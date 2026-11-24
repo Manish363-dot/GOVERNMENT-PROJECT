@@ -43,13 +43,15 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3001',
+        target: 'https://zilapanchayatalmora.in',
         changeOrigin: true,
+        secure: false,
       },
       '/socket.io': {
-        target: 'http://127.0.0.1:3001',
+        target: 'https://zilapanchayatalmora.in',
         ws: true,
         changeOrigin: true,
+        secure: false,
         configure: (proxy) => {
           proxy.on('error', (err: any) => {
             // Silently suppress standard socket disconnects on page refresh/close

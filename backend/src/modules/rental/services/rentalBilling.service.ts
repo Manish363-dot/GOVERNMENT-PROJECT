@@ -277,8 +277,13 @@ export class RentalBillingService {
    */
   async getBillDetails(billId: string, tenantUserId?: string) {
     return withRentalDbRetry(async () => {
-      const bill = await rentalPrisma.rentalBill.findUnique({
-        where: { id: billId },
+      const bill = await rentalPrisma.rentalBill.findFirst({
+        where: {
+          OR: [
+            { id: billId },
+            { bill_number: billId },
+          ],
+        },
         include: {
           user: {
             select: {

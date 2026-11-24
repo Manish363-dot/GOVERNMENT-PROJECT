@@ -449,7 +449,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "C:\\Users\\Manish\\OneDrive\\Desktop\\GOVERNMENT PROJECT\\backend\\src\\generated\\rental-client",
+      "value": "C:\\Users\\welcome\\OneDrive\\Desktop\\GOVERNMENT-PROJECT\\backend\\src\\generated\\rental-client",
       "fromEnvVar": null
     },
     "config": {
@@ -463,7 +463,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "C:\\Users\\Manish\\OneDrive\\Desktop\\GOVERNMENT PROJECT\\backend\\prisma\\rental.prisma",
+    "sourceFilePath": "C:\\Users\\welcome\\OneDrive\\Desktop\\GOVERNMENT-PROJECT\\backend\\prisma\\rental.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -477,7 +477,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
