@@ -38,11 +38,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 }) => {
   const { language } = useLanguage();
   const isHi = language === 'hi';
-  const { user, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      user &&
+      (user.role === 'SUPER_ADMIN' || user.role === 'SUB_ADMIN' || user.adminRole)
+  );
+
+  React.useEffect(() => {
+    if (!isAdmin) {
+      navigate(`/rental/signin?role=admin&redirect=${encodeURIComponent(location.pathname)}`, {
+        replace: true,
+      });
+    }
+  }, [isAdmin, navigate, location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -55,6 +69,27 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     user?.mobile === '9412000001' ||
     user?.identifier === '9412000001' ||
     user?.identifier === 'almora_superadmin';
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#071329] flex flex-col items-center justify-center p-4">
+        <div className="bg-[#0b1c38] border border-amber-500/30 rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="w-16 h-16 bg-red-950/60 text-red-400 border border-red-500/40 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-8 h-8 text-amber-400" />
+          </div>
+          <h2 className="text-xl font-bold text-white mb-2">
+            {isHi ? 'विभागीय सुरक्षा सत्यापन' : 'Official Admin Clearance'}
+          </h2>
+          <p className="text-xs text-slate-300 mb-6 leading-relaxed">
+            {isHi
+              ? 'यह प्रशासनिक कक्ष केवल ज़िला पंचायत अल्मोड़ा के अधिकृत अधिकारियों हेतु आरक्षित है। कृपया लॉगिन करें।'
+              : 'This administrative workspace is strictly reserved for authorized officers of Zila Panchayat Almora.'}
+          </p>
+          <div className="w-7 h-7 border-3 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
+        </div>
+      </div>
+    );
+  }
 
   const navItems = [
     {

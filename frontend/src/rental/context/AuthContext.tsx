@@ -155,6 +155,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (e) {
       console.error('Failed to remove auth from localStorage', e);
     }
+    // Clean up server-side HttpOnly session cookie
+    api.post('/rental/auth/admin/logout', {}).catch(() => {});
   };
 
   const requireAuth = (callback?: () => void, redirectTarget = 'quick-pay'): boolean => {
@@ -207,6 +209,7 @@ export const useAuth = (): AuthContextType => {
           localStorage.removeItem(STORAGE_KEY);
           window.dispatchEvent(new Event('rental-auth-change'));
         } catch {}
+        api.post('/rental/auth/admin/logout', {}).catch(() => {});
       },
       requireAuth: () => !!localUser,
     };

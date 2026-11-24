@@ -13,6 +13,10 @@ router.post('/admin/login', rentalAdminLoginLimiter, (req, res) =>
   rentalAuthController.adminLogin(req, res)
 );
 
+router.post('/admin/logout', (req, res) =>
+  rentalAuthController.adminLogout(req, res)
+);
+
 router.get('/admin/me', rentalAdminAuth, (req, res) =>
   rentalAuthController.getAdminProfile(req, res)
 );

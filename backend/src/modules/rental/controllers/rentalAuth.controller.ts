@@ -39,6 +39,7 @@ export class RentalAuthController {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
+        path: '/',
         maxAge: 8 * 60 * 60 * 1000, // 8 hours
       });
 
@@ -46,6 +47,21 @@ export class RentalAuthController {
     } catch (err: any) {
       return sendError(res, err.message || 'Authentication failed', 401);
     }
+  }
+
+  /**
+   * POST /api/rental/auth/admin/logout
+   * Clear admin session cookie
+   */
+  async adminLogout(req: AuthenticatedRentalRequest, res: Response) {
+    res.clearCookie('rental_admin_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    });
+    res.clearCookie('rental_admin_token');
+    return sendSuccess(res, null, 'Administrator logged out successfully');
   }
 
   /**

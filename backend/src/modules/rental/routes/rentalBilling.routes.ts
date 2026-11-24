@@ -21,30 +21,33 @@ router.get(
   (req: any, res: any) => rentalBillingController.getAnalytics(req, res)
 );
 
-// ── Admin or Tenant: List Bills ──────────────────────────────────────────────
+// ── Admin or Tenant: List Bills (Strictly Authenticated) ──────────────────────
 router.get(
   '/',
   (req, res, next) => {
-    // If admin auth header exists, authenticate as admin, else tenant
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      // Try admin auth first
-      return rentalAdminAuth(req as any, res, (err?: any) => {
-        if (!err && (req as any).rentalAdmin) {
-          return rentalBillingController.listBills(req as any, res);
-        }
-        // Fallback to user auth
-        return rentalUserAuth(req as any, res, () => rentalBillingController.listBills(req as any, res));
-      });
+    const hasToken = Boolean(req.cookies?.rental_admin_token || req.headers.authorization);
+    if (!hasToken) {
+      return res.status(401).json({ success: false, error: 'Authentication required to view rental bills.' });
     }
-    return rentalBillingController.listBills(req as any, res);
+    // Try admin auth first
+    return rentalAdminAuth(req as any, res, (err?: any) => {
+      if (!err && (req as any).rentalAdmin) {
+        return rentalBillingController.listBills(req as any, res);
+      }
+      // Fallback to tenant auth
+      return rentalUserAuth(req as any, res, () => rentalBillingController.listBills(req as any, res));
+    });
   }
 );
 
-// ── Admin or Tenant: Single Bill Details ─────────────────────────────────────
+// ── Admin or Tenant: Single Bill Details (Strictly Authenticated) ─────────────
 router.get(
   '/:id',
   (req, res, next) => {
+    const hasToken = Boolean(req.cookies?.rental_admin_token || req.headers.authorization);
+    if (!hasToken) {
+      return res.status(401).json({ success: false, error: 'Authentication required to view bill details.' });
+    }
     return rentalAdminAuth(req as any, res, (err?: any) => {
       if (!err && (req as any).rentalAdmin) {
         return rentalBillingController.getBillDetails(req as any, res);

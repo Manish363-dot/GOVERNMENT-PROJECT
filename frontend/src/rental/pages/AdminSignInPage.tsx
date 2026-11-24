@@ -55,14 +55,14 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
     if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
       setError(
         isHi
-          ? 'कृपया मान्य 10-अंकीय भारतीय मोबाइल नंबर दर्ज करें।'
+          ? 'कृपया मान्य 10-अंकीय मोबाइल नंबर दर्ज करें।'
           : 'Please enter a valid 10-digit mobile number.'
       );
       return;
     }
 
     if (!password.trim()) {
-      setError(isHi ? 'कृपया सुरक्षा पासवर्ड दर्ज करें।' : 'Please enter your password.');
+      setError(isHi ? 'कृपया पासवर्ड दर्ज करें।' : 'Please enter your password.');
       return;
     }
 
@@ -128,16 +128,28 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
       {/* Tricolor Accent Line */}
       <div className="uk-tricolor-line" />
 
-      {/* Security Advisory Strip */}
-      <div className="bg-[#0b1b36] text-amber-300 py-1.5 px-4 text-[11px] font-bold tracking-wide uppercase shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <span className="flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            {isHi ? 'विभागीय आंतरिक प्रबंधन प्रणाली (Admin Portal)' : 'Departmental Internal Portal'}
-          </span>
-          <span className="text-slate-300 font-mono text-[10px]">
-            ALM-RENTAL-SEC-SYS-2026
-          </span>
+      {/* Floating Warning Banner (Matches SWM Portal) */}
+      <div className="bg-red-600 text-white text-sm font-medium py-1.5 overflow-hidden w-full flex shadow-xs">
+        <style>{`
+          @keyframes scroll-text-rental {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .scrolling-wrapper-rental {
+            display: flex;
+            white-space: nowrap;
+            width: max-content;
+            animation: scroll-text-rental 40s linear infinite;
+          }
+          .scrolling-wrapper-rental:hover {
+            animation-play-state: paused;
+          }
+        `}</style>
+        <div className="scrolling-wrapper-rental">
+          <span className="pr-16 font-semibold">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16 font-semibold">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16 font-semibold">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
+          <span className="pr-16 font-semibold">⚠️ यह पोर्टल आम नागरिकों के लिए उपलब्ध नहीं है, इसे केवल जिला पंचायत के अधिकृत व्यवस्थापक (Admin) द्वारा एक्सेस किया जा सकता है। &nbsp;&nbsp;|&nbsp;&nbsp; ⚠️ This portal is unavailable for public users and can only be accessed by authorized Zila Panchayat Admins.</span>
         </div>
       </div>
 
@@ -146,7 +158,15 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
         <div className="w-full max-w-[960px] grid lg:grid-cols-5 gap-0 items-stretch bg-white shadow-2xl rounded-2xl overflow-hidden border border-slate-300">
           
           {/* 🟦 Left Side: Context / Official Branding Sidebar */}
-          <div className="hidden lg:flex flex-col justify-between bg-[#0b1b36] text-white p-8 xl:p-10 col-span-2 relative overflow-hidden">
+          <div className="hidden lg:flex flex-col justify-between bg-navy-900 text-white p-8 xl:p-10 col-span-2 relative overflow-hidden">
+            {/* Background Image with Fade (Matches SWM Portal) */}
+            <div
+              className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 pointer-events-none"
+              style={{ backgroundImage: 'url(https://i.pinimg.com/736x/41/55/5f/41555f26ec46e770872f47265b5c2e89.jpg)' }}
+            />
+            {/* Slight dark gradient overlay so white text stands out */}
+            <div className="absolute inset-0 bg-navy-900/40 pointer-events-none z-0" />
+
             <div className="relative z-10">
               <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center mb-5 shadow-md border-b-4 border-amber-500 overflow-hidden p-1">
                 <img
@@ -164,31 +184,15 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
               
               <div className="mt-6 pt-5 border-t border-white/10 text-xs text-slate-300 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>{isHi ? 'दुकानें व वाणिज्यिक संपत्ति प्रबंधन' : 'Shop & Asset Management'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <FileCheck2 className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>{isHi ? 'कार्यालय काउंटर किराया वसूली' : 'Office Counter Rent Collection'}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>{isHi ? 'कम्प्यूटरीकृत रसीद एवं लेजर' : 'Computerized Receipts & Ledger'}</span>
                 </div>
               </div>
-            </div>
-
-            {/* Bottom info badge */}
-            <div className="relative z-10 pt-6 border-t border-white/10 text-xs text-slate-300">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white/10 text-emerald-300 font-semibold text-[11px] mb-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>{isHi ? 'अधिकृत विभागीय एक्सेस' : 'Authorized Access Only'}</span>
-              </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                {isHi
-                  ? 'यह पोर्टल केवल जिला पंचायत अल्मोड़ा के अधिकृत अधिकारियों एवं काउंटर ऑपरेटरों के लिए है।'
-                  : 'This portal is restricted to authorized departmental officers and counter operators.'}
-              </p>
             </div>
           </div>
 
@@ -204,26 +208,15 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                 <ArrowLeft className="w-4 h-4" />
                 <span>{isHi ? 'रेंटल पोर्टल मुख्य पृष्ठ' : 'Back to Rental Portal'}</span>
               </Link>
-
-              <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span>{isHi ? 'सुरक्षित 256-बिट' : '256-Bit SSL'}</span>
-              </div>
             </div>
 
             {/* Heading */}
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-1.5">
-                <LockKeyhole className="w-5 h-5 text-navy-900" />
                 <h2 className="text-xl sm:text-2xl font-extrabold text-[#0b1b36] tracking-tight">
-                  {isHi ? 'विभागीय अधिकारी लॉगिन' : 'Departmental Admin Login'}
+                  {isHi ? 'अधिकारी लॉगिन' : 'Admin Login'}
                 </h2>
               </div>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                {isHi
-                  ? 'जिला पंचायत अल्मोड़ा के अधिकृत अधिकारियों एवं काउंटर ऑपरेटरों हेतु सुरक्षित लॉगिन।'
-                  : 'Authorized access for Zila Panchayat Almora officers & counter operators.'}
-              </p>
             </div>
 
             {/* Alert / Error / Success Message */}
@@ -250,13 +243,6 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                   >
                     {isHi ? 'अधिकृत व्यवस्थापक मोबाइल नंबर' : 'Authorized Admin Mobile Number'}
                   </label>
-                  <span
-                    className={`text-[11px] font-semibold ${
-                      identifier.length === 10 ? 'text-emerald-600' : 'text-slate-400'
-                    }`}
-                  >
-                    {identifier.length}/10 {isHi ? 'अंक' : 'digits'}
-                  </span>
                 </div>
                 <div className="relative flex items-center">
                   <div className="absolute left-3 flex items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-600 select-none pointer-events-none">
@@ -269,7 +255,7 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                     type="tel"
                     inputMode="numeric"
                     maxLength={10}
-                    placeholder="9412000001"
+                    placeholder="987654XYZ"
                     value={identifier}
                     onChange={handleMobileChange}
                     className="w-full pl-20 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm font-semibold tracking-wider text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#0b1b36] focus:bg-white transition-all"
@@ -291,27 +277,13 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                   >
                     {isHi ? 'सुरक्षा पासवर्ड' : 'Security Password'}
                   </label>
-                  <a
-                    href="#forgot"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      alert(
-                        isHi
-                          ? 'पासवर्ड रीसेट करने के लिए कृपया जिला पंचायत अल्मोड़ा एनआईसी प्रकोष्ठ या मुख्य प्रशासक से संपर्क करें।'
-                          : 'Please contact Zila Panchayat Almora Super Admin to reset credentials.'
-                      );
-                    }}
-                    className="text-xs font-bold text-blue-900 hover:underline"
-                  >
-                    {isHi ? 'पासवर्ड सहायता' : 'Password Help'}
-                  </a>
                 </div>
                 <div className="relative">
                   <input
                     id="login-password"
                     type={showPassword ? 'text' : 'password'}
                     placeholder={
-                      isHi ? 'अपना अधिकृत पासवर्ड दर्ज करें' : 'Enter your authorized password'
+                      isHi ? 'अपना पासवर्ड दर्ज करें' : 'Enter your password'
                     }
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -340,7 +312,7 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                     <span>{isHi ? 'प्रमाणित किया जा रहा है...' : 'Authenticating...'}</span>
                   </>
                 ) : (
-                  <span>{isHi ? 'सुरक्षित व्यवस्थापक लॉगिन' : 'Secure Admin Login'}</span>
+                  <span>{isHi ? 'लॉगिन' : 'Login'}</span>
                 )}
               </button>
             </form>
@@ -349,8 +321,7 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
             <div className="mt-6 pt-5 border-t border-slate-200">
               <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-xs text-slate-700">
                 <div className="font-bold text-emerald-900 flex items-center gap-1.5 mb-1">
-                  <Search className="w-4 h-4 text-emerald-700 shrink-0" />
-                  <span>{isHi ? 'किरायेदार सूचना (No Login Required):' : 'Tenant Notice (No Login):'}</span>
+                  <span>{isHi ? 'किरायेदार सूचना:' : 'Tenant Notice:'}</span>
                 </div>
                 <p className="text-[11px] leading-relaxed text-slate-600 mb-2">
                   {isHi
@@ -361,7 +332,7 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
                   to="/rental/check-status"
                   className="inline-flex items-center gap-1 text-xs font-bold text-emerald-800 hover:text-emerald-950 underline cursor-pointer"
                 >
-                  <span>{isHi ? '👉 यहाँ क्लिक करें: अपना किराया एवं रसीद जांचें' : '👉 Click here: Check Rent Status & Receipts'}</span>
+                  <span>{isHi ? 'यहाँ क्लिक करें: अपना किराया एवं रसीद जांचें' : 'Click here: Check Rent Status & Receipts'}</span>
                 </Link>
               </div>
             </div>
@@ -376,12 +347,9 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
           <p>
             © {new Date().getFullYear()}{' '}
             {isHi
-              ? 'कार्यालय जिला पंचायत अल्मोड़ा, पंचायती राज विभाग, उत्तराखंड शासन। सर्वाधिकार सुरक्षित।'
-              : 'Office of Zila Panchayat Almora, Govt. of Uttarakhand. All rights reserved.'}
+              ? 'उत्तराखंड सरकार। सर्वाधिकार सुरक्षित।'
+              : 'Government of Uttarakhand. All rights reserved.'}
           </p>
-          <div className="flex items-center gap-3 text-[11px] text-slate-400">
-            <span>NIC Certified Portal</span>
-          </div>
         </div>
       </footer>
     </div>

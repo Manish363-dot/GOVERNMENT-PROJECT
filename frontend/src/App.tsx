@@ -12,6 +12,7 @@ import { RouteSEO } from '@/components/RouteSEO';
 import { WelcomeSplash } from '@/components/WelcomeSplash';
 import { ScrollToTop } from '@/components/ScrollToTop';
 import { RentalComingSoonProvider } from '@/contexts/RentalComingSoonContext';
+import { RentalAdminGuard } from '@/rental/components/RentalAdminGuard';
 
 // --- Lazy Load Pages ---
 // By using lazy loading, the browser only downloads the JavaScript for the page the user is currently on, significantly speeding up the initial load time.
@@ -166,25 +167,25 @@ function App() {
               <Route path="/rental/admin/login" element={<RentalAdminSignInPage initialRole="admin" />} />
               <Route path="/rental/admin/signin" element={<RentalAdminSignInPage initialRole="admin" />} />
 
-              {/* Admin Panel Routes */}
-              <Route path="/rental/admin/dashboard" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin" element={<AdminDashboardPage />} />
-              <Route path="/rental/admin/subadmins" element={<SubAdminManagementPage />} />
-              <Route path="/rental/admin/register-subadmin" element={<RegisterSubAdminPage />} />
-              <Route path="/rental/admin/register-property" element={<RegisterPropertyPage />} />
-              <Route path="/rental/admin/ledger" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/bahi-khata" element={<RentLedgerPage />} />
-              <Route path="/rental/admin/records" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/audit" element={<RecordsAuditPage />} />
-              <Route path="/rental/admin/register-tenant" element={<RegisterTenantPage />} />
-              <Route path="/rental/admin/tenants" element={<TenantListPage />} />
-              <Route path="/rental/admin/tenant/:id" element={<TenantProfilePage />} />
-              <Route path="/rental/admin/properties" element={<PropertyManagementPage />} />
-              <Route path="/rental/admin/billing" element={<BillingManagementPage />} />
-              <Route path="/rental/admin/collect-rent/:billId" element={<CollectRentPage />} />
-              <Route path="/rental/admin/demand-challan/:billId" element={<DemandChallanPage />} />
-              <Route path="/rental/admin/bill/:billId" element={<DemandChallanPage />} />
-              <Route path="/rental/admin/notices" element={<AdminNoticesPage />} />
+              {/* Admin Panel Protected Routes (Double-Layer Security Guard) */}
+              <Route path="/rental/admin/dashboard" element={<RentalAdminGuard><AdminDashboardPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin" element={<RentalAdminGuard><AdminDashboardPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/subadmins" element={<RentalAdminGuard><SubAdminManagementPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/register-subadmin" element={<RentalAdminGuard><RegisterSubAdminPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/register-property" element={<RentalAdminGuard><RegisterPropertyPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/ledger" element={<RentalAdminGuard><RentLedgerPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/bahi-khata" element={<RentalAdminGuard><RentLedgerPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/records" element={<RentalAdminGuard><RecordsAuditPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/audit" element={<RentalAdminGuard><RecordsAuditPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/register-tenant" element={<RentalAdminGuard><RegisterTenantPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/tenants" element={<RentalAdminGuard><TenantListPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/tenant/:id" element={<RentalAdminGuard><TenantProfilePage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/properties" element={<RentalAdminGuard><PropertyManagementPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/billing" element={<RentalAdminGuard><BillingManagementPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/collect-rent/:billId" element={<RentalAdminGuard><CollectRentPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/demand-challan/:billId" element={<RentalAdminGuard><DemandChallanPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/bill/:billId" element={<RentalAdminGuard><DemandChallanPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/notices" element={<RentalAdminGuard><AdminNoticesPage /></RentalAdminGuard>} />
             </Route>
 
               {/* Standalone Error & Status Pages (No Header/Footer for clean focus) */}

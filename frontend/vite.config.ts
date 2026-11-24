@@ -43,12 +43,12 @@ export default defineConfig({
     },
     proxy: {
       '/api': {
-        target: 'https://zilapanchayatalmora.in',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
         secure: false,
       },
       '/socket.io': {
-        target: 'https://zilapanchayatalmora.in',
+        target: 'http://127.0.0.1:3001',
         ws: true,
         changeOrigin: true,
         secure: false,
