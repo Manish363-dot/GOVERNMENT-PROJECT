@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Language, translations } from '../translations/translations';
-import i18n from '@/i18n/config';
 
 interface LanguageContextType {
   language: Language;
@@ -12,11 +12,15 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<Language>(() => {
-    const saved = localStorage.getItem('rental_lang') || localStorage.getItem('app_lang') || (i18n ? i18n.language : null);
-    if (saved && (saved === 'en' || saved.startsWith('en'))) return 'en';
-    return 'hi';
-  });
+  const { i18n } = useTranslation();
+
+  const getResolvedLang = (): Language => {
+    if (i18n.language?.startsWith('en')) return 'en';
+    const saved = localStorage.getItem('app_lang') || localStorage.getItem('rental_lang');
+    return saved === 'en' ? 'en' : 'hi';
+  };
+
+  const [language, setLanguageState] = useState<Language>(getResolvedLang);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
@@ -33,19 +37,17 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     setLanguage(nextLang);
   };
 
-  useEffect(() => {
-    document.documentElement.lang = language;
-  }, [language]);
-
-  // Synchronize with i18n language changes (e.g. from topbar LanguageSwitcher)
+  // Synchronize state immediately whenever i18n language switches
   useEffect(() => {
     const handleLangChange = (lng: string) => {
-      const validLang: Language = lng && lng.startsWith('en') ? 'en' : 'hi';
-      setLanguageState(validLang);
-      localStorage.setItem('rental_lang', validLang);
-      localStorage.setItem('app_lang', validLang);
-      document.documentElement.lang = validLang;
+      const nextLang: Language = lng?.startsWith('en') ? 'en' : 'hi';
+      setLanguageState(nextLang);
+      localStorage.setItem('rental_lang', nextLang);
+      localStorage.setItem('app_lang', nextLang);
+      document.documentElement.lang = nextLang;
     };
+
+    handleLangChange(i18n.language || 'hi');
 
     if (i18n && i18n.on) {
       i18n.on('languageChanged', handleLangChange);
@@ -65,13 +67,13 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       window.removeEventListener('languageChange', handleCustomEvent);
       window.removeEventListener('storage', handleCustomEvent);
     };
-  }, []);
+  }, [i18n]);
 
   const value = {
     language,
     setLanguage,
     toggleLanguage,
-    t: translations[language]
+    t: translations[language] || translations['hi'],
   };
 
   return (

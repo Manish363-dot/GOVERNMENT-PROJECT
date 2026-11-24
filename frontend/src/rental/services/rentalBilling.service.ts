@@ -46,7 +46,31 @@ export interface BillListResponse {
 export interface DuesSearchResult {
   totalOutstanding: number;
   billCount: number;
+  isThisMonthComplete?: boolean;
+  currentMonth?: string;
   message?: string;
+  tenant?: {
+    name: string;
+    code: string;
+    mobile: string;
+    shopNo: string;
+    location: string;
+  } | null;
+  currentMonthBill?: {
+    billNumber: string;
+    billingMonth: string;
+    rentAmount: number;
+    totalAmountDue: number;
+    amountPaid: number;
+    balanceDue: number;
+    status: string;
+    dueDate: string;
+    receipt?: {
+      receipt_number: string;
+      amount_paid: number;
+      issued_at: string;
+    } | null;
+  } | null;
   pendingBills: Array<{
     id: string;
     billNumber: string;
@@ -60,6 +84,26 @@ export interface DuesSearchResult {
     tenantCode: string;
     propertyNumber: string;
     location: string;
+  }>;
+  allBills?: Array<{
+    id: string;
+    billNumber: string;
+    billingMonth: string;
+    rentAmount: number;
+    totalAmountDue: number;
+    amountPaid: number;
+    balanceDue: number;
+    dueDate: string;
+    status: string;
+    receiptNumber?: string | null;
+  }>;
+  receipts?: Array<{
+    receiptNumber: string;
+    amountPaid: number;
+    issuedAt: string;
+    billingMonth: string;
+    propertyNumber: string;
+    tenantName: string;
   }>;
 }
 

@@ -448,22 +448,3 @@ model RentalAdminAuditLog {
   @@index([admin_id, created_at])
   @@index([target_entity, target_id])
 }
-
-// ── 14. Designated Officer Directory Model (User Profile Change Contacts) ───
-
-model RentalDesignatedOfficer {
-  id                   String   @id @default(uuid())
-  full_name            String
-  designation          String
-  department           String
-  office_phone         String
-  official_email       String
-  office_address       String
-  working_hours        String
-  contact_instructions String?
-  is_active            Boolean  @default(true)
-  updated_by           String?
-  updated_at           DateTime @default(now())
-
-  @@index([is_active])
-}

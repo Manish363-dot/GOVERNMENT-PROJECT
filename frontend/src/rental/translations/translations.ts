@@ -32,7 +32,7 @@ export const translations = {
       notices: 'सूचनाएं',
       documents: 'दस्तावेज़',
       feedback: 'सुझाव एवं शिकायत',
-      contact: 'संपर्क सूत्र',
+      contact: 'संपर्क',
       payRent: 'किराया भुगतान',
       adminSignIn: 'एडमिन साइन इन',
       login: 'साइन इन',

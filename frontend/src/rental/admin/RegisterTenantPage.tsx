@@ -6,21 +6,10 @@ import { rentalUserApi } from '../services/rentalUser.service';
 import { rentalPropertyApi, PropertyListItem } from '../services/rentalProperty.service';
 import {
   UserPlus,
-  Upload,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Image as ImageIcon,
   Building2,
-  Calendar,
-  Lock,
-  ArrowLeft,
-  Shield,
-  Eye,
-  RefreshCw,
-  Sparkles,
-  MapPin,
-  Tag,
 } from 'lucide-react';
 
 export const RegisterTenantPage: React.FC = () => {
@@ -282,9 +271,9 @@ export const RegisterTenantPage: React.FC = () => {
                 <span className="font-bold text-slate-800">{successData.mobile}</span>
               </div>
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500 font-medium">{isHi ? 'प्रारंभिक पासवर्ड:' : 'Initial Password:'}</span>
-                <span className="font-mono font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
-                  {successData.initialPassword}
+                <span className="text-slate-500 font-medium">{isHi ? 'पोर्टल स्टेटस:' : 'Portal Status:'}</span>
+                <span className="font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded text-xs">
+                  {isHi ? 'पंजीकृत (खोज हेतु सक्रिय)' : 'Active (Direct Public Query)'}
                 </span>
               </div>
             </div>
@@ -394,17 +383,14 @@ export const RegisterTenantPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'प्रारंभिक पोर्टल पासवर्ड *' : 'Initial Portal Password *'}
+                      {isHi ? 'नागरिक किराया खोज अधिकार' : 'Citizen Dues Search Status'}
                     </label>
-                    <input
-                      type="text"
-                      value={initialPassword}
-                      onChange={(e) => setInitialPassword(e.target.value)}
-                      placeholder={isHi ? 'डिफ़ॉल्ट: Almora@XXXX (न्यूनतम 6 अक्षर)' : 'Default: Almora@XXXX (Min 6 chars)'}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono"
-                    />
+                    <div className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-900 flex items-center gap-1.5">
+                      <span>✓</span>
+                      <span>{isHi ? 'मोबाइल नंबर से पब्लिक पोर्टल पर खोज सक्षम (बिना लॉगिन)' : 'Public Mobile Query Enabled (No Login Required)'}</span>
+                    </div>
                     <span className="text-[10px] text-slate-500 mt-1 block">
-                      {isHi ? '* खाली रखने पर Almora@मोबाइल के अंतिम 4 अंक बनेगा' : '* If blank, defaults to Almora@last 4 digits of mobile'}
+                      {isHi ? '* किरायेदार अपने इसी नंबर से सीधे रसीद व लेजर देख सकेगा' : '* Tenant will search dues using this mobile directly'}
                     </span>
                   </div>
                 </div>

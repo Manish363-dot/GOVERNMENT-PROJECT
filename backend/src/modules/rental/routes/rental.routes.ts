@@ -6,6 +6,7 @@ const router = Router();
 // Module Health & Info
 router.get('/', (req, res) => rentalController.getRoot(req, res));
 router.get('/health', (req, res) => rentalController.getHealth(req, res));
+router.get('/stats', (req, res) => rentalController.getPublicStats(req, res));
 
 // Tenant Dues Search / Quick Pay
 router.get('/dues/search', (req, res) => rentalController.searchDues(req, res));

@@ -1,27 +1,17 @@
 import React from 'react';
-import { CreditCard, Store, Search, Gavel, ShieldCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../context/LanguageContext';
-import { useAuth } from '../context/AuthContext';
-
 
 export const HeroSimple: React.FC = () => {
+  const { i18n } = useTranslation();
   const { language } = useLanguage();
-  const isHi = language === 'hi';
-  const { requireAuth } = useAuth();
-
-  const handlePayRentClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    requireAuth(() => {
-      const el = document.getElementById('quick-pay');
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }, 'quick-pay');
-  };
+  const isHi = (i18n.language === 'hi' || language === 'hi') && !i18n.language?.startsWith('en');
 
   return (
-    <div className="relative bg-white text-slate-900 border-b border-slate-200 overflow-hidden py-14 sm:py-20">
-      {/* 🖼️ Hero Background Picture Only */}
+    <div className="relative bg-white text-slate-900 border-b border-slate-200 overflow-hidden py-12 sm:py-16 md:py-20">
+      {/* 🖼️ Hero Background Picture (Full visibility) */}
       <img
         src="/rental-hero-bg.jpg"
         alt="Zila Panchayat Commercial Property Background"
@@ -30,49 +20,36 @@ export const HeroSimple: React.FC = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="text-center max-w-3xl mx-auto">
-       
-
-          {/* H1 Title */}
+          {/* H1 Title - Hindi / English */}
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-navy-950 tracking-tight leading-tight">
             {isHi
               ? 'दुकान आवंटन, संपत्ति एवं किराया प्रबंधन पोर्टल'
               : 'Commercial Asset, Shop Allotment & Rental Management Portal'}
           </h1>
 
-          {/* Subtitle */}
-          <p className="mt-3 text-slate-700 font-medium text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            {isHi
-              ? 'अल्मोड़ा जनपद के अंतर्गत जिला पंचायत स्वामित्व वाली व्यावसायिक दुकानों, मार्केट परिसरों के पारदर्शी ई-आवंटन, ऑनलाइन किराया चालान एवं डिजिटल रसीद की आधिकारिक व्यवस्था।'
-              : 'Dedicated official platform for transparent commercial shop allotments, online monthly rent collection, verified receipts, and asset registry across Almora.'}
-          </p>
-
-          {/* Quick Action Buttons Grid */}
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4 font-inter">
-            {/* 1. Amber Primary CTA */}
-            <a
-              href="#quick-pay"
-              onClick={handlePayRentClick}
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all duration-200 hover:scale-102 cursor-pointer"
+          {/* Action Buttons - Phone Responsive (Stacked on mobile, side-by-side on sm+) */}
+          <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 font-inter max-w-xs sm:max-w-none mx-auto">
+            {/* 1. Amber CTA -> Safai Portal */}
+            <Link
+              to="/safai-portal"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs sm:text-sm shadow-md transition-all duration-200 hover:scale-102 cursor-pointer"
             >
-              <CreditCard className="w-4 h-4 text-slate-950" />
-              <span>{isHi ? 'किराया ऑनलाइन जमा करें' : 'Pay Rent Online'}</span>
-            </a>
+              <span>{isHi ? 'ठोस अपशिष्ट प्रबंधन प्रकोष्ठ' : 'Solid Waste Management Cell'}</span>
+              <ArrowRight className="h-4 w-4 shrink-0" />
+            </Link>
 
-
-
-            {/* 3. Emerald Button */}
-            <a
-              href="#properties"
-              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all duration-200 cursor-pointer"
+            {/* 2. Emerald Button -> Check Rent Page */}
+            <Link
+              to="/rental/check-status"
+              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all duration-200 cursor-pointer"
             >
-              <Store className="w-4 h-4 text-white" />
-              <span>{isHi ? 'उपलब्ध दुकानें (240+)' : 'View Properties (240+)'}</span>
-            </a>
-
-
+              <span>{isHi ? 'किराया जांचें' : 'Check Rent'}</span>
+            </Link>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+export default HeroSimple;
