@@ -108,7 +108,7 @@ function createOptimizedS3Uploader(
     limits: { fileSize: maxSizeBytes },
   });
 
-  const processAndUploadFile = async (file: any, targetFolder: string) => {
+  const processAndUploadFile = async (file: any, targetFolder: string, fieldName?: string) => {
     if (!file || !file.buffer) return;
 
     const bucket = process.env.AWS_S3_BUCKET_NAME || 'zila-panchayat-images';
@@ -119,10 +119,13 @@ function createOptimizedS3Uploader(
     let contentType: string = file.mimetype;
     let ext: string = path.extname(file.originalname);
 
-    // Any image uploaded (JPG, PNG, GIF, BMP, TIFF, HEIC, etc.) is automatically converted to WebP
+    // Any image uploaded (JPG, PNG, GIF, BMP, TIFF, HEIC, etc.) is automatically converted to WebP.
+    // Profile photo and shop photo are ALWAYS strictly converted to WebP.
     const isImage =
       (file.mimetype && file.mimetype.startsWith('image/')) ||
-      /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif|jfif)$/i.test(file.originalname);
+      /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif|jfif)$/i.test(file.originalname) ||
+      fieldName === 'profile_photo' ||
+      fieldName === 'shop_photo';
 
     if (isImage) {
       try {
@@ -141,9 +144,13 @@ function createOptimizedS3Uploader(
         ext = '.webp';
 
         // Update originalname so database records reflect .webp filename
-        const baseName = path.basename(file.originalname, path.extname(file.originalname));
+        const baseName = path.basename(file.originalname, path.extname(file.originalname)).replace(/\.[^/.]+$/, '');
         file.originalname = `${baseName}.webp`;
       } catch (sharpErr) {
+        if (fieldName === 'profile_photo' || fieldName === 'shop_photo') {
+          console.error('[Sharp] Mandatory WebP conversion failed for photo:', sharpErr);
+          throw new Error('इमेज को WebP में प्रोसेस करने में त्रुटि हुई। कृपया मान्य इमेज फ़ाइल चुनें।');
+        }
         console.warn('[Sharp] Could not convert image to WebP, uploading original buffer:', sharpErr);
         uploadBuffer = file.buffer;
       }
@@ -174,7 +181,7 @@ function createOptimizedS3Uploader(
         try {
           const file = (req as any).file;
           if (file) {
-            await processAndUploadFile(file, folder);
+            await processAndUploadFile(file, folder, fieldName);
           }
           next();
         } catch (uploadErr) {
@@ -191,8 +198,13 @@ function createOptimizedS3Uploader(
           if (files) {
             for (const fieldName of Object.keys(files)) {
               for (const file of files[fieldName]) {
-                const subFolder = fieldName === 'profile_photo' ? 'rental/profiles' : folder;
-                await processAndUploadFile(file, subFolder);
+                const subFolder =
+                  fieldName === 'profile_photo'
+                    ? 'rental/profiles'
+                    : fieldName === 'shop_photo'
+                    ? 'rental/shops'
+                    : folder;
+                await processAndUploadFile(file, subFolder, fieldName);
               }
             }
           }

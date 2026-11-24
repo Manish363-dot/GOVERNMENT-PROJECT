@@ -30,6 +30,7 @@ import {
   Calendar,
   IndianRupee,
   BookOpen,
+  Trash2,
 } from 'lucide-react';
 
 export const TenantListPage: React.FC = () => {
@@ -252,6 +253,37 @@ export const TenantListPage: React.FC = () => {
     }
   };
 
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    tenant: TenantListItem | null;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    tenant: null,
+    loading: false,
+  });
+
+  const requestDeleteTenant = (tenant: TenantListItem) => {
+    setDeleteModal({
+      isOpen: true,
+      tenant,
+      loading: false,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteModal.tenant) return;
+    setDeleteModal((prev) => ({ ...prev, loading: true }));
+    try {
+      await rentalUserApi.deleteTenant(deleteModal.tenant.id);
+      setDeleteModal({ isOpen: false, tenant: null, loading: false });
+      fetchTenants();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete tenant');
+      setDeleteModal((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     tenant: TenantListItem | null;
@@ -290,71 +322,49 @@ export const TenantListPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'किरायेदार (Users)' : 'Tenants (Users)'}
-      breadcrumbs={[{ label: isHi ? 'किरायेदार' : 'Tenants' }]}
+      title={isHi ? 'पंजीकृत किरायेदार' : 'Registered Tenants'}
+      hideBreadcrumbs={true}
+      hideFooter={true}
     >
-      <div className="space-y-6">
-        {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950">
-              {isHi ? 'पंजीकृत किरायेदार निर्देशिका' : 'Registered Tenants Directory'}
+      <div className="space-y-5">
+        {/* Top Header - Responsive */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg sm:text-2xl font-black text-slate-900 tracking-tight">
+              {isHi ? 'पंजीकृत किरायेदार' : 'Registered Tenants'}
             </h1>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/rental/admin/properties')}
-              className="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 font-bold text-xs sm:text-sm flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-xs shrink-0 cursor-pointer"
-            >
-
-              <span>{isHi ? 'संपत्ति रजिस्टर' : 'Property Assets'}</span>
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => navigate('/rental/admin/register-tenant')}
-              className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-ukgreen-600 to-emerald-600 text-white font-bold text-xs sm:text-sm flex items-center gap-2 hover:from-ukgreen-700 hover:to-emerald-700 shadow-md shadow-ukgreen-600/20 shrink-0 cursor-pointer"
+              className="px-4 py-2 rounded-lg bg-[#0b1b36] hover:bg-[#132c56] text-white font-bold text-xs sm:text-sm flex items-center gap-1.5 transition shadow-xs cursor-pointer"
             >
-              <UserPlus className="w-4 h-4" />
               <span>{isHi ? 'नया किरायेदार पंजीकृत करें' : 'Register New Tenant'}</span>
             </button>
           </div>
         </div>
 
-        {/* Filter & Search Bar */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3">
-          <form onSubmit={handleSearchSubmit} className="relative w-full md:w-96">
+        {/* Filter & Search Bar - Responsive */}
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={isHi ? 'नाम, मोबाइल, कोड या दुकान से खोजें...' : 'Search by name, mobile, code, shop...'}
-              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 transition-all bg-slate-50/50"
+              className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
             />
           </form>
 
-          <div className="flex items-center gap-2 w-full md:w-auto justify-end">
-            <select
-              value={statusFilter}
-              onChange={(e) => {
-                setStatusFilter(e.target.value);
-                setPage(1);
-              }}
-              className="px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20"
-            >
-              <option value="ALL">{isHi ? 'सभी स्थिति (All)' : 'All Status'}</option>
-              <option value="ACTIVE">{isHi ? 'सक्रिय (Active)' : 'Active Only'}</option>
-              <option value="INACTIVE">{isHi ? 'निष्क्रिय (Inactive)' : 'Inactive Only'}</option>
-              <option value="SUSPENDED">{isHi ? 'निलंबित (Suspended)' : 'Suspended'}</option>
-            </select>
-
+          <div className="flex items-center gap-2 justify-end">
             <button
               type="button"
               onClick={fetchTenants}
               title={isHi ? 'ताज़ा करें' : 'Refresh'}
-              className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="p-2 rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 transition cursor-pointer"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -363,159 +373,229 @@ export const TenantListPage: React.FC = () => {
 
         {/* Error Banner */}
         {error && (
-          <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center justify-between">
+          <div className="p-3.5 rounded-lg bg-red-50 border border-red-200 text-red-800 text-xs sm:text-sm flex items-center justify-between">
             <span>{error}</span>
             <button
               type="button"
               onClick={fetchTenants}
-              className="font-bold underline text-xs ml-4 hover:text-rose-950 cursor-pointer"
+              className="font-bold underline text-xs ml-4 hover:text-red-950 cursor-pointer"
             >
               {isHi ? 'पुनः प्रयास करें' : 'Retry'}
             </button>
           </div>
         )}
 
-        {/* Tenants Table */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        {/* Tenants Container - Desktop Table & Mobile Cards */}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-2xs overflow-hidden">
           {loading && tenants.length === 0 ? (
             <div className="p-12 text-center text-slate-400">
-              <RefreshCw className="w-8 h-8 mx-auto animate-spin mb-3 text-navy-600" />
-              <p className="text-sm font-semibold">{isHi ? 'किरायेदार लोड हो रहे हैं...' : 'Loading tenants...'}</p>
+              <RefreshCw className="w-7 h-7 mx-auto animate-spin mb-3 text-slate-600" />
+              <p className="text-xs sm:text-sm font-semibold">{isHi ? 'किरायेदार लोड हो रहे हैं...' : 'Loading tenants...'}</p>
             </div>
           ) : tenants.length === 0 ? (
             <div className="p-12 text-center">
-              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <h3 className="text-base font-bold text-slate-700">
+              <h3 className="text-base font-bold text-slate-800">
                 {isHi ? 'कोई किरायेदार नहीं मिला' : 'No tenants found'}
               </h3>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+              <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 {isHi
                   ? 'दिए गए फ़िल्टर के अनुसार कोई रिकॉर्ड उपलब्ध नहीं है।'
-                  : 'There are no tenant records matching the current search criteria.'}
+                  : 'There are no tenant records matching the current filter.'}
               </p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs sm:text-sm">
-                <thead>
-                  <tr className="bg-slate-50/80 text-slate-600 border-b border-slate-200/80 text-[11px] font-extrabold uppercase tracking-wider">
-                    <th className="px-5 py-3.5">{isHi ? 'किरायेदार (Tenant)' : 'Tenant'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'यूजर कोड (Code)' : 'User Code'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'आवंटित दुकान (Shop)' : 'Allocated Shop'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'मासिक किराया' : 'Monthly Rent'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'बकाया (Dues)' : 'Dues'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'स्थिति' : 'Status'}</th>
-                    <th className="px-5 py-3.5 text-right">{isHi ? 'कार्रवाई (Actions)' : 'Actions'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                  {tenants.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          {t.profilePhotoUrl ? (
-                            <img
-                              src={t.profilePhotoUrl}
-                              alt={t.fullName}
-                              className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs"
-                            />
+            <>
+              {/* 🖥️ DESKTOP / TABLET VIEW: Streamlined Table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs sm:text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-slate-700 border-b border-slate-200 text-[11px] font-bold uppercase tracking-wider">
+                      <th className="px-4 py-3">{isHi ? 'किरायेदार (Tenant)' : 'Tenant'}</th>
+                      <th className="px-4 py-3">{isHi ? 'दुकान संख्या व पता (Shop No. & Address)' : 'Shop No. & Address'}</th>
+                      <th className="px-4 py-3">{isHi ? 'मासिक किराया (Monthly Rent)' : 'Monthly Rent'}</th>
+                      <th className="px-4 py-3 text-right">{isHi ? 'कार्रवाई' : 'Actions'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                    {tenants.map((t) => (
+                      <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                        {/* Column 1: Tenant Details with Profile Photo */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            {t.profilePhotoUrl ? (
+                              <img
+                                src={t.profilePhotoUrl}
+                                alt={t.fullName}
+                                className="w-10 h-10 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-slate-100 text-[#0b1b36] font-bold text-sm flex items-center justify-center border border-slate-300 shrink-0">
+                                {t.fullName.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+                            <div className="min-w-0">
+                              <div className="font-bold text-slate-900 text-sm truncate">{t.fullName}</div>
+                              <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mt-0.5">
+                                <span>{t.mobile}</span>
+                                <span>•</span>
+                                <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-bold text-slate-600">
+                                  {t.userCode}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Column 2: Only Shop Number & Address */}
+                        <td className="px-4 py-3">
+                          {t.assignedProperty ? (
+                            <div className="space-y-0.5">
+                              <span className="font-bold text-slate-900 text-xs font-mono inline-block bg-blue-50 text-blue-800 border border-blue-200 px-1.5 py-0.5 rounded">
+                                {t.assignedProperty.propertyNumber}
+                              </span>
+                              <div className="text-xs text-slate-600 truncate max-w-[280px]">
+                                {t.assignedProperty.address || t.assignedProperty.location}
+                              </div>
+                            </div>
                           ) : (
-                            <div className="w-9 h-9 rounded-full bg-navy-100 text-navy-800 font-extrabold text-xs flex items-center justify-center border border-navy-200">
-                              {t.fullName.charAt(0).toUpperCase()}
+                            <span className="text-[11px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2 py-0.5 rounded">
+                              {isHi ? 'आवंटन नहीं हुआ' : 'Unallotted'}
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Column 3: Monthly Rent */}
+                        <td className="px-4 py-3">
+                          <div className="font-bold text-slate-900 text-xs font-mono">
+                            {t.assignedProperty ? `₹${t.assignedProperty.monthlyRent.toLocaleString('en-IN')}/माह` : '—'}
+                          </div>
+                          {t.outstandingBalance > 0 && (
+                            <div className="text-[11px] font-bold text-red-600 mt-0.5">
+                              बकाया: ₹{t.outstandingBalance.toLocaleString('en-IN')}
                             </div>
                           )}
-                          <div>
-                            <div className="font-bold text-navy-950">{t.fullName}</div>
-                            <div className="text-slate-400 text-xs font-normal">{t.mobile}</div>
+                        </td>
+
+                        {/* Column 4: Actions - View & Delete */}
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => handleViewDetails(t.id)}
+                              className="px-2.5 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-lg font-semibold text-xs transition inline-flex items-center gap-1 cursor-pointer"
+                              title={isHi ? 'किरायेदार प्रोफ़ाइल देखें' : 'View Tenant Profile'}
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>{isHi ? 'देखें' : 'View'}</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => requestDeleteTenant(t)}
+                              className="px-2.5 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-lg font-semibold text-xs transition inline-flex items-center gap-1 cursor-pointer"
+                              title={isHi ? 'किरायेदार हटाएं' : 'Delete Tenant'}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>{isHi ? 'हटाएं' : 'Delete'}</span>
+                            </button>
                           </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 📱 MOBILE VIEW: Clean Responsive Cards (No Table) */}
+              <div className="md:hidden divide-y divide-slate-100">
+                {tenants.map((t) => (
+                  <div key={t.id} className="p-4 space-y-3 bg-white hover:bg-slate-50/50 transition-colors">
+                    {/* Header: Profile Photo + Tenant Name, Mobile, Code */}
+                    <div className="flex items-center gap-3">
+                      {t.profilePhotoUrl ? (
+                        <img
+                          src={t.profilePhotoUrl}
+                          alt={t.fullName}
+                          className="w-11 h-11 rounded-full object-cover border border-slate-300 shadow-2xs shrink-0"
+                        />
+                      ) : (
+                        <div className="w-11 h-11 rounded-full bg-slate-100 text-[#0b1b36] font-bold text-sm flex items-center justify-center border border-slate-300 shrink-0">
+                          {t.fullName.charAt(0).toUpperCase()}
                         </div>
-                      </td>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-bold text-slate-900 text-sm truncate">{t.fullName}</h3>
+                        <div className="flex items-center gap-2 text-xs text-slate-500 font-mono mt-0.5">
+                          <span>{t.mobile}</span>
+                          <span>•</span>
+                          <span className="text-[10px] bg-slate-100 px-1.5 py-0.5 rounded font-bold text-slate-600">
+                            {t.userCode}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
-                      <td className="px-4 py-3.5 font-mono text-xs font-bold text-slate-700">
-                        {t.userCode}
-                      </td>
-
-                      <td className="px-4 py-3.5">
+                    {/* Info Grid: Shop No & Address, Monthly Rent */}
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                          {isHi ? 'दुकान संख्या व पता' : 'Shop No & Address'}
+                        </span>
                         {t.assignedProperty ? (
                           <div>
-                            <div className="font-bold text-slate-900">{t.assignedProperty.propertyNumber}</div>
-                            <div className="text-[11px] text-slate-400 truncate max-w-[160px]">
-                              {t.assignedProperty.location}
-                            </div>
+                            <span className="font-bold text-slate-900 text-xs font-mono inline-block bg-blue-50 text-blue-800 border border-blue-200 px-1.5 py-0.5 rounded mb-0.5">
+                              {t.assignedProperty.propertyNumber}
+                            </span>
+                            <p className="text-slate-600 text-xs line-clamp-2">
+                              {t.assignedProperty.address || t.assignedProperty.location}
+                            </p>
                           </div>
                         ) : (
-                          <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-md">
-                            {isHi ? 'आवंटित नहीं' : 'Unallotted'}
+                          <span className="text-[11px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded">
+                            {isHi ? 'आवंटन नहीं हुआ' : 'Unallotted'}
                           </span>
                         )}
-                      </td>
+                      </div>
 
-                      <td className="px-4 py-3.5 font-bold text-slate-900">
-                        {t.assignedProperty ? `₹${t.assignedProperty.monthlyRent.toLocaleString('en-IN')}` : '—'}
-                      </td>
-
-                      <td className="px-4 py-3.5">
-                        {t.outstandingBalance > 0 ? (
-                          <span className="font-bold text-rose-600">
-                            ₹{t.outstandingBalance.toLocaleString('en-IN')}
-                          </span>
-                        ) : (
-                          <span className="font-bold text-emerald-600">₹0</span>
+                      <div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
+                          {isHi ? 'मासिक किराया' : 'Monthly Rent'}
+                        </span>
+                        <div className="font-bold text-slate-900 text-xs font-mono">
+                          {t.assignedProperty ? `₹${t.assignedProperty.monthlyRent.toLocaleString('en-IN')}/माह` : '—'}
+                        </div>
+                        {t.outstandingBalance > 0 && (
+                          <div className="text-[11px] font-bold text-red-600 mt-0.5">
+                            बकाया: ₹{t.outstandingBalance.toLocaleString('en-IN')}
+                          </div>
                         )}
-                      </td>
+                      </div>
+                    </div>
 
-                      <td className="px-4 py-3.5">
-                        {t.status === 'ACTIVE' ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                            {isHi ? 'सक्रिय' : 'Active'}
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
-                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-                            {isHi ? 'निष्क्रिय' : 'Inactive'}
-                          </span>
-                        )}
-                      </td>
+                    {/* Actions: View and Delete */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleViewDetails(t.id)}
+                        className="flex-1 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 rounded-lg font-semibold text-xs transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>{isHi ? 'देखें' : 'View'}</span>
+                      </button>
 
-                      <td className="px-5 py-3.5 text-right space-x-2">
-                        {/* LEDGER BUTTON */}
-                        <NavLink
-                          to={`/rental/admin/ledger?tenantId=${t.id}`}
-                          className="px-2.5 py-1.5 bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-300 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1 shadow-xs cursor-pointer"
-                          title={isHi ? 'बहीखाता / लेजर देखें' : 'View Ledger'}
-                        >
-                          <BookOpen className="w-3.5 h-3.5 text-amber-700" />
-                          <span>{isHi ? 'लेजर' : 'Ledger'}</span>
-                        </NavLink>
-
-                        {/* VIEW BUTTON (OPENS PROFILE) */}
-                        <button
-                          type="button"
-                          onClick={() => handleViewDetails(t.id)}
-                          className="px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200/70 rounded-lg font-bold text-xs transition-colors inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
-                          title={isHi ? 'किरायेदार प्रोफ़ाइल देखें' : 'View Tenant Profile'}
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>{isHi ? 'देखें' : 'View'}</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => requestToggleStatus(t)}
-                          className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-colors cursor-pointer ${t.status === 'ACTIVE'
-                            ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200/50'
-                            : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/50'
-                            }`}
-                        >
-                          {t.status === 'ACTIVE' ? (isHi ? 'निष्क्रिय' : 'Deactivate') : (isHi ? 'सक्रिय' : 'Activate')}
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      <button
+                        type="button"
+                        onClick={() => requestDeleteTenant(t)}
+                        className="flex-1 py-2 bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 rounded-lg font-semibold text-xs transition inline-flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>{isHi ? 'हटाएं' : 'Delete'}</span>
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
@@ -1293,7 +1373,7 @@ export const TenantListPage: React.FC = () => {
           </div>
         )}
 
-        {/* Confirmation Dialog */}
+        {/* Status Toggle Confirmation Dialog */}
         <AdminConfirmModal
           isOpen={confirmModal.isOpen}
           title={
@@ -1326,6 +1406,29 @@ export const TenantListPage: React.FC = () => {
           loading={confirmModal.loading}
           onConfirm={handleConfirmToggleStatus}
           onDeny={() => setConfirmModal({ isOpen: false, tenant: null, loading: false })}
+        />
+
+        {/* Delete Tenant Confirmation Dialog */}
+        <AdminConfirmModal
+          isOpen={deleteModal.isOpen}
+          title={isHi ? 'किरायेदार स्थायी रूप से हटाएं' : 'Delete Tenant Account'}
+          message={
+            isHi
+              ? 'क्या आप वाकई इस किरायेदार को स्थायी रूप से हटाना चाहते हैं? यदि इस किरायेदार को कोई दुकान आवंटित है, तो वह दुकान स्वतः रिक्त (VACANT) हो जाएगी। यह कार्रवाई वापस नहीं ली जा सकती।'
+              : 'Are you sure you want to permanently delete this tenant? Any assigned shop will be reset to VACANT. This action cannot be undone.'
+          }
+          subject={
+            deleteModal.tenant
+              ? `${deleteModal.tenant.fullName} (${deleteModal.tenant.userCode}) • ${deleteModal.tenant.mobile}`
+              : undefined
+          }
+          variant="danger"
+          iconType="trash"
+          confirmText={isHi ? 'हां, किरायेदार हटाएं' : 'Delete Tenant'}
+          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          loading={deleteModal.loading}
+          onConfirm={handleConfirmDelete}
+          onDeny={() => setDeleteModal({ isOpen: false, tenant: null, loading: false })}
         />
       </div>
     </AdminLayout>

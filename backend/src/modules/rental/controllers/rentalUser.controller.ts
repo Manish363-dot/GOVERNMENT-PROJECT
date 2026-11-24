@@ -42,6 +42,7 @@ export class RentalUserController {
         panDoc: files.pan_doc?.[0],
         domicileDoc: files.domicile_doc?.[0],
         gstDoc: files.gst_doc?.[0],
+        shopPhoto: files.shop_photo?.[0],
       };
 
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
@@ -150,6 +151,7 @@ export class RentalUserController {
         panDoc: files.pan_doc?.[0],
         domicileDoc: files.domicile_doc?.[0],
         gstDoc: files.gst_doc?.[0],
+        shopPhoto: files.shop_photo?.[0],
       };
 
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
@@ -185,6 +187,23 @@ export class RentalUserController {
       return sendSuccess(res, result, 'Secure download URL generated successfully');
     } catch (err: any) {
       return sendError(res, err.message || 'Access to document denied', 403);
+    }
+  }
+
+  /**
+   * DELETE /api/rental/users/admin/:id
+   * Permanently deletes a tenant and vacates assigned properties
+   */
+  async deleteTenant(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      const adminId = req.rentalAdmin?.adminId || 'admin';
+      const clientIp = req.ip || req.socket.remoteAddress;
+
+      const result = await rentalUserService.deleteTenant(id, adminId, clientIp);
+      return sendSuccess(res, result, 'Tenant deleted successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to delete tenant', 400);
     }
   }
 }

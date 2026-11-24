@@ -1,4 +1,5 @@
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
+import { transliterateToHindi } from '../../../shared/utils/transliterate.util';
 
 export interface CreatePropertyDTO {
   propertyName: string;
@@ -34,14 +35,21 @@ export class RentalPropertyService {
         throw new Error(`Property ${dto.propertyNumber} already exists in ${dto.location}.`);
       }
 
+      // Auto-transliterate English property name, location, and address to Hindi
+      const [hindiName, hindiLocation, hindiAddress] = await Promise.all([
+        transliterateToHindi(dto.propertyName),
+        transliterateToHindi(dto.location),
+        transliterateToHindi(dto.address),
+      ]);
+
       const property = await rentalPrisma.rentalProperty.create({
         data: {
           property_id: propertyId,
-          property_name: dto.propertyName.trim(),
+          property_name: (hindiName || dto.propertyName).trim(),
           property_type: dto.propertyType || 'COMMERCIAL_SHOP',
           property_number: dto.propertyNumber.trim(),
-          location: dto.location.trim(),
-          address: dto.address.trim(),
+          location: (hindiLocation || dto.location).trim(),
+          address: (hindiAddress || dto.address).trim(),
           dimensions_sqft: dto.dimensionsSqft ? Number(dto.dimensionsSqft) : null,
           base_monthly_rent: Number(dto.baseMonthlyRent),
           status: 'VACANT',

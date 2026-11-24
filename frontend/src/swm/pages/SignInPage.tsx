@@ -93,7 +93,7 @@ export function SignInPage() {
             {/* Background Image with Fade */}
             <div
               className="absolute inset-0 bg-cover bg-center opacity-40 scale-105 pointer-events-none"
-              style={{ backgroundImage: 'url(https://i.pinimg.com/736x/41/55/5f/41555f26ec46e770872f47265b5c2e89.jpg)' }}
+              style={{ backgroundImage: 'url(/admin-signin-bg.jpg), url(https://i.pinimg.com/736x/41/55/5f/41555f26ec46e770872f47265b5c2e89.jpg)' }}
             ></div>
             {/* Slight dark gradient overlay so white text stands out */}
             <div className="absolute inset-0 bg-navy-900/40 pointer-events-none z-0"></div>

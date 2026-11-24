@@ -44,6 +44,18 @@ export class RentalController {
       return sendError(res, err.message || 'Failed to submit grievance', 500);
     }
   }
+
+  async transliterateText(req: Request, res: Response) {
+    try {
+      const text = ((req.body?.text ?? req.query?.text ?? '') as string).trim();
+      const { transliterateToHindi } = await import('../../../shared/utils/transliterate.util');
+      const hindi = await transliterateToHindi(text);
+      return res.json({ success: true, original: text, hindi });
+    } catch (err: any) {
+      const text = ((req.body?.text ?? req.query?.text ?? '') as string).trim();
+      return res.json({ success: true, original: text, hindi: text });
+    }
+  }
 }
 
 export const rentalController = new RentalController();

@@ -48,13 +48,7 @@ const RentalLandingContent: React.FC = () => {
 };
 
 export const RentalPortalPage: React.FC = () => {
-  return (
-    <LanguageProvider>
-      <AuthProvider>
-        <RentalLandingContent />
-      </AuthProvider>
-    </LanguageProvider>
-  );
+  return <RentalLandingContent />;
 };
 
 export default RentalPortalPage;

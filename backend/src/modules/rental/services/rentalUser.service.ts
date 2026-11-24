@@ -40,6 +40,7 @@ export class RentalUserService {
       panDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
       domicileDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
       gstDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
+      shopPhoto?: { location: string; key: string; size: number; mimetype: string; originalname: string };
     },
     clientIp?: string
   ) {
@@ -74,19 +75,25 @@ export class RentalUserService {
       const salt = await bcrypt.genSalt(12);
       const passwordHash = await bcrypt.hash(plainPassword, salt);
 
+      // 4.1 Auto-transliterate English name and addresses to Hindi Devanagari script
+      const { transliterateToHindi } = await import('../../../shared/utils/transliterate.util');
+      const finalFullName = await transliterateToHindi(dto.fullName.trim());
+      const finalPermanentAddress = await transliterateToHindi(dto.permanentAddress.trim());
+      const finalCurrentAddress = dto.currentAddress ? await transliterateToHindi(dto.currentAddress.trim()) : null;
+
       // 5. Atomic database transaction
       const createdUser = await rentalPrisma.$transaction(async (tx) => {
         const user = await tx.rentalUser.create({
           data: {
             user_id: userCode,
-            full_name: dto.fullName.trim(),
+            full_name: finalFullName,
             mobile: dto.mobile.trim(),
             email: dto.email?.trim() || null,
             passwordHash,
             profile_photo_url: files.profilePhoto?.location || null,
             profile_photo_key: files.profilePhoto?.key || null,
-            permanent_address: dto.permanentAddress.trim(),
-            current_address: dto.currentAddress?.trim() || null,
+            permanent_address: finalPermanentAddress,
+            current_address: finalCurrentAddress,
             aadhaar_masked: aadhaarMasked,
             pan_masked: panMasked,
             gst_number: dto.gstNumber?.trim().toUpperCase() || null,
@@ -141,6 +148,18 @@ export class RentalUserService {
             file_name: files.gstDoc.originalname || 'GST_Certificate.pdf',
             file_size: files.gstDoc.size,
             mime_type: files.gstDoc.mimetype,
+            verification_status: 'PENDING' as const,
+          });
+        }
+        if (files.shopPhoto) {
+          docsToCreate.push({
+            user_id: user.id,
+            doc_type: 'OTHER' as const,
+            file_url: files.shopPhoto.location,
+            s3_key: files.shopPhoto.key,
+            file_name: files.shopPhoto.originalname || 'Shop_Photo.webp',
+            file_size: files.shopPhoto.size,
+            mime_type: files.shopPhoto.mimetype,
             verification_status: 'PENDING' as const,
           });
         }
@@ -280,6 +299,8 @@ export class RentalUserService {
             mobile: true,
             email: true,
             profile_photo_url: true,
+            permanent_address: true,
+            current_address: true,
             status: true,
             created_at: true,
             assignments: {
@@ -293,6 +314,7 @@ export class RentalUserService {
                     property_name: true,
                     property_number: true,
                     location: true,
+                    address: true,
                   },
                 },
               },
@@ -322,6 +344,8 @@ export class RentalUserService {
           mobile: u.mobile,
           email: u.email,
           profilePhotoUrl: u.profile_photo_url,
+          permanentAddress: u.permanent_address,
+          currentAddress: u.current_address,
           status: u.status,
           createdAt: u.created_at,
           assignedProperty: activeAssignment
@@ -330,6 +354,7 @@ export class RentalUserService {
                 propertyName: activeAssignment.property.property_name,
                 propertyNumber: activeAssignment.property.property_number,
                 location: activeAssignment.property.location,
+                address: activeAssignment.property.address,
                 monthlyRent: Number(activeAssignment.monthly_rent),
               }
             : null,
@@ -485,6 +510,7 @@ export class RentalUserService {
       panDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
       domicileDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
       gstDoc?: { location: string; key: string; size: number; mimetype: string; originalname: string };
+      shopPhoto?: { location: string; key: string; size: number; mimetype: string; originalname: string };
     },
     clientIp?: string
   ) {
@@ -795,6 +821,74 @@ export class RentalUserService {
         fileName: doc.file_name,
         presignedUrl,
         expiresInSeconds: 900,
+      };
+    });
+  }
+
+  /**
+   * Permanently delete a tenant from Database A and reset assigned property to VACANT
+   */
+  async deleteTenant(tenantId: string, adminId: string, clientIp?: string) {
+    return withRentalDbRetry(async () => {
+      const user = await rentalPrisma.rentalUser.findUnique({
+        where: { id: tenantId },
+        include: {
+          assignments: {
+            where: { is_active: true },
+          },
+        },
+      });
+
+      if (!user) {
+        throw new Error('किरायेदार रिकॉर्ड नहीं मिला (Tenant not found).');
+      }
+
+      await rentalPrisma.$transaction(async (tx) => {
+        // 1. Reset any active allotted properties to VACANT
+        for (const assign of user.assignments) {
+          await tx.rentalProperty.update({
+            where: { id: assign.property_id },
+            data: { status: 'VACANT' },
+          });
+        }
+
+        // 2. Delete related child records in order
+        await tx.rentalReceipt.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentalPayment.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentalLedgerEntry.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentalBill.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentChangeHistory.deleteMany({ where: { user_id: tenantId } });
+        await tx.propertyAssignment.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentalUserDocument.deleteMany({ where: { user_id: tenantId } });
+        await tx.paymentAuditTrail.deleteMany({ where: { user_id: tenantId } });
+        await tx.rentalNotice.deleteMany({ where: { recipient_user_id: tenantId } });
+
+        // 3. Delete the tenant user record
+        await tx.rentalUser.delete({
+          where: { id: tenantId },
+        });
+
+        // 4. Audit Log
+        await tx.rentalAdminAuditLog.create({
+          data: {
+            admin_id: adminId,
+            action: 'TENANT_DELETED',
+            target_entity: 'RentalUser',
+            target_id: tenantId,
+            reason: `Admin deleted tenant ${user.full_name} (${user.user_id})`,
+            before_state: JSON.stringify({
+              userId: user.user_id,
+              name: user.full_name,
+              mobile: user.mobile,
+            }),
+            ip_address: clientIp || null,
+          },
+        });
+      });
+
+      return {
+        success: true,
+        message: `Tenant ${user.full_name} (${user.user_id}) deleted successfully.`,
       };
     });
   }
