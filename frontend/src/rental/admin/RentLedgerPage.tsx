@@ -597,7 +597,7 @@ export const RentLedgerPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'राजस्व एवं किराया बहीखाता (Rent Ledger)' : 'Rent & Revenue Ledger'}
+      title={isHi ? 'राजस्व एवं किराया बहीखाता' : 'Rent & Revenue Ledger'}
       subtitle={isHi ? 'दैनिक किराया संकलन, किरायेदार पट्टा वैधता एवं संपूर्ण भुगतान इतिहास रजिस्टर' : 'Daily collections, lease validity and tenant payment audit ledger'}
       breadcrumbs={[{ label: isHi ? 'राजस्व बहीखाता' : 'Rent Ledger' }]}
     >
@@ -609,7 +609,7 @@ export const RentLedgerPage: React.FC = () => {
         <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              {isHi ? 'कुल संकलित किराया (All-Time)' : 'Total Rent Collected'}
+              {isHi ? 'कुल संकलित किराया' : 'Total Rent Collected'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
               <Wallet className="w-4 h-4" />
@@ -627,7 +627,7 @@ export const RentLedgerPage: React.FC = () => {
         <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              {isHi ? 'चालू माह संकलन (This Month)' : 'This Month'}
+              {isHi ? 'चालू माह संकलन' : 'This Month'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
               <Receipt className="w-4 h-4" />
@@ -663,7 +663,7 @@ export const RentLedgerPage: React.FC = () => {
         <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-1">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-600">
-              {isHi ? 'वर्तमान कुल बकाया (Outstanding)' : 'Total Outstanding'}
+              {isHi ? 'वर्तमान कुल बकाया' : 'Total Outstanding'}
             </span>
             <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
               <AlertTriangle className="w-4 h-4" />
@@ -694,7 +694,7 @@ export const RentLedgerPage: React.FC = () => {
             }`}
           >
             <BookOpen className="w-4 h-4" />
-            <span>{isHi ? '१. दैनिक व समग्र राजस्व बहीखाता (Master Ledger)' : '1. General Master Ledger'}</span>
+            <span>{isHi ? '१. दैनिक व समग्र राजस्व बहीखाता' : '1. General Master Ledger'}</span>
             <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${activeTab === 'master' ? 'bg-slate-700 text-slate-100' : 'bg-slate-200 text-slate-700'}`}>
               {totalCount}
             </span>
@@ -710,7 +710,7 @@ export const RentLedgerPage: React.FC = () => {
             }`}
           >
             <UserCheck className="w-4 h-4" />
-            <span>{isHi ? '२. किरायेदार बहीखाता व भुगतान इतिहास (Tenant Statement)' : '2. Tenant Payment History & Statement'}</span>
+            <span>{isHi ? '२. किरायेदार बहीखाता व भुगतान इतिहास' : '2. Tenant Payment History & Statement'}</span>
             {selectedTenantId && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono ${activeTab === 'tenant' ? 'bg-slate-700 text-slate-100' : 'bg-slate-200 text-slate-700'}`}>
                 Active
@@ -741,7 +741,7 @@ export const RentLedgerPage: React.FC = () => {
                         : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    {isHi ? 'आज (Today)' : 'Today'}
+                    {isHi ? 'आज' : 'Today'}
                   </button>
                   <button
                     type="button"
@@ -752,7 +752,7 @@ export const RentLedgerPage: React.FC = () => {
                         : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    {isHi ? 'कल (Yesterday)' : 'Yesterday'}
+                    {isHi ? 'कल' : 'Yesterday'}
                   </button>
                   <button
                     type="button"
@@ -763,7 +763,7 @@ export const RentLedgerPage: React.FC = () => {
                         : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    {isHi ? 'चालू माह (This Month)' : 'This Month'}
+                    {isHi ? 'चालू माह' : 'This Month'}
                   </button>
                   <button
                     type="button"
@@ -774,7 +774,7 @@ export const RentLedgerPage: React.FC = () => {
                         : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    {isHi ? 'समस्त (All)' : 'All Time'}
+                    {isHi ? 'समस्त' : 'All Time'}
                   </button>
                 </div>
 
@@ -792,7 +792,7 @@ export const RentLedgerPage: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 pt-1">
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {isHi ? 'विशिष्ट तिथि चुनें (Date)' : 'Select Date'}
+                    {isHi ? 'विशिष्ट तिथि चुनें' : 'Select Date'}
                   </label>
                   <input
                     type="date"
@@ -807,7 +807,7 @@ export const RentLedgerPage: React.FC = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {isHi ? 'माहवार (Month)' : 'Month'}
+                    {isHi ? 'माहवार' : 'Month'}
                   </label>
                   <input
                     type="month"
@@ -822,16 +822,16 @@ export const RentLedgerPage: React.FC = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {isHi ? 'भुगतान माध्यम (Mode)' : 'Payment Mode'}
+                    {isHi ? 'भुगतान माध्यम' : 'Payment Mode'}
                   </label>
                   <select
                     value={paymentMethodFilter}
                     onChange={(e) => setPaymentMethodFilter(e.target.value)}
                     className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-slate-500"
                   >
-                    <option value="ALL">{isHi ? 'समस्त माध्यम (All Modes)' : 'All Modes'}</option>
+                    <option value="ALL">{isHi ? 'समस्त माध्यम' : 'All Modes'}</option>
                     <option value="UPI">UPI / Online Gateway</option>
-                    <option value="CASH">{isHi ? 'नकद (Office Counter Cash)' : 'Cash Counter'}</option>
+                    <option value="CASH">{isHi ? 'नकद' : 'Cash Counter'}</option>
                     <option value="NET_BANKING">Net Banking / NEFT</option>
                     <option value="CHEQUE_DD">Cheque / Demand Draft</option>
                   </select>
@@ -885,7 +885,7 @@ export const RentLedgerPage: React.FC = () => {
                       <th className="py-2.5 px-3">क्र.</th>
                       <th className="py-2.5 px-3">{isHi ? 'भुगतान दिनांक व समय' : 'Payment Date & Time'}</th>
                       <th className="py-2.5 px-3">{isHi ? 'रसीद संख्या' : 'Receipt No.'}</th>
-                      <th className="py-2.5 px-3">{isHi ? 'किरायेदार (Tenant)' : 'Tenant Details'}</th>
+                      <th className="py-2.5 px-3">{isHi ? 'किरायेदार' : 'Tenant Details'}</th>
                       <th className="py-2.5 px-3">{isHi ? 'दुकान व स्थान' : 'Shop & Location'}</th>
                       <th className="py-2.5 px-3">{isHi ? 'बिल माह' : 'Month'}</th>
                       <th className="py-2.5 px-3">{isHi ? 'माध्यम' : 'Mode'}</th>
@@ -964,7 +964,7 @@ export const RentLedgerPage: React.FC = () => {
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-col sm:flex-row items-center gap-3 justify-between">
               <div className="w-full sm:flex-1">
                 <label className="block text-xs font-bold text-slate-700 mb-1">
-                  {isHi ? 'किरायेदार चुनें (Select Tenant to view payment history):' : 'Select Tenant:'}
+                  {isHi ? 'किरायेदार चुनें:' : 'Select Tenant:'}
                 </label>
                 <select
                   value={selectedTenantId}
@@ -1069,7 +1069,7 @@ export const RentLedgerPage: React.FC = () => {
                       {/* Registration Date */}
                       <div>
                         <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                          {isHi ? 'पंजीकरण दिनांक (Reg. Date)' : 'Registered On'}
+                          {isHi ? 'पंजीकरण दिनांक' : 'Registered On'}
                         </span>
                         <span className="font-bold text-slate-900 block mt-0.5">
                           {formatDateTime(tenantStatement.tenant.registrationDate)}
@@ -1081,7 +1081,7 @@ export const RentLedgerPage: React.FC = () => {
                       {/* Lease Validity Date */}
                       <div>
                         <span className="text-[10px] font-bold text-slate-500 uppercase block">
-                          {isHi ? 'पट्टा कब तक वैध है (Valid Till)' : 'Lease Valid Till'}
+                          {isHi ? 'पट्टा कब तक वैध है' : 'Lease Valid Till'}
                         </span>
                         <span className="font-bold text-slate-900 block mt-0.5">
                           {formatDate(tenantStatement.allotment?.leaseEndDate)}
@@ -1117,17 +1117,17 @@ export const RentLedgerPage: React.FC = () => {
                   {/* Financial KPI Numbers: Clean, Simple, SOBER */}
                   <div className="grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100 text-center">
                     <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'कुल मांग (Billed)' : 'Total Billed'}</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'कुल मांग' : 'Total Billed'}</span>
                       <span className="text-sm sm:text-base font-black font-mono text-slate-900">{formatCurrency(tenantStatement.summary.totalBilled)}</span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'कुल जमा (Paid)' : 'Total Paid'}</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'कुल जमा' : 'Total Paid'}</span>
                       <span className="text-sm sm:text-base font-black font-mono text-slate-900">{formatCurrency(tenantStatement.summary.totalPaid)}</span>
                     </div>
 
                     <div className="p-2.5 rounded-lg bg-white border border-slate-200">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'बकाया शेष (Due)' : 'Outstanding'}</span>
+                      <span className="text-[10px] font-bold text-slate-500 uppercase block">{isHi ? 'बकाया शेष' : 'Outstanding'}</span>
                       <span className="text-sm sm:text-base font-black font-mono text-slate-900">{formatCurrency(tenantStatement.summary.totalOutstanding)}</span>
                     </div>
                   </div>
@@ -1147,7 +1147,7 @@ export const RentLedgerPage: React.FC = () => {
                           : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      💳 {isHi ? '१. संपूर्ण भुगतान इतिहास (Payment History)' : '1. Payment History'} ({tenantStatement.rawPayments.length})
+                      💳 {isHi ? '१. संपूर्ण भुगतान इतिहास' : '1. Payment History'} ({tenantStatement.rawPayments.length})
                     </button>
 
                     <button
@@ -1159,7 +1159,7 @@ export const RentLedgerPage: React.FC = () => {
                           : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      📖 {isHi ? '२. विस्तृत बहीखाता (Debit/Credit Ledger)' : '2. Running Ledger'}
+                      📖 {isHi ? '२. विस्तृत बहीखाता' : '2. Running Ledger'}
                     </button>
 
                     <button
@@ -1171,7 +1171,7 @@ export const RentLedgerPage: React.FC = () => {
                           : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
                       }`}
                     >
-                      🧾 {isHi ? '३. माहवार मांग बिल (Monthly Bills)' : '3. Monthly Bills'} ({tenantStatement.rawBills.length})
+                      🧾 {isHi ? '३. माहवार मांग बिल' : '3. Monthly Bills'} ({tenantStatement.rawBills.length})
                     </button>
                   </div>
                 </div>
@@ -1183,7 +1183,7 @@ export const RentLedgerPage: React.FC = () => {
                   <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-700">
-                        {isHi ? 'किरायेदार द्वारा किए गए समस्त भुगतानों का विवरण (Payment Records):' : 'All Payment Records:'}
+                        {isHi ? 'किरायेदार द्वारा किए गए समस्त भुगतानों का विवरण:' : 'All Payment Records:'}
                       </span>
                       <span className="text-[11px] font-mono text-slate-500">
                         {isHi ? `कुल किश्तें: ${tenantStatement.rawPayments.length}` : `Total Payments: ${tenantStatement.rawPayments.length}`}
@@ -1200,7 +1200,7 @@ export const RentLedgerPage: React.FC = () => {
                             <th className="py-2.5 px-3">{isHi ? 'बिल अवधि' : 'Billing Period'}</th>
                             <th className="py-2.5 px-3 text-right text-slate-900">{isHi ? 'जमा राशि (रुपये)' : 'Amount Paid'}</th>
                             <th className="py-2.5 px-3">{isHi ? 'माध्यम' : 'Payment Mode'}</th>
-                            <th className="py-2.5 px-3">{isHi ? 'लेनदेन संदर्भ (Txn Ref / Gateway ID)' : 'Txn Reference'}</th>
+                            <th className="py-2.5 px-3">{isHi ? 'लेनदेन संदर्भ' : 'Txn Reference'}</th>
                             <th className="py-2.5 px-3 text-center">{isHi ? 'स्थिति' : 'Status'}</th>
                           </tr>
                         </thead>
@@ -1256,7 +1256,7 @@ export const RentLedgerPage: React.FC = () => {
                 {tenantSubTab === 'ledger' && (
                   <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
                     <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 text-xs font-bold text-slate-700">
-                      {isHi ? 'समग्र बहीखाता — देय किराया (Debit) एवं जमा भुगतान (Credit) व शेष बकाया:' : 'Running Ledger:'}
+                      {isHi ? 'समग्र बहीखाता — देय किराया एवं जमा भुगतान व शेष बकाया:' : 'Running Ledger:'}
                     </div>
 
                     <div className="overflow-x-auto">
@@ -1267,8 +1267,8 @@ export const RentLedgerPage: React.FC = () => {
                             <th className="py-2.5 px-3">{isHi ? 'प्रकार' : 'Type'}</th>
                             <th className="py-2.5 px-3">{isHi ? 'दस्तावेज सं.' : 'Doc No.'}</th>
                             <th className="py-2.5 px-3">{isHi ? 'विवरण' : 'Particulars'}</th>
-                            <th className="py-2.5 px-3 text-right">{isHi ? 'देय (Debit ₹)' : 'Debit ₹'}</th>
-                            <th className="py-2.5 px-3 text-right">{isHi ? 'जमा (Credit ₹)' : 'Credit ₹'}</th>
+                            <th className="py-2.5 px-3 text-right">{isHi ? 'देय' : 'Debit ₹'}</th>
+                            <th className="py-2.5 px-3 text-right">{isHi ? 'जमा' : 'Credit ₹'}</th>
                             <th className="py-2.5 px-3 text-right">{isHi ? 'शेष बकाया (₹)' : 'Balance ₹'}</th>
                           </tr>
                         </thead>

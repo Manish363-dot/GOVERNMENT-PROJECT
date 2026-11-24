@@ -165,7 +165,7 @@ export const RegisterSubAdminPage: React.FC = () => {
             <Lock className="w-6 h-6" />
           </div>
           <h2 className="text-lg font-bold text-slate-900">
-            {isHi ? 'केवल मुख्य प्रशासनिक अधिकारी (Super Admin) हेतु आरक्षित' : 'Super Admin Privileges Required'}
+            {isHi ? 'केवल मुख्य प्रशासनिक अधिकारी हेतु आरक्षित' : 'Super Admin Privileges Required'}
           </h2>
           <p className="text-xs text-slate-500 leading-relaxed">
             {isHi

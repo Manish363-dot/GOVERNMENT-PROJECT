@@ -11,6 +11,94 @@ import { RentalNavbar } from '../components/RentalNavbar';
 import { Footer } from '@/components/Footer';
 import { useLanguage } from '../context/LanguageContext';
 import { rentalBillingApi, DuesSearchResult } from '../services/rentalBilling.service';
+import { amountToHindiWords } from '../utils/hindiNumberWords';
+
+const loadImage = (src: string): Promise<HTMLImageElement | null> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+
+const jpegToPdfBlob = (jpegBytes: Uint8Array, imgWidth: number, imgHeight: number): Blob => {
+  const pdfW = 595.28;
+  const pdfH = Math.round((imgHeight / imgWidth) * pdfW * 100) / 100;
+
+  const encoder = new TextEncoder();
+  const chunks: Uint8Array[] = [];
+  const offsets: number[] = [];
+  let currentOffset = 0;
+
+  const pushStr = (str: string) => {
+    const bytes = encoder.encode(str);
+    chunks.push(bytes);
+    currentOffset += bytes.length;
+  };
+
+  const pushBytes = (bytes: Uint8Array) => {
+    chunks.push(bytes);
+    currentOffset += bytes.length;
+  };
+
+  const startObj = (id: number) => {
+    offsets[id] = currentOffset;
+    pushStr(`${id} 0 obj\n`);
+  };
+
+  pushStr('%PDF-1.4\n%\xFF\xFF\xFF\xFF\n');
+
+  startObj(1);
+  pushStr('<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+
+  startObj(2);
+  pushStr('<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+
+  startObj(3);
+  pushStr(
+    `<< /Type /Page /Parent 2 0 R /Resources << /XObject << /Im1 4 0 R >> >> /MediaBox [0 0 ${pdfW} ${pdfH}] /Contents 5 0 R >>\nendobj\n`
+  );
+
+  startObj(4);
+  pushStr(
+    `<< /Type /XObject /Subtype /Image /Width ${imgWidth} /Height ${imgHeight} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpegBytes.length} >>\nstream\n`
+  );
+  pushBytes(jpegBytes);
+  pushStr('\nendstream\nendobj\n');
+
+  const contentStream = `q ${pdfW} 0 0 ${pdfH} 0 0 cm /Im1 Do Q\n`;
+  startObj(5);
+  pushStr(`<< /Length ${contentStream.length} >>\nstream\n${contentStream}endstream\nendobj\n`);
+
+  const xrefOffset = currentOffset;
+  pushStr('xref\n0 6\n0000000000 65535 f \n');
+  for (let i = 1; i <= 5; i++) {
+    pushStr(`${String(offsets[i]).padStart(10, '0')} 00000 n \n`);
+  }
+  pushStr(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`);
+
+  return new Blob(chunks as unknown as BlobPart[], { type: 'application/pdf' });
+};
+
+const downloadCanvasAsPdf = (canvas: HTMLCanvasElement, filename: string) => {
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.98);
+  const base64 = dataUrl.split(',')[1];
+  const binaryStr = atob(base64);
+  const jpegBytes = new Uint8Array(binaryStr.length);
+  for (let i = 0; i < binaryStr.length; i++) {
+    jpegBytes[i] = binaryStr.charCodeAt(i);
+  }
+  const pdfBlob = jpegToPdfBlob(jpegBytes, canvas.width, canvas.height);
+  const url = URL.createObjectURL(pdfBlob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+};
 
 export const RentalCheckStatusPage: React.FC = () => {
   const { i18n } = useTranslation();
@@ -81,189 +169,513 @@ export const RentalCheckStatusPage: React.FC = () => {
     }
   };
 
-  // Direct Browser Print for Receipt Voucher
-  const handlePrintReceipt = (receiptNo: string, month: string, amount: number) => {
-    const printWindow = window.open('', '_blank', 'width=800,height=900');
-    if (!printWindow) return;
-
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Rent Payment Receipt - ${receiptNo}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #0b1b36; }
-            .receipt-box { border: 2px solid #0b1b36; border-radius: 8px; padding: 25px; max-width: 650px; margin: 0 auto; position: relative; }
-            .header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
-            .gov-title { font-size: 13px; font-weight: 700; color: #045928; text-transform: uppercase; letter-spacing: 1px; }
-            .office-title { font-size: 20px; font-weight: 800; margin: 5px 0; color: #0b1b36; }
-            .cell-title { font-size: 14px; font-weight: 600; color: #b45309; }
-            .receipt-badge { display: inline-block; background: #0b1b36; color: #fff; padding: 4px 12px; border-radius: 4px; font-weight: bold; font-size: 12px; margin-top: 10px; }
-            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; margin-bottom: 20px; }
-            .field label { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; display: block; margin-bottom: 2px; }
-            .field value { font-weight: 700; color: #0f172a; }
-            .amount-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 15px; text-align: center; margin: 20px 0; }
-            .amount-val { font-size: 26px; font-weight: 800; color: #166534; }
-            .footer-sig { display: flex; justify-content: space-between; margin-top: 40px; padding-top: 20px; border-top: 1px dashed #cbd5e1; font-size: 12px; color: #475569; }
-            .stamp-seal { border: 2px dashed #045928; color: #045928; padding: 6px 12px; border-radius: 6px; font-weight: 800; text-transform: uppercase; font-size: 11px; }
-            @media print { body { padding: 0; } }
-          </style>
-        </head>
-        <body>
-          <div class="receipt-box">
-            <div class="header">
-              <div class="gov-title">उत्तराखण्ड शासन • पंचायती राज विभाग</div>
-              <div class="office-title">कार्यालय जिला पंचायत अल्मोड़ा</div>
-              <div class="cell-title">वाणिज्यिक परिसंपत्ति एवं किराया प्रकोष्ठ (Rent Cell)</div>
-              <div class="receipt-badge">OFFICIAL RENT PAYMENT RECEIPT</div>
-            </div>
-
-            <div class="grid">
-              <div class="field">
-                <label>रसीद संख्या (Receipt No.)</label>
-                <value>${receiptNo}</value>
-              </div>
-              <div class="field">
-                <label>जारी दिनांक (Date of Issue)</label>
-                <value>${new Date().toLocaleDateString('en-IN')}</value>
-              </div>
-              <div class="field">
-                <label>किरायेदार का नाम (Tenant Name)</label>
-                <value>${result?.tenant?.name || 'Authorized Commercial Tenant'}</value>
-              </div>
-              <div class="field">
-                <label>पंजीकृत मोबाइल (Mobile)</label>
-                <value>${result?.tenant?.mobile || query}</value>
-              </div>
-              <div class="field">
-                <label>दुकान / परिसर संख्या (Shop No.)</label>
-                <value>${result?.tenant?.shopNo || 'Shop'}</value>
-              </div>
-              <div class="field">
-                <label>बाजार / परिसर (Location)</label>
-                <value>${result?.tenant?.location || 'Almora'}</value>
-              </div>
-              <div class="field">
-                <label>किराया माह (Billing Month)</label>
-                <value>${month}</value>
-              </div>
-              <div class="field">
-                <label>भुगतान स्थिति (Status)</label>
-                <value style="color: #166534; font-weight: 800;">पूर्ण भुगतान (PAID)</value>
-              </div>
-            </div>
-
-            <div class="amount-box">
-              <div style="font-size: 12px; color: #166534; font-weight: 700; text-transform: uppercase;">कुल प्राप्त धनराशि (Total Amount Received)</div>
-              <div class="amount-val">₹${amount.toLocaleString('en-IN')}</div>
-              <div style="font-size: 11px; color: #475569; margin-top: 4px;">कंप्यूटरीकृत डिजिटल ई-रसीद (Computer Generated Receipt)</div>
-            </div>
-
-            <div class="footer-sig">
-              <div class="stamp-seal">✓ VERIFIED & RECORDED</div>
-              <div style="text-align: right;">
-                <div style="font-weight: 700;">हस्ताक्षर प्राधिकृत अधिकारी / कर निरीक्षक</div>
-                <div>जिला पंचायत अल्मोड़ा (उत्तराखंड)</div>
-              </div>
-            </div>
-          </div>
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+  const formatHindiMonth = (monthStr: string) => {
+    if (!monthStr) return '—';
+    const parts = monthStr.split('-');
+    if (parts.length < 2) return monthStr;
+    const year = parts[0];
+    const m = parseInt(parts[1], 10);
+    const hiMonths = [
+      'जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
+      'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर',
+    ];
+    return m >= 1 && m <= 12 ? `${hiMonths[m - 1]} ${year}` : monthStr;
   };
 
-  // Direct Browser Print for Full Ledger Statement
-  const handlePrintLedger = () => {
-    const printWindow = window.open('', '_blank', 'width=900,height=1000');
-    if (!printWindow) return;
+  // Direct 1-Click PDF Download for Official Statutory Form 5 Receipt Voucher (100% Pure Hindi + Top Logos)
+  const handlePrintReceipt = async (receiptNo: string, month: string, amount: number) => {
+    const rawReceipt = String(receiptNo || '286480');
+    const digitsOnly = rawReceipt.replace(/\D/g, '');
+    const displayReceiptNumber = digitsOnly.length >= 3 ? digitsOnly.slice(-6) : rawReceipt;
+    const amountInWords = amountToHindiWords(amount);
 
-    const rows = result?.allBills
-      ?.map(
-        (b, i) => `
-      <tr>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">${i + 1}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; font-weight: 600;">${b.billingMonth}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1;">${b.billNumber}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right;">₹${b.totalAmountDue.toLocaleString('en-IN')}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right; color: #166534; font-weight: 700;">₹${b.amountPaid.toLocaleString('en-IN')}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: right; color: ${b.balanceDue > 0 ? '#b91c1c' : '#166534'}; font-weight: 700;">₹${b.balanceDue.toLocaleString('en-IN')}</td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; text-align: center;">
-          <span style="display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: ${b.status === 'PAID' ? '#dcfce7; color: #166534;' : '#fef3c7; color: #92400e;'}">
-            ${b.status}
-          </span>
-        </td>
-        <td style="padding: 8px; border: 1px solid #cbd5e1; font-family: monospace; font-size: 12px;">${b.receiptNumber || '-'}</td>
-      </tr>
-    `
-      )
-      .join('');
+    const resolvedShopNo =
+      result?.tenant?.shopNo && result.tenant.shopNo !== 'SHOP-TBD'
+        ? result.tenant.shopNo
+        : result?.pendingBills?.[0]?.propertyNumber || '01';
+    const resolvedLocation =
+      result?.tenant?.location && result.tenant.location !== 'Almora Market'
+        ? result.tenant.location
+        : result?.pendingBills?.[0]?.location || 'अल्मोड़ा';
 
-    printWindow.document.write(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Rent Ledger Statement - ${result?.tenant?.shopNo || 'Tenant'}</title>
-          <style>
-            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 30px; color: #0b1b36; }
-            .header { text-align: center; border-bottom: 2px solid #0b1b36; padding-bottom: 15px; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-            th { background: #0b1b36; color: #ffffff; padding: 10px 8px; font-weight: 700; text-align: left; }
-            @media print { body { padding: 0; } }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <div style="font-size: 12px; font-weight: bold; color: #045928;">उत्तराखण्ड शासन • जिला पंचायत अल्मोड़ा</div>
-            <h2 style="margin: 4px 0; color: #0b1b36;">वाणिज्यिक संपत्ति किराया खाता बही (Rent Ledger Statement)</h2>
-            <div style="font-size: 13px; color: #64748b;">Statement Generated on: ${new Date().toLocaleDateString('en-IN')}</div>
-          </div>
+    const bookNo = `B-${new Date().getFullYear()}/${resolvedShopNo}`;
+    const tenantCode = result?.tenant?.code || '';
+    const tenantName = result?.tenant?.name || 'किरायेदार';
+    const matchedBill = result?.allBills?.find((b) => b.billingMonth === month);
+    const billNo = matchedBill?.billNumber || `BL-${resolvedShopNo}-${month}`;
+    const isFull = matchedBill ? matchedBill.balanceDue <= 0 : true;
+    const formattedDate = new Date().toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
 
-          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-size: 13px; margin-bottom: 15px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
-            <div><strong>किरायेदार का नाम (Tenant):</strong> ${result?.tenant?.name}</div>
-            <div><strong>मोबाइल नंबर (Mobile):</strong> ${result?.tenant?.mobile}</div>
-            <div><strong>दुकान संख्या (Shop No.):</strong> ${result?.tenant?.shopNo}</div>
-            <div><strong>स्थान / बाजार (Location):</strong> ${result?.tenant?.location}</div>
-            <div><strong>कुल बकाया राशि (Total Outstanding):</strong> <span style="color: ${Number(result?.totalOutstanding) > 0 ? '#b91c1c' : '#166534'}; font-weight: bold;">₹${Number(result?.totalOutstanding).toLocaleString('en-IN')}</span></div>
-            <div><strong>चालू माह स्थिति (Current Month):</strong> <strong>${result?.isThisMonthComplete ? 'पूर्ण (Paid)' : 'लंबित (Pending)'}</strong></div>
-          </div>
+    const scale = 2;
+    const W = 800;
+    const H = 640;
+    const canvas = document.createElement('canvas');
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-          <table>
-            <thead>
-              <tr>
-                <th style="text-align: center;">क्र.</th>
-                <th>माह (Month)</th>
-                <th>बिल संख्या (Bill No)</th>
-                <th style="text-align: right;">देय (Due)</th>
-                <th style="text-align: right;">जमा (Paid)</th>
-                <th style="text-align: right;">बकाया (Balance)</th>
-                <th style="text-align: center;">स्थिति (Status)</th>
-                <th>रसीद संख्या (Receipt No)</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rows}
-            </tbody>
-          </table>
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
 
-          <div style="margin-top: 40px; display: flex; justify-content: space-between; font-size: 12px; color: #475569;">
-            <div>* यह एक प्रमाणित कंप्यूटरीकृत विवरण है।</div>
-            <div style="text-align: right; font-weight: bold;">प्राधिकृत हस्ताक्षरकर्ता, जिला पंचायत अल्मोड़ा</div>
-          </div>
+    const fontBase = "'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif";
+    const padX = 48;
+    const contentW = W - padX * 2;
 
-          <script>
-            window.onload = function() { window.print(); }
-          </script>
-        </body>
-      </html>
-    `);
-    printWindow.document.close();
+    const [logoLeft, logoRight] = await Promise.all([
+      loadImage('/assets/logo1.webp'),
+      loadImage('/assets/logo2.webp'),
+    ]);
+
+    if (logoLeft) ctx.drawImage(logoLeft, padX, 26, 56, 56);
+    if (logoRight) ctx.drawImage(logoRight, W - padX - 56, 26, 56, 56);
+
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.font = `bold 20px ${fontBase}`;
+    ctx.fillText('जिला पंचायत/क्षेत्र समिति प्रपत्र संख्या 5', W / 2, 44);
+    ctx.font = `600 14px ${fontBase}`;
+    ctx.fillText('(नियम 41 देखिये)', W / 2, 65);
+    ctx.font = `normal 12px ${fontBase}`;
+    ctx.fillText('(“डबल साइडेड कार्बन पेपर” पर अमिट पेन्सिल से लिखा जायेगा)', W / 2, 84);
+
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1;
+    const drawLine = (x1: number, x2: number, y: number) => {
+      ctx.beginPath();
+      ctx.moveTo(x1, y);
+      ctx.lineTo(x2, y);
+      ctx.stroke();
+    };
+
+    drawLine(padX, W - padX, 98);
+    ctx.font = `600 12px ${fontBase}`;
+    ctx.fillText('जिला पंचायत/जिले के नाम सहित क्षेत्र समिति के नाम का रबड़ स्टाम्प', W / 2, 116);
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('कार्यालय जिला पंचायत अल्मोड़ा (उत्तराखण्ड)', W / 2, 136);
+    drawLine(padX, W - padX, 146);
+
+    const row1Y = 182;
+    ctx.textAlign = 'left';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('बही संख्या', padX, row1Y);
+    drawLine(padX + 68, 420, row1Y + 4);
+    ctx.textAlign = 'center';
+    ctx.fillText(bookNo, (padX + 68 + 420) / 2, row1Y);
+
+    ctx.textAlign = 'left';
+    ctx.font = `bold 24px monospace`;
+    ctx.fillText(displayReceiptNumber, 450, row1Y);
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('रसीद संख्या', 565, row1Y);
+    drawLine(642, W - padX, row1Y + 4);
+
+    const row2Y = 218;
+    ctx.textAlign = 'left';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('मांग रजिस्टर संख्या', padX, row2Y);
+    ctx.textAlign = 'right';
+    ctx.fillText('से', W - padX, row2Y);
+    const tenantLine = `${tenantCode ? `${tenantCode}, ` : ''}${tenantName} (दुकान सं० ${resolvedShopNo}, ${resolvedLocation})`;
+    drawLine(padX + 122, W - padX - 24, row2Y + 4);
+    ctx.textAlign = 'left';
+    ctx.font = `bold 13.5px ${fontBase}`;
+    ctx.fillText(tenantLine, padX + 128, row2Y, contentW - 160);
+
+    const row3Y = 254;
+    ctx.textAlign = 'right';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('रुपया (शब्दों में)', W - padX, row3Y);
+    drawLine(padX, W - padX - 105, row3Y + 4);
+    ctx.textAlign = 'left';
+    ctx.fillText(amountInWords, padX + 8, row3Y, contentW - 120);
+
+    const row4Y = 290;
+    ctx.textAlign = 'left';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('बिल संख्या', padX, row4Y);
+    const billInfo = `${billNo} (माह: ${formatHindiMonth(month)})`;
+    drawLine(padX + 70, W - padX - 165, row4Y + 4);
+    ctx.textAlign = 'center';
+    ctx.fillText(billInfo, (padX + 70 + (W - padX - 165)) / 2, row4Y, contentW - 250);
+    ctx.textAlign = 'right';
+    ctx.fillText(isFull ? 'के पूर्ण /आंशिक भुगतान' : 'के पूर्ण/ आंशिक भुगतान', W - padX, row4Y);
+
+    const row5Y = 326;
+    ctx.textAlign = 'right';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('के मद प्राप्त हुआ।', W - padX, row5Y);
+    drawLine(padX, W - padX - 115, row5Y + 4);
+    ctx.textAlign = 'left';
+    ctx.fillText('वाणिज्यिक दुकान किराया', padX + 8, row5Y);
+
+    const amountY = 376;
+    drawLine(padX, 320, amountY + 4);
+    ctx.textAlign = 'center';
+    ctx.font = `bold 16px monospace`;
+    ctx.fillText(`₹ ${amount.toLocaleString('en-IN')}/-`, (padX + 320) / 2, amountY);
+    ctx.textAlign = 'left';
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('रुपया', 330, amountY);
+    ctx.textAlign = 'right';
+    ctx.fillText('मुख्य अधिकारी/खण्ड विकास अधिकारी', W - padX, amountY + 4);
+
+    const placeY = 414;
+    ctx.textAlign = 'left';
+    ctx.fillText('स्थान', padX, placeY);
+    drawLine(padX + 44, 370, placeY + 4);
+    ctx.textAlign = 'center';
+    ctx.fillText('अल्मोड़ा', (padX + 44 + 370) / 2, placeY);
+    ctx.textAlign = 'right';
+    ctx.fillText('कर समाहर्ता (टैक्स कलेक्टर)', W - padX, placeY + 22);
+
+    const dateY = 452;
+    ctx.textAlign = 'left';
+    ctx.fillText('दिनांक', padX, dateY);
+    drawLine(padX + 48, 370, dateY + 4);
+    ctx.textAlign = 'center';
+    ctx.font = `bold 14px monospace`;
+    ctx.fillText(formattedDate, (padX + 48 + 370) / 2, dateY);
+
+    ctx.font = `bold 14px ${fontBase}`;
+    ctx.fillText('रोकड़िया', (padX + 370) / 2, 496);
+
+    const bottomSignY = 550;
+    ctx.textAlign = 'left';
+    ctx.fillText('लेखाकार', padX, bottomSignY);
+    ctx.textAlign = 'center';
+    ctx.fillText('मांग तथा वसूली का प्रभारी लिपिक', W / 2, bottomSignY);
+    ctx.textAlign = 'right';
+    ctx.fillText('कर अधिकारी', W - padX, bottomSignY);
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)';
+    drawLine(padX, W - padX, 575);
+    ctx.textAlign = 'left';
+    ctx.font = `normal 11px ${fontBase}`;
+    ctx.fillText(
+      'पी०एस०यू० (आर०ई०) 02 पंचायतीराज / 124-10-12-2021-2,000 बुक्स (कम्प्यूटर/ऑफसेट)।',
+      padX,
+      596
+    );
+
+    downloadCanvasAsPdf(canvas, `ZPA_Receipt_${displayReceiptNumber}.pdf`);
   };
 
-  const isComplete = Boolean(result?.isThisMonthComplete);
+  // Direct 1-Click PDF Download for Full Ledger Statement (100% Pure Hindi + Pure Black Official Format)
+  const handlePrintLedger = async () => {
+    const getHindiStatus = (status: string, bal: number) => {
+      if (status === 'PAID' || bal <= 0) return 'पूर्ण चुकता';
+      if (status === 'PARTIALLY_PAID') return 'आंशिक भुगतान';
+      if (status === 'OVERDUE') return 'अतिदेय बकाया';
+      return 'लंबित / बकाया';
+    };
+
+    const billsList = result?.allBills || [];
+    const totalRentSum = billsList.reduce((acc, b) => acc + Number(b.rentAmount || b.totalAmountDue || 0), 0);
+    const totalDueSum = billsList.reduce((acc, b) => acc + Number(b.totalAmountDue || 0), 0);
+    const totalPaidSum = billsList.reduce((acc, b) => acc + Number(b.amountPaid || 0), 0);
+    const totalBalSum = billsList.reduce((acc, b) => acc + Number(b.balanceDue || 0), 0);
+
+    const resolvedShopNo =
+      result?.tenant?.shopNo && result.tenant.shopNo !== 'SHOP-TBD'
+        ? result.tenant.shopNo
+        : result?.pendingBills?.[0]?.propertyNumber || '—';
+
+    const resolvedLocation =
+      result?.tenant?.location && result.tenant.location !== 'Almora Market'
+        ? result.tenant.location
+        : result?.pendingBills?.[0]?.location || 'अल्मोड़ा';
+
+    const formattedNow = new Date().toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+
+    const scale = 2;
+    const W = 860;
+    const rowH = 34;
+    const tableRowsCount = Math.max(1, billsList.length) + (billsList.length > 0 ? 1 : 0);
+    const H = 560 + tableRowsCount * rowH;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = W * scale;
+    canvas.height = H * scale;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    const fontBase = "'Noto Sans Devanagari', 'Segoe UI', Arial, sans-serif";
+    const padX = 36;
+    const innerW = W - padX * 2;
+
+    const [logoLeft, logoRight] = await Promise.all([
+      loadImage('/assets/logo1.webp'),
+      loadImage('/assets/logo2.webp'),
+    ]);
+
+    if (logoLeft) ctx.drawImage(logoLeft, padX, 24, 62, 62);
+    if (logoRight) ctx.drawImage(logoRight, W - padX - 62, 24, 62, 62);
+
+    // Header (Pure Black)
+    ctx.fillStyle = '#000000';
+    ctx.textAlign = 'center';
+    ctx.font = `bold 13px ${fontBase}`;
+    ctx.fillText('उत्तराखण्ड शासन • पंचायती राज विभाग', W / 2, 34);
+    ctx.font = `800 22px ${fontBase}`;
+    ctx.fillText('कार्यालय जिला पंचायत अल्मोड़ा', W / 2, 58);
+    ctx.font = `600 13px ${fontBase}`;
+    ctx.fillText('वाणिज्यिक परिसंपत्ति एवं किराया प्रबंधन प्रकोष्ठ', W / 2, 76);
+    ctx.font = `bold 15px ${fontBase}`;
+    ctx.fillText('वाणिज्यिक संपत्ति किराया खाता बही एवं मांग विवरण पत्र', W / 2, 96);
+
+    // Parallel Reference Strip
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(padX, 110);
+    ctx.lineTo(W - padX, 110);
+    ctx.moveTo(padX, 136);
+    ctx.lineTo(W - padX, 136);
+    ctx.stroke();
+
+    ctx.font = `bold 12.5px ${fontBase}`;
+    ctx.textAlign = 'left';
+    ctx.fillText(
+      `पत्रांक: जि०पं०अ० / किराया-लेखा / ${new Date().getFullYear()} / ${result?.tenant?.code || '01'}`,
+      padX + 4,
+      127
+    );
+    ctx.textAlign = 'right';
+    ctx.fillText(`जारी दिनांक: ${formattedNow}`, W - padX - 4, 127);
+
+    // Section 1: Tenant & Shop Info Table (Pure Black)
+    let curY = 160;
+    ctx.textAlign = 'left';
+    ctx.font = `bold 13.5px ${fontBase}`;
+    ctx.fillText('१. आवंटी / किरायेदार एवं आवंटित दुकान का विवरण:', padX, curY);
+
+    curY += 10;
+    const infoRowH = 32;
+    const infoH = infoRowH * 4;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(padX, curY, innerW, infoH);
+
+    const col1W = Math.round(innerW * 0.23);
+    const col2W = Math.round(innerW * 0.27);
+    const col3W = Math.round(innerW * 0.23);
+
+    for (let r = 1; r <= 3; r++) {
+      ctx.beginPath();
+      ctx.moveTo(padX, curY + r * infoRowH);
+      ctx.lineTo(padX + innerW, curY + r * infoRowH);
+      ctx.stroke();
+    }
+
+    // Vertical lines in info table (first 3 rows have 4 columns, 4th row has 2 columns)
+    ctx.beginPath();
+    ctx.moveTo(padX + col1W, curY);
+    ctx.lineTo(padX + col1W, curY + infoH);
+    ctx.moveTo(padX + col1W + col2W, curY);
+    ctx.lineTo(padX + col1W + col2W, curY + infoRowH * 3);
+    ctx.moveTo(padX + col1W + col2W + col3W, curY);
+    ctx.lineTo(padX + col1W + col2W + col3W, curY + infoRowH * 3);
+    ctx.stroke();
+
+    const drawInfoCell = (x: number, y: number, text: string, bold = true) => {
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#000000';
+      ctx.font = `${bold ? 'bold' : 'normal'} 13px ${fontBase}`;
+      ctx.fillText(text, x + 10, y + 21);
+    };
+
+    drawInfoCell(padX, curY, 'किरायेदार का नाम:');
+    drawInfoCell(padX + col1W, curY, result?.tenant?.name || '—');
+    drawInfoCell(padX + col1W + col2W, curY, 'पंजीकृत मोबाइल नंबर:');
+    drawInfoCell(padX + col1W + col2W + col3W, curY, result?.tenant?.mobile || query);
+
+    drawInfoCell(padX, curY + infoRowH, 'आवंटित दुकान संख्या:');
+    drawInfoCell(padX + col1W, curY + infoRowH, resolvedShopNo);
+    drawInfoCell(padX + col1W + col2W, curY + infoRowH, 'स्थान / बाजार:');
+    drawInfoCell(padX + col1W + col2W + col3W, curY + infoRowH, resolvedLocation);
+
+    drawInfoCell(padX, curY + infoRowH * 2, 'किरायेदार पहचान कोड:');
+    drawInfoCell(padX + col1W, curY + infoRowH * 2, result?.tenant?.code || '—');
+    drawInfoCell(padX + col1W + col2W, curY + infoRowH * 2, 'चालू माह की स्थिति:');
+    drawInfoCell(padX + col1W + col2W + col3W, curY + infoRowH * 2, isComplete ? 'पूर्ण चुकता' : 'लंबित / बकाया');
+
+    drawInfoCell(padX, curY + infoRowH * 3, 'कुल देय बकाया राशि:');
+    drawInfoCell(
+      padX + col1W,
+      curY + infoRowH * 3,
+      `₹${Number(result?.totalOutstanding || 0).toLocaleString('en-IN')}/-`
+    );
+
+    // Section 2: Monthly Bills Table (Pure Black)
+    curY += infoH + 26;
+    ctx.textAlign = 'left';
+    ctx.font = `bold 13.5px ${fontBase}`;
+    ctx.fillText('२. माहवार किराया मांग एवं जमा खाता बही विवरण:', padX, curY);
+
+    curY += 10;
+    const colWidths = [42, 100, 145, 86, 86, 82, 86, 85, innerW - (42 + 100 + 145 + 86 + 86 + 82 + 86 + 85)];
+    const colX: number[] = [];
+    let accX = padX;
+    for (const w of colWidths) {
+      colX.push(accX);
+      accX += w;
+    }
+
+    const totalTableH = (1 + tableRowsCount) * rowH;
+    ctx.strokeRect(padX, curY, innerW, totalTableH);
+
+    // Header row bottom border (thicker)
+    ctx.lineWidth = 1.4;
+    ctx.beginPath();
+    ctx.moveTo(padX, curY + rowH);
+    ctx.lineTo(padX + innerW, curY + rowH);
+    ctx.stroke();
+    ctx.lineWidth = 1;
+
+    const headers = [
+      { label: 'क्र.', align: 'center' as CanvasTextAlign },
+      { label: 'बिल माह', align: 'left' as CanvasTextAlign },
+      { label: 'बिल संख्या', align: 'left' as CanvasTextAlign },
+      { label: 'मासिक किराया', align: 'right' as CanvasTextAlign },
+      { label: 'कुल देय राशि', align: 'right' as CanvasTextAlign },
+      { label: 'जमा राशि', align: 'right' as CanvasTextAlign },
+      { label: 'अवशेष बकाया', align: 'right' as CanvasTextAlign },
+      { label: 'भुगतान स्थिति', align: 'center' as CanvasTextAlign },
+      { label: 'रसीद संख्या', align: 'center' as CanvasTextAlign },
+    ];
+
+    headers.forEach((h, idx) => {
+      const cx = colX[idx];
+      const cw = colWidths[idx];
+      ctx.font = `bold 12px ${fontBase}`;
+      ctx.fillStyle = '#000000';
+      ctx.textAlign = h.align;
+      const tx = h.align === 'center' ? cx + cw / 2 : h.align === 'right' ? cx + cw - 8 : cx + 8;
+      ctx.fillText(h.label, tx, curY + 22);
+    });
+
+    // Draw rows
+    if (billsList.length === 0) {
+      ctx.textAlign = 'center';
+      ctx.font = `normal 12.5px ${fontBase}`;
+      ctx.fillText('कोई बिल अभिलेख उपलब्ध नहीं है।', W / 2, curY + rowH + 22);
+    } else {
+      for (let r = 1; r <= colWidths.length - 1; r++) {
+        ctx.beginPath();
+        ctx.moveTo(colX[r], curY);
+        ctx.lineTo(colX[r], curY + (1 + billsList.length) * rowH);
+        ctx.stroke();
+      }
+
+      billsList.forEach((b, rIdx) => {
+        const ry = curY + (1 + rIdx) * rowH;
+        ctx.beginPath();
+        ctx.moveTo(padX, ry + rowH);
+        ctx.lineTo(padX + innerW, ry + rowH);
+        ctx.stroke();
+
+        const cells = [
+          String(rIdx + 1),
+          formatHindiMonth(b.billingMonth),
+          b.billNumber,
+          `₹${Number(b.rentAmount || b.totalAmountDue || 0).toLocaleString('en-IN')}`,
+          `₹${b.totalAmountDue.toLocaleString('en-IN')}`,
+          `₹${b.amountPaid.toLocaleString('en-IN')}`,
+          `₹${b.balanceDue.toLocaleString('en-IN')}`,
+          getHindiStatus(b.status, b.balanceDue),
+          b.receiptNumber || '—',
+        ];
+
+        cells.forEach((val, cIdx) => {
+          const cx = colX[cIdx];
+          const cw = colWidths[cIdx];
+          const align = headers[cIdx].align;
+          ctx.textAlign = align;
+          ctx.fillStyle = '#000000';
+          ctx.font = `bold 12px ${fontBase}`;
+          const tx = align === 'center' ? cx + cw / 2 : align === 'right' ? cx + cw - 8 : cx + 8;
+          ctx.fillText(val, tx, ry + 22, cw - 12);
+        });
+      });
+
+      // Total summary row
+      const totY = curY + (1 + billsList.length) * rowH;
+      // Vertical dividers for total row
+      [3, 4, 5, 6, 7].forEach((idx) => {
+        ctx.beginPath();
+        ctx.moveTo(colX[idx], totY);
+        ctx.lineTo(colX[idx], totY + rowH);
+        ctx.stroke();
+      });
+
+      ctx.font = `bold 12.5px ${fontBase}`;
+      ctx.textAlign = 'right';
+      ctx.fillText('कुल योग :', colX[3] - 10, totY + 22);
+      ctx.fillText(`₹${totalRentSum.toLocaleString('en-IN')}`, colX[3] + colWidths[3] - 8, totY + 22);
+      ctx.fillText(`₹${totalDueSum.toLocaleString('en-IN')}`, colX[4] + colWidths[4] - 8, totY + 22);
+      ctx.fillText(`₹${totalPaidSum.toLocaleString('en-IN')}`, colX[5] + colWidths[5] - 8, totY + 22);
+      ctx.fillText(`₹${totalBalSum.toLocaleString('en-IN')}`, colX[6] + colWidths[6] - 8, totY + 22);
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        totalBalSum > 0 ? 'बकाया देय' : 'पूर्ण चुकता',
+        colX[7] + (colWidths[7] + colWidths[8]) / 2,
+        totY + 22
+      );
+    }
+
+    // Signatures at bottom
+    const signY = curY + totalTableH + 58;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#000000';
+
+    ctx.font = `normal 12px ${fontBase}`;
+    ctx.fillText('हस्ताक्षर', padX + 95, signY);
+    ctx.fillText('कार्यालय मुहर', W / 2, signY);
+    ctx.fillText('हस्ताक्षर', W - padX - 95, signY);
+
+    ctx.font = `bold 13px ${fontBase}`;
+    ctx.fillText('मांग एवं वसूली लिपिक', padX + 95, signY + 22);
+    ctx.fillText('कार्यालय जिला पंचायत अल्मोड़ा', W / 2, signY + 22);
+    ctx.fillText('कर अधिकारी / मुख्य अधिकारी', W - padX - 95, signY + 22);
+
+    ctx.font = `normal 11.5px ${fontBase}`;
+    ctx.fillText('जिला पंचायत अल्मोड़ा', padX + 95, signY + 40);
+    ctx.fillText('उत्तराखण्ड शासन', W / 2, signY + 40);
+    ctx.fillText('जिला पंचायत अल्मोड़ा', W - padX - 95, signY + 40);
+
+    // Bottom Note
+    ctx.beginPath();
+    ctx.moveTo(padX, signY + 58);
+    ctx.lineTo(W - padX, signY + 58);
+    ctx.stroke();
+
+    ctx.font = `normal 11px ${fontBase}`;
+    ctx.fillText(
+      'नोट: यह प्रपत्र कार्यालय जिला पंचायत अल्मोड़ा के वाणिज्यिक परिसंपत्ति एवं किराया प्रबंधन पोर्टल द्वारा जारी शासकीय खाता बही विवरण है।',
+      W / 2,
+      signY + 76
+    );
+
+    downloadCanvasAsPdf(canvas, `ZPA_Rent_Ledger_${resolvedShopNo}.pdf`);
+  };
+
+  const hasAnyBills = Boolean(result?.allBills && result.allBills.length > 0);
+  const isComplete = Boolean(
+    hasAnyBills && result?.isThisMonthComplete && result?.currentMonthBill?.status === 'PAID'
+  );
   const totalOutstanding = Number(result?.totalOutstanding || 0);
 
   return (

@@ -129,7 +129,7 @@ export const SubAdminManagementPage: React.FC = () => {
   if (!isSuperAdmin) {
     return (
       <AdminLayout
-        title={isHi ? 'अनधिकृत पहुंच (Access Denied)' : 'Restricted Access'}
+        title={isHi ? 'अनधिकृत पहुंच' : 'Restricted Access'}
         breadcrumbs={[{ label: isHi ? 'उप-प्रशासक' : 'Sub-Admins' }]}
       >
         <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200/90 shadow-sm text-center max-w-2xl mx-auto space-y-4 my-8">
@@ -137,11 +137,11 @@ export const SubAdminManagementPage: React.FC = () => {
             <Lock className="w-8 h-8" />
           </div>
           <h2 className="text-xl font-extrabold text-slate-900">
-            {isHi ? 'केवल मुख्य प्रशासनिक अधिकारी (Super Admin) हेतु आरक्षित' : 'Super Admin Privileges Required'}
+            {isHi ? 'केवल मुख्य प्रशासनिक अधिकारी हेतु आरक्षित' : 'Super Admin Privileges Required'}
           </h2>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
             {isHi
-              ? 'उप-प्रशासकों (Sub-Admins) का नया पंजीकरण, अधिकार संशोधन एवं निलंबन केवल ज़िला पंचायत अल्मोड़ा के मुख्य प्रशासनिक अधिकारी द्वारा ही किया जा सकता है।'
+              ? 'उप-प्रशासकों का नया पंजीकरण, अधिकार संशोधन एवं निलंबन केवल ज़िला पंचायत अल्मोड़ा के मुख्य प्रशासनिक अधिकारी द्वारा ही किया जा सकता है।'
               : 'Registration, privilege delegation, and account suspension of sub-administrators is strictly restricted to the Super Administrator of Zila Panchayat Almora.'}
           </p>
           <div className="pt-4 flex justify-center">
@@ -159,7 +159,7 @@ export const SubAdminManagementPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'उप-प्रशासक प्रबंधन (Sub-Admins)' : 'Sub-Admin Management'}
+      title={isHi ? 'उप-प्रशासक प्रबंधन' : 'Sub-Admin Management'}
       breadcrumbs={[{ label: isHi ? 'उप-प्रशासक' : 'Sub-Admins' }]}
     >
       {/* Top Privilege Bar */}
@@ -347,7 +347,7 @@ export const SubAdminManagementPage: React.FC = () => {
             ? isHi ? 'हां, निलंबित करें' : 'Suspend Account'
             : isHi ? 'हां, सक्रिय करें' : 'Activate Account'
         }
-        denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+        denyText={isHi ? 'रद्द करें' : 'Cancel'}
         loading={confirmModal.loading}
         onConfirm={handleConfirmToggleStatus}
         onDeny={() => setConfirmModal({ isOpen: false, admin: null, loading: false })}

@@ -193,7 +193,7 @@ export class RentalUserService {
         const rent = dto.monthlyRent ? Number(dto.monthlyRent) : Number(property.base_monthly_rent);
         const leaseStart = dto.rentEffectiveDate ? new Date(dto.rentEffectiveDate) : new Date();
 
-        await tx.propertyAssignment.create({
+        const createdAssignment = await tx.propertyAssignment.create({
           data: {
             property_id: property.id,
             user_id: user.id,
@@ -208,6 +208,46 @@ export class RentalUserService {
         await tx.rentalProperty.update({
           where: { id: property.id },
           data: { status: 'ALLOTTED' },
+        });
+
+        // Automatically generate initial PENDING monthly demand bill so new user is NOT shown as ₹0 / Paid
+        const billDate = !isNaN(leaseStart.getTime()) ? leaseStart : new Date();
+        const billYear = billDate.getFullYear();
+        const billMonthNum = billDate.getMonth() + 1;
+        const billingMonthStr = `${billYear}-${String(billMonthNum).padStart(2, '0')}`;
+        const dueDate = new Date(billYear, billMonthNum - 1, 20, 23, 59, 59);
+        const billNumber = `BL-${property.property_number}-${billingMonthStr}`;
+
+        const initialBill = await tx.rentalBill.create({
+          data: {
+            bill_number: billNumber,
+            user_id: user.id,
+            property_id: property.id,
+            assignment_id: createdAssignment.id,
+            billing_month: billingMonthStr,
+            billing_year: billYear,
+            rent_amount: rent,
+            adjustment_amount: 0.0,
+            total_amount_due: rent,
+            amount_paid: 0.0,
+            balance_due: rent,
+            due_date: dueDate,
+            status: 'PENDING',
+          },
+        });
+
+        await tx.rentalLedgerEntry.create({
+          data: {
+            user_id: user.id,
+            property_id: property.id,
+            bill_id: initialBill.id,
+            entry_type: 'RENT_CHARGE',
+            debit: rent,
+            credit: 0.0,
+            running_balance: rent,
+            description: `Initial Monthly Commercial Rent Demand for ${billingMonthStr} (${property.property_number})`,
+            transaction_reference: billNumber,
+          },
         });
 
         // Administrative Audit Trail
@@ -285,6 +325,8 @@ export class RentalUserService {
             assignments: {
               where: { is_active: true },
               select: {
+                id: true,
+                property_id: true,
                 monthly_rent: true,
                 property: {
                   select: {
@@ -298,8 +340,7 @@ export class RentalUserService {
               },
             },
             bills: {
-              where: { status: { in: ['PENDING', 'OVERDUE'] } },
-              select: { balance_due: true },
+              select: { id: true, status: true, balance_due: true },
             },
           },
           orderBy: { created_at: 'desc' },
@@ -308,12 +349,56 @@ export class RentalUserService {
         }),
       ]);
 
+      // Auto-provision initial PENDING bill for any active tenant who has 0 bills in DB
+      const now = new Date();
+      const curYear = now.getFullYear();
+      const curMonthNum = now.getMonth() + 1;
+      const curMonthStr = `${curYear}-${String(curMonthNum).padStart(2, '0')}`;
+      const curDueDate = new Date(curYear, curMonthNum - 1, 20, 23, 59, 59);
+
+      for (const u of users) {
+        const activeAssign = u.assignments[0];
+        if (activeAssign && u.bills.length === 0) {
+          const rentAmt = Number(activeAssign.monthly_rent);
+          const autoBillNo = `BL-${activeAssign.property.property_number}-${curMonthStr}`;
+          try {
+            const createdBill = await rentalPrisma.rentalBill.create({
+              data: {
+                bill_number: autoBillNo,
+                user_id: u.id,
+                property_id: activeAssign.property.id,
+                assignment_id: activeAssign.id,
+                billing_month: curMonthStr,
+                billing_year: curYear,
+                rent_amount: rentAmt,
+                adjustment_amount: 0.0,
+                total_amount_due: rentAmt,
+                amount_paid: 0.0,
+                balance_due: rentAmt,
+                due_date: curDueDate,
+                status: 'PENDING',
+              },
+            });
+            u.bills.push({
+              id: createdBill.id,
+              status: 'PENDING',
+              balance_due: createdBill.balance_due,
+            });
+          } catch {
+            // Ignore duplicate collision if concurrently created
+          }
+        }
+      }
+
       const formatted = users.map((u) => {
         const activeAssignment = u.assignments[0];
-        const outstandingBalance = u.bills.reduce(
-          (sum, b) => sum + Number(b.balance_due),
-          0
+        const unpaidBills = u.bills.filter((b) =>
+          ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(b.status)
         );
+        const outstandingBalance =
+          u.bills.length === 0 && activeAssignment
+            ? Number(activeAssignment.monthly_rent)
+            : unpaidBills.reduce((sum, b) => sum + Number(b.balance_due), 0);
 
         return {
           id: u.id,

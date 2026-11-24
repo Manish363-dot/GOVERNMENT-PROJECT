@@ -40,6 +40,7 @@ export const BillingManagementPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [bills, setBills] = useState<BillListItem[]>([]);
+  const [allRawBills, setAllRawBills] = useState<BillListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -71,13 +72,50 @@ export const BillingManagementPage: React.FC = () => {
     try {
       const res = await rentalBillingApi.listBills({
         search,
-        status: statusFilter,
+        status: 'ALL',
         billingMonth: billingMonthFilter || undefined,
-        page,
-        limit: 15,
+        page: 1,
+        limit: 100,
       });
-      setBills(res.data.data);
-      setTotal(res.data.total);
+      const rawBills = res.data.data || [];
+      setAllRawBills(rawBills);
+
+      // Group bills by tenant so that:
+      // 1. If a tenant has ANY unpaid month up to the current month, their already-paid monthly rows are NOT shown,
+      //    and their status remains PENDING / DUE until all months up to current month are collected.
+      // 2. Only when ALL months of a tenant up to the current month are paid does the tenant show as PAID.
+      const byTenant = new Map<string, BillListItem[]>();
+      for (const b of rawBills) {
+        const tId = b.tenant?.id || b.id;
+        if (!byTenant.has(tId)) byTenant.set(tId, []);
+        byTenant.get(tId)!.push(b);
+      }
+
+      const consolidated: BillListItem[] = [];
+      for (const [, tBills] of byTenant.entries()) {
+        const unpaidList = tBills.filter((b) => b.balanceDue > 0 || b.status !== 'PAID');
+        if (unpaidList.length > 0) {
+          // Tenant still has unpaid month(s) — do NOT show their paid months!
+          // Show only their unpaid bill(s) with status forced to PENDING/PARTIALLY_PAID/OVERDUE
+          for (const ub of unpaidList) {
+            consolidated.push({
+              ...ub,
+              status: ub.status === 'PAID' ? 'PENDING' : ub.status,
+            });
+          }
+        } else if (tBills.length > 0) {
+          // Every single month up to current month is PAID — show 1 consolidated PAID row (latest month)
+          consolidated.push(tBills[0]);
+        }
+      }
+
+      const filtered =
+        statusFilter === 'ALL'
+          ? consolidated
+          : consolidated.filter((b) => b.status === statusFilter);
+
+      setBills(filtered);
+      setTotal(filtered.length);
     } catch (err: any) {
       setError(err.message || 'Failed to load bills.');
     } finally {
@@ -124,6 +162,15 @@ export const BillingManagementPage: React.FC = () => {
     }
   };
 
+  const filterTenantBillsForDisplay = (allList: BillListItem[]): BillListItem[] => {
+    const unpaid = allList.filter((b) => b.balanceDue > 0 || b.status !== 'PAID');
+    // If tenant still has unpaid months, hide already-paid months so status stays PENDING/DUE until all months are collected
+    if (unpaid.length > 0) {
+      return unpaid;
+    }
+    return allList.slice(0, 1);
+  };
+
   const handleSelectTenant = async (tenant: TenantListItem) => {
     setSelectedTenant(tenant);
     setTenantSearchResults([]);
@@ -131,7 +178,7 @@ export const BillingManagementPage: React.FC = () => {
     setLoadingTenantBills(true);
     try {
       const res = await rentalBillingApi.listBills({ userId: tenant.id, limit: 50 });
-      setTenantBills(res.data.data);
+      setTenantBills(filterTenantBillsForDisplay(res.data.data || []));
     } catch (err: any) {
       setError(err.message || 'Failed to load tenant bills.');
     } finally {
@@ -142,7 +189,7 @@ export const BillingManagementPage: React.FC = () => {
   const refreshSelectedTenantBills = async (userId: string) => {
     try {
       const res = await rentalBillingApi.listBills({ userId, limit: 50 });
-      setTenantBills(res.data.data);
+      setTenantBills(filterTenantBillsForDisplay(res.data.data || []));
       const updatedTenant = await rentalUserApi.getTenantDetails(userId);
       if (updatedTenant && updatedTenant.data) {
         setSelectedTenant((prev) =>
@@ -174,10 +221,11 @@ export const BillingManagementPage: React.FC = () => {
     window.print();
   };
 
-  // KPI Calculations
-  const totalDemanded = bills.reduce((acc, b) => acc + b.totalAmountDue, 0);
-  const totalCollected = bills.reduce((acc, b) => acc + b.amountPaid, 0);
-  const totalBalanceDue = bills.reduce((acc, b) => acc + b.balanceDue, 0);
+  // KPI Calculations (from all raw bills so Total Collected & Demanded remain accurate)
+  const kpiSource = allRawBills.length > 0 ? allRawBills : bills;
+  const totalDemanded = kpiSource.reduce((acc, b) => acc + b.totalAmountDue, 0);
+  const totalCollected = kpiSource.reduce((acc, b) => acc + b.amountPaid, 0);
+  const totalBalanceDue = kpiSource.reduce((acc, b) => acc + b.balanceDue, 0);
 
   return (
     <AdminLayout
@@ -185,34 +233,6 @@ export const BillingManagementPage: React.FC = () => {
       breadcrumbs={[{ label: isHi ? 'बिलिंग' : 'Billing' }]}
     >
       <div className="space-y-6">
-        {/* Action Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-slate-200/90 shadow-2xs">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500">
-              {isHi ? 'कुल जारी बिल संख्या:' : 'Total Bills Issued:'}
-            </span>
-            <span className="font-extrabold text-slate-900 font-mono text-sm">{total}</span>
-          </div>
-
-          <div className="flex items-center gap-3">
-
-            <button
-              onClick={() => navigate('/rental/admin/properties')}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold shadow-xs transition"
-            >
-
-              {isHi ? 'संपत्ति रजिस्टर' : 'Properties'}
-            </button>
-            <button
-              onClick={fetchBills}
-              className="inline-flex items-center gap-2 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-medium shadow-xs transition"
-              title={isHi ? 'ताज़ा करें' : 'Refresh'}
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
         {/* Notifications */}
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center justify-between text-sm">
@@ -372,12 +392,12 @@ export const BillingManagementPage: React.FC = () => {
                               <span className="text-xs text-slate-500 font-mono font-normal ml-2">({t.userCode})</span>
                             </div>
                             <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
-                              <span>📱 {t.mobile}</span>
+                              <span>{t.mobile}</span>
                               {t.assignedProperty && (
                                 <>
                                   <span>•</span>
                                   <span className="font-semibold text-slate-700">
-                                    🏢 {t.assignedProperty.propertyNumber} ({t.assignedProperty.location})
+                                    {t.assignedProperty.propertyNumber} ({t.assignedProperty.location})
                                   </span>
                                 </>
                               )}
@@ -426,15 +446,15 @@ export const BillingManagementPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="text-xs text-slate-600 flex flex-wrap items-center gap-3 mt-1">
-                        <span>📱 <strong className="font-mono">{selectedTenant.mobile}</strong></span>
+                        <span>{isHi ? 'मोबाइल:' : 'Mobile:'} <strong className="font-mono">{selectedTenant.mobile}</strong></span>
                         {selectedTenant.assignedProperty && (
                           <span>
-                            🏢 <strong className="text-slate-900">{selectedTenant.assignedProperty.propertyNumber}</strong> • {selectedTenant.assignedProperty.location}
+                            {isHi ? 'दुकान:' : 'Shop:'} <strong className="text-slate-900">{selectedTenant.assignedProperty.propertyNumber}</strong> • {selectedTenant.assignedProperty.location}
                           </span>
                         )}
                         {selectedTenant.assignedProperty?.monthlyRent && (
                           <span>
-                            💵 {isHi ? 'मासिक तय किराया:' : 'Base Rent:'} <strong className="font-mono text-emerald-700">₹{Number(selectedTenant.assignedProperty.monthlyRent).toLocaleString('en-IN')}</strong> / माह
+                            {isHi ? 'मासिक किराया:' : 'Base Rent:'} <strong className="font-mono text-emerald-700">₹{Number(selectedTenant.assignedProperty.monthlyRent).toLocaleString('en-IN')}</strong> / {isHi ? 'माह' : 'mo'}
                           </span>
                         )}
                       </div>
@@ -464,9 +484,8 @@ export const BillingManagementPage: React.FC = () => {
                 {/* Monthly Bills Breakdown Table */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-indigo-600" />
-                      <span>{isHi ? 'माहवार देय किराया विवरण एवं वसूली (Monthly Bills):' : 'Monthly Rent Demand & Collection:'}</span>
+                    <h5 className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                      {isHi ? 'माहवार देय किराया विवरण एवं वसूली:' : 'Monthly Rent Demand & Collection:'}
                     </h5>
                     <span className="text-xs text-slate-500 font-medium">
                       {isHi ? `कुल जारी बिल: ${tenantBills.length}` : `Total Bills: ${tenantBills.length}`}
@@ -503,9 +522,8 @@ export const BillingManagementPage: React.FC = () => {
                               <tr key={b.id} className="hover:bg-slate-50/70 transition">
                                 <td className="py-3 px-4 whitespace-nowrap">
                                   <div className="font-bold text-indigo-700 font-mono">{b.billNumber}</div>
-                                  <div className="text-[11px] font-bold text-slate-800 flex items-center gap-1 mt-0.5">
-                                    <Calendar className="w-3 h-3 text-slate-400" />
-                                    <span>{b.billingMonth}</span>
+                                  <div className="text-[11px] font-bold text-slate-600 mt-0.5">
+                                    {b.billingMonth}
                                   </div>
                                 </td>
 
@@ -564,31 +582,30 @@ export const BillingManagementPage: React.FC = () => {
                                   </button>
                                 </td>
 
-                                <td className="py-3 px-4 text-right whitespace-nowrap space-x-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleOpenInvoiceModal(b)}
-                                    className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"
-                                    title={isHi ? 'चालान देखें' : 'View Bill'}
-                                  >
-                                    <FileText className="w-4 h-4 inline" />
-                                  </button>
-
-                                  {b.balanceDue > 0 ? (
+                                <td className="py-3 px-4 text-right whitespace-nowrap">
+                                  <div className="inline-flex items-center justify-end gap-2">
                                     <button
                                       type="button"
-                                      onClick={() => navigate(`/rental/admin/collect-rent/${b.id}`)}
-                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                                      onClick={() => handleOpenInvoiceModal(b)}
+                                      className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-md text-xs font-semibold transition shadow-2xs cursor-pointer"
                                     >
-                                      <Receipt className="w-3.5 h-3.5" />
-                                      <span>{isHi ? 'किराया जमा करें' : 'Accept Payment'}</span>
+                                      {isHi ? 'चालान' : 'Challan'}
                                     </button>
-                                  ) : (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                                      <span>{isHi ? 'पूर्ण जमा' : 'Paid'}</span>
-                                    </span>
-                                  )}
+
+                                    {b.balanceDue > 0 ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => navigate(`/rental/admin/collect-rent/${b.id}`)}
+                                        className="px-3.5 py-1.5 bg-[#0B3B60] hover:bg-slate-900 text-white border border-[#0B3B60] rounded-md text-xs font-bold transition shadow-2xs cursor-pointer"
+                                      >
+                                        {isHi ? 'किराया जमा करें' : 'Accept Payment'}
+                                      </button>
+                                    ) : (
+                                      <span className="inline-flex items-center text-[11px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-md border border-emerald-200">
+                                        {isHi ? 'पूर्ण जमा' : 'Paid'}
+                                      </span>
+                                    )}
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -608,9 +625,8 @@ export const BillingManagementPage: React.FC = () => {
             ========================================================================= */}
         <div className="pt-2">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-600 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-slate-500" />
-              <span>{isHi ? 'समग्र जारी बिल रजिस्टर (All Bills Register)' : 'All Issued Municipal Bills'}</span>
+            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+              {isHi ? 'समग्र जारी बिल रजिस्टर' : 'All Issued Municipal Bills'}
             </h4>
             <span className="text-xs text-slate-500">
               {isHi ? `कुल रिकॉर्ड्स: ${total}` : `Total Records: ${total}`}
@@ -662,10 +678,10 @@ export const BillingManagementPage: React.FC = () => {
                 className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="ALL">{isHi ? 'सभी स्थितियाँ' : 'All Statuses'}</option>
-                <option value="PENDING">{isHi ? 'लंबित (Pending)' : 'Pending'}</option>
+                <option value="PENDING">{isHi ? 'लंबित' : 'Pending'}</option>
                 <option value="PARTIALLY_PAID">{isHi ? 'आंशिक भुगतान' : 'Partially Paid'}</option>
-                <option value="PAID">{isHi ? 'पूर्ण भुगतान (Paid)' : 'Paid'}</option>
-                <option value="OVERDUE">{isHi ? 'अतिदेय (Overdue)' : 'Overdue'}</option>
+                <option value="PAID">{isHi ? 'पूर्ण भुगतान' : 'Paid'}</option>
+                <option value="OVERDUE">{isHi ? 'अतिदेय' : 'Overdue'}</option>
               </select>
             </div>
 
@@ -740,8 +756,7 @@ export const BillingManagementPage: React.FC = () => {
                         >
                           {bill.billNumber}
                         </button>
-                        <div className="text-xs text-slate-500 font-medium mt-0.5 flex items-center gap-1">
-                          <Calendar className="w-3 h-3 text-slate-400" />
+                        <div className="text-xs text-slate-500 font-medium mt-0.5">
                           {bill.billingMonth} • {isHi ? 'अंतिम तिथि:' : 'Due:'} {new Date(bill.dueDate).toLocaleDateString()}
                         </div>
                       </td>
@@ -814,22 +829,22 @@ export const BillingManagementPage: React.FC = () => {
                       </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="inline-flex items-center justify-end gap-2">
                           <button
+                            type="button"
                             onClick={() => handleOpenInvoiceModal(bill)}
-                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"
-                            title={isHi ? 'चालान देखें' : 'View Invoice'}
+                            className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-md text-xs font-semibold transition shadow-2xs cursor-pointer"
                           >
-                            <FileText className="w-4 h-4" />
+                            {isHi ? 'चालान' : 'Challan'}
                           </button>
 
                           {bill.balanceDue > 0 && (
                             <button
+                              type="button"
                               onClick={() => navigate(`/rental/admin/collect-rent/${bill.id}`)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition shadow-xs cursor-pointer"
+                              className="px-3.5 py-1.5 bg-[#0B3B60] hover:bg-slate-900 text-white border border-[#0B3B60] rounded-md text-xs font-bold transition shadow-2xs cursor-pointer"
                             >
-                              <Receipt className="w-3.5 h-3.5" />
-                              {isHi ? 'वसूली दर्ज करें' : 'Accept Payment'}
+                              {isHi ? 'किराया जमा करें' : 'Accept Payment'}
                             </button>
                           )}
                         </div>
@@ -874,7 +889,7 @@ export const BillingManagementPage: React.FC = () => {
               <form onSubmit={handleGenerateBills} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isHi ? 'बिलिंग माह चुनें (YYYY-MM) *' : 'Select Billing Month (YYYY-MM) *'}
+                    {isHi ? 'बिलिंग माह चुनें *' : 'Select Billing Month (YYYY-MM) *'}
                   </label>
                   <input
                     type="month"

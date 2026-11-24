@@ -417,9 +417,9 @@ export const PropertyManagementPage: React.FC = () => {
                 className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="ALL">{isHi ? 'सभी स्थितियाँ' : 'All Statuses'}</option>
-                <option value="VACANT">{isHi ? 'रिक्त (Vacant)' : 'Vacant'}</option>
-                <option value="ALLOTTED">{isHi ? 'आवंटित (Allotted)' : 'Allotted'}</option>
-                <option value="MAINTENANCE">{isHi ? 'रखरखाव (Maintenance)' : 'Maintenance'}</option>
+                <option value="VACANT">{isHi ? 'रिक्त' : 'Vacant'}</option>
+                <option value="ALLOTTED">{isHi ? 'आवंटित' : 'Allotted'}</option>
+                <option value="MAINTENANCE">{isHi ? 'रखरखाव' : 'Maintenance'}</option>
               </select>
             </div>
 
@@ -432,10 +432,10 @@ export const PropertyManagementPage: React.FC = () => {
               className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">{isHi ? 'सभी प्रकार' : 'All Types'}</option>
-              <option value="COMMERCIAL_SHOP">{isHi ? 'दुकान (Shop)' : 'Commercial Shop'}</option>
-              <option value="ROADSIDE_STALL">{isHi ? 'स्टॉल (Stall)' : 'Roadside Stall'}</option>
-              <option value="WAREHOUSE_GODOWN">{isHi ? 'गोदाम (Warehouse)' : 'Warehouse/Godown'}</option>
-              <option value="LAND_PARCEL">{isHi ? 'भूमि (Land Parcel)' : 'Land Parcel'}</option>
+              <option value="COMMERCIAL_SHOP">{isHi ? 'दुकान' : 'Commercial Shop'}</option>
+              <option value="ROADSIDE_STALL">{isHi ? 'स्टॉल' : 'Roadside Stall'}</option>
+              <option value="WAREHOUSE_GODOWN">{isHi ? 'गोदाम' : 'Warehouse/Godown'}</option>
+              <option value="LAND_PARCEL">{isHi ? 'भूमि' : 'Land Parcel'}</option>
             </select>
           </div>
         </div>
@@ -676,7 +676,7 @@ export const PropertyManagementPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'स्थान (Location) *' : 'Location / Bazaar *'}
+                      {isHi ? 'स्थान *' : 'Location / Bazaar *'}
                     </label>
                     <input
                       type="text"
@@ -689,7 +689,7 @@ export const PropertyManagementPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'क्षेत्रफल (Sq.Ft)' : 'Dimensions (Sq.Ft)'}
+                      {isHi ? 'क्षेत्रफल' : 'Dimensions (Sq.Ft)'}
                     </label>
                     <input
                       type="number"
@@ -881,7 +881,7 @@ export const PropertyManagementPage: React.FC = () => {
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <TrendingUp className="w-5 h-5 text-indigo-600" />
-                  {isHi ? 'मासिक किराया संशोधन (Audit Logged)' : 'Revise Monthly Rent (Audit Logged)'}
+                  {isHi ? 'मासिक किराया संशोधन' : 'Revise Monthly Rent (Audit Logged)'}
                 </h3>
                 <button
                   onClick={() => setIsRentModalOpen(false)}
@@ -936,7 +936,7 @@ export const PropertyManagementPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'प्रभावी तिथि (Effective Date) *' : 'Effective Date *'}
+                      {isHi ? 'प्रभावी तिथि *' : 'Effective Date *'}
                     </label>
                     <input
                       type="date"
@@ -1112,7 +1112,7 @@ export const PropertyManagementPage: React.FC = () => {
           title={isHi ? 'दुकान / संपत्ति खाली कराने की पुष्टि' : 'Vacate Property & Shop'}
           message={
             isHi
-              ? 'क्या आप वाकई इस दुकान का आवंटन समाप्त कर इसे रिक्त (Vacant) स्थिति में लाना चाहते हैं? वर्तमान किरायेदार का आवंटन समाप्त हो जाएगा।'
+              ? 'क्या आप वाकई इस दुकान का आवंटन समाप्त कर इसे रिक्त स्थिति में लाना चाहते हैं? वर्तमान किरायेदार का आवंटन समाप्त हो जाएगा।'
               : 'Are you sure you want to terminate the allotment and mark this shop/property as VACANT? Current tenant assignment will be ended.'
           }
           subject={
@@ -1123,7 +1123,7 @@ export const PropertyManagementPage: React.FC = () => {
           variant="danger"
           iconType="trash"
           confirmText={isHi ? 'हां, दुकान खाली करें' : 'Vacate Shop'}
-          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          denyText={isHi ? 'रद्द करें' : 'Cancel'}
           loading={vacateModal.loading}
           onConfirm={handleConfirmVacateProperty}
           onDeny={() => setVacateModal({ isOpen: false, property: null, loading: false })}

@@ -47,7 +47,7 @@ export const RegisterPropertyPage = () => {
     setError("");
     if (!form.propertyName.trim()) { setError(isHi ? "संपत्ति / दुकान का नाम अनिवार्य है।" : "Property / shop name is required."); return; }
     if (!form.propertyNumber.trim()) { setError(isHi ? "दुकान संख्या / कोड अनिवार्य है।" : "Property number / code is required."); return; }
-    if (!form.location.trim()) { setError(isHi ? "स्थान (Location) अनिवार्य है।" : "Location is required."); return; }
+    if (!form.location.trim()) { setError(isHi ? "स्थान अनिवार्य है।" : "Location is required."); return; }
     if (!form.address.trim()) { setError(isHi ? "पूरा पता अनिवार्य है।" : "Detailed address is required."); return; }
     if (!form.baseMonthlyRent || form.baseMonthlyRent < 1) { setError(isHi ? "आधार मासिक किराया ₹1 से अधिक होना अनिवार्य है।" : "Base monthly rent must be greater than ₹0."); return; }
     setSubmitting(true);

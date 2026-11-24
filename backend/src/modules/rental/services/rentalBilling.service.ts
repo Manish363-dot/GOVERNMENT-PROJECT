@@ -157,6 +157,63 @@ export class RentalBillingService {
     limit?: number;
   }) {
     return withRentalDbRetry(async () => {
+      // Ensure all active assignments have at least their initial PENDING bill
+      const unbilledAssignments = await rentalPrisma.propertyAssignment.findMany({
+        where: {
+          is_active: true,
+          ...(params.userId ? { user_id: params.userId } : {}),
+          bills: { none: {} },
+        },
+        include: { property: true },
+      });
+
+      if (unbilledAssignments.length > 0) {
+        const now = new Date();
+        const curYear = now.getFullYear();
+        const curMonthNum = now.getMonth() + 1;
+        const curMonthStr = `${curYear}-${String(curMonthNum).padStart(2, '0')}`;
+        const curDueDate = new Date(curYear, curMonthNum - 1, 20, 23, 59, 59);
+
+        for (const assign of unbilledAssignments) {
+          const rentAmt = Number(assign.monthly_rent || assign.property.base_monthly_rent || 0);
+          const autoBillNo = `BL-${assign.property.property_number}-${curMonthStr}`;
+          try {
+            const bill = await rentalPrisma.rentalBill.create({
+              data: {
+                bill_number: autoBillNo,
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                assignment_id: assign.id,
+                billing_month: curMonthStr,
+                billing_year: curYear,
+                rent_amount: rentAmt,
+                adjustment_amount: 0.0,
+                total_amount_due: rentAmt,
+                amount_paid: 0.0,
+                balance_due: rentAmt,
+                due_date: curDueDate,
+                status: 'PENDING',
+              },
+            });
+            await rentalPrisma.rentalLedgerEntry.create({
+              data: {
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                bill_id: bill.id,
+                entry_type: 'RENT_CHARGE',
+                debit: rentAmt,
+                credit: 0.0,
+                running_balance: rentAmt,
+                description: `Initial Monthly Commercial Rent Demand for ${curMonthStr} (${assign.property.property_number})`,
+                transaction_reference: autoBillNo,
+              },
+            });
+          } catch {
+            // Ignore duplicate collision
+          }
+        }
+      }
+
       const page = Math.max(1, params.page || 1);
       const limit = Math.min(100, Math.max(1, params.limit || 20));
       const skip = (page - 1) * limit;
@@ -419,7 +476,7 @@ export class RentalBillingService {
       }
 
       // Fetch all bills (both pending and paid) for complete ledger & status
-      const allBills = await rentalPrisma.rentalBill.findMany({
+      let allBills = await rentalPrisma.rentalBill.findMany({
         where: {
           OR: [
             { user_id: { in: userIds } },
@@ -441,17 +498,67 @@ export class RentalBillingService {
         orderBy: { billing_month: 'desc' },
       });
 
+      // Current month determination (e.g. "2026-11")
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+      // If newly registered tenant has an active assignment but 0 bills yet, auto-create current month PENDING bill
+      const activeAssignment = tenants[0]?.assignments?.[0] || properties[0]?.assignments?.[0];
+      if (allBills.length === 0 && primaryTenant && primaryProperty && activeAssignment) {
+        const rentAmt = Number(activeAssignment.monthly_rent || primaryProperty.base_monthly_rent || 0);
+        const dueDate = new Date(now.getFullYear(), now.getMonth(), 20, 23, 59, 59);
+        const autoBillNo = `BL-${primaryProperty.property_number}-${currentMonthStr}`;
+        try {
+          await rentalPrisma.rentalBill.create({
+            data: {
+              bill_number: autoBillNo,
+              user_id: primaryTenant.id,
+              property_id: primaryProperty.id,
+              assignment_id: activeAssignment.id,
+              billing_month: currentMonthStr,
+              billing_year: now.getFullYear(),
+              rent_amount: rentAmt,
+              adjustment_amount: 0.0,
+              total_amount_due: rentAmt,
+              amount_paid: 0.0,
+              balance_due: rentAmt,
+              due_date: dueDate,
+              status: 'PENDING',
+            },
+          });
+          allBills = await rentalPrisma.rentalBill.findMany({
+            where: { user_id: primaryTenant.id },
+            include: {
+              user: { select: { id: true, user_id: true, full_name: true, mobile: true } },
+              property: { select: { id: true, property_id: true, property_number: true, location: true } },
+              receipts: {
+                select: { id: true, receipt_number: true, amount_paid: true, issued_at: true, receipt_pdf_url: true },
+                orderBy: { issued_at: 'desc' },
+              },
+            },
+            orderBy: { billing_month: 'desc' },
+          });
+        } catch {
+          // Ignore if already exists
+        }
+      }
+
       const pendingBills = allBills.filter((b) =>
         ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(b.status)
       );
       const paidBills = allBills.filter((b) => b.status === 'PAID');
       const totalOutstanding = pendingBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
 
-      // Current month determination (e.g. "2026-11")
-      const now = new Date();
-      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const currentMonthBill = allBills.find((b) => b.billing_month === currentMonthStr) || allBills[0];
-      const isThisMonthComplete = currentMonthBill ? currentMonthBill.status === 'PAID' : totalOutstanding === 0;
+      const currentMonthBill =
+        pendingBills[0] ||
+        allBills.find((b) => b.billing_month === currentMonthStr) ||
+        allBills[0];
+      // Status is ONLY complete (PAID) when ALL bills up to the current month are paid (0 pending bills)
+      const isThisMonthComplete = Boolean(
+        allBills.length > 0 &&
+        pendingBills.length === 0 &&
+        totalOutstanding <= 0
+      );
 
       // Extract all receipts for download
       const allReceipts = allBills.flatMap((b) =>
@@ -471,11 +578,11 @@ export class RentalBillingService {
         isThisMonthComplete,
         currentMonth: currentMonthStr,
         tenant: {
-          name: primaryTenant?.full_name || 'Almora Commercial Tenant',
-          code: primaryTenant?.user_id || 'ALM-TENANT',
-          mobile: primaryTenant?.mobile || clean,
-          shopNo: primaryProperty?.property_number || 'SHOP-TBD',
-          location: primaryProperty?.location || 'Almora Market',
+          name: primaryTenant?.full_name || allBills[0]?.user?.full_name || 'Almora Commercial Tenant',
+          code: primaryTenant?.user_id || allBills[0]?.user?.user_id || 'ALM-TENANT',
+          mobile: primaryTenant?.mobile || allBills[0]?.user?.mobile || clean,
+          shopNo: primaryProperty?.property_number || allBills[0]?.property?.property_number || '—',
+          location: primaryProperty?.location || allBills[0]?.property?.location || 'अल्मोड़ा',
         },
         currentMonthBill: currentMonthBill
           ? {

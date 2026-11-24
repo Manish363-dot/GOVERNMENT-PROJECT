@@ -243,16 +243,16 @@ export const RecordsAuditPage: React.FC = () => {
                 }}
                 className="bg-transparent font-bold text-slate-800 outline-none cursor-pointer"
               >
-                <option value={`${yearFilter}-10`}>{isHi ? 'अक्टूबर (Oct)' : 'October'}</option>
-                <option value={`${yearFilter}-09`}>{isHi ? 'सितंबर (Sep)' : 'September'}</option>
-                <option value={`${yearFilter}-08`}>{isHi ? 'अगस्त (Aug)' : 'August'}</option>
-                <option value={`${yearFilter}-07`}>{isHi ? 'जुलाई (Jul)' : 'July'}</option>
-                <option value={`${yearFilter}-06`}>{isHi ? 'जून (Jun)' : 'June'}</option>
-                <option value={`${yearFilter}-05`}>{isHi ? 'मई (May)' : 'May'}</option>
-                <option value={`${yearFilter}-04`}>{isHi ? 'अप्रैल (Apr)' : 'April'}</option>
-                <option value={`${yearFilter}-03`}>{isHi ? 'मार्च (Mar)' : 'March'}</option>
-                <option value={`${yearFilter}-02`}>{isHi ? 'फ़रवरी (Feb)' : 'February'}</option>
-                <option value={`${yearFilter}-01`}>{isHi ? 'जनवरी (Jan)' : 'January'}</option>
+                <option value={`${yearFilter}-10`}>{isHi ? 'अक्टूबर' : 'October'}</option>
+                <option value={`${yearFilter}-09`}>{isHi ? 'सितंबर' : 'September'}</option>
+                <option value={`${yearFilter}-08`}>{isHi ? 'अगस्त' : 'August'}</option>
+                <option value={`${yearFilter}-07`}>{isHi ? 'जुलाई' : 'July'}</option>
+                <option value={`${yearFilter}-06`}>{isHi ? 'जून' : 'June'}</option>
+                <option value={`${yearFilter}-05`}>{isHi ? 'मई' : 'May'}</option>
+                <option value={`${yearFilter}-04`}>{isHi ? 'अप्रैल' : 'April'}</option>
+                <option value={`${yearFilter}-03`}>{isHi ? 'मार्च' : 'March'}</option>
+                <option value={`${yearFilter}-02`}>{isHi ? 'फ़रवरी' : 'February'}</option>
+                <option value={`${yearFilter}-01`}>{isHi ? 'जनवरी' : 'January'}</option>
                 <option value="ALL">{isHi ? 'संपूर्ण वर्ष' : 'Full Year'}</option>
               </select>
             </div>

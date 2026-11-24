@@ -117,12 +117,12 @@ export const RegisterTenantPage: React.FC = () => {
     const effectivePassword = initialPassword.trim() || `Almora@${mobile.slice(-4)}`;
 
     if (!permanentAddress.trim()) {
-      setError(isHi ? 'कृपया स्थायी पता (Permanent Address) अनिवार्य रूप से भरें।' : 'Please enter permanent address.');
+      setError(isHi ? 'कृपया स्थायी पता अनिवार्य रूप से भरें।' : 'Please enter permanent address.');
       return;
     }
 
     if (!currentAddress.trim()) {
-      setError(isHi ? 'कृपया वर्तमान पत्राचार पता (Current Address) अनिवार्य रूप से भरें।' : 'Please enter current address.');
+      setError(isHi ? 'कृपया वर्तमान पत्राचार पता अनिवार्य रूप से भरें।' : 'Please enter current address.');
       return;
     }
 
@@ -257,7 +257,7 @@ export const RegisterTenantPage: React.FC = () => {
 
             <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 max-w-md mx-auto text-left space-y-3 mb-8">
               <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-500 font-medium">{isHi ? 'किरायेदार कोड (User ID):' : 'Tenant ID:'}</span>
+                <span className="text-slate-500 font-medium">{isHi ? 'किरायेदार कोड:' : 'Tenant ID:'}</span>
                 <span className="font-mono font-extrabold text-navy-950 text-base bg-amber-100 px-2.5 py-0.5 rounded-lg border border-amber-300">
                   {successData.userCode}
                 </span>
@@ -398,7 +398,7 @@ export const RegisterTenantPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-5">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'स्थायी पता (Permanent Address) *' : 'Permanent Address *'}
+                      {isHi ? 'स्थायी पता *' : 'Permanent Address *'}
                     </label>
                     <textarea
                       required
@@ -412,7 +412,7 @@ export const RegisterTenantPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'वर्तमान पत्राचार पता (Current Address) *' : 'Current Address *'}
+                      {isHi ? 'वर्तमान पत्राचार पता *' : 'Current Address *'}
                     </label>
                     <textarea
                       required
@@ -431,7 +431,7 @@ export const RegisterTenantPage: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-sm font-extrabold uppercase tracking-wider text-navy-900 flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                    {isHi ? '2. पहचान व पंजीकरण दस्तावेज (S3 सुरक्षित संग्रह — ऑटो WebP)' : '2. Identity Documents (S3 Vault — Auto WebP)'}
+                    {isHi ? '2. पहचान व पंजीकरण दस्तावेज' : '2. Identity Documents (S3 Vault — Auto WebP)'}
                   </h3>
                   <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
                     {isHi ? 'दस्तावेज अपलोड: वैकल्पिक' : 'Uploads: Optional'}
@@ -460,7 +460,7 @@ export const RegisterTenantPage: React.FC = () => {
                       className="text-xs text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     />
                     <p className="text-[10px] text-slate-400 mt-1">
-                      {isHi ? 'कोई भी छवि (JPG, PNG आदि) S3 में स्वतः WebP बनेगी' : 'Any image is saved directly to S3 as WebP'}
+                      {isHi ? 'कोई भी छवि सुरक्षित रूप से अपलोड होगी' : 'Any image is saved directly to S3 as WebP'}
                     </p>
                   </div>
 
@@ -479,7 +479,7 @@ export const RegisterTenantPage: React.FC = () => {
                       className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs mb-2 font-mono"
                     />
                     <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      {isHi ? 'आधार कार्ड प्रति (वैकल्पिक - PDF / Image)' : 'Aadhaar File (Optional - PDF / Image)'}
+                      {isHi ? 'आधार कार्ड प्रति (वैकल्पिक)' : 'Aadhaar File (Optional - PDF / Image)'}
                     </label>
                     <input
                       type="file"
@@ -492,7 +492,7 @@ export const RegisterTenantPage: React.FC = () => {
                   {/* PAN Card */}
                   <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50/60">
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'पैन संख्या (PAN Number) *' : 'PAN Number (10 chars) *'}
+                      {isHi ? 'पैन संख्या *' : 'PAN Number (10 chars) *'}
                     </label>
                     <input
                       type="text"
@@ -504,7 +504,7 @@ export const RegisterTenantPage: React.FC = () => {
                       className="w-full px-3 py-2 rounded-lg border border-slate-300 text-xs mb-2 font-mono uppercase"
                     />
                     <label className="block text-[11px] font-semibold text-slate-500 mb-1">
-                      {isHi ? 'पैन कार्ड प्रति (वैकल्पिक - PDF / Image)' : 'PAN File (Optional - PDF / Image)'}
+                      {isHi ? 'पैन कार्ड प्रति (वैकल्पिक)' : 'PAN File (Optional - PDF / Image)'}
                     </label>
                     <input
                       type="file"
@@ -519,7 +519,7 @@ export const RegisterTenantPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mt-4">
                   <div className="border border-slate-200 rounded-2xl p-4">
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'उत्तराखंड स्थायी निवास प्रमाण पत्र (वैकल्पिक - Domicile)' : 'Uttarakhand Domicile Certificate (Optional)'}
+                      {isHi ? 'उत्तराखंड स्थायी निवास प्रमाण पत्र (वैकल्पिक)' : 'Uttarakhand Domicile Certificate (Optional)'}
                     </label>
                     <input
                       type="file"
@@ -531,7 +531,7 @@ export const RegisterTenantPage: React.FC = () => {
 
                   <div className="border border-slate-200 rounded-2xl p-4">
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'जीएसटी नंबर (GST Number — वैकल्पिक)' : 'GST Number (Optional)'}
+                      {isHi ? 'जीएसटी नंबर (वैकल्पिक)' : 'GST Number (Optional)'}
                     </label>
                     <input
                       type="text"
@@ -556,7 +556,7 @@ export const RegisterTenantPage: React.FC = () => {
                         gstNumber.length < 15 ? 'text-amber-600' : 'text-emerald-600'
                       }`}>
                         {gstNumber.length === 0
-                          ? (isHi ? 'सरकारी मानक: ठीक 15 अक्षर (GSTIN)' : 'Govt standard: Exactly 15 characters (GSTIN)')
+                          ? (isHi ? 'सरकारी मानक: ठीक 15 अक्षर' : 'Govt standard: Exactly 15 characters (GSTIN)')
                           : gstNumber.length < 15
                           ? (isHi ? `${gstNumber.length}/15 — ${15 - gstNumber.length} और अक्षर चाहिए` : `${gstNumber.length}/15 — ${15 - gstNumber.length} more characters needed`)
                           : (isHi ? '✓ 15/15 — मान्य GSTIN प्रारूप' : '✓ 15/15 — Valid GSTIN format')}
@@ -734,7 +734,7 @@ export const RegisterTenantPage: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1">
-                      {isHi ? 'आवंटन प्रभावी तिथि (Effective Date)' : 'Lease Effective Date'}
+                      {isHi ? 'आवंटन प्रभावी तिथि' : 'Lease Effective Date'}
                     </label>
                     <input
                       type="date"

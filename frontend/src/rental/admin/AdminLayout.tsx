@@ -124,7 +124,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     },
     {
       to: '/rental/admin/ledger',
-      label: isHi ? 'राजस्व बहीखाता (Ledger)' : 'Rent Ledger',
+      label: isHi ? 'राजस्व बहीखाता' : 'Rent Ledger',
       icon: BookOpen,
     },
     {
@@ -193,7 +193,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     {isHi ? 'जिला पंचायत अल्मोड़ा' : 'ZILA PANCHAYAT ALMORA'}
                   </div>
                   <div className="text-[11px] font-extrabold text-amber-400 tracking-wider uppercase mt-0.5">
-                    ADMIN'S PORTAL
+                    {isHi ? 'प्रशासनिक पोर्टल' : "ADMIN'S PORTAL"}
                   </div>
                 </div>
               </div>
@@ -261,7 +261,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <div className="flex items-center gap-1 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   <span className="text-[9px] font-extrabold text-amber-400 uppercase tracking-wider">
-                    {isSuperAdmin ? 'SUPER ADMIN' : user?.role === 'SUB_ADMIN' ? 'SUB ADMIN' : 'SUPER ADMIN'}
+                    {isSuperAdmin
+                      ? isHi
+                        ? 'मुख्य प्रशासक'
+                        : 'SUPER ADMIN'
+                      : user?.role === 'SUB_ADMIN'
+                        ? isHi
+                          ? 'उप-प्रशासक'
+                          : 'SUB ADMIN'
+                        : isHi
+                          ? 'मुख्य प्रशासक'
+                          : 'SUPER ADMIN'}
                   </span>
                 </div>
               </div>

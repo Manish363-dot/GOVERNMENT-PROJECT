@@ -52,7 +52,7 @@ export const CollectRentPage: React.FC = () => {
     ];
     const idx = monthNum - 1;
     if (idx >= 0 && idx < 12) {
-      return hindi ? `${hiMonths[idx]} ${year} (${monthStr})` : `${enMonths[idx]} ${year} (${monthStr})`;
+      return hindi ? `${hiMonths[idx]} ${year}` : `${enMonths[idx]} ${year}`;
     }
     return monthStr;
   };
@@ -108,7 +108,7 @@ export const CollectRentPage: React.FC = () => {
     if (!bill || !isVerified) return;
 
     if (currentBalance <= 0) {
-      setError(isHi ? 'यह बिल पहले से ही पूर्ण जमा (PAID) है।' : 'This bill is already settled in full.');
+      setError(isHi ? 'यह बिल पहले से ही पूर्ण जमा है।' : 'This bill is already settled in full.');
       return;
     }
 
@@ -132,7 +132,7 @@ export const CollectRentPage: React.FC = () => {
     }
 
     if (paymentMethod === 'NEFT_RTGS' && !referenceNumber.trim()) {
-      setError(isHi ? 'कृपया बैंक लेन-देन (UTR / Ref) संख्या दर्ज करें।' : 'Please enter bank transaction UTR/reference number.');
+      setError(isHi ? 'कृपया बैंक लेन-देन संदर्भ संख्या दर्ज करें।' : 'Please enter bank transaction UTR/reference number.');
       return;
     }
 
@@ -253,24 +253,14 @@ export const CollectRentPage: React.FC = () => {
             {/* Sleek Top Banner (Aligned to Receipt Width) */}
             <div className="max-w-2xl mx-auto no-print bg-emerald-50/90 border border-emerald-300/80 rounded-lg px-4 py-3 flex items-center justify-between shadow-2xs transition-all duration-700 ease-out animate-in fade-in slide-in-from-top-4">
               <div className="flex items-center gap-3.5">
-                <PaymentSuccessIllustration size={46} className="shrink-0" />
-                <div>
-                  <h4 className="text-xs sm:text-sm font-bold text-emerald-950 flex items-center gap-2">
-                    <span>{isHi ? 'वसूली सफलतापूर्वक दर्ज की गई!' : 'Payment Successfully Recorded!'}</span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-200/80 text-emerald-900 rounded font-semibold">
-                      {recordedResult.receiptNumber}
-                    </span>
-                  </h4>
-                  <p className="text-[11px] text-emerald-700 font-medium">
-                    {isHi
-                      ? `राशि ₹${recordedResult.amountPaid.toLocaleString('en-IN')} शासकीय राजस्व में क्रेडिट • आधिकारिक प्रपत्र संख्या ५ जनरेटेड`
-                      : `Amount ₹${recordedResult.amountPaid.toLocaleString('en-IN')} credited to revenue • Statutory Form 5 generated`}
-                  </p>
-                </div>
+                <PaymentSuccessIllustration size={42} className="shrink-0" />
+                <h4 className="text-xs sm:text-sm font-bold text-emerald-950">
+                  {isHi ? 'वसूली सफलतापूर्वक दर्ज की गई!' : 'Payment Successfully Recorded!'}
+                </h4>
               </div>
               <div className="shrink-0">
                 <span className="text-[11px] font-bold px-3 py-1 bg-emerald-600 text-white rounded-md tracking-wider shadow-2xs">
-                  PAID
+                  {isHi ? 'चुकता' : 'PAID'}
                 </span>
               </div>
             </div>
@@ -416,7 +406,7 @@ export const CollectRentPage: React.FC = () => {
                 <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-300 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center justify-between">
                   <span>{isHi ? '१. किरायेदार एवं आवंटित संपत्ति विवरण' : '1. Tenant & Property Particulars'}</span>
                   <span className="text-[11px] font-mono text-slate-500 font-normal">
-                    ID: {tenant?.user_id || tenant?.userCode || '—'}
+                    {isHi ? 'पहचान सं.:' : 'ID:'} {tenant?.user_id || tenant?.userCode || '—'}
                   </span>
                 </div>
 
@@ -507,13 +497,13 @@ export const CollectRentPage: React.FC = () => {
               <form onSubmit={handleRecordPayment} className="space-y-5">
                 <div className="border border-slate-300 rounded-lg p-5 bg-slate-50/70 space-y-4 shadow-2xs">
                   <div className="text-xs font-bold uppercase tracking-wider text-slate-800 border-b border-slate-300 pb-2">
-                    {isHi ? '३. काउंटर वसूली प्रविष्टि (PAYMENT ENTRY)' : '3. Counter Payment Entry'}
+                    {isHi ? '३. काउंटर वसूली प्रविष्टि' : '3. Counter Payment Entry'}
                   </div>
 
                   {/* ── MONTH SELECTION DROPDOWN (As Requested by User) ── */}
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5 flex items-center justify-between">
-                      <span>{isHi ? 'किस माह का किराया जमा करना है (Billing Month) *' : 'Select Billing Month to Pay *'}</span>
+                      <span>{isHi ? 'किस माह का किराया जमा करना है *' : 'Select Billing Month to Pay *'}</span>
                       {tenantBills.length > 0 && (
                         <span className="text-[11px] font-normal text-slate-500">
                           ({tenantBills.length} {isHi ? 'माह के बिल उपलब्ध' : 'bills on record'})
@@ -529,7 +519,7 @@ export const CollectRentPage: React.FC = () => {
                       >
                         {tenantBills.map((b) => (
                           <option key={b.id} value={b.id}>
-                            {formatMonthDisplay(b.billingMonth, isHi)} — {b.status === 'PAID' ? (isHi ? '✓ पूर्ण जमा (PAID)' : '✓ Settled (PAID)') : `${isHi ? 'अवशेष देय' : 'Due'}: ₹${b.balanceDue.toLocaleString('en-IN')}`} {b.status === 'OVERDUE' ? '⚠️ OVERDUE' : ''}
+                            {formatMonthDisplay(b.billingMonth, isHi)} — {b.status === 'PAID' ? (isHi ? '✓ पूर्ण जमा' : '✓ Settled (PAID)') : `${isHi ? 'अवशेष देय' : 'Due'}: ₹${b.balanceDue.toLocaleString('en-IN')}`} {b.status === 'OVERDUE' ? (isHi ? '⚠️ अतिदेय' : '⚠️ OVERDUE') : ''}
                           </option>
                         ))}
                       </select>
@@ -594,10 +584,10 @@ export const CollectRentPage: React.FC = () => {
                         onChange={(e) => setPaymentMethod(e.target.value as any)}
                         className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition shadow-2xs cursor-pointer disabled:bg-slate-100"
                       >
-                        <option value="CASH">{isHi ? 'नकद काउंटर (Cash Counter)' : 'Cash Counter'}</option>
-                        <option value="CHEQUE_DD">{isHi ? 'चेक / डिमांड ड्राफ्ट (Cheque / DD)' : 'Cheque / DD'}</option>
-                        <option value="NEFT_RTGS">{isHi ? 'बैंक अंतरण (NEFT / RTGS / IMPS)' : 'Bank Transfer (NEFT / RTGS)'}</option>
-                        <option value="POS_MACHINE">{isHi ? 'पीओएस मशीन / कार्ड स्वाइप (POS)' : 'POS Card Swipe'}</option>
+                        <option value="CASH">{isHi ? 'नकद काउंटर' : 'Cash Counter'}</option>
+                        <option value="CHEQUE_DD">{isHi ? 'चेक / डिमांड ड्राफ्ट' : 'Cheque / DD'}</option>
+                        <option value="NEFT_RTGS">{isHi ? 'बैंक अंतरण (एनईएफटी / आरटीजीएस)' : 'Bank Transfer (NEFT / RTGS)'}</option>
+                        <option value="POS_MACHINE">{isHi ? 'पीओएस मशीन / कार्ड स्वाइप' : 'POS Card Swipe'}</option>
                       </select>
                     </div>
                   </div>
@@ -607,8 +597,8 @@ export const CollectRentPage: React.FC = () => {
                     <div className="pt-2 animate-in fade-in duration-150">
                       <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
                         {paymentMethod === 'CHEQUE_DD'
-                          ? isHi ? 'चेक / ड्राफ्ट संख्या (Cheque / DD No.) *' : 'Cheque / DD Number *'
-                          : isHi ? 'बैंक लेन-देन संदर्भ संख्या (Bank UTR / Ref No.) *' : 'Bank Reference Number (UTR) *'}
+                          ? isHi ? 'चेक / ड्राफ्ट संख्या *' : 'Cheque / DD Number *'
+                          : isHi ? 'बैंक लेन-देन संदर्भ संख्या *' : 'Bank Reference Number (UTR) *'}
                       </label>
                       <input
                         type="text"

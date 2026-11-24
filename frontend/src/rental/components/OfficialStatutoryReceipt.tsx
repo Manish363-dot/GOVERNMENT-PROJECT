@@ -223,9 +223,8 @@ export const OfficialStatutoryReceipt: React.FC<Props> = ({ data, onPrint, onClo
       ctx.textAlign = 'right';
       ctx.fillText('से', W - padX, row2Y);
 
-      const tenantLine = `${data.demandRegisterNumber ? `${data.demandRegisterNumber}, ` : ''}${data.tenantName}${
-        data.shopNumber ? ` (दुकान सं० ${data.shopNumber}${data.location ? `, ${data.location}` : ''})` : ''
-      }`;
+      const tenantLine = `${data.demandRegisterNumber ? `${data.demandRegisterNumber}, ` : ''}${data.tenantName}${data.shopNumber ? ` (दुकान सं० ${data.shopNumber}${data.location ? `, ${data.location}` : ''})` : ''
+        }`;
       drawLine(padX + 122, W - padX - 24, row2Y + 4);
       ctx.textAlign = 'left';
       ctx.font = `bold 13.5px ${fontBase}`;
@@ -352,8 +351,8 @@ export const OfficialStatutoryReceipt: React.FC<Props> = ({ data, onPrint, onClo
           <FileText className="w-4 h-4 text-slate-700 shrink-0" />
           <span className="text-xs font-bold text-slate-800 truncate">
             {isHi
-              ? 'प्रपत्र संख्या ५ — शासकीय किराया रसीद'
-              : 'Statutory Form 5 — Official Rent Receipt'}
+              ? 'शासकीय किराया रसीद'
+              : 'Official Rent Receipt'}
           </span>
         </div>
 

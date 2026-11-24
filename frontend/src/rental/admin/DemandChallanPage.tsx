@@ -152,8 +152,14 @@ export const DemandChallanPage: React.FC = () => {
       'जनवरी', 'फरवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
       'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'
     ];
+    const enMonths = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
     if (monthNum >= 1 && monthNum <= 12) {
-      return `${hiMonths[monthNum - 1]} ${year} (${monthStr})`;
+      return isHi
+        ? `${hiMonths[monthNum - 1]} ${year}`
+        : `${enMonths[monthNum - 1]} ${year}`;
     }
     return monthStr;
   };
@@ -184,9 +190,9 @@ export const DemandChallanPage: React.FC = () => {
   const isPartiallyPaid = amountPaid > 0 && balanceDue > 0;
 
   const getStatusText = () => {
-    if (isPaid) return isHi ? 'पूर्ण चुकता (PAID)' : 'PAID';
-    if (isPartiallyPaid) return isHi ? 'आंशिक भुगतान (PARTIALLY PAID)' : 'PARTIALLY PAID';
-    return isHi ? 'अदत्त / बकाया (UNPAID)' : 'UNPAID';
+    if (isPaid) return isHi ? 'पूर्ण चुकता' : 'PAID';
+    if (isPartiallyPaid) return isHi ? 'आंशिक भुगतान' : 'PARTIALLY PAID';
+    return isHi ? 'अदत्त / बकाया' : 'UNPAID';
   };
 
   const handleDownload = async () => {
@@ -662,10 +668,10 @@ export const DemandChallanPage: React.FC = () => {
               <span>
                 {downloading
                   ? isHi
-                    ? 'डाउनलोड...'
+                    ? 'डाउनलोड हो रहा है...'
                     : 'Downloading...'
                   : isHi
-                    ? 'PDF डाउनलोड करें'
+                    ? 'पीडीएफ डाउनलोड करें'
                     : 'Download PDF'}
               </span>
             </button>
@@ -728,15 +734,15 @@ export const DemandChallanPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* ── MONTH SELECTOR & TENANT MONTHLY STATUS BAR (No Print) ── */}
+            {/* ── MONTH SELECTOR & RECEIPT BAR (No Print) ── */}
             {tenantBills.length > 0 && (
-              <div className="no-print bg-white border border-slate-300 rounded-lg p-3.5 shadow-2xs space-y-2.5">
+              <div className="no-print bg-white border border-slate-300 rounded-lg px-4 py-3 shadow-2xs">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-slate-700 shrink-0" />
                     <span className="text-xs font-bold text-slate-800">
                       {isHi
-                        ? 'माह के अनुसार किराया स्थिति एवं रसीद देखें (Select Billing Month):'
+                        ? 'माह के अनुसार किराया स्थिति एवं रसीद देखें:'
                         : 'Select Billing Month to View Status & Receipt:'}
                     </span>
                   </div>
@@ -756,14 +762,14 @@ export const DemandChallanPage: React.FC = () => {
                         const tbPartial = tb.amountPaid > 0 && tb.balanceDue > 0;
                         const statusLabel = tbPaid
                           ? isHi
-                            ? '✓ पूर्ण चुकता (PAID)'
+                            ? '✓ पूर्ण चुकता'
                             : '✓ PAID'
                           : tbPartial
                             ? isHi
-                              ? '◐ आंशिक बकाया (PARTIAL)'
+                              ? '◐ आंशिक बकाया'
                               : '◐ PARTIAL'
                             : isHi
-                              ? '⚠ बकाया (PENDING)'
+                              ? '⚠ बकाया'
                               : '⚠ PENDING';
                         return (
                           <option key={tb.id} value={tb.id}>
@@ -798,58 +804,6 @@ export const DemandChallanPage: React.FC = () => {
                       </button>
                     )}
                   </div>
-                </div>
-
-                {/* Quick Month Status Pills */}
-                <div className="flex items-center gap-1.5 flex-wrap pt-1 border-t border-slate-100">
-                  {tenantBills.map((tb) => {
-                    const isCurrent = tb.id === bill.id;
-                    const tbPaid = tb.balanceDue <= 0 || tb.status === 'PAID';
-                    const tbPartial = tb.amountPaid > 0 && tb.balanceDue > 0;
-                    return (
-                      <button
-                        key={tb.id}
-                        type="button"
-                        onClick={() => {
-                          if (!isCurrent) navigate(`/rental/admin/demand-challan/${tb.id}`);
-                        }}
-                        className={`px-2.5 py-1 rounded text-[11px] font-mono font-bold border transition cursor-pointer inline-flex items-center gap-1.5 ${
-                          isCurrent
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                            : tbPaid
-                              ? 'bg-emerald-50/70 text-emerald-800 border-emerald-300 hover:bg-emerald-100/80'
-                              : tbPartial
-                                ? 'bg-amber-50/70 text-amber-800 border-amber-300 hover:bg-amber-100/80'
-                                : 'bg-red-50/70 text-red-800 border-red-300 hover:bg-red-100/80'
-                        }`}
-                      >
-                        <span>{tb.billingMonth}</span>
-                        <span
-                          className={`text-[10px] px-1.5 py-0.2 rounded ${
-                            isCurrent
-                              ? 'bg-white/20 text-white'
-                              : tbPaid
-                                ? 'bg-emerald-200/70 text-emerald-900'
-                                : tbPartial
-                                  ? 'bg-amber-200/70 text-amber-900'
-                                  : 'bg-red-200/70 text-red-900'
-                          }`}
-                        >
-                          {tbPaid
-                            ? isHi
-                              ? 'चुकता'
-                              : 'PAID'
-                            : tbPartial
-                              ? isHi
-                                ? `बकाया ₹${tb.balanceDue}`
-                                : `DUE ₹${tb.balanceDue}`
-                              : isHi
-                                ? `बकाया ₹${tb.balanceDue}`
-                                : `PENDING`}
-                        </span>
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
             )}
@@ -1081,7 +1035,7 @@ export const DemandChallanPage: React.FC = () => {
                 <div className="bg-slate-50 px-4 py-2.5 border-b border-slate-300 text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center justify-between">
                   <span>{isHi ? '१. किरायेदार एवं आवंटित संपत्ति विवरण' : '1. Tenant & Property Particulars'}</span>
                   <span className="text-[11px] font-mono text-slate-600 font-normal">
-                    ID: {tenant?.user_id || tenant?.userCode || '—'}
+                    {isHi ? 'पहचान सं.:' : 'ID:'} {tenant?.user_id || tenant?.userCode || '—'}
                   </span>
                 </div>
 
@@ -1229,10 +1183,9 @@ export const DemandChallanPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => navigate(`/rental/admin/collect-rent/${billId}`)}
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold transition shadow-xs cursor-pointer"
+                        className="inline-flex items-center px-4 py-2 bg-[#0B3B60] hover:bg-slate-900 text-white rounded-md text-xs font-bold transition shadow-2xs cursor-pointer"
                       >
-                        <span>💵</span>
-                        <span>{isHi ? 'कार्यालय काउंटर पर किराया जमा करें' : 'Accept Payment at Counter'}</span>
+                        {isHi ? 'कार्यालय काउंटर पर किराया जमा करें' : 'Accept Payment at Counter'}
                       </button>
                     )}
                   </div>
@@ -1243,7 +1196,7 @@ export const DemandChallanPage: React.FC = () => {
               <div className="pt-6 border-t border-slate-300">
                 <div className="grid grid-cols-3 gap-4 text-center text-xs">
                   <div className="space-y-8">
-                    <div className="text-slate-400 font-mono text-[11px]">— हस्ताक्षर —</div>
+                    <div className="text-slate-400 font-mono text-[11px]">{isHi ? '— हस्ताक्षर —' : '— Signature —'}</div>
                     <div className="font-bold text-slate-800">
                       {isHi ? 'मांग एवं वसूली लिपिक' : 'Demand & Recovery Clerk'}
                     </div>
@@ -1257,7 +1210,7 @@ export const DemandChallanPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-8">
-                    <div className="text-slate-400 font-mono text-[11px]">— हस्ताक्षर —</div>
+                    <div className="text-slate-400 font-mono text-[11px]">{isHi ? '— हस्ताक्षर —' : '— Signature —'}</div>
                     <div className="font-bold text-slate-800">
                       {isHi ? 'कर अधिकारी / मुख्य अधिकारी' : 'Tax Officer / In-Charge'}
                     </div>

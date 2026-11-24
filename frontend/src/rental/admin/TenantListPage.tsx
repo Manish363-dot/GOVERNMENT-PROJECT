@@ -290,7 +290,7 @@ export const TenantListPage: React.FC = () => {
 
   return (
     <AdminLayout
-      title={isHi ? 'किरायेदार (Users)' : 'Tenants (Users)'}
+      title={isHi ? 'किरायेदार' : 'Tenants (Users)'}
       breadcrumbs={[{ label: isHi ? 'किरायेदार' : 'Tenants' }]}
     >
       <div className="space-y-6">
@@ -344,10 +344,10 @@ export const TenantListPage: React.FC = () => {
               }}
               className="px-3 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 bg-white font-semibold text-slate-700 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20"
             >
-              <option value="ALL">{isHi ? 'सभी स्थिति (All)' : 'All Status'}</option>
-              <option value="ACTIVE">{isHi ? 'सक्रिय (Active)' : 'Active Only'}</option>
-              <option value="INACTIVE">{isHi ? 'निष्क्रिय (Inactive)' : 'Inactive Only'}</option>
-              <option value="SUSPENDED">{isHi ? 'निलंबित (Suspended)' : 'Suspended'}</option>
+              <option value="ALL">{isHi ? 'सभी स्थिति' : 'All Status'}</option>
+              <option value="ACTIVE">{isHi ? 'सक्रिय' : 'Active Only'}</option>
+              <option value="INACTIVE">{isHi ? 'निष्क्रिय' : 'Inactive Only'}</option>
+              <option value="SUSPENDED">{isHi ? 'निलंबित' : 'Suspended'}</option>
             </select>
 
             <button
@@ -399,13 +399,13 @@ export const TenantListPage: React.FC = () => {
               <table className="w-full text-left border-collapse text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-slate-50/80 text-slate-600 border-b border-slate-200/80 text-[11px] font-extrabold uppercase tracking-wider">
-                    <th className="px-5 py-3.5">{isHi ? 'किरायेदार (Tenant)' : 'Tenant'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'यूजर कोड (Code)' : 'User Code'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'आवंटित दुकान (Shop)' : 'Allocated Shop'}</th>
+                    <th className="px-5 py-3.5">{isHi ? 'किरायेदार' : 'Tenant'}</th>
+                    <th className="px-4 py-3.5">{isHi ? 'यूजर कोड' : 'User Code'}</th>
+                    <th className="px-4 py-3.5">{isHi ? 'आवंटित दुकान' : 'Allocated Shop'}</th>
                     <th className="px-4 py-3.5">{isHi ? 'मासिक किराया' : 'Monthly Rent'}</th>
-                    <th className="px-4 py-3.5">{isHi ? 'बकाया (Dues)' : 'Dues'}</th>
+                    <th className="px-4 py-3.5">{isHi ? 'बकाया' : 'Dues'}</th>
                     <th className="px-4 py-3.5">{isHi ? 'स्थिति' : 'Status'}</th>
-                    <th className="px-5 py-3.5 text-right">{isHi ? 'कार्रवाई (Actions)' : 'Actions'}</th>
+                    <th className="px-5 py-3.5 text-right">{isHi ? 'कार्रवाई' : 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
@@ -683,12 +683,12 @@ export const TenantListPage: React.FC = () => {
                         {selectedTenant.status === 'ACTIVE' ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-200">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                            {isHi ? 'सक्रिय (Active)' : 'Active Account'}
+                            {isHi ? 'सक्रिय' : 'Active Account'}
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 bg-slate-200 px-3 py-1 rounded-full">
                             <span className="w-2 h-2 rounded-full bg-slate-500" />
-                            {isHi ? 'निष्क्रिय (Inactive)' : 'Inactive Account'}
+                            {isHi ? 'निष्क्रिय' : 'Inactive Account'}
                           </span>
                         )}
                       </div>
@@ -747,7 +747,7 @@ export const TenantListPage: React.FC = () => {
                         </span>
                       </div>
                       <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                        <span className="text-slate-400 font-semibold block">{isHi ? 'जीएसटी नंबर (GSTIN):' : 'GST Number:'}</span>
+                        <span className="text-slate-400 font-semibold block">{isHi ? 'जीएसटी नंबर:' : 'GST Number:'}</span>
                         <span className="text-sm font-mono font-bold text-slate-900">
                           {selectedTenant.gst_number || 'Not Registered'}
                         </span>
@@ -843,7 +843,7 @@ export const TenantListPage: React.FC = () => {
                   <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 space-y-4">
                     <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
                       <User className="w-4 h-4 text-navy-700" />
-                      <span>{isHi ? '1. व्यक्तिगत विवरण (Personal Details)' : '1. Personal Details'}</span>
+                      <span>{isHi ? '1. व्यक्तिगत विवरण' : '1. Personal Details'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -903,16 +903,16 @@ export const TenantListPage: React.FC = () => {
                       {/* Account Status */}
                       <div>
                         <label className="block text-xs font-bold text-slate-700 mb-1">
-                          {isHi ? 'खाता स्थिति (Account Status)' : 'Account Status'} <span className="text-rose-500">*</span>
+                          {isHi ? 'खाता स्थिति' : 'Account Status'} <span className="text-rose-500">*</span>
                         </label>
                         <select
                           value={editFormData.status}
                           onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
                           className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-bold text-slate-900"
                         >
-                          <option value="ACTIVE">{isHi ? 'सक्रिय (ACTIVE)' : 'ACTIVE'}</option>
-                          <option value="INACTIVE">{isHi ? 'निष्क्रिय (INACTIVE)' : 'INACTIVE'}</option>
-                          <option value="SUSPENDED">{isHi ? 'निलंबित (SUSPENDED)' : 'SUSPENDED'}</option>
+                          <option value="ACTIVE">{isHi ? 'सक्रिय' : 'ACTIVE'}</option>
+                          <option value="INACTIVE">{isHi ? 'निष्क्रिय' : 'INACTIVE'}</option>
+                          <option value="SUSPENDED">{isHi ? 'निलंबित' : 'SUSPENDED'}</option>
                         </select>
                       </div>
                     </div>
@@ -922,7 +922,7 @@ export const TenantListPage: React.FC = () => {
                   <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 space-y-4">
                     <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
                       <MapPin className="w-4 h-4 text-navy-700" />
-                      <span>{isHi ? '2. पता विवरण (Address Details)' : '2. Address Details'}</span>
+                      <span>{isHi ? '2. पता विवरण' : '2. Address Details'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -961,7 +961,7 @@ export const TenantListPage: React.FC = () => {
                   <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 space-y-4">
                     <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
                       <CreditCard className="w-4 h-4 text-navy-700" />
-                      <span>{isHi ? '3. पहचान एवं कर विवरण (Identity & Tax Details)' : '3. Identity & Tax Details'}</span>
+                      <span>{isHi ? '3. पहचान एवं कर विवरण' : '3. Identity & Tax Details'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -1049,7 +1049,7 @@ export const TenantListPage: React.FC = () => {
                   <div className="bg-amber-50/50 p-5 rounded-2xl border border-amber-200/80 space-y-4">
                     <h4 className="text-xs font-black uppercase text-amber-950 tracking-wider flex items-center gap-2">
                       <Store className="w-4 h-4 text-amber-700" />
-                      <span>{isHi ? '4. दुकान आवंटन एवं मासिक किराया (Shop Allotment & Rent)' : '4. Shop Allotment & Rent'}</span>
+                      <span>{isHi ? '4. दुकान आवंटन एवं मासिक किराया' : '4. Shop Allotment & Rent'}</span>
                     </h4>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1087,7 +1087,7 @@ export const TenantListPage: React.FC = () => {
                         </select>
                         <p className="text-[10px] text-amber-700 font-medium mt-1">
                           {isHi
-                            ? 'दुकान बदलने पर पुरानी दुकान स्वतः खाली (Vacant) हो जाएगी और नई दुकान आवंटित हो जाएगी।'
+                            ? 'दुकान बदलने पर पुरानी दुकान स्वतः खाली हो जाएगी और नई दुकान आवंटित हो जाएगी।'
                             : 'Changing shop will automatically vacate previous shop and allot the newly chosen one.'}
                         </p>
                       </div>
@@ -1121,7 +1121,7 @@ export const TenantListPage: React.FC = () => {
                   <div className="bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 space-y-4">
                     <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
                       <Lock className="w-4 h-4 text-navy-700" />
-                      <span>{isHi ? '5. सुरक्षा एवं पासवर्ड रीसेट (Security & Password)' : '5. Security & Password'}</span>
+                      <span>{isHi ? '5. सुरक्षा एवं पासवर्ड रीसेट' : '5. Security & Password'}</span>
                     </h4>
 
                     <div className="max-w-md">
@@ -1148,7 +1148,7 @@ export const TenantListPage: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
                         <FileText className="w-4 h-4 text-navy-700" />
-                        <span>{isHi ? '6. दस्तावेज बदलें या नया अपलोड करें (Upload Documents)' : '6. Documents Vault & Updates'}</span>
+                        <span>{isHi ? '6. दस्तावेज बदलें या नया अपलोड करें' : '6. Documents Vault & Updates'}</span>
                       </h4>
                       <span className="text-[11px] text-emerald-700 bg-emerald-100 font-bold px-2 py-0.5 rounded-full">
                         Auto .WebP S3 Storage
@@ -1253,7 +1253,7 @@ export const TenantListPage: React.FC = () => {
                       ) : (
                         <Save className="w-4 h-4" />
                       )}
-                      <span>{isHi ? 'संशोधन सहेजें (Save Changes)' : 'Save Changes'}</span>
+                      <span>{isHi ? 'संशोधन सहेजें' : 'Save Changes'}</span>
                     </button>
                   </div>
                 </form>
@@ -1304,10 +1304,10 @@ export const TenantListPage: React.FC = () => {
           message={
             confirmModal.tenant?.status === 'ACTIVE'
               ? isHi
-                ? 'क्या आप वाकई इस किरायेदार का खाता निष्क्रिय (Inactive) करना चाहते हैं? निष्क्रिय स्थिति में किरायेदार पोर्टल सेवाओं का उपयोग नहीं कर सकेंगे।'
+                ? 'क्या आप वाकई इस किरायेदार का खाता निष्क्रिय करना चाहते हैं? निष्क्रिय स्थिति में किरायेदार पोर्टल सेवाओं का उपयोग नहीं कर सकेंगे।'
                 : 'Are you sure you want to deactivate this tenant? They will not be able to log in to the tenant portal until reactivated.'
               : isHi
-                ? 'क्या आप इस किरायेदार का खाता पुनः सक्रिय (Active) करना चाहते हैं?'
+                ? 'क्या आप इस किरायेदार का खाता पुनः सक्रिय करना चाहते हैं?'
                 : 'Are you sure you want to reactivate this tenant account?'
           }
           subject={
@@ -1322,7 +1322,7 @@ export const TenantListPage: React.FC = () => {
               ? isHi ? 'हां, निष्क्रिय करें' : 'Deactivate'
               : isHi ? 'हां, सक्रिय करें' : 'Activate'
           }
-          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          denyText={isHi ? 'रद्द करें' : 'Cancel'}
           loading={confirmModal.loading}
           onConfirm={handleConfirmToggleStatus}
           onDeny={() => setConfirmModal({ isOpen: false, tenant: null, loading: false })}

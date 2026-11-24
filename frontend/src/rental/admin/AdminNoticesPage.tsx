@@ -402,7 +402,7 @@ export const AdminNoticesPage: React.FC = () => {
           variant="danger"
           iconType="trash"
           confirmText={isHi ? 'हां, हटाएं' : 'Delete Notice'}
-          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          denyText={isHi ? 'रद्द करें' : 'Cancel'}
           loading={deleteModal.loading}
           onConfirm={handleConfirmDeleteNotice}
           onDeny={() => setDeleteModal({ isOpen: false, noticeId: null, title: '', loading: false })}
