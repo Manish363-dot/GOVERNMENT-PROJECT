@@ -2,7 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
-import { rentalNoticeApi, NoticeItem, CreateNoticeInput } from '../services/rentalNotice.service';
+import { api } from '@/services/api';
+import {
+  rentalNoticeApi,
+  NoticeItem,
+  NoticeListResponse,
+  CreateNoticeInput,
+  WhatsAppApiStatus,
+} from '../services/rentalNotice.service';
 import { rentalUserApi, TenantListItem } from '../services/rentalUser.service';
 import {
   Bell,
@@ -13,20 +20,36 @@ import {
   AlertCircle,
   CheckCircle2,
   Calendar,
+  MessageCircle,
+  ExternalLink,
+  Send,
 } from 'lucide-react';
 
 export const AdminNoticesPage: React.FC = () => {
   const { language } = useLanguage();
   const isHi = language === 'hi';
 
-  const [notices, setNotices] = useState<NoticeItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const initialNoticeCache = api.peekCache<{ data: NoticeListResponse }>(
+    '/rental/notices?category=ALL&page=1&limit=15'
+  )?.data;
+  const [notices, setNotices] = useState<NoticeItem[]>(initialNoticeCache?.data || []);
+  const [total, setTotal] = useState(initialNoticeCache?.total || 0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialNoticeCache);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [waStatus, setWaStatus] = useState<WhatsAppApiStatus | null>(null);
+  const [sendingWaId, setSendingWaId] = useState<string | null>(null);
+  const [whatsappBanner, setWhatsappBanner] = useState<{
+    url: string;
+    mobile: string;
+    tenantName: string;
+    sentViaApi: boolean;
+    messageId?: string;
+    error?: string;
+  } | null>(null);
 
   // Create Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,8 +62,23 @@ export const AdminNoticesPage: React.FC = () => {
   const [tenants, setTenants] = useState<TenantListItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
-  const fetchNotices = async () => {
-    setLoading(true);
+  const refreshWaStatus = () => {
+    rentalNoticeApi
+      .getWhatsAppStatus()
+      .then((res) => {
+        if (res?.data) setWaStatus(res.data);
+      })
+      .catch(() => {
+        // Ignore status indicator failures
+      });
+  };
+
+  const fetchNotices = async (force = false) => {
+    if (force) {
+      api.invalidateCache('/rental/notices');
+      refreshWaStatus();
+    }
+    if (force || notices.length === 0) setLoading(true);
     setError('');
     try {
       const res = await rentalNoticeApi.listNotices({
@@ -61,8 +99,12 @@ export const AdminNoticesPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchNotices();
+    fetchNotices(false);
   }, [page, categoryFilter]);
+
+  useEffect(() => {
+    refreshWaStatus();
+  }, []);
 
   const loadTenants = async () => {
     try {
@@ -81,21 +123,63 @@ export const AdminNoticesPage: React.FC = () => {
     loadTenants();
   };
 
+  const selectedTenantObj = tenants.find((t) => t.id === newNotice.recipientUserId);
+
   const handleCreateNotice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (newNotice.category === 'INDIVIDUAL' && !newNotice.recipientUserId) {
+      setError(isHi ? 'कृपया किरायेदार चुनें।' : 'Please select a recipient tenant.');
+      return;
+    }
+
     setSubmitting(true);
     setError('');
+    setWhatsappBanner(null);
     try {
-      await rentalNoticeApi.createNotice(newNotice);
-      setSuccessMsg(isHi ? 'सूचना सफलतापूर्वक जारी की गई।' : 'Notice published successfully.');
+      const payload: CreateNoticeInput = {
+        ...newNotice,
+        recipientUserId: newNotice.category === 'INDIVIDUAL' ? newNotice.recipientUserId : undefined,
+      };
+      const res = await rentalNoticeApi.createNotice(payload);
+      const created = res.data;
+
+      if (newNotice.category === 'INDIVIDUAL' && created?.whatsapp) {
+        const wa = created.whatsapp;
+        const recipientName = created.recipient?.fullName || selectedTenantObj?.fullName || '';
+        setWhatsappBanner({
+          url: wa.whatsappUrl,
+          mobile: wa.mobile,
+          tenantName: recipientName,
+          sentViaApi: Boolean(wa.sent),
+          messageId: wa.messageId,
+          error: wa.error,
+        });
+        setSuccessMsg(
+          wa.sent
+            ? isHi
+              ? `व्यक्तिगत सूचना जारी की गई और Meta WhatsApp API से ${recipientName} (+91 ${wa.mobile}) को स्वतः भेजी गई${wa.messageId ? ` (ID: ${wa.messageId})` : ''}।`
+              : `Individual notice published & dispatched via Meta WhatsApp API to ${recipientName} (+91 ${wa.mobile})${wa.messageId ? ` (ID: ${wa.messageId})` : ''}.`
+            : isHi
+            ? `सूचना सुरक्षित हो गई है, लेकिन Meta WhatsApp API डिलीवरी नहीं हो सकी: ${wa.error || 'अज्ञात त्रुटि'}`
+            : `Notice published, but Meta WhatsApp API dispatch failed: ${wa.error || 'Unknown error'}`
+        );
+      } else {
+        setSuccessMsg(
+          isHi
+            ? 'सार्वजनिक सूचना सफलतापूर्वक जारी की गई (रेंटल पोर्टल होम पेज पर लाइव)।'
+            : 'Public notice published and live on the Rental Portal home page.'
+        );
+      }
+
       setIsModalOpen(false);
       setNewNotice({
         title: '',
         message: '',
         category: 'PUBLIC',
         priority: 'NORMAL',
+        recipientUserId: tenants[0]?.id,
       });
-      fetchNotices();
+      fetchNotices(true);
     } catch (err: any) {
       setError(err.message || 'Failed to publish notice.');
     } finally {
@@ -131,10 +215,48 @@ export const AdminNoticesPage: React.FC = () => {
       await rentalNoticeApi.deleteNotice(deleteModal.noticeId);
       setSuccessMsg(isHi ? 'सूचना हटा दी गई।' : 'Notice deleted successfully.');
       setDeleteModal({ isOpen: false, noticeId: null, title: '', loading: false });
-      fetchNotices();
+      fetchNotices(true);
     } catch (err: any) {
       setError(err.message || 'Failed to delete notice.');
       setDeleteModal((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
+  const handleSendViaMetaApi = async (notice: NoticeItem) => {
+    setSendingWaId(notice.id);
+    setError('');
+    setSuccessMsg('');
+    setWhatsappBanner(null);
+    try {
+      const res = await rentalNoticeApi.sendWhatsAppNotice(notice.id);
+      const wa = res.data;
+      refreshWaStatus();
+      const recipientName = notice.recipient?.fullName || '';
+      setWhatsappBanner({
+        url: wa.whatsappUrl,
+        mobile: wa.mobile,
+        tenantName: recipientName,
+        sentViaApi: Boolean(wa.sent),
+        messageId: wa.messageId,
+        error: wa.error,
+      });
+      if (wa.sent) {
+        setSuccessMsg(
+          isHi
+            ? `${notice.noticeNumber} को Meta WhatsApp API से ${recipientName} (+91 ${wa.mobile}) पर भेज दिया गया${wa.messageId ? ` (ID: ${wa.messageId})` : ''}।`
+            : `${notice.noticeNumber} sent via Meta WhatsApp API to ${recipientName} (+91 ${wa.mobile})${wa.messageId ? ` (ID: ${wa.messageId})` : ''}.`
+        );
+      } else {
+        setError(
+          isHi
+            ? `Meta WhatsApp API त्रुटि (${notice.noticeNumber}): ${wa.error || 'संदेश नहीं भेजा जा सका'}`
+            : `Meta WhatsApp API error (${notice.noticeNumber}): ${wa.error || 'Could not dispatch message'}`
+        );
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to dispatch via Meta WhatsApp API.');
+    } finally {
+      setSendingWaId(null);
     }
   };
 
@@ -151,19 +273,11 @@ export const AdminNoticesPage: React.FC = () => {
               onClick={handleOpenCreateModal}
               className="px-4 py-2.5 bg-indigo-700 hover:bg-indigo-800 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition"
             >
-              <PlusCircle className="w-4 h-4" />
               <span>{isHi ? 'नई सूचना जारी करें' : 'Publish Notice'}</span>
-            </button>
-            <button
-              onClick={fetchNotices}
-              className="p-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl transition"
-            >
-              <RefreshCw className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Filter className="w-4 h-4 text-slate-400" />
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             <select
               value={categoryFilter}
               onChange={(e) => {
@@ -182,14 +296,41 @@ export const AdminNoticesPage: React.FC = () => {
         {/* Notifications */}
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
         {successMsg && (
-          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>{successMsg}</span>
+          <div
+            className={`p-3.5 border rounded-xl text-xs flex flex-wrap items-center justify-between gap-3 ${
+              whatsappBanner && !whatsappBanner.sentViaApi
+                ? 'bg-amber-50 border-amber-200 text-amber-900'
+                : 'bg-emerald-50 border-emerald-200 text-emerald-900'
+            }`}
+          >
+            <div className="flex items-center gap-2 font-semibold">
+              {whatsappBanner && !whatsappBanner.sentViaApi ? (
+                <AlertCircle className="w-4 h-4 shrink-0 text-amber-700" />
+              ) : (
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-700" />
+              )}
+              <span>{successMsg}</span>
+            </div>
+            {whatsappBanner && !whatsappBanner.sentViaApi && whatsappBanner.url && (
+              <a
+                href={whatsappBanner.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white font-bold text-xs shadow-xs transition"
+              >
+                <MessageCircle className="w-3.5 h-3.5" />
+                <span>
+                  {isHi
+                    ? `मैनुअल WhatsApp Web (+91 ${whatsappBanner.mobile})`
+                    : `Manual WhatsApp Web (+91 ${whatsappBanner.mobile})`}
+                </span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
         )}
 
@@ -249,17 +390,60 @@ export const AdminNoticesPage: React.FC = () => {
 
                 <p className="text-xs text-slate-600 leading-relaxed whitespace-pre-line">{notice.message}</p>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-500">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>{new Date(notice.publishedAt).toLocaleDateString()}</span>
+                    <span>{new Date(notice.publishedAt).toLocaleDateString('en-IN')}</span>
                   </div>
 
-                  {notice.recipient && (
-                    <div className="text-slate-600 font-medium">
-                      Recipient: {notice.recipient.fullName} ({notice.recipient.userCode})
-                    </div>
-                  )}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {notice.recipient && (
+                      <div className="text-slate-700 font-semibold">
+                        {notice.recipient.fullName} ({notice.recipient.mobile})
+                      </div>
+                    )}
+                    {notice.category === 'INDIVIDUAL' && notice.recipient?.mobile && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleSendViaMetaApi(notice)}
+                          disabled={sendingWaId === notice.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-60 text-white font-bold text-[11px] transition cursor-pointer"
+                        >
+                          {sendingWaId === notice.id ? (
+                            <RefreshCw className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Send className="w-3 h-3" />
+                          )}
+                          <span>
+                            {sendingWaId === notice.id
+                              ? isHi
+                                ? 'भेजा जा रहा है...'
+                                : 'Sending...'
+                              : isHi
+                              ? 'WhatsApp API से भेजें'
+                              : 'Send via WhatsApp API'}
+                          </span>
+                        </button>
+                        {!waStatus?.configured && (
+                          <a
+                            href={
+                              notice.whatsappUrl ||
+                              `https://wa.me/91${notice.recipient.mobile.replace(/\D/g, '').slice(-10)}?text=${encodeURIComponent(
+                                `🏛️ कार्यालय जिला पंचायत अल्मोड़ा\nसूचना सं.: ${notice.noticeNumber}\nविषय: ${notice.title}\n\n${notice.message}`
+                              )}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={isHi ? 'WhatsApp Web से मैनुअल भेजें' : 'Manual WhatsApp Web Fallback'}
+                            className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-[#16A34A] hover:border-emerald-200 transition"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                          </a>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -330,21 +514,31 @@ export const AdminNoticesPage: React.FC = () => {
                 </div>
 
                 {newNotice.category === 'INDIVIDUAL' && (
-                  <div>
+                  <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
                       {isHi ? 'किरायेदार चुनें *' : 'Select Target Tenant *'}
                     </label>
                     <select
-                      value={newNotice.recipientUserId}
+                      value={newNotice.recipientUserId || ''}
                       onChange={(e) => setNewNotice({ ...newNotice, recipientUserId: e.target.value })}
                       className="w-full px-3 py-2 border rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500"
                     >
                       {tenants.map((t) => (
                         <option key={t.id} value={t.id}>
-                          {t.fullName} ({t.userCode} - {t.mobile})
+                          {t.fullName} ({t.mobile})
                         </option>
                       ))}
                     </select>
+                    {selectedTenantObj?.mobile && (
+                      <p className="text-[11px] font-semibold text-emerald-700 flex items-center gap-1.5 px-1">
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>
+                          {isHi
+                            ? `यह सूचना सीधे +91 ${selectedTenantObj.mobile} के WhatsApp पर भेजी जाएगी।`
+                            : `Notice will be dispatched to registered WhatsApp: +91 ${selectedTenantObj.mobile}`}
+                        </span>
+                      </p>
+                    )}
                   </div>
                 )}
 

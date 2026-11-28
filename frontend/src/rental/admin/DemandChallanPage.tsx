@@ -169,6 +169,7 @@ export const DemandChallanPage: React.FC = () => {
   const property = bill?.property;
   const receipts: any[] = bill?.receipts || [];
   const rentAmount = Number(bill?.rent_amount || bill?.rentAmount || 0);
+  const gstAmount = Number(bill?.gst_amount || bill?.gstAmount || 0);
   const arrearsAmount = Number(bill?.arrears_amount || bill?.arrearsAmount || 0);
   const totalDue = Number(bill?.total_amount_due || bill?.totalAmountDue || 0);
   const amountPaid = Number(bill?.amount_paid || bill?.amountPaid || 0);
@@ -428,9 +429,10 @@ export const DemandChallanPage: React.FC = () => {
 
       const cols2 = [
         { x: padX + 14, align: 'left' as CanvasTextAlign, label: isHi ? 'मासिक किराया' : 'Monthly Rent', val: `₹${rentAmount.toLocaleString('en-IN')}` },
-        { x: padX + 210, align: 'center' as CanvasTextAlign, label: isHi ? 'पूर्व अवशेष बकाया' : 'Past Arrears', val: `₹${arrearsAmount.toLocaleString('en-IN')}` },
-        { x: padX + 390, align: 'center' as CanvasTextAlign, label: isHi ? 'कुल मांग राशि' : 'Total Demanded', val: `₹${totalDue.toLocaleString('en-IN')}` },
-        { x: padX + 560, align: 'center' as CanvasTextAlign, label: isHi ? 'पूर्व जमा' : 'Amount Paid', val: `₹${amountPaid.toLocaleString('en-IN')}` },
+        { x: padX + 165, align: 'center' as CanvasTextAlign, label: '18% GST', val: `₹${gstAmount.toLocaleString('en-IN')}` },
+        { x: padX + 300, align: 'center' as CanvasTextAlign, label: isHi ? 'पूर्व अवशेष बकाया' : 'Past Arrears', val: `₹${arrearsAmount.toLocaleString('en-IN')}` },
+        { x: padX + 445, align: 'center' as CanvasTextAlign, label: isHi ? 'कुल मांग राशि' : 'Total Demanded', val: `₹${totalDue.toLocaleString('en-IN')}` },
+        { x: padX + 590, align: 'center' as CanvasTextAlign, label: isHi ? 'पूर्व जमा' : 'Amount Paid', val: `₹${amountPaid.toLocaleString('en-IN')}` },
         { x: padX + innerW - 14, align: 'right' as CanvasTextAlign, label: isHi ? 'वर्तमान अवशेष देय' : 'Current Outstanding', val: `₹${balanceDue.toLocaleString('en-IN')}` },
       ];
 
@@ -863,6 +865,8 @@ export const DemandChallanPage: React.FC = () => {
                       amount: Number(
                         selectedReceiptForView.amount_paid || selectedReceiptForView.amountPaid || amountPaid || 0
                       ),
+                      baseRentAmount: gstAmount > 0 ? rentAmount : undefined,
+                      gstAmount: gstAmount > 0 ? gstAmount : undefined,
                       isFullPayment: balanceDue <= 0,
                       billNumber,
                       billingMonth: billingMonthDisplay,
@@ -1091,6 +1095,7 @@ export const DemandChallanPage: React.FC = () => {
                     <thead className="bg-slate-100/80 border-b border-slate-300 text-slate-700 font-bold">
                       <tr>
                         <th className="py-2.5 px-4 text-left">{isHi ? 'मासिक किराया' : 'Monthly Rent'}</th>
+                        <th className="py-2.5 px-4 text-center">18% GST</th>
                         <th className="py-2.5 px-4 text-center">{isHi ? 'पूर्व अवशेष बकाया' : 'Past Arrears'}</th>
                         <th className="py-2.5 px-4 text-center">{isHi ? 'कुल मांग राशि' : 'Total Demanded'}</th>
                         <th className="py-2.5 px-4 text-center">{isHi ? 'पूर्व जमा' : 'Amount Paid'}</th>
@@ -1101,6 +1106,9 @@ export const DemandChallanPage: React.FC = () => {
                       <tr>
                         <td className="py-3 px-4 font-mono font-bold text-slate-900">
                           ₹{rentAmount.toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-3 px-4 text-center font-mono font-semibold text-slate-700">
+                          ₹{gstAmount.toLocaleString('en-IN')}
                         </td>
                         <td className="py-3 px-4 text-center font-mono text-slate-700">
                           ₹{arrearsAmount.toLocaleString('en-IN')}

@@ -45,13 +45,6 @@ router.put(
   (req: any, res: any) => rentalUserController.updateTenantProfile(req, res)
 );
 
-// ── Admin: Update Tenant Status ─────────────────────────────────────────────
-router.patch(
-  '/admin/:id/status',
-  rentalAdminAuth,
-  (req, res) => rentalUserController.updateTenantStatus(req, res)
-);
-
 // ── Admin: Permanently Delete Tenant ─────────────────────────────────────────
 router.delete(
   '/admin/:id',

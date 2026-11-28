@@ -74,6 +74,7 @@ export const RegisterTenantPage: React.FC = () => {
   const [rentEffectiveDate, setRentEffectiveDate] = useState(
     new Date().toISOString().split('T')[0]
   );
+  const [leaseEndDate, setLeaseEndDate] = useState('');
   const [initialPassword, setInitialPassword] = useState('');
   const [transliterating, setTransliterating] = useState<string | null>(null);
 
@@ -389,8 +390,17 @@ export const RegisterTenantPage: React.FC = () => {
     if (!rentEffectiveDate) {
       setError(
         isHi
-          ? 'कृपया आवंटन प्रभावी तिथि दर्ज करें।'
-          : 'Please select lease effective date.'
+          ? 'कृपया दुकान आवंटन तिथि दर्ज करें।'
+          : 'Please select shop allotment date.'
+      );
+      return;
+    }
+
+    if (leaseEndDate && leaseEndDate < rentEffectiveDate) {
+      setError(
+        isHi
+          ? 'दुकान आवंटन समाप्ति तिथि, आवंटन तिथि से पहले नहीं हो सकती।'
+          : 'Allotment end date cannot be earlier than allotment date.'
       );
       return;
     }
@@ -410,6 +420,8 @@ export const RegisterTenantPage: React.FC = () => {
         propertyId,
         monthlyRent: parseFloat(monthlyRent),
         rentEffectiveDate,
+        allotmentDate: rentEffectiveDate,
+        leaseEndDate: leaseEndDate || undefined,
         initialPassword: effectivePassword,
         profilePhotoFile: profilePhoto,
         shopPhotoFile: shopPhoto,
@@ -452,12 +464,6 @@ export const RegisterTenantPage: React.FC = () => {
 
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 max-w-md mx-auto text-left space-y-2.5 mb-6 text-xs sm:text-sm">
               <div className="flex justify-between items-center py-1 border-b border-slate-200">
-                <span className="text-slate-500 font-medium">{isHi ? 'किरायेदार कोड:' : 'Tenant ID:'}</span>
-                <span className="font-mono font-bold text-slate-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300">
-                  {successData.userCode}
-                </span>
-              </div>
-              <div className="flex justify-between items-center py-1 border-b border-slate-200">
                 <span className="text-slate-500 font-medium">{isHi ? 'नाम:' : 'Name:'}</span>
                 <span className="font-bold text-slate-800">{successData.fullName}</span>
               </div>
@@ -488,6 +494,8 @@ export const RegisterTenantPage: React.FC = () => {
                   setDomicileFile(null);
                   setPropertyId('');
                   setMonthlyRent('');
+                  setRentEffectiveDate(new Date().toISOString().split('T')[0]);
+                  setLeaseEndDate('');
                 }}
                 className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold bg-[#0b1b36] text-white hover:bg-[#132c56] transition"
               >
@@ -940,10 +948,10 @@ export const RegisterTenantPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* 3 Columns Responsive: Shop Select, Monthly Rent, Effective Date */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* 4 Columns Responsive: Shop Select, Monthly Rent, Allotment Date (From), Allotted Until (To) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {/* Select Vacant Shop */}
-                  <div className="lg:col-span-1">
+                  <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
                       {isHi ? 'दुकान चुनें' : 'Select Shop'}
                     </label>
@@ -1004,16 +1012,30 @@ export const RegisterTenantPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Effective Date */}
+                  {/* Shop Allotment Date (From) */}
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      {isHi ? 'आवंटन प्रभावी तिथि' : 'Effective Date'}
+                      {isHi ? 'दुकान आवंटन तिथि' : 'Shop Allotment Date'} 
                     </label>
                     <input
                       type="date"
                       required
                       value={rentEffectiveDate}
                       onChange={(e) => setRentEffectiveDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
+                    />
+                  </div>
+
+                  {/* Shop Allotment End Date (Until) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      {isHi ? 'समाप्ति तिथि' : 'End Date'}
+                    </label>
+                    <input
+                      type="date"
+                      min={rentEffectiveDate || undefined}
+                      value={leaseEndDate}
+                      onChange={(e) => setLeaseEndDate(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 bg-white"
                     />
                   </div>

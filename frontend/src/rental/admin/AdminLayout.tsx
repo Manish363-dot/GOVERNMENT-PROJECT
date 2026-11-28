@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { api } from '@/services/api';
 import { RentalAdminNavbar } from './RentalAdminNavbar';
 import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
 import {
@@ -11,13 +12,14 @@ import {
   Shield,
   Receipt,
   Bell,
-  LogOut,
   UserPlus,
   ClipboardList,
   FileSpreadsheet,
   BookOpen,
   X,
   Phone,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -46,6 +48,48 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const location = useLocation();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [desktopSidebarOpen, setDesktopSidebarOpen] = useState<boolean>(() => {
+    try {
+      const saved = localStorage.getItem('zp_rental_admin_sidebar_open');
+      return saved === null ? true : saved === 'true';
+    } catch {
+      return true;
+    }
+  });
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 768) {
+      setDesktopSidebarOpen((prev) => {
+        const next = !prev;
+        try {
+          localStorage.setItem('zp_rental_admin_sidebar_open', String(next));
+        } catch {
+          // ignore storage errors
+        }
+        return next;
+      });
+    } else {
+      setSidebarOpen((prev) => !prev);
+    }
+  };
+
+  const handleCollapseDesktop = () => {
+    setDesktopSidebarOpen(false);
+    try {
+      localStorage.setItem('zp_rental_admin_sidebar_open', 'false');
+    } catch {
+      // ignore storage errors
+    }
+  };
+
+  const handleExpandDesktop = () => {
+    setDesktopSidebarOpen(true);
+    try {
+      localStorage.setItem('zp_rental_admin_sidebar_open', 'true');
+    } catch {
+      // ignore storage errors
+    }
+  };
 
   const isAdmin = Boolean(
     isAuthenticated &&
@@ -150,7 +194,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       ──────────────────────────────────────────────────────────────────────── */}
       <RentalAdminNavbar
         showMobileToggle={true}
-        onMobileMenuToggle={() => setSidebarOpen(!sidebarOpen)}
+        onLogout={handleLogout}
+        onMobileMenuToggle={handleToggleSidebar}
       />
 
       {/* ───────────────────────────────────────────────────────────────────────
@@ -172,8 +217,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             3. Bottom: Admin Name, Mobile Number (No Avatar/Image) + Logout Button
         ──────────────────────────────────────────────────────────────────────── */}
         <aside
-          className={`fixed md:sticky top-0 md:top-[34px] left-0 z-40 md:z-20 h-screen md:h-[calc(100vh-34px)] w-64 bg-[#0b1b36] text-slate-200 border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-xl shrink-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-            }`}
+          className={`fixed md:sticky top-0 md:top-[38px] left-0 z-40 md:z-20 h-screen md:h-[calc(100vh-38px)] bg-[#0b1b36] text-slate-200 border-slate-800 flex flex-col justify-between transition-all duration-300 ease-in-out shadow-xl shrink-0 overflow-hidden ${
+            sidebarOpen ? 'translate-x-0 w-64 border-r' : '-translate-x-full w-64 border-r'
+          } ${
+            desktopSidebarOpen
+              ? 'md:translate-x-0 md:w-64 md:border-r md:opacity-100'
+              : 'md:-translate-x-full md:w-0 md:border-r-0 md:opacity-0 md:pointer-events-none'
+          }`}
         >
           {/* Top Header & Navigation Links */}
           <div className="flex flex-col min-h-0">
@@ -201,13 +251,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 </div>
               </div>
 
-              {/* Mobile Close Button */}
+              {/* Collapse / Close Sidebar Button (Mobile + Desktop) */}
               <button
-                onClick={() => setSidebarOpen(false)}
-                className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-                title="Close Menu"
+                type="button"
+                onClick={() => {
+                  setSidebarOpen(false);
+                  handleCollapseDesktop();
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                title={isHi ? 'साइडबार बंद करें' : 'Collapse Sidebar'}
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5 md:hidden" />
+                <PanelLeftClose className="w-4 h-4 hidden md:block text-amber-400" />
               </button>
             </div>
 
@@ -221,10 +276,38 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               {navItems.map((item) => {
                 const isActive =
                   location.pathname === item.to || location.pathname.startsWith(item.to + '/');
+                const handlePrefetch = () => {
+                  if (item.to === '/rental/admin/dashboard') {
+                    import('./AdminDashboardPage').catch(() => {});
+                    api.get('/rental/bills/analytics').catch(() => {});
+                  } else if (item.to === '/rental/admin/tenants') {
+                    import('./TenantListPage').catch(() => {});
+                    api.get('/rental/users/admin/list?page=1&limit=15').catch(() => {});
+                  } else if (item.to === '/rental/admin/subadmins') {
+                    import('./SubAdminManagementPage').catch(() => {});
+                    api.get('/rental/auth/admin/subadmins').catch(() => {});
+                  } else if (item.to === '/rental/admin/billing') {
+                    import('./BillingManagementPage').catch(() => {});
+                    api.get('/rental/bills/management-overview').catch(() => {});
+                  } else if (item.to === '/rental/admin/properties') {
+                    import('./PropertyManagementPage').catch(() => {});
+                    api.get('/rental/properties?status=ALL&type=ALL&page=1&limit=15').catch(() => {});
+                  } else if (item.to === '/rental/admin/ledger') {
+                    import('./RentLedgerPage').catch(() => {});
+                    api.get('/rental/bills/management-overview').catch(() => {});
+                  } else if (item.to === '/rental/admin/records') {
+                    import('./RecordsAuditPage').catch(() => {});
+                  } else if (item.to === '/rental/admin/notices') {
+                    import('./AdminNoticesPage').catch(() => {});
+                    api.get('/rental/notices?category=ALL&page=1&limit=15').catch(() => {});
+                  }
+                };
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
+                    onMouseEnter={handlePrefetch}
+                    onFocus={handlePrefetch}
                     onClick={() => setSidebarOpen(false)}
                     className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
                       isActive
@@ -253,8 +336,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </nav>
           </div>
 
-          {/* 3. Bottom of Sidebar: Admin Name, Mobile Number (NO IMAGE) + Logout Button */}
-          <div className="p-3.5 border-t border-slate-800/90 bg-[#071326] space-y-3 mt-auto">
+          {/* 3. Bottom of Sidebar: Admin Name & Mobile Number */}
+          <div className="p-3.5 border-t border-slate-800/90 bg-[#071326] mt-auto">
             {/* Admin Details: Name & Mobile Number (Clean text, no image/avatar box) */}
             <div className="px-2 py-1">
               <div className="flex items-center justify-between gap-2">
@@ -283,22 +366,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <span>{user?.mobile || user?.identifier || (user?.role === 'SUB_ADMIN' ? '9874561230' : '9412000001')}</span>
               </div>
             </div>
-
-            {/* Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-red-950/50 hover:bg-red-900/70 text-red-300 hover:text-white border border-red-900/60 text-xs font-bold transition shadow-xs cursor-pointer"
-            >
-              <LogOut className="w-4 h-4 text-red-400" />
-              <span>{isHi ? 'सत्र समाप्त करें (लॉगआउट)' : 'Logout'}</span>
-            </button>
           </div>
         </aside>
 
         {/* ───────────────────────────────────────────────────────────────────────
             MAIN VIEWPORT (Page Content)
         ──────────────────────────────────────────────────────────────────────── */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 relative">
+          {!desktopSidebarOpen && (
+            <div className="hidden md:block sticky top-3 z-30 self-start ml-4 sm:ml-6 lg:ml-8 mt-4 -mb-3">
+              <button
+                type="button"
+                onClick={handleExpandDesktop}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B1B36] hover:bg-[#142D57] text-white border border-amber-400/40 px-3 py-2 text-xs font-extrabold shadow-lg transition cursor-pointer"
+                title={isHi ? 'साइडबार खोलें' : 'Open Sidebar'}
+              >
+                <PanelLeftOpen className="w-4 h-4 text-amber-400" />
+                <span>{isHi ? 'मेनू खोलें' : 'Open Menu'}</span>
+              </button>
+            </div>
+          )}
 
           {/* Main Content Area */}
           <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">

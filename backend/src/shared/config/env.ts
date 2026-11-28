@@ -15,6 +15,10 @@ const envSchema = z.object({
   MILLITRACK_PASSWORD: z.string().optional(),
   FRONTEND_URL: z.string().default('http://localhost:5175'),
   GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().optional(),
+  WHATSAPP_API_VERSION: z.string().default('v20.0'),
+  WHATSAPP_RENTAL_NOTICE_TEMPLATE: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

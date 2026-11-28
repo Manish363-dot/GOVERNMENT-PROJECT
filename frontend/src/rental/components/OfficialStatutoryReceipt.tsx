@@ -86,6 +86,8 @@ export interface StatutoryReceiptData {
   shopNumber?: string;
   location?: string;
   amount: number;
+  baseRentAmount?: number;
+  gstAmount?: number;
   isFullPayment: boolean;
   billNumber: string;
   billingMonth?: string;
@@ -256,12 +258,16 @@ export const OfficialStatutoryReceipt: React.FC<Props> = ({ data, onPrint, onClo
 
       // 7. Row 5: वाणिज्यिक दुकान किराया ... के मद प्राप्त हुआ।
       const row5Y = 326;
+      const hasGstBreakdown = Boolean(data.gstAmount && data.gstAmount > 0);
+      const rentHeadLabel = hasGstBreakdown
+        ? `वाणिज्यिक दुकान किराया (₹${Number(data.baseRentAmount || 0).toLocaleString('en-IN')} + 18% GST ₹${Number(data.gstAmount).toLocaleString('en-IN')})`
+        : 'वाणिज्यिक दुकान किराया (Commercial Shop Rent)';
       ctx.textAlign = 'right';
       ctx.font = `bold 14px ${fontBase}`;
       ctx.fillText('के मद प्राप्त हुआ।', W - padX, row5Y);
       drawLine(padX, W - padX - 115, row5Y + 4);
       ctx.textAlign = 'left';
-      ctx.fillText('वाणिज्यिक दुकान किराया (Commercial Shop Rent)', padX + 8, row5Y);
+      ctx.fillText(rentHeadLabel, padX + 8, row5Y, contentW - 130);
 
       // 8. Lower Section: Left (Amount, Place, Date, Cashier) & Right (Officers)
       const amountY = 376;
@@ -506,7 +512,9 @@ export const OfficialStatutoryReceipt: React.FC<Props> = ({ data, onPrint, onClo
         {/* 7. Row 5: __________________ के मद प्राप्त हुआ। */}
         <div className="flex items-baseline gap-2 text-sm py-1.5">
           <span className="border-b border-black font-bold text-black px-2 flex-1">
-            वाणिज्यिक दुकान किराया (Commercial Shop Rent)
+            {data.gstAmount && data.gstAmount > 0
+              ? `वाणिज्यिक दुकान किराया (₹${Number(data.baseRentAmount || 0).toLocaleString('en-IN')} + 18% GST ₹${Number(data.gstAmount).toLocaleString('en-IN')})`
+              : 'वाणिज्यिक दुकान किराया (Commercial Shop Rent)'}
           </span>
           <span className="font-bold text-black shrink-0">के मद प्राप्त हुआ।</span>
         </div>

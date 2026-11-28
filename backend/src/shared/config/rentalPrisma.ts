@@ -11,11 +11,28 @@ export const rentalPrisma = new RentalPrismaClient({
       url: rentalDatabaseUrl,
     },
   },
+  transactionOptions: {
+    maxWait: 10000,
+    timeout: 30000,
+  },
   log: [
     { emit: 'event', level: 'error' },
     { emit: 'event', level: 'warn' },
   ],
 });
+
+// Periodic lightweight keep-alive to keep the AWS RDS Rental DB connection warm
+const rentalKeepAlive = setInterval(async () => {
+  try {
+    await rentalPrisma.$queryRaw`SELECT 1`;
+  } catch {
+    // Handled automatically on next query
+  }
+}, 30000);
+
+if (rentalKeepAlive.unref) {
+  rentalKeepAlive.unref();
+}
 
 // Suppress transient remote host connection drops (OS 10054 / AWS RDS idle drops / P1001)
 // @ts-ignore

@@ -16,6 +16,8 @@ const registerUserSchema = z.object({
   propertyId: z.string().min(1, 'दुकान का चयन अनिवार्य है (Shop / property selection is required)'),
   monthlyRent: z.coerce.number().min(1, 'मासिक निर्धारित किराया अनिवार्य है (Monthly rent must be greater than 0)'),
   rentEffectiveDate: z.string().min(1, 'आवंटन प्रभावी तिथि अनिवार्य है (Lease effective date is required)'),
+  allotmentDate: z.string().optional().or(z.literal('')),
+  leaseEndDate: z.string().optional().or(z.literal('')),
   initialPassword: z.string().min(6, 'पासवर्ड न्यूनतम 6 अक्षरों का होना चाहिए').optional().or(z.literal('')),
 });
 
@@ -69,10 +71,9 @@ export class RentalUserController {
         return sendError(res, 'Administrator authentication required', 401);
       }
 
-      const { search, status, page, limit } = req.query;
+      const { search, page, limit } = req.query;
       const result = await rentalUserService.listTenants({
         search: search as string,
-        status: status as string,
         page: page ? parseInt(page as string, 10) : 1,
         limit: limit ? parseInt(limit as string, 10) : 20,
       });
@@ -98,38 +99,6 @@ export class RentalUserController {
       return sendSuccess(res, result, 'Tenant details fetched successfully');
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to fetch tenant details', 404);
-    }
-  }
-
-  /**
-   * PATCH /api/rental/admin/users/:id/status
-   * Activate / Deactivate tenant
-   */
-  async updateTenantStatus(req: AuthenticatedRentalRequest, res: Response) {
-    try {
-      if (!req.rentalAdmin) {
-        return sendError(res, 'Administrator authentication required', 401);
-      }
-
-      const { id } = req.params;
-      const { status, reason } = req.body;
-
-      if (!['ACTIVE', 'INACTIVE', 'SUSPENDED'].includes(status)) {
-        return sendError(res, 'Valid status is required', 400);
-      }
-
-      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
-      const result = await rentalUserService.updateTenantStatus(
-        req.rentalAdmin.adminId,
-        id,
-        status,
-        reason,
-        clientIp
-      );
-
-      return sendSuccess(res, result, 'Tenant status updated successfully');
-    } catch (err: any) {
-      return sendError(res, err.message || 'Failed to update tenant status', 400);
     }
   }
 

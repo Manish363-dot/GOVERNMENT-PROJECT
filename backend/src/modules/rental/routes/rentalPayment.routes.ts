@@ -31,4 +31,11 @@ router.post(
   (req: any, res: any) => rentalPaymentController.recordCounterPayment(req, res)
 );
 
+// ── Admin & SubAdmin: Multi-Month Rent Collection ────────────────────────────
+router.post(
+  '/collect-multi',
+  rentalAdminAuth,
+  (req: any, res: any) => rentalPaymentController.collectMultiMonthPayment(req, res)
+);
+
 export default router;

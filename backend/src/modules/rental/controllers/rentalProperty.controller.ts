@@ -5,15 +5,18 @@ import { sendSuccess, sendError } from '../../../shared/utils/response.util';
 import { z } from 'zod';
 
 const createPropertySchema = z.object({
-  propertyName: z.string().min(2, 'Property name is required'),
+  propertyName: z.string().trim().optional().or(z.literal('')),
   propertyType: z
     .enum(['COMMERCIAL_SHOP', 'ROADSIDE_STALL', 'WAREHOUSE_GODOWN', 'LAND_PARCEL', 'OFFICE_SPACE', 'OTHER'])
     .optional(),
-  propertyNumber: z.string().min(1, 'Property/Shop number is required'),
-  location: z.string().min(2, 'Location is required'),
-  address: z.string().min(3, 'Address is required'),
-  dimensionsSqft: z.coerce.number().positive().optional(),
-  baseMonthlyRent: z.coerce.number().positive('Base monthly rent must be greater than zero'),
+  propertyNumber: z.string().trim().min(1, 'Shop code is required'),
+  location: z.string().trim().optional().or(z.literal('')),
+  address: z.string().trim().min(3, 'Shop address is required'),
+  dimensionsSqft: z.preprocess(
+    (val) => (val === '' || val === null || val === undefined ? undefined : val),
+    z.coerce.number().positive('Area in Sq. Ft must be greater than zero').optional()
+  ),
+  baseMonthlyRent: z.coerce.number().positive('Monthly rent must be greater than zero'),
 });
 
 const assignPropertySchema = z.object({

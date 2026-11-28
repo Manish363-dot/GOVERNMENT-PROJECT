@@ -227,6 +227,8 @@ exports.Prisma.RentalBillScalarFieldEnum = {
   billing_month: 'billing_month',
   billing_year: 'billing_year',
   rent_amount: 'rent_amount',
+  gst_rate: 'gst_rate',
+  gst_amount: 'gst_amount',
   adjustment_amount: 'adjustment_amount',
   total_amount_due: 'total_amount_due',
   amount_paid: 'amount_paid',

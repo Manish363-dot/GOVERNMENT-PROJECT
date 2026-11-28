@@ -307,12 +307,18 @@ export const RentalCheckStatusPage: React.FC = () => {
     ctx.fillText(isFull ? 'के पूर्ण /आंशिक भुगतान' : 'के पूर्ण/ आंशिक भुगतान', W - padX, row4Y);
 
     const row5Y = 326;
+    const matchedGst = Number(matchedBill?.gstAmount || 0);
+    const matchedRent = Number(matchedBill?.rentAmount || 0);
+    const receiptHead =
+      matchedGst > 0
+        ? `वाणिज्यिक दुकान किराया (₹${matchedRent.toLocaleString('en-IN')} + 18% GST ₹${matchedGst.toLocaleString('en-IN')})`
+        : 'वाणिज्यिक दुकान किराया';
     ctx.textAlign = 'right';
     ctx.font = `bold 14px ${fontBase}`;
     ctx.fillText('के मद प्राप्त हुआ।', W - padX, row5Y);
     drawLine(padX, W - padX - 115, row5Y + 4);
     ctx.textAlign = 'left';
-    ctx.fillText('वाणिज्यिक दुकान किराया', padX + 8, row5Y);
+    ctx.fillText(receiptHead, padX + 8, row5Y, contentW - 130);
 
     const amountY = 376;
     drawLine(padX, 320, amountY + 4);
@@ -377,6 +383,7 @@ export const RentalCheckStatusPage: React.FC = () => {
 
     const billsList = result?.allBills || [];
     const totalRentSum = billsList.reduce((acc, b) => acc + Number(b.rentAmount || b.totalAmountDue || 0), 0);
+    const totalGstSum = billsList.reduce((acc, b) => acc + Number(b.gstAmount || 0), 0);
     const totalDueSum = billsList.reduce((acc, b) => acc + Number(b.totalAmountDue || 0), 0);
     const totalPaidSum = billsList.reduce((acc, b) => acc + Number(b.amountPaid || 0), 0);
     const totalBalSum = billsList.reduce((acc, b) => acc + Number(b.balanceDue || 0), 0);
@@ -526,7 +533,7 @@ export const RentalCheckStatusPage: React.FC = () => {
     ctx.fillText('२. माहवार किराया मांग एवं जमा खाता बही विवरण:', padX, curY);
 
     curY += 10;
-    const colWidths = [42, 100, 145, 86, 86, 82, 86, 85, innerW - (42 + 100 + 145 + 86 + 86 + 82 + 86 + 85)];
+    const colWidths = [32, 92, 130, 74, 72, 78, 72, 74, 78, innerW - (32 + 92 + 130 + 74 + 72 + 78 + 72 + 74 + 78)];
     const colX: number[] = [];
     let accX = padX;
     for (const w of colWidths) {
@@ -550,6 +557,7 @@ export const RentalCheckStatusPage: React.FC = () => {
       { label: 'बिल माह', align: 'left' as CanvasTextAlign },
       { label: 'बिल संख्या', align: 'left' as CanvasTextAlign },
       { label: 'मासिक किराया', align: 'right' as CanvasTextAlign },
+      { label: '18% GST', align: 'right' as CanvasTextAlign },
       { label: 'कुल देय राशि', align: 'right' as CanvasTextAlign },
       { label: 'जमा राशि', align: 'right' as CanvasTextAlign },
       { label: 'अवशेष बकाया', align: 'right' as CanvasTextAlign },
@@ -560,11 +568,11 @@ export const RentalCheckStatusPage: React.FC = () => {
     headers.forEach((h, idx) => {
       const cx = colX[idx];
       const cw = colWidths[idx];
-      ctx.font = `bold 12px ${fontBase}`;
+      ctx.font = `bold 11px ${fontBase}`;
       ctx.fillStyle = '#000000';
       ctx.textAlign = h.align;
-      const tx = h.align === 'center' ? cx + cw / 2 : h.align === 'right' ? cx + cw - 8 : cx + 8;
-      ctx.fillText(h.label, tx, curY + 22);
+      const tx = h.align === 'center' ? cx + cw / 2 : h.align === 'right' ? cx + cw - 6 : cx + 6;
+      ctx.fillText(h.label, tx, curY + 22, cw - 8);
     });
 
     // Draw rows
@@ -592,6 +600,7 @@ export const RentalCheckStatusPage: React.FC = () => {
           formatHindiMonth(b.billingMonth),
           b.billNumber,
           `₹${Number(b.rentAmount || b.totalAmountDue || 0).toLocaleString('en-IN')}`,
+          `₹${Number(b.gstAmount || 0).toLocaleString('en-IN')}`,
           `₹${b.totalAmountDue.toLocaleString('en-IN')}`,
           `₹${b.amountPaid.toLocaleString('en-IN')}`,
           `₹${b.balanceDue.toLocaleString('en-IN')}`,
@@ -605,33 +614,34 @@ export const RentalCheckStatusPage: React.FC = () => {
           const align = headers[cIdx].align;
           ctx.textAlign = align;
           ctx.fillStyle = '#000000';
-          ctx.font = `bold 12px ${fontBase}`;
-          const tx = align === 'center' ? cx + cw / 2 : align === 'right' ? cx + cw - 8 : cx + 8;
-          ctx.fillText(val, tx, ry + 22, cw - 12);
+          ctx.font = `bold 11.5px ${fontBase}`;
+          const tx = align === 'center' ? cx + cw / 2 : align === 'right' ? cx + cw - 6 : cx + 6;
+          ctx.fillText(val, tx, ry + 22, cw - 8);
         });
       });
 
       // Total summary row
       const totY = curY + (1 + billsList.length) * rowH;
       // Vertical dividers for total row
-      [3, 4, 5, 6, 7].forEach((idx) => {
+      [3, 4, 5, 6, 7, 8].forEach((idx) => {
         ctx.beginPath();
         ctx.moveTo(colX[idx], totY);
         ctx.lineTo(colX[idx], totY + rowH);
         ctx.stroke();
       });
 
-      ctx.font = `bold 12.5px ${fontBase}`;
+      ctx.font = `bold 12px ${fontBase}`;
       ctx.textAlign = 'right';
-      ctx.fillText('कुल योग :', colX[3] - 10, totY + 22);
-      ctx.fillText(`₹${totalRentSum.toLocaleString('en-IN')}`, colX[3] + colWidths[3] - 8, totY + 22);
-      ctx.fillText(`₹${totalDueSum.toLocaleString('en-IN')}`, colX[4] + colWidths[4] - 8, totY + 22);
-      ctx.fillText(`₹${totalPaidSum.toLocaleString('en-IN')}`, colX[5] + colWidths[5] - 8, totY + 22);
-      ctx.fillText(`₹${totalBalSum.toLocaleString('en-IN')}`, colX[6] + colWidths[6] - 8, totY + 22);
+      ctx.fillText('कुल योग :', colX[3] - 8, totY + 22);
+      ctx.fillText(`₹${totalRentSum.toLocaleString('en-IN')}`, colX[3] + colWidths[3] - 6, totY + 22);
+      ctx.fillText(`₹${totalGstSum.toLocaleString('en-IN')}`, colX[4] + colWidths[4] - 6, totY + 22);
+      ctx.fillText(`₹${totalDueSum.toLocaleString('en-IN')}`, colX[5] + colWidths[5] - 6, totY + 22);
+      ctx.fillText(`₹${totalPaidSum.toLocaleString('en-IN')}`, colX[6] + colWidths[6] - 6, totY + 22);
+      ctx.fillText(`₹${totalBalSum.toLocaleString('en-IN')}`, colX[7] + colWidths[7] - 6, totY + 22);
       ctx.textAlign = 'center';
       ctx.fillText(
         totalBalSum > 0 ? 'बकाया देय' : 'पूर्ण चुकता',
-        colX[7] + (colWidths[7] + colWidths[8]) / 2,
+        colX[8] + (colWidths[8] + colWidths[9]) / 2,
         totY + 22
       );
     }
@@ -873,7 +883,9 @@ export const RentalCheckStatusPage: React.FC = () => {
                           <tr className="bg-slate-50 text-slate-700 uppercase font-bold text-[10px] sm:text-[11px] tracking-wider">
                             <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 whitespace-nowrap">{isHi ? 'माह' : 'Month'}</th>
                             <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 whitespace-nowrap">{isHi ? 'बिल संख्या' : 'Bill No'}</th>
-                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'देय राशि' : 'Rent Due'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'किराया' : 'Rent'}</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">18% GST</th>
+                            <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'कुल देय' : 'Total Due'}</th>
                             <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'जमा राशि' : 'Paid'}</th>
                             <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right whitespace-nowrap">{isHi ? 'बकाया' : 'Balance'}</th>
                             <th className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-center whitespace-nowrap">{isHi ? 'स्थिति' : 'Status'}</th>
@@ -886,7 +898,13 @@ export const RentalCheckStatusPage: React.FC = () => {
                               <tr key={bill.id} className="hover:bg-slate-50/80 transition-colors">
                                 <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 font-bold text-navy-950 whitespace-nowrap">{bill.billingMonth}</td>
                                 <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-slate-600 font-mono text-[11px] whitespace-nowrap">{bill.billNumber}</td>
-                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-slate-800 whitespace-nowrap">
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-slate-700 whitespace-nowrap">
+                                  ₹{Number(bill.rentAmount || bill.totalAmountDue || 0).toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-slate-700 whitespace-nowrap">
+                                  ₹{Number(bill.gstAmount || 0).toLocaleString('en-IN')}
+                                </td>
+                                <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right font-semibold text-slate-800 whitespace-nowrap">
                                   ₹{bill.totalAmountDue.toLocaleString('en-IN')}
                                 </td>
                                 <td className="py-2.5 sm:py-3 px-2.5 sm:px-3 text-right text-emerald-700 font-bold whitespace-nowrap">
@@ -926,7 +944,7 @@ export const RentalCheckStatusPage: React.FC = () => {
                             ))
                           ) : (
                             <tr>
-                              <td colSpan={7} className="py-6 text-center text-slate-500">
+                              <td colSpan={9} className="py-6 text-center text-slate-500">
                                 {isHi ? 'कोई बिल रिकॉर्ड नहीं मिला' : 'No past bill history available'}
                               </td>
                             </tr>

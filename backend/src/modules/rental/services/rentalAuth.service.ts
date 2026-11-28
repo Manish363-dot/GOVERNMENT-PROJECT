@@ -2,6 +2,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { env } from '../../../shared/config/env';
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
+import { invalidateRentalAdminCache } from '../middleware/rentalAuth.middleware';
+import { rentalCache } from '../utils/rentalCache.util';
 
 export class RentalAuthService {
   /**
@@ -180,6 +182,8 @@ export class RentalAuthService {
         },
       });
 
+      rentalCache.invalidate('subadmins:');
+
       return {
         id: subAdmin.id,
         username: subAdmin.username,
@@ -196,39 +200,41 @@ export class RentalAuthService {
    * List all Sub Admins (Super Admin only)
    */
   async listSubAdmins() {
-    return withRentalDbRetry(async () => {
-      const admins = await rentalPrisma.rentalAdmin.findMany({
-        where: { role: 'SUB_ADMIN' },
-        select: {
-          id: true,
-          username: true,
-          full_name: true,
-          mobile: true,
-          email: true,
-          role: true,
-          status: true,
-          permissions: true,
-          last_login_at: true,
-          created_at: true,
-        },
-        orderBy: { created_at: 'desc' },
-      });
+    return rentalCache.getOrSet('subadmins:all', 20_000, () =>
+      withRentalDbRetry(async () => {
+        const admins = await rentalPrisma.rentalAdmin.findMany({
+          where: { role: 'SUB_ADMIN' },
+          select: {
+            id: true,
+            username: true,
+            full_name: true,
+            mobile: true,
+            email: true,
+            role: true,
+            status: true,
+            permissions: true,
+            last_login_at: true,
+            created_at: true,
+          },
+          orderBy: { created_at: 'desc' },
+        });
 
-      return admins.map((a) => ({
-        id: a.id,
-        username: a.username,
-        fullName: a.full_name,
-        full_name: a.full_name,
-        mobile: a.mobile,
-        email: a.email,
-        role: a.role,
-        status: a.status,
-        permissions: a.permissions,
-        lastLoginAt: a.last_login_at,
-        createdAt: a.created_at,
-        created_at: a.created_at,
-      }));
-    });
+        return admins.map((a) => ({
+          id: a.id,
+          username: a.username,
+          fullName: a.full_name,
+          full_name: a.full_name,
+          mobile: a.mobile,
+          email: a.email,
+          role: a.role,
+          status: a.status,
+          permissions: a.permissions,
+          lastLoginAt: a.last_login_at,
+          createdAt: a.created_at,
+          created_at: a.created_at,
+        }));
+      })
+    );
   }
 
   /**
@@ -263,6 +269,9 @@ export class RentalAuthService {
           ip_address: ipAddress || 'Unknown',
         },
       });
+
+      invalidateRentalAdminCache(subAdminId);
+      rentalCache.invalidate('subadmins:');
 
       return { id: updated.id, username: updated.username, status: updated.status };
     });

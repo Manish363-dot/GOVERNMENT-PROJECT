@@ -45,15 +45,17 @@ export class RentalNoticeController {
 
   /**
    * GET /api/rental/notices
-   * List notices (Public, tenant-specific, or all for admin)
+   * List notices (Public visitors strictly see PUBLIC only; tenants see PUBLIC + own; admin sees all)
    */
   async listNotices(req: AuthenticatedRentalRequest, res: Response) {
     try {
       const { category, search, page, limit } = req.query;
+      const isAdmin = Boolean(req.rentalAdmin);
       const tenantUserId = req.rentalUser ? req.rentalUser.userId : undefined;
+      const resolvedCategory = !isAdmin && !tenantUserId ? 'PUBLIC' : (category as string);
 
       const result = await rentalNoticeService.listNotices({
-        category: category as string,
+        category: resolvedCategory,
         tenantUserId,
         search: search as string,
         page: page ? parseInt(page as string, 10) : 1,
@@ -83,6 +85,47 @@ export class RentalNoticeController {
       return sendSuccess(res, result, 'Notice deleted successfully');
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to delete notice', 400);
+    }
+  }
+
+  /**
+   * GET /api/rental/notices/whatsapp-status
+   * Check whether Meta WhatsApp Cloud API credentials are configured
+   */
+  async getWhatsAppStatus(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Administrator authentication required', 401);
+      }
+      return sendSuccess(res, rentalNoticeService.getWhatsAppStatus(), 'WhatsApp API status retrieved');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to check WhatsApp status', 500);
+    }
+  }
+
+  /**
+   * POST /api/rental/notices/:id/send-whatsapp
+   * Dispatch or resend an INDIVIDUAL notice via Meta WhatsApp Cloud API
+   */
+  async sendWhatsAppNotice(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Administrator authentication required', 401);
+      }
+
+      const { id } = req.params;
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const result = await rentalNoticeService.resendWhatsAppNotice(req.rentalAdmin.adminId, id, clientIp);
+
+      return sendSuccess(
+        res,
+        result,
+        result.sent
+          ? `WhatsApp message dispatched to ${result.mobile}`
+          : result.error || 'Meta WhatsApp API dispatch failed'
+      );
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to send WhatsApp notice', 400);
     }
   }
 }

@@ -2,30 +2,83 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, NavLink } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { useLanguage } from '../context/LanguageContext';
+import { api } from '@/services/api';
 import { rentalUserApi } from '../services/rentalUser.service';
 import { rentalPropertyApi, PropertyListItem } from '../services/rentalProperty.service';
 import {
-  User,
-  Building,
   Phone,
   Mail,
-  MapPin,
   FileCheck2,
   ArrowLeft,
   RefreshCw,
   ExternalLink,
-  ShieldCheck,
-  FileText,
-  BookOpen,
   X,
   ZoomIn,
-  Edit3,
-  Save,
   CheckCircle2,
   AlertCircle,
-  CreditCard,
-  Store,
 } from 'lucide-react';
+
+const formatDateForInput = (val?: string | Date | null): string => {
+  if (!val) return '';
+  const d = new Date(val);
+  return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+};
+
+const formatDisplayDate = (val?: string | Date | null, locale = 'en-IN'): string => {
+  if (!val) return '';
+  const d = new Date(val);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' });
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
+
+// Converts any uploaded image format (JPEG, PNG, AVIF, BMP, GIF, etc.) into WebP before uploading
+const convertImageToWebP = async (file: File): Promise<File> => {
+  return new Promise((resolve) => {
+    if (file.type === 'image/webp' || file.name.toLowerCase().endsWith('.webp')) {
+      resolve(file);
+      return;
+    }
+
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const baseName = file.name.replace(/\.[^/.]+$/, '');
+          const webpFile = new File([blob], `${baseName}.webp`, { type: 'image/webp' });
+          resolve(webpFile);
+        },
+        'image/webp',
+        0.88
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+    img.src = objectUrl;
+  });
+};
 
 export const TenantProfilePage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,8 +87,9 @@ export const TenantProfilePage: React.FC = () => {
   const isHi = language === 'hi';
   const navigate = useNavigate();
 
-  const [tenant, setTenant] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const initialTenant = id ? api.peekCache<{ data: any }>(`/rental/users/admin/${id}`)?.data ?? null : null;
+  const [tenant, setTenant] = useState<any | null>(initialTenant);
+  const [loading, setLoading] = useState(!initialTenant);
   const [error, setError] = useState('');
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
 
@@ -45,6 +99,9 @@ export const TenantProfilePage: React.FC = () => {
   const [savingChanges, setSavingChanges] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [saveErrorMsg, setSaveErrorMsg] = useState('');
+  const [transliterating, setTransliterating] = useState<string | null>(null);
+  const [profilePhotoPreview, setProfilePhotoPreview] = useState<string | null>(null);
+  const [shopPhotoPreview, setShopPhotoPreview] = useState<string | null>(null);
 
   const [editFormData, setEditFormData] = useState({
     fullName: '',
@@ -57,29 +114,126 @@ export const TenantProfilePage: React.FC = () => {
     gstNumber: '',
     propertyId: '',
     monthlyRent: '',
-    status: 'ACTIVE' as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED',
+    allotmentDate: '',
+    leaseEndDate: '',
     profilePhotoFile: null as File | null,
     shopPhotoFile: null as File | null,
     aadhaarFile: null as File | null,
     domicileFile: null as File | null,
   });
 
-  const loadData = async () => {
+  const handleAutoTransliterate = async (
+    field: 'fullName' | 'permanentAddress' | 'currentAddress',
+    value: string
+  ) => {
+    if (!value || !value.trim() || !/[a-zA-Z]/.test(value)) return;
+    setTransliterating(field);
+    try {
+      const res = await api.post<{ success: boolean; hindi: string }>('/rental/transliterate', {
+        text: value.trim(),
+      });
+      if (res && res.hindi && res.hindi.trim()) {
+        setEditFormData((prev) => ({ ...prev, [field]: res.hindi }));
+      }
+    } catch (err) {
+      console.warn('Transliteration failed', err);
+    } finally {
+      setTransliterating(null);
+    }
+  };
+
+  const handlePdfDocChange = (
+    field: 'aadhaarFile' | 'domicileFile',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSaveErrorMsg('');
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    if (!isPdf) {
+      setSaveErrorMsg(
+        isHi
+          ? field === 'aadhaarFile'
+            ? 'आधार कार्ड केवल PDF फॉर्मेट में होना चाहिए।'
+            : 'निवास प्रमाण पत्र केवल PDF फॉर्मेट में होना चाहिए।'
+          : field === 'aadhaarFile'
+          ? 'Aadhaar document must be strictly in PDF format.'
+          : 'Domicile certificate must be strictly in PDF format.'
+      );
+      e.target.value = '';
+      setEditFormData((prev) => ({ ...prev, [field]: null }));
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setSaveErrorMsg(
+        isHi ? 'PDF फ़ाइल का आकार 2 MB से कम होना चाहिए।' : 'PDF file size must be under 2 MB.'
+      );
+      e.target.value = '';
+      setEditFormData((prev) => ({ ...prev, [field]: null }));
+      return;
+    }
+
+    setEditFormData((prev) => ({ ...prev, [field]: file }));
+  };
+
+  const handleImageFileChange = async (
+    field: 'profilePhotoFile' | 'shopPhotoFile',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setSaveErrorMsg('');
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const setPreview = field === 'profilePhotoFile' ? setProfilePhotoPreview : setShopPhotoPreview;
+
+    if (!file.type.startsWith('image/')) {
+      setSaveErrorMsg(
+        isHi
+          ? 'फ़ोटो केवल इमेज फॉर्मेट (JPG, PNG, WEBP, आदि) में होनी चाहिए।'
+          : 'Photo must be an image file (JPG, PNG, WEBP, etc.).'
+      );
+      e.target.value = '';
+      setEditFormData((prev) => ({ ...prev, [field]: null }));
+      setPreview(null);
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setSaveErrorMsg(
+        isHi ? 'फ़ोटो का आकार 5 MB से कम होना चाहिए।' : 'Photo size must be under 5 MB.'
+      );
+      e.target.value = '';
+      setEditFormData((prev) => ({ ...prev, [field]: null }));
+      setPreview(null);
+      return;
+    }
+
+    try {
+      const converted = await convertImageToWebP(file);
+      setEditFormData((prev) => ({ ...prev, [field]: converted }));
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(converted);
+    } catch {
+      setEditFormData((prev) => ({ ...prev, [field]: file }));
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const loadData = async (force = false) => {
     if (!id) return;
-    setLoading(true);
+    if (force) api.invalidateCache(`/rental/users/admin/${id}`);
+    if (force || !tenant) setLoading(true);
     setError('');
     try {
-      const [res, propsRes] = await Promise.all([
-        rentalUserApi.getTenantDetails(id),
-        rentalPropertyApi.listProperties({ limit: 100 }).catch(() => ({ data: { data: [] } })),
-      ]);
+      const res = await rentalUserApi.getTenantDetails(id);
 
       const user = res.data;
       setTenant(user);
-
-      if (propsRes && propsRes.data && Array.isArray(propsRes.data.data)) {
-        setAvailableProperties(propsRes.data.data);
-      }
 
       const activeAssignment = user.assignments?.find((a: any) => a.is_active) || user.assignments?.[0];
 
@@ -94,7 +248,8 @@ export const TenantProfilePage: React.FC = () => {
         gstNumber: user.gst_number || '',
         propertyId: activeAssignment?.property?.id || activeAssignment?.property_id || '',
         monthlyRent: activeAssignment?.monthly_rent ? String(activeAssignment.monthly_rent) : '',
-        status: user.status || 'ACTIVE',
+        allotmentDate: formatDateForInput(activeAssignment?.allotment_date || activeAssignment?.lease_start_date),
+        leaseEndDate: formatDateForInput(activeAssignment?.lease_end_date),
         profilePhotoFile: null,
         shopPhotoFile: null,
         aadhaarFile: null,
@@ -110,6 +265,19 @@ export const TenantProfilePage: React.FC = () => {
   useEffect(() => {
     loadData();
   }, [id]);
+
+  // Lazy-load properties dropdown ONLY when Edit Mode is opened
+  useEffect(() => {
+    if (!isEditMode || availableProperties.length > 0) return;
+    rentalPropertyApi
+      .listProperties({ limit: 100 })
+      .then((propsRes) => {
+        if (propsRes?.data && Array.isArray(propsRes.data.data)) {
+          setAvailableProperties(propsRes.data.data);
+        }
+      })
+      .catch(() => {});
+  }, [isEditMode, availableProperties.length]);
 
   const handlePropertyChange = (newPropertyId: string) => {
     setEditFormData((prev) => {
@@ -146,6 +314,14 @@ export const TenantProfilePage: React.FC = () => {
       setSaveErrorMsg(isHi ? 'अमान्य पैन संख्या (उदा. ABCDE1234F)' : 'Invalid PAN number (e.g. ABCDE1234F)');
       return;
     }
+    if (editFormData.allotmentDate && editFormData.leaseEndDate && editFormData.leaseEndDate < editFormData.allotmentDate) {
+      setSaveErrorMsg(
+        isHi
+          ? 'दुकान आवंटन समाप्ति तिथि, आवंटन तिथि से पहले नहीं हो सकती'
+          : 'Allotment end date cannot be earlier than allotment date'
+      );
+      return;
+    }
 
     setSavingChanges(true);
     setSaveErrorMsg('');
@@ -163,7 +339,8 @@ export const TenantProfilePage: React.FC = () => {
         gstNumber: editFormData.gstNumber,
         propertyId: editFormData.propertyId,
         monthlyRent: editFormData.monthlyRent ? Number(editFormData.monthlyRent) : undefined,
-        status: editFormData.status,
+        allotmentDate: editFormData.allotmentDate || undefined,
+        leaseEndDate: editFormData.leaseEndDate,
         profilePhotoFile: editFormData.profilePhotoFile,
         shopPhotoFile: editFormData.shopPhotoFile,
         aadhaarFile: editFormData.aadhaarFile,
@@ -179,17 +356,22 @@ export const TenantProfilePage: React.FC = () => {
       // Reload tenant details
       const updated = await rentalUserApi.getTenantDetails(id);
       setTenant(updated.data);
+      const updatedAssignment = updated.data?.assignments?.find((a: any) => a.is_active) || updated.data?.assignments?.[0];
 
-      // Reset upload files
+      // Reset upload files and sync updated assignment dates
       setEditFormData((prev) => ({
         ...prev,
         aadhaarNumber: '',
         panNumber: '',
+        allotmentDate: formatDateForInput(updatedAssignment?.allotment_date || updatedAssignment?.lease_start_date),
+        leaseEndDate: formatDateForInput(updatedAssignment?.lease_end_date),
         profilePhotoFile: null,
         shopPhotoFile: null,
         aadhaarFile: null,
         domicileFile: null,
       }));
+      setProfilePhotoPreview(null);
+      setShopPhotoPreview(null);
 
       // Switch back to view mode
       setIsEditMode(false);
@@ -253,7 +435,7 @@ export const TenantProfilePage: React.FC = () => {
             className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 hover:text-navy-900 transition-colors w-fit"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>{isHi ? 'किरायेदार सूची पर वापस जाएं' : 'Back to Tenants List'}</span>
+            <span>{isHi ? 'वापस जाएं' : 'Back'}</span>
           </button>
 
           <div className="flex items-center gap-2 flex-wrap">
@@ -273,31 +455,14 @@ export const TenantProfilePage: React.FC = () => {
             >
               {isEditMode ? (
                 <>
-                  <X className="w-4 h-4" />
-                  <span>{isHi ? 'विवरण देखें (View Mode)' : 'View Details'}</span>
+                  <span>{isHi ? 'विवरण देखें' : 'View Details'}</span>
                 </>
               ) : (
                 <>
-                  <Edit3 className="w-4 h-4" />
-                  <span>{isHi ? 'संपादित करें (Edit)' : 'Edit Tenant'}</span>
+                  <span>{isHi ? 'संपादित करें' : 'Edit Tenant'}</span>
                 </>
               )}
             </button>
-
-            {/* View Ledger Link */}
-            <NavLink
-              to={`/rental/admin/ledger?tenantId=${tenant.id}`}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xs transition-all"
-            >
-              <BookOpen className="w-4 h-4" />
-              <span>{isHi ? 'बहीखाता / लेजर' : 'Ledger'}</span>
-            </NavLink>
-
-            {/* Status Badge */}
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-              <ShieldCheck className="w-4 h-4 text-emerald-700" />
-              <span>{tenant.status || 'ACTIVE'}</span>
-            </span>
           </div>
         </div>
 
@@ -348,14 +513,9 @@ export const TenantProfilePage: React.FC = () => {
               )}
 
               <div className="flex-1 text-center sm:text-left min-w-0">
-                <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950 truncate">
-                    {tenant.full_name || tenant.fullName}
-                  </h1>
-                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300">
-                    {tenant.user_id || tenant.userCode}
-                  </span>
-                </div>
+                <h1 className="text-xl sm:text-2xl font-extrabold text-navy-950 truncate">
+                  {tenant.full_name || tenant.fullName}
+                </h1>
 
                 <div className="text-xs text-slate-500 mt-2 flex flex-wrap items-center justify-center sm:justify-start gap-3">
                   <span className="flex items-center gap-1 font-mono">
@@ -382,27 +542,59 @@ export const TenantProfilePage: React.FC = () => {
             {/* Official Assigned Property */}
             <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs">
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy-950 mb-4 flex items-center gap-2">
-                <Building className="w-4 h-4 text-blue-600" />
                 <span>{isHi ? 'आवंटित दुकान / संपत्ति विवरण' : 'Allocated Commercial Shop / Asset'}</span>
               </h2>
 
               {activeAssignment?.property ? (
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium block">{isHi ? 'दुकान संख्या:' : 'Shop Number:'}</span>
-                    <span className="text-sm font-extrabold text-navy-950 font-mono inline-block bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded mt-0.5">
-                      {activeAssignment.property.property_number || activeAssignment.property.property_id}
-                    </span>
+                <div className="space-y-4 bg-slate-50 p-4 sm:p-5 rounded-xl border border-slate-200">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <span className="text-xs text-slate-500 font-medium block">{isHi ? 'दुकान संख्या:' : 'Shop Number:'}</span>
+                      <span className="text-sm font-extrabold text-navy-950 font-mono inline-block bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded mt-0.5">
+                        {activeAssignment.property.property_number || activeAssignment.property.property_id}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-500 font-medium block">{isHi ? 'बाजार / स्थान:' : 'Market Location:'}</span>
+                      <span className="text-sm font-bold text-slate-800 block mt-0.5">{activeAssignment.property.location}</span>
+                    </div>
+                    <div>
+                      <span className="text-xs text-slate-500 font-medium block">{isHi ? 'मासिक किराया दर:' : 'Monthly Rent:'}</span>
+                      <span className="text-sm font-extrabold text-emerald-700 block mt-0.5">
+                        ₹{Number(activeAssignment.monthly_rent || activeAssignment.property.base_monthly_rent || 0).toLocaleString('en-IN')}/माह
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium block">{isHi ? 'बाजार / स्थान:' : 'Market Location:'}</span>
-                    <span className="text-sm font-bold text-slate-800 block mt-0.5">{activeAssignment.property.location}</span>
-                  </div>
-                  <div>
-                    <span className="text-xs text-slate-500 font-medium block">{isHi ? 'मासिक किराया दर:' : 'Monthly Rent:'}</span>
-                    <span className="text-sm font-extrabold text-emerald-700 block mt-0.5">
-                      ₹{Number(activeAssignment.monthly_rent || activeAssignment.property.base_monthly_rent || 0).toLocaleString('en-IN')}/माह
-                    </span>
+
+                  {/* Allotment Start & End Validity Dates */}
+                  <div className="pt-3 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-start gap-2.5">
+                      <div>
+                        <span className="text-xs text-slate-500 font-medium block">
+                          {isHi ? 'दुकान आवंटन तिथि:' : 'Shop Allotment Date:'}
+                        </span>
+                        <span className="text-sm font-bold text-slate-900 block mt-0.5">
+                          {formatDisplayDate(activeAssignment.allotment_date || activeAssignment.lease_start_date) || '—'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-2.5">
+                      <div>
+                        <span className="text-xs text-slate-500 font-medium block">
+                          {isHi ? 'समाप्ति तिथि:' : 'End Date:'}
+                        </span>
+                        {activeAssignment.lease_end_date ? (
+                          <span className="text-sm font-bold text-slate-900 block mt-0.5">
+                            {formatDisplayDate(activeAssignment.lease_end_date)}
+                          </span>
+                        ) : (
+                          <span className="text-xs font-semibold text-slate-500 italic block mt-0.5">
+                            {isHi ? 'निर्धारित नहीं' : 'Not specified'}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -415,7 +607,6 @@ export const TenantProfilePage: React.FC = () => {
             {/* Address & Identity Information */}
             <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs">
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy-950 mb-4 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-emerald-600" />
                 <span>{isHi ? 'पता एवं पहचान विवरण' : 'Address & Identification'}</span>
               </h2>
 
@@ -434,11 +625,11 @@ export const TenantProfilePage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <span className="text-slate-500 block font-semibold">Aadhaar (Masked):</span>
+                  <span className="text-slate-500 block font-semibold">{isHi ? 'आधार संख्या:': 'Aadhaar Number:'}</span>
                   <span className="font-mono font-bold text-slate-900 text-sm mt-0.5 block">{tenant.aadhaar_masked || 'XXXX-XXXX-****'}</span>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-                  <span className="text-slate-500 block font-semibold">PAN (Masked):</span>
+                  <span className="text-slate-500 block font-semibold">{isHi ? 'पैन संख्या:' : 'PAN Number:'}</span>
                   <span className="font-mono font-bold text-slate-900 text-sm mt-0.5 block">{tenant.pan_masked || 'XXXXX****X'}</span>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
@@ -451,7 +642,6 @@ export const TenantProfilePage: React.FC = () => {
             {/* Uploaded Verification Documents */}
             <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-xs">
               <h2 className="text-sm font-extrabold uppercase tracking-wider text-navy-950 mb-4 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-indigo-600" />
                 <span>{isHi ? 'अपलोड किए गए पहचान व अनुबंध दस्तावेज़' : 'Uploaded Verification Documents'}</span>
               </h2>
 
@@ -464,7 +654,7 @@ export const TenantProfilePage: React.FC = () => {
                         <div className="min-w-0">
                           <div className="text-xs font-bold text-slate-800 truncate">
                             {doc.file_name?.toLowerCase().includes('shop')
-                              ? (isHi ? 'दुकान की फोटो (Shop Photo)' : 'Shop Photo')
+                              ? (isHi ? 'दुकान की फोटो ' : 'Shop Photo')
                               : (doc.doc_type || 'DOCUMENT')}
                           </div>
                           <div className="text-[11px] text-slate-500 truncate">{doc.file_name}</div>
@@ -506,31 +696,47 @@ export const TenantProfilePage: React.FC = () => {
           <form onSubmit={handleSaveProfile} className="space-y-6">
             {/* Section 1: Basic & Personal Info */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
-                <User className="w-4 h-4 text-navy-700" />
-                <span>{isHi ? '1. व्यक्तिगत विवरण (Personal Details)' : '1. Personal Details'}</span>
+              <h4 className="text-xs font-black uppercase text-navy-950  flex items-center gap-2">
+                <span>{isHi ? '1. व्यक्तिगत विवरण' : '1. Personal Details'}</span>
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Full Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* Full Name with Hindi Transliteration */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {isHi ? 'पूरा नाम' : 'Full Name'} <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      {isHi ? 'पूरा नाम' : 'Full Name'}
+                    </label>
+                    {transliterating === 'fullName' ? (
+                      <span className="text-[10px] text-amber-700 font-semibold animate-pulse">
+                        {isHi ? 'अनुवाद हो रहा है...' : 'Translating...'}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoTransliterate('fullName', editFormData.fullName)}
+                        className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 px-2 py-0.5 rounded font-semibold transition cursor-pointer"
+                        title={isHi ? 'अंग्रेज़ी नाम को हिंदी में बदलें' : 'Convert English name to Hindi'}
+                      >
+                        🌐
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     required
                     value={editFormData.fullName}
                     onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
+                    onBlur={() => handleAutoTransliterate('fullName', editFormData.fullName)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-semibold text-slate-900"
-                    placeholder="e.g. Manish Paliwal"
+                    placeholder="e.g. Ramesh Chandra Joshi"
                   />
                 </div>
 
                 {/* Mobile Number */}
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {isHi ? 'मोबाइल नंबर (10 अंक)' : 'Mobile Number (10 digits)'} <span className="text-rose-500">*</span>
+                    {isHi ? 'मोबाइल नंबर' : 'Mobile Number'}
                   </label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -564,57 +770,74 @@ export const TenantProfilePage: React.FC = () => {
                     />
                   </div>
                 </div>
-
-                {/* Account Status */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {isHi ? 'खाता स्थिति (Account Status)' : 'Account Status'} <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={editFormData.status}
-                    onChange={(e) => setEditFormData({ ...editFormData, status: e.target.value as any })}
-                    className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-bold text-slate-900"
-                  >
-                    <option value="ACTIVE">{isHi ? 'सक्रिय (ACTIVE)' : 'ACTIVE'}</option>
-                    <option value="INACTIVE">{isHi ? 'निष्क्रिय (INACTIVE)' : 'INACTIVE'}</option>
-                    <option value="SUSPENDED">{isHi ? 'निलंबित (SUSPENDED)' : 'SUSPENDED'}</option>
-                  </select>
-                </div>
               </div>
             </div>
 
             {/* Section 2: Address Information */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-navy-700" />
-                <span>{isHi ? '2. पता विवरण (Address Details)' : '2. Address Details'}</span>
+              <h4 className="text-xs font-black uppercase text-navy-950 flex items-center gap-2">
+                <span>{isHi ? '2. पता विवरण' : '2. Address Details'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Permanent Address */}
+                {/* Permanent Address with Hindi Transliteration */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {isHi ? 'स्थायी पता' : 'Permanent Address'} <span className="text-rose-500">*</span>
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      {isHi ? 'स्थायी पता' : 'Permanent Address'}
+                    </label>
+                    {transliterating === 'permanentAddress' ? (
+                      <span className="text-[10px] text-amber-700 font-semibold animate-pulse">
+                        {isHi ? 'अनुवाद हो रहा है...' : 'Translating...'}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoTransliterate('permanentAddress', editFormData.permanentAddress)}
+                        className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 px-2 py-0.5 rounded font-semibold transition cursor-pointer"
+                        title={isHi ? 'अंग्रेज़ी पते को हिंदी में बदलें' : 'Convert English address to Hindi'}
+                      >
+                        🌐
+                      </button>
+                    )}
+                  </div>
                   <textarea
                     rows={2}
                     required
                     value={editFormData.permanentAddress}
                     onChange={(e) => setEditFormData({ ...editFormData, permanentAddress: e.target.value })}
+                    onBlur={() => handleAutoTransliterate('permanentAddress', editFormData.permanentAddress)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-medium text-slate-900 resize-none"
                     placeholder="Village/Mohalla, Post, District, State, PIN"
                   />
                 </div>
 
-                {/* Current Address */}
+                {/* Current Address with Hindi Transliteration */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    {isHi ? 'वर्तमान / दुकान का पता' : 'Current / Shop Address'}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      {isHi ? 'वर्तमान / दुकान का पता' : 'Current / Shop Address'}
+                    </label>
+                    {transliterating === 'currentAddress' ? (
+                      <span className="text-[10px] text-amber-700 font-semibold animate-pulse">
+                        {isHi ? 'अनुवाद हो रहा है...' : 'Translating...'}
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleAutoTransliterate('currentAddress', editFormData.currentAddress)}
+                        className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 px-2 py-0.5 rounded font-semibold transition cursor-pointer"
+                        title={isHi ? 'अंग्रेज़ी पते को हिंदी में बदलें' : 'Convert English address to Hindi'}
+                      >
+                        🌐
+                      </button>
+                    )}
+                  </div>
                   <textarea
                     rows={2}
                     value={editFormData.currentAddress}
                     onChange={(e) => setEditFormData({ ...editFormData, currentAddress: e.target.value })}
+                    onBlur={() => handleAutoTransliterate('currentAddress', editFormData.currentAddress)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-medium text-slate-900 resize-none"
                     placeholder="Current shop or local residence address"
                   />
@@ -624,9 +847,9 @@ export const TenantProfilePage: React.FC = () => {
 
             {/* Section 3: Identity & Tax Details */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-navy-700" />
-                <span>{isHi ? '3. पहचान एवं कर विवरण (Identity & Tax Details)' : '3. Identity & Tax Details'}</span>
+              <h4 className="text-xs font-black uppercase text-navy-950 flex items-center gap-2">
+              
+                <span>{isHi ? '3. पहचान एवं कर विवरण' : '3. Identity & Tax Details'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -653,9 +876,6 @@ export const TenantProfilePage: React.FC = () => {
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-mono text-slate-900"
                     placeholder={isHi ? 'नया 12 अंक दर्ज करें' : 'Enter 12 digits to update'}
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    {isHi ? 'खाली छोड़ने पर पुराना आधार रहेगा' : 'Leave empty to keep existing'}
-                  </p>
                 </div>
 
                 {/* PAN Number */}
@@ -681,9 +901,6 @@ export const TenantProfilePage: React.FC = () => {
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-mono text-slate-900"
                     placeholder={isHi ? 'नया 10 अक्षर दर्ज करें' : 'Enter 10 chars to update'}
                   />
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    {isHi ? 'खाली छोड़ने पर पुराना पैन रहेगा' : 'Leave empty to keep existing'}
-                  </p>
                 </div>
 
                 {/* GST Number */}
@@ -712,9 +929,8 @@ export const TenantProfilePage: React.FC = () => {
 
             {/* Section 4: Shop Allotment & Monthly Rent */}
             <div className="bg-amber-50/60 p-5 sm:p-6 rounded-2xl border border-amber-200 shadow-xs space-y-4">
-              <h4 className="text-xs font-black uppercase text-amber-950 tracking-wider flex items-center gap-2">
-                <Store className="w-4 h-4 text-amber-700" />
-                <span>{isHi ? '4. दुकान आवंटन एवं मासिक किराया (Shop Allotment & Rent)' : '4. Shop Allotment & Rent'}</span>
+              <h4 className="text-xs font-black uppercase text-amber-950 flex items-center gap-2">
+                <span>{isHi ? '4. दुकान आवंटन एवं मासिक किराया' : '4. Shop Allotment & Rent'}</span>
               </h4>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -774,79 +990,212 @@ export const TenantProfilePage: React.FC = () => {
                     />
                   </div>
                 </div>
+
+                {/* Shop Allotment Date (From) */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    {isHi ? 'दुकान आवंटन तिथि' : 'Shop Allotment Date'}
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.allotmentDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, allotmentDate: e.target.value })}
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-amber-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 font-semibold text-slate-900"
+                  />
+                </div>
+
+                {/* Shop Allotment End Date (Until) */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-bold text-slate-700">
+                      {isHi ? 'समाप्ति तिथि' : 'End Date'}
+                    </label>
+                    {editFormData.leaseEndDate && (
+                      <button
+                        type="button"
+                        onClick={() => setEditFormData({ ...editFormData, leaseEndDate: '' })}
+                        className="text-[10px] font-bold text-rose-600 hover:underline cursor-pointer"
+                      >
+                        {isHi ? 'हटाएं' : 'Clear'}
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="date"
+                    min={editFormData.allotmentDate || undefined}
+                    value={editFormData.leaseEndDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, leaseEndDate: e.target.value })}
+                    className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-amber-300 focus:outline-hidden focus:ring-2 focus:ring-amber-500/20 focus:border-amber-600 font-semibold text-slate-900"
+                  />
+                  <p className="text-[10px] text-amber-700 font-medium mt-1">
+                    {isHi ? 'खाली छोड़ने पर अनिश्चितकालीन माना जाएगा।' : 'Leave empty if open-ended.'}
+                  </p>
+                </div>
               </div>
             </div>
 
             {/* Section 5: Documents & File Vault */}
             <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-black uppercase text-navy-950 tracking-wider flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-navy-700" />
-                  <span>{isHi ? '5. दस्तावेज बदलें या नया अपलोड करें (Upload Documents)' : '5. Documents Vault & Updates'}</span>
+                <h4 className="text-xs font-black uppercase text-navy-950 flex items-center gap-2">
+                  <span>{isHi ? '5. दस्तावेज बदलें या नया अपलोड करें' : '5. Documents Vault & Updates'}</span>
                 </h4>
-                <span className="text-[11px] text-emerald-700 bg-emerald-100 font-bold px-2 py-0.5 rounded-full">
-                  Auto .WebP S3 Storage
-                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                {/* Profile Photo */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {isHi ? 'प्रोफ़ाइल फोटो' : 'Profile Photo'}
-                  </label>
+                {/* Profile Photo (Any Image -> Auto WebP, max 5MB) */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                      {isHi ? 'प्रोफ़ाइल फोटो' : 'Profile Photo'}
+                    </label>
+                   <p className="text-[10px] text-slate-500 mb-1.5">
+                      {isHi ? 'अधिकतम 5 MB' : 'Max 5 MB'}
+                    </p>
+                    {editFormData.profilePhotoFile && (
+                      <div className="mb-2 flex items-center gap-2 p-1.5 bg-white rounded border border-slate-200">
+                        {profilePhotoPreview && (
+                          <img
+                            src={profilePhotoPreview}
+                            alt="Profile preview"
+                            className="w-10 h-10 rounded object-cover border border-slate-300 shrink-0"
+                          />
+                        )}
+                        <div className="text-[10px] truncate flex-1">
+                          <p className="font-semibold text-slate-800 truncate">{editFormData.profilePhotoFile.name}</p>
+                          <div className="flex items-center justify-between text-slate-500 mt-0.5">
+                            <span>{formatFileSize(editFormData.profilePhotoFile.size)}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditFormData({ ...editFormData, profilePhotoFile: null });
+                                setProfilePhotoPreview(null);
+                              }}
+                              className="text-red-600 hover:underline font-semibold"
+                            >
+                              {isHi ? 'हटाएं' : 'Remove'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, profilePhotoFile: e.target.files?.[0] || null })
-                    }
+                    accept="image/*,.jpg,.jpeg,.png,.webp,.avif,.gif,.bmp"
+                    onChange={(e) => handleImageFileChange('profilePhotoFile', e)}
                     className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-navy-50 file:text-navy-700 hover:file:bg-navy-100 cursor-pointer"
                   />
                 </div>
 
-                {/* Shop Photo */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {isHi ? 'दुकान की फोटो' : 'Shop Photo'}
-                  </label>
+                {/* Shop Photo (Any Image -> Auto WebP, max 5MB) */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                      {isHi ? 'दुकान की फोटो' : 'Shop Photo'}
+                    </label>
+                    <p className="text-[10px] text-slate-500 mb-1.5">
+                      {isHi ? 'अधिकतम 5 MB' : 'Max 5 MB'}
+                    </p>
+                    {editFormData.shopPhotoFile && (
+                      <div className="mb-2 flex items-center gap-2 p-1.5 bg-white rounded border border-slate-200">
+                        {shopPhotoPreview && (
+                          <img
+                            src={shopPhotoPreview}
+                            alt="Shop preview"
+                            className="w-10 h-10 rounded object-cover border border-slate-300 shrink-0"
+                          />
+                        )}
+                        <div className="text-[10px] truncate flex-1">
+                          <p className="font-semibold text-slate-800 truncate">{editFormData.shopPhotoFile.name}</p>
+                          <div className="flex items-center justify-between text-slate-500 mt-0.5">
+                            <span>{formatFileSize(editFormData.shopPhotoFile.size)}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditFormData({ ...editFormData, shopPhotoFile: null });
+                                setShopPhotoPreview(null);
+                              }}
+                              className="text-red-600 hover:underline font-semibold"
+                            >
+                              {isHi ? 'हटाएं' : 'Remove'}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="file"
-                    accept="image/*"
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, shopPhotoFile: e.target.files?.[0] || null })
-                    }
+                    accept="image/*,.jpg,.jpeg,.png,.webp,.avif,.gif,.bmp"
+                    onChange={(e) => handleImageFileChange('shopPhotoFile', e)}
                     className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-navy-50 file:text-navy-700 hover:file:bg-navy-100 cursor-pointer"
                   />
                 </div>
 
-                {/* Aadhaar Card */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {isHi ? 'आधार कार्ड' : 'Aadhaar Card'}
-                  </label>
+                {/* Aadhaar Card (ONLY PDF <= 2MB) */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                      {isHi ? 'आधार कार्ड' : 'Aadhaar Card'}
+                    </label>
+                    <p className="text-[10px] text-slate-500 mb-1.5">
+                      {isHi ? 'केवल PDF फ़ाइल (अधिकतम 2 MB)' : 'PDF only (Max 2 MB)'}
+                    </p>
+                    {editFormData.aadhaarFile && (
+                      <div className="mb-2 p-1.5 bg-white rounded border border-slate-200 text-[10px]">
+                        <p className="font-semibold text-slate-800 truncate">{editFormData.aadhaarFile.name}</p>
+                        <div className="flex items-center justify-between text-slate-500 mt-0.5">
+                          <span>{formatFileSize(editFormData.aadhaarFile.size)}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditFormData({ ...editFormData, aadhaarFile: null })}
+                            className="text-red-600 hover:underline font-semibold"
+                          >
+                            {isHi ? 'हटाएं' : 'Remove'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, aadhaarFile: e.target.files?.[0] || null })
-                    }
-                    className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-navy-50 file:text-navy-700 hover:file:bg-navy-100 cursor-pointer"
+                    accept="application/pdf,.pdf"
+                    onChange={(e) => handlePdfDocChange('aadhaarFile', e)}
+                    className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer"
                   />
                 </div>
 
-                {/* Domicile Certificate */}
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
-                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                    {isHi ? 'निवास प्रमाण पत्र' : 'Domicile Certificate'}
-                  </label>
+                {/* Domicile Certificate (ONLY PDF <= 2MB) */}
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex flex-col justify-between">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-0.5">
+                      {isHi ? 'निवास प्रमाण पत्र' : 'Domicile Certificate'}
+                    </label>
+                    <p className="text-[10px] text-slate-500 mb-1.5">
+                      {isHi ? 'केवल PDF फ़ाइल (अधिकतम 2 MB)' : 'PDF only (Max 2 MB)'}
+                    </p>
+                    {editFormData.domicileFile && (
+                      <div className="mb-2 p-1.5 bg-white rounded border border-slate-200 text-[10px]">
+                        <p className="font-semibold text-slate-800 truncate">{editFormData.domicileFile.name}</p>
+                        <div className="flex items-center justify-between text-slate-500 mt-0.5">
+                          <span>{formatFileSize(editFormData.domicileFile.size)}</span>
+                          <button
+                            type="button"
+                            onClick={() => setEditFormData({ ...editFormData, domicileFile: null })}
+                            className="text-red-600 hover:underline font-semibold"
+                          >
+                            {isHi ? 'हटाएं' : 'Remove'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <input
                     type="file"
-                    accept="image/*,application/pdf"
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, domicileFile: e.target.files?.[0] || null })
-                    }
-                    className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-navy-50 file:text-navy-700 hover:file:bg-navy-100 cursor-pointer"
+                    accept="application/pdf,.pdf"
+                    onChange={(e) => handlePdfDocChange('domicileFile', e)}
+                    className="w-full text-[11px] file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[10px] file:font-bold file:bg-blue-50 file:text-blue-800 hover:file:bg-blue-100 cursor-pointer"
                   />
                 </div>
               </div>
@@ -874,7 +1223,6 @@ export const TenantProfilePage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Save className="w-4 h-4" />
                     <span>{isHi ? 'परिवर्तन सहेजें' : 'Save Changes'}</span>
                   </>
                 )}

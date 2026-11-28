@@ -3,33 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import { AdminLayout } from './AdminLayout';
 import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
+import { api } from '@/services/api';
 import {
   rentalPropertyApi,
   PropertyListItem,
+  PropertyListResponse,
   RentHistoryEntry,
   CreatePropertyInput,
 } from '../services/rentalProperty.service';
 import { rentalUserApi, TenantListItem } from '../services/rentalUser.service';
 import {
   Building,
-  PlusCircle,
   Search,
   Filter,
   RefreshCw,
-  ArrowLeft,
   CheckCircle2,
   AlertCircle,
   TrendingUp,
   History,
   UserCheck,
   UserX,
-  MapPin,
-  Maximize2,
-  Calendar,
-  IndianRupee,
-  ShieldCheck,
-  Store,
-  FileText,
   Trash2,
 } from 'lucide-react';
 
@@ -38,13 +31,14 @@ export const PropertyManagementPage: React.FC = () => {
   const isHi = language === 'hi';
   const navigate = useNavigate();
 
-  const [properties, setProperties] = useState<PropertyListItem[]>([]);
-  const [total, setTotal] = useState(0);
+  const initialPropsCache = api.peekCache<{ data: PropertyListResponse }>('/rental/properties?status=ALL&type=ALL&page=1&limit=15')?.data;
+  const [properties, setProperties] = useState<PropertyListItem[]>(initialPropsCache?.data || []);
+  const [total, setTotal] = useState(initialPropsCache?.total || 0);
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!initialPropsCache);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
@@ -60,9 +54,8 @@ export const PropertyManagementPage: React.FC = () => {
     propertyName: '',
     propertyType: 'COMMERCIAL_SHOP',
     propertyNumber: '',
-    location: 'Mall Road, Almora',
-    address: 'Near Gandhi Chowk, Mall Road, Almora, Uttarakhand',
-    dimensionsSqft: 120,
+    address: '',
+    dimensionsSqft: undefined,
     baseMonthlyRent: 2500,
   });
   const [submittingAdd, setSubmittingAdd] = useState(false);
@@ -86,8 +79,13 @@ export const PropertyManagementPage: React.FC = () => {
   const [rentHistory, setRentHistory] = useState<RentHistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  const fetchProperties = async () => {
-    setLoading(true);
+  const fetchProperties = async (force = false) => {
+    if (force) {
+      api.invalidateCache('/rental/properties');
+    }
+    if (force || properties.length === 0) {
+      setLoading(true);
+    }
     setError('');
     try {
       const res = await rentalPropertyApi.listProperties({
@@ -107,12 +105,12 @@ export const PropertyManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchProperties();
+    fetchProperties(false);
   }, [page, statusFilter, typeFilter]);
 
   const loadTenantsForAssignment = async () => {
     try {
-      const res = await rentalUserApi.listTenants({ status: 'ACTIVE', limit: 100 });
+      const res = await rentalUserApi.listTenants({ limit: 100 });
       setActiveTenants(res.data.data);
       if (res.data.data.length > 0) {
         setSelectedTenantId(res.data.data[0].id);
@@ -164,9 +162,8 @@ export const PropertyManagementPage: React.FC = () => {
         propertyName: '',
         propertyType: 'COMMERCIAL_SHOP',
         propertyNumber: '',
-        location: 'Mall Road, Almora',
-        address: 'Near Gandhi Chowk, Mall Road, Almora, Uttarakhand',
-        dimensionsSqft: 120,
+        address: '',
+        dimensionsSqft: undefined,
         baseMonthlyRent: 2500,
       });
     } catch (err: any) {
@@ -341,7 +338,7 @@ export const PropertyManagementPage: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-slate-400 uppercase">
                 {isHi ? 'कुल संपत्तियां' : 'Total Assets'}
               </p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">{total}</h3>
@@ -351,7 +348,7 @@ export const PropertyManagementPage: React.FC = () => {
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-slate-400 uppercase">
                 {isHi ? 'रिक्त संपत्तियां' : 'Vacant Assets'}
               </p>
               <h3 className="text-2xl font-bold text-emerald-600 mt-1">{vacantCount}</h3>
@@ -361,7 +358,7 @@ export const PropertyManagementPage: React.FC = () => {
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-slate-400 uppercase">
                 {isHi ? 'आवंटित दुकानें' : 'Allotted Shops'}
               </p>
               <h3 className="text-2xl font-bold text-blue-600 mt-1">{allottedCount}</h3>
@@ -371,7 +368,7 @@ export const PropertyManagementPage: React.FC = () => {
 
           <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
             <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              <p className="text-xs font-semibold text-slate-400 uppercase">
                 {isHi ? 'मासिक राजस्व क्षमता' : 'Monthly Potential'}
               </p>
               <h3 className="text-2xl font-bold text-slate-900 mt-1">₹{totalRentAccrued.toLocaleString('en-IN')}</h3>
@@ -472,22 +469,22 @@ export const PropertyManagementPage: React.FC = () => {
               <table className="min-w-full divide-y divide-slate-200">
                 <thead className="bg-slate-50">
                   <tr>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
                       {isHi ? 'दुकान / संपत्ति' : 'Asset & Number'}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                      {isHi ? 'स्थान एवं विवरण' : 'Location & Dimensions'}
+                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase ">
+                      {isHi ? 'पता एवं विवरण' : 'Address & Dimensions'}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
                       {isHi ? 'स्थिति' : 'Status'}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
                       {isHi ? 'वर्तमान किरायेदार' : 'Current Tenant'}
                     </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
                       {isHi ? 'मासिक किराया' : 'Monthly Rent'}
                     </th>
-                    <th className="px-6 py-3.5 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-3.5 text-right text-[16px] font-semibold text-slate-600 uppercase">
                       {isHi ? 'कार्यवाही' : 'Actions'}
                     </th>
                   </tr>
@@ -501,15 +498,16 @@ export const PropertyManagementPage: React.FC = () => {
                             {prop.propertyNumber}
                           </span>
                           <div className="min-w-0">
-                            <div className="text-sm font-bold text-slate-900 truncate">{prop.propertyName}</div>
-                            <div className="text-xs text-slate-500 font-mono mt-0.5">{prop.propertyId}</div>
+                            {prop.propertyName && prop.propertyName !== prop.propertyNumber && (
+                              <div className="text-sm font-bold text-slate-900 truncate">{prop.propertyName}</div>
+                            )}
                           </div>
                         </div>
                       </td>
 
                       <td className="px-6 py-4">
                         <div className="text-sm text-slate-800 flex items-center gap-1.5 font-medium">
-                          {prop.location}
+                          {prop.address || prop.location}
                         </div>
                         <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
                           {prop.dimensionsSqft ? `${prop.dimensionsSqft} sq.ft` : 'N/A'} •{' '}
@@ -636,9 +634,10 @@ export const PropertyManagementPage: React.FC = () => {
                         <span className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs font-mono inline-block">
                           {prop.propertyNumber}
                         </span>
-                        <h3 className="font-bold text-slate-900 text-sm truncate">{prop.propertyName}</h3>
+                        {prop.propertyName && prop.propertyName !== prop.propertyNumber && (
+                          <h3 className="font-bold text-slate-900 text-sm truncate">{prop.propertyName}</h3>
+                        )}
                       </div>
-                      <span className="text-[11px] text-slate-500 font-mono block">{prop.propertyId}</span>
                     </div>
                     <span
                       className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
@@ -662,13 +661,13 @@ export const PropertyManagementPage: React.FC = () => {
                     </span>
                   </div>
 
-                  {/* Location & Rent Grid */}
+                  {/* Address & Rent Grid */}
                   <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
-                        {isHi ? 'स्थान व प्रकार' : 'Location & Type'}
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">
+                        {isHi ? 'पता व प्रकार' : 'Address & Type'}
                       </span>
-                      <p className="text-slate-800 font-medium truncate">{prop.location}</p>
+                      <p className="text-slate-800 font-medium truncate">{prop.address || prop.location}</p>
                       <p className="text-[11px] text-slate-500 mt-0.5">
                         {prop.dimensionsSqft ? `${prop.dimensionsSqft} sq.ft` : ''} •{' '}
                         <span className="capitalize">{prop.propertyType.replace('_', ' ').toLowerCase()}</span>
@@ -676,7 +675,7 @@ export const PropertyManagementPage: React.FC = () => {
                     </div>
 
                     <div>
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-0.5">
+                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">
                         {isHi ? 'मासिक किराया' : 'Monthly Rent'}
                       </span>
                       <p className="text-slate-900 font-bold text-xs font-mono">
@@ -768,104 +767,101 @@ export const PropertyManagementPage: React.FC = () => {
               <form onSubmit={handleCreateProperty} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isHi ? 'संपत्ति का नाम / शीर्षक *' : 'Property / Shop Name *'}
+                    {isHi ? 'दुकान / संपत्ति का नाम *' : 'Shop / Property Name *'}
                   </label>
                   <input
                     type="text"
                     required
-                    value={newProp.propertyName}
+                    value={newProp.propertyName ?? ''}
                     onChange={(e) => setNewProp({ ...newProp, propertyName: e.target.value })}
-                    placeholder="e.g., Shop No. 12, Ground Floor"
+                    placeholder={isHi ? 'उदा. दुकान संख्या 12, भूतल' : 'e.g., Shop No. 12, Ground Floor'}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'दुकान संख्या / कोड *' : 'Property Number *'}
+                      {isHi ? 'दुकान कोड *' : 'Shop Code *'}
                     </label>
                     <input
                       type="text"
                       required
                       value={newProp.propertyNumber}
-                      onChange={(e) => setNewProp({ ...newProp, propertyNumber: e.target.value })}
-                      placeholder="e.g., SHOP-12"
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
+                      onChange={(e) => setNewProp({ ...newProp, propertyNumber: e.target.value.toUpperCase() })}
+                      placeholder="e.g., SHOP-101"
+                      className="w-full px-3 py-2 border rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'संपत्ति का प्रकार' : 'Property Type'}
+                      {isHi ? 'संपत्ति का प्रकार *' : 'Property Type *'}
                     </label>
                     <select
                       value={newProp.propertyType}
                       onChange={(e) => setNewProp({ ...newProp, propertyType: e.target.value as any })}
                       className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                     >
-                      <option value="COMMERCIAL_SHOP">Commercial Shop</option>
-                      <option value="ROADSIDE_STALL">Roadside Stall</option>
-                      <option value="WAREHOUSE_GODOWN">Warehouse / Godown</option>
-                      <option value="LAND_PARCEL">Land Parcel</option>
-                      <option value="OFFICE_SPACE">Office Space</option>
+                      <option value="COMMERCIAL_SHOP">{isHi ? 'व्यावसायिक दुकान' : 'Commercial Shop'}</option>
+                      <option value="ROADSIDE_STALL">{isHi ? 'सड़क किनारे स्टॉल' : 'Roadside Stall'}</option>
+                      <option value="WAREHOUSE_GODOWN">{isHi ? 'गोदाम / वेयरहाउस' : 'Warehouse / Godown'}</option>
+                      <option value="LAND_PARCEL">{isHi ? 'भूखंड' : 'Land Parcel'}</option>
+                      <option value="OFFICE_SPACE">{isHi ? 'कार्यालय' : 'Office Space'}</option>
+                      <option value="OTHER">{isHi ? 'अन्य' : 'Other'}</option>
                     </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'स्थान *' : 'Location / Bazaar *'}
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={newProp.location}
-                      onChange={(e) => setNewProp({ ...newProp, location: e.target.value })}
-                      placeholder="e.g., Mall Road, Almora"
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'क्षेत्रफल' : 'Dimensions (Sq.Ft)'}
-                    </label>
-                    <input
-                      type="number"
-                      value={newProp.dimensionsSqft}
-                      onChange={(e) => setNewProp({ ...newProp, dimensionsSqft: Number(e.target.value) })}
-                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
-                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isHi ? 'पूरा पता *' : 'Detailed Address *'}
+                    {isHi ? 'दुकान का पता *' : 'Shop Address *'}
                   </label>
                   <input
                     type="text"
                     required
                     value={newProp.address}
                     onChange={(e) => setNewProp({ ...newProp, address: e.target.value })}
+                    placeholder={isHi ? 'उदा. मॉल रोड, अल्मोड़ा' : 'e.g., Near Gandhi Chowk, Mall Road, Almora'}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isHi ? 'आधार मासिक किराया (₹/माह) *' : 'Base Monthly Rent (₹/month) *'}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-2.5 text-slate-400 font-semibold">₹</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isHi ? 'क्षेत्रफल वर्ग फुट (वैकल्पिक)' : 'Area in Sq. Ft (Optional)'}
+                    </label>
                     <input
                       type="number"
-                      required
-                      min="100"
-                      value={newProp.baseMonthlyRent}
-                      onChange={(e) => setNewProp({ ...newProp, baseMonthlyRent: Number(e.target.value) })}
-                      className="w-full pl-8 pr-3 py-2 border rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500"
+                      min="0"
+                      value={newProp.dimensionsSqft ?? ''}
+                      onChange={(e) =>
+                        setNewProp({
+                          ...newProp,
+                          dimensionsSqft: e.target.value ? Number(e.target.value) : undefined,
+                        })
+                      }
+                      placeholder="e.g., 120"
+                      className="w-full px-3 py-2 border rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500"
                     />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isHi ? 'मासिक किराया (₹/माह) *' : 'Monthly Rent (₹/month) *'}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400 font-semibold">₹</span>
+                      <input
+                        type="number"
+                        required
+                        min="1"
+                        value={newProp.baseMonthlyRent || ''}
+                        onChange={(e) => setNewProp({ ...newProp, baseMonthlyRent: Number(e.target.value) })}
+                        placeholder="2500"
+                        className="w-full pl-8 pr-3 py-2 border rounded-lg text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -939,7 +935,7 @@ export const PropertyManagementPage: React.FC = () => {
                     >
                       {activeTenants.map((t) => (
                         <option key={t.id} value={t.id}>
-                          {t.fullName} ({t.userCode} - {t.mobile})
+                          {t.fullName} ({t.mobile})
                         </option>
                       ))}
                     </select>

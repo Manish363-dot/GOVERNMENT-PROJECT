@@ -10089,6 +10089,8 @@ export namespace Prisma {
   export type RentalBillAvgAggregateOutputType = {
     billing_year: number | null
     rent_amount: Decimal | null
+    gst_rate: number | null
+    gst_amount: Decimal | null
     adjustment_amount: Decimal | null
     total_amount_due: Decimal | null
     amount_paid: Decimal | null
@@ -10098,6 +10100,8 @@ export namespace Prisma {
   export type RentalBillSumAggregateOutputType = {
     billing_year: number | null
     rent_amount: Decimal | null
+    gst_rate: number | null
+    gst_amount: Decimal | null
     adjustment_amount: Decimal | null
     total_amount_due: Decimal | null
     amount_paid: Decimal | null
@@ -10113,6 +10117,8 @@ export namespace Prisma {
     billing_month: string | null
     billing_year: number | null
     rent_amount: Decimal | null
+    gst_rate: number | null
+    gst_amount: Decimal | null
     adjustment_amount: Decimal | null
     total_amount_due: Decimal | null
     amount_paid: Decimal | null
@@ -10132,6 +10138,8 @@ export namespace Prisma {
     billing_month: string | null
     billing_year: number | null
     rent_amount: Decimal | null
+    gst_rate: number | null
+    gst_amount: Decimal | null
     adjustment_amount: Decimal | null
     total_amount_due: Decimal | null
     amount_paid: Decimal | null
@@ -10151,6 +10159,8 @@ export namespace Prisma {
     billing_month: number
     billing_year: number
     rent_amount: number
+    gst_rate: number
+    gst_amount: number
     adjustment_amount: number
     total_amount_due: number
     amount_paid: number
@@ -10166,6 +10176,8 @@ export namespace Prisma {
   export type RentalBillAvgAggregateInputType = {
     billing_year?: true
     rent_amount?: true
+    gst_rate?: true
+    gst_amount?: true
     adjustment_amount?: true
     total_amount_due?: true
     amount_paid?: true
@@ -10175,6 +10187,8 @@ export namespace Prisma {
   export type RentalBillSumAggregateInputType = {
     billing_year?: true
     rent_amount?: true
+    gst_rate?: true
+    gst_amount?: true
     adjustment_amount?: true
     total_amount_due?: true
     amount_paid?: true
@@ -10190,6 +10204,8 @@ export namespace Prisma {
     billing_month?: true
     billing_year?: true
     rent_amount?: true
+    gst_rate?: true
+    gst_amount?: true
     adjustment_amount?: true
     total_amount_due?: true
     amount_paid?: true
@@ -10209,6 +10225,8 @@ export namespace Prisma {
     billing_month?: true
     billing_year?: true
     rent_amount?: true
+    gst_rate?: true
+    gst_amount?: true
     adjustment_amount?: true
     total_amount_due?: true
     amount_paid?: true
@@ -10228,6 +10246,8 @@ export namespace Prisma {
     billing_month?: true
     billing_year?: true
     rent_amount?: true
+    gst_rate?: true
+    gst_amount?: true
     adjustment_amount?: true
     total_amount_due?: true
     amount_paid?: true
@@ -10334,6 +10354,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal
+    gst_rate: number
+    gst_amount: Decimal
     adjustment_amount: Decimal
     total_amount_due: Decimal
     amount_paid: Decimal
@@ -10372,6 +10394,8 @@ export namespace Prisma {
     billing_month?: boolean
     billing_year?: boolean
     rent_amount?: boolean
+    gst_rate?: boolean
+    gst_amount?: boolean
     adjustment_amount?: boolean
     total_amount_due?: boolean
     amount_paid?: boolean
@@ -10399,6 +10423,8 @@ export namespace Prisma {
     billing_month?: boolean
     billing_year?: boolean
     rent_amount?: boolean
+    gst_rate?: boolean
+    gst_amount?: boolean
     adjustment_amount?: boolean
     total_amount_due?: boolean
     amount_paid?: boolean
@@ -10421,6 +10447,8 @@ export namespace Prisma {
     billing_month?: boolean
     billing_year?: boolean
     rent_amount?: boolean
+    gst_rate?: boolean
+    gst_amount?: boolean
     adjustment_amount?: boolean
     total_amount_due?: boolean
     amount_paid?: boolean
@@ -10443,6 +10471,8 @@ export namespace Prisma {
     billing_month?: boolean
     billing_year?: boolean
     rent_amount?: boolean
+    gst_rate?: boolean
+    gst_amount?: boolean
     adjustment_amount?: boolean
     total_amount_due?: boolean
     amount_paid?: boolean
@@ -10453,7 +10483,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type RentalBillOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "bill_number" | "user_id" | "property_id" | "assignment_id" | "billing_month" | "billing_year" | "rent_amount" | "adjustment_amount" | "total_amount_due" | "amount_paid" | "balance_due" | "due_date" | "status" | "created_at" | "updated_at", ExtArgs["result"]["rentalBill"]>
+  export type RentalBillOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "bill_number" | "user_id" | "property_id" | "assignment_id" | "billing_month" | "billing_year" | "rent_amount" | "gst_rate" | "gst_amount" | "adjustment_amount" | "total_amount_due" | "amount_paid" | "balance_due" | "due_date" | "status" | "created_at" | "updated_at", ExtArgs["result"]["rentalBill"]>
   export type RentalBillInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | RentalUserDefaultArgs<ExtArgs>
     property?: boolean | RentalPropertyDefaultArgs<ExtArgs>
@@ -10495,6 +10525,8 @@ export namespace Prisma {
       billing_month: string
       billing_year: number
       rent_amount: Prisma.Decimal
+      gst_rate: number
+      gst_amount: Prisma.Decimal
       adjustment_amount: Prisma.Decimal
       total_amount_due: Prisma.Decimal
       amount_paid: Prisma.Decimal
@@ -10941,6 +10973,8 @@ export namespace Prisma {
     readonly billing_month: FieldRef<"RentalBill", 'String'>
     readonly billing_year: FieldRef<"RentalBill", 'Int'>
     readonly rent_amount: FieldRef<"RentalBill", 'Decimal'>
+    readonly gst_rate: FieldRef<"RentalBill", 'Float'>
+    readonly gst_amount: FieldRef<"RentalBill", 'Decimal'>
     readonly adjustment_amount: FieldRef<"RentalBill", 'Decimal'>
     readonly total_amount_due: FieldRef<"RentalBill", 'Decimal'>
     readonly amount_paid: FieldRef<"RentalBill", 'Decimal'>
@@ -19032,6 +19066,8 @@ export namespace Prisma {
     billing_month: 'billing_month',
     billing_year: 'billing_year',
     rent_amount: 'rent_amount',
+    gst_rate: 'gst_rate',
+    gst_amount: 'gst_amount',
     adjustment_amount: 'adjustment_amount',
     total_amount_due: 'total_amount_due',
     amount_paid: 'amount_paid',
@@ -20083,6 +20119,8 @@ export namespace Prisma {
     billing_month?: StringFilter<"RentalBill"> | string
     billing_year?: IntFilter<"RentalBill"> | number
     rent_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFilter<"RentalBill"> | number
+    gst_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
@@ -20109,6 +20147,8 @@ export namespace Prisma {
     billing_month?: SortOrder
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -20139,6 +20179,8 @@ export namespace Prisma {
     billing_month?: StringFilter<"RentalBill"> | string
     billing_year?: IntFilter<"RentalBill"> | number
     rent_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFilter<"RentalBill"> | number
+    gst_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
@@ -20165,6 +20207,8 @@ export namespace Prisma {
     billing_month?: SortOrder
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -20192,6 +20236,8 @@ export namespace Prisma {
     billing_month?: StringWithAggregatesFilter<"RentalBill"> | string
     billing_year?: IntWithAggregatesFilter<"RentalBill"> | number
     rent_amount?: DecimalWithAggregatesFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatWithAggregatesFilter<"RentalBill"> | number
+    gst_amount?: DecimalWithAggregatesFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalWithAggregatesFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalWithAggregatesFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalWithAggregatesFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
@@ -21577,6 +21623,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -21603,6 +21651,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -21623,6 +21673,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -21649,6 +21701,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -21672,6 +21726,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -21688,6 +21744,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -21707,6 +21765,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -23168,6 +23228,17 @@ export namespace Prisma {
     new_rent?: SortOrder
   }
 
+  export type FloatFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
   export type EnumBillStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.BillStatus | EnumBillStatusFieldRefInput<$PrismaModel>
     in?: $Enums.BillStatus[] | ListEnumBillStatusFieldRefInput<$PrismaModel>
@@ -23195,6 +23266,8 @@ export namespace Prisma {
     billing_month?: SortOrder
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -23208,6 +23281,8 @@ export namespace Prisma {
   export type RentalBillAvgOrderByAggregateInput = {
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -23223,6 +23298,8 @@ export namespace Prisma {
     billing_month?: SortOrder
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -23242,6 +23319,8 @@ export namespace Prisma {
     billing_month?: SortOrder
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
@@ -23255,10 +23334,28 @@ export namespace Prisma {
   export type RentalBillSumOrderByAggregateInput = {
     billing_year?: SortOrder
     rent_amount?: SortOrder
+    gst_rate?: SortOrder
+    gst_amount?: SortOrder
     adjustment_amount?: SortOrder
     total_amount_due?: SortOrder
     amount_paid?: SortOrder
     balance_due?: SortOrder
+  }
+
+  export type FloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
   }
 
   export type EnumBillStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -24674,6 +24771,14 @@ export namespace Prisma {
     connect?: PaymentAuditTrailWhereUniqueInput | PaymentAuditTrailWhereUniqueInput[]
   }
 
+  export type FloatFieldUpdateOperationsInput = {
+    set?: number
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type EnumBillStatusFieldUpdateOperationsInput = {
     set?: $Enums.BillStatus
   }
@@ -25556,6 +25661,22 @@ export namespace Prisma {
     not?: NestedEnumBillStatusFilter<$PrismaModel> | $Enums.BillStatus
   }
 
+  export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel>
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel>
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatWithAggregatesFilter<$PrismaModel> | number
+    _count?: NestedIntFilter<$PrismaModel>
+    _avg?: NestedFloatFilter<$PrismaModel>
+    _sum?: NestedFloatFilter<$PrismaModel>
+    _min?: NestedFloatFilter<$PrismaModel>
+    _max?: NestedFloatFilter<$PrismaModel>
+  }
+
   export type NestedEnumBillStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.BillStatus | EnumBillStatusFieldRefInput<$PrismaModel>
     in?: $Enums.BillStatus[] | ListEnumBillStatusFieldRefInput<$PrismaModel>
@@ -25822,6 +25943,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -25846,6 +25969,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -26214,6 +26339,8 @@ export namespace Prisma {
     billing_month?: StringFilter<"RentalBill"> | string
     billing_year?: IntFilter<"RentalBill"> | number
     rent_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFilter<"RentalBill"> | number
+    gst_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFilter<"RentalBill"> | Decimal | DecimalJsLike | number | string
@@ -26613,6 +26740,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -26637,6 +26766,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -27059,6 +27190,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -27083,6 +27216,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -28129,6 +28264,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -28154,6 +28291,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -28424,6 +28563,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -28449,6 +28590,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -28643,6 +28786,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -28668,6 +28813,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -28870,6 +29017,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -28895,6 +29044,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -29014,6 +29165,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -29039,6 +29192,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -29235,6 +29390,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -29260,6 +29417,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -29554,6 +29713,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -29579,6 +29740,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -29787,6 +29950,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -29812,6 +29977,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30135,6 +30302,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -30358,6 +30527,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30382,6 +30553,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30404,6 +30577,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30692,6 +30867,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -30854,6 +31031,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30878,6 +31057,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -30900,6 +31081,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -31113,6 +31296,8 @@ export namespace Prisma {
     billing_month: string
     billing_year: number
     rent_amount: Decimal | DecimalJsLike | number | string
+    gst_rate?: number
+    gst_amount?: Decimal | DecimalJsLike | number | string
     adjustment_amount?: Decimal | DecimalJsLike | number | string
     total_amount_due: Decimal | DecimalJsLike | number | string
     amount_paid?: Decimal | DecimalJsLike | number | string
@@ -31129,6 +31314,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -31153,6 +31340,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
@@ -31175,6 +31364,8 @@ export namespace Prisma {
     billing_month?: StringFieldUpdateOperationsInput | string
     billing_year?: IntFieldUpdateOperationsInput | number
     rent_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    gst_rate?: FloatFieldUpdateOperationsInput | number
+    gst_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     adjustment_amount?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     total_amount_due?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     amount_paid?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string

@@ -12,6 +12,8 @@ export interface RegisterTenantFormData {
   propertyId?: string;
   monthlyRent?: number;
   rentEffectiveDate?: string;
+  allotmentDate?: string;
+  leaseEndDate?: string;
   initialPassword?: string;
   profilePhotoFile?: File | null;
   aadhaarFile?: File | null;
@@ -65,6 +67,8 @@ export const rentalUserApi = {
     if (formData.propertyId) data.append('propertyId', formData.propertyId);
     if (formData.monthlyRent) data.append('monthlyRent', formData.monthlyRent.toString());
     if (formData.rentEffectiveDate) data.append('rentEffectiveDate', formData.rentEffectiveDate);
+    if (formData.allotmentDate) data.append('allotmentDate', formData.allotmentDate);
+    if (formData.leaseEndDate) data.append('leaseEndDate', formData.leaseEndDate);
     if (formData.initialPassword) data.append('initialPassword', formData.initialPassword);
 
     if (formData.profilePhotoFile) data.append('profile_photo', formData.profilePhotoFile);
@@ -80,10 +84,9 @@ export const rentalUserApi = {
     );
   },
 
-  listTenants: (params: { search?: string; status?: string; page?: number; limit?: number }) => {
+  listTenants: (params: { search?: string; page?: number; limit?: number }) => {
     const query = new URLSearchParams();
     if (params.search) query.set('search', params.search);
-    if (params.status) query.set('status', params.status);
     if (params.page) query.set('page', params.page.toString());
     if (params.limit) query.set('limit', params.limit.toString());
     return api.get<{ success: boolean; data: TenantListResponse }>(`/rental/users/admin/list?${query.toString()}`);
@@ -92,12 +95,6 @@ export const rentalUserApi = {
   getTenantDetails: (userId: string) =>
     api.get<{ success: boolean; data: any }>(`/rental/users/admin/${userId}`),
 
-  updateTenantStatus: (userId: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED', reason?: string) =>
-    api.put<{ success: boolean; data: any; message: string }>(`/rental/users/admin/${userId}/status`, {
-      status,
-      reason,
-    }),
-
   getSecureDocumentUrl: (docId: string) =>
     api.get<{ success: boolean; data: { docId: string; docType: string; fileName: string; presignedUrl: string; expiresInSeconds: number } }>(
       `/rental/users/documents/${docId}/secure-url`
@@ -105,7 +102,7 @@ export const rentalUserApi = {
 
   updateTenantProfile: async (
     userId: string,
-    formData: Partial<RegisterTenantFormData> & { status?: string; password?: string }
+    formData: Partial<RegisterTenantFormData> & { password?: string }
   ) => {
     const data = new FormData();
     if (formData.fullName !== undefined) data.append('fullName', formData.fullName);
@@ -118,7 +115,8 @@ export const rentalUserApi = {
     if (formData.gstNumber !== undefined) data.append('gstNumber', formData.gstNumber);
     if (formData.propertyId !== undefined) data.append('propertyId', formData.propertyId);
     if (formData.monthlyRent !== undefined) data.append('monthlyRent', formData.monthlyRent.toString());
-    if (formData.status !== undefined) data.append('status', formData.status);
+    if (formData.allotmentDate !== undefined) data.append('allotmentDate', formData.allotmentDate);
+    if (formData.leaseEndDate !== undefined) data.append('leaseEndDate', formData.leaseEndDate);
     if (formData.password) data.append('password', formData.password);
 
     if (formData.profilePhotoFile) data.append('profile_photo', formData.profilePhotoFile);

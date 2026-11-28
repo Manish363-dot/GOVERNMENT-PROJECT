@@ -62,6 +62,7 @@ const TenantProfilePage = lazy(() => import('@/rental/admin/TenantProfilePage').
 const PropertyManagementPage = lazy(() => import('@/rental/admin/PropertyManagementPage').then(m => ({ default: m.PropertyManagementPage })));
 const BillingManagementPage = lazy(() => import('@/rental/admin/BillingManagementPage').then(m => ({ default: m.BillingManagementPage })));
 const CollectRentPage = lazy(() => import('@/rental/admin/CollectRentPage').then(m => ({ default: m.CollectRentPage })));
+const CollectMultiRentPage = lazy(() => import('@/rental/admin/CollectMultiRentPage').then(m => ({ default: m.CollectMultiRentPage })));
 const DemandChallanPage = lazy(() => import('@/rental/admin/DemandChallanPage').then(m => ({ default: m.DemandChallanPage })));
 
 // Admin Panel Pages
@@ -183,6 +184,7 @@ function App() {
               <Route path="/rental/admin/tenant/:id" element={<RentalAdminGuard><TenantProfilePage /></RentalAdminGuard>} />
               <Route path="/rental/admin/properties" element={<RentalAdminGuard><PropertyManagementPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/billing" element={<RentalAdminGuard><BillingManagementPage /></RentalAdminGuard>} />
+              <Route path="/rental/admin/collect-multi/:tenantId" element={<RentalAdminGuard><CollectMultiRentPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/collect-rent/:billId" element={<RentalAdminGuard><CollectRentPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/demand-challan/:billId" element={<RentalAdminGuard><DemandChallanPage /></RentalAdminGuard>} />
               <Route path="/rental/admin/bill/:billId" element={<RentalAdminGuard><DemandChallanPage /></RentalAdminGuard>} />

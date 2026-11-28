@@ -1,4 +1,6 @@
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
+import { resolveBillAmounts } from '../utils/gst.util';
+import { rentalCache } from '../utils/rentalCache.util';
 
 export interface LedgerRow {
   id: string;
@@ -27,141 +29,122 @@ export class RentalLedgerService {
     month?: string;
     year?: string;
   }) {
-    return withRentalDbRetry(async () => {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonthNum = now.getMonth() + 1;
-      const currentMonthStr = `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
+    const cacheKey = `ledger:overview:${params.date || ''}:${params.startDate || ''}:${params.endDate || ''}:${params.month || ''}:${params.year || ''}`;
+    return rentalCache.getOrSet(cacheKey, 15_000, () =>
+      withRentalDbRetry(async () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonthNum = now.getMonth() + 1;
+        const currentMonthStr = `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
 
-      // Today's range (Indian Standard Time local bounds)
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1);
+        const endOfMonth = new Date(currentYear, currentMonthNum, 0, 23, 59, 59);
 
-      // Current Month's range
-      const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1);
-      const endOfMonth = new Date(currentYear, currentMonthNum, 0, 23, 59, 59);
+        const fyStartYear = currentMonthNum >= 4 ? currentYear : currentYear - 1;
+        const startOfFY = new Date(fyStartYear, 3, 1, 0, 0, 0);
+        const endOfFY = new Date(fyStartYear + 1, 2, 31, 23, 59, 59);
 
-      // Current Indian Fiscal Year (1st April to 31st March)
-      const fyStartYear = currentMonthNum >= 4 ? currentYear : currentYear - 1;
-      const startOfFY = new Date(fyStartYear, 3, 1, 0, 0, 0); // 1st April
-      const endOfFY = new Date(fyStartYear + 1, 2, 31, 23, 59, 59); // 31st March
+        let filterStart: Date | null = null;
+        let filterEnd: Date | null = null;
+        let hasCustomFilter = false;
 
-      // Filtered range if requested
-      let filteredWhere: any = { status: 'SUCCESS' };
-      let hasCustomFilter = false;
+        if (params.date) {
+          hasCustomFilter = true;
+          const d = new Date(params.date);
+          filterStart = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+          filterEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+        } else if (params.startDate && params.endDate) {
+          hasCustomFilter = true;
+          filterStart = new Date(params.startDate);
+          filterEnd = new Date(params.endDate);
+          filterEnd.setHours(23, 59, 59, 999);
+        } else if (params.month) {
+          hasCustomFilter = true;
+          const [y, m] = params.month.split('-').map(Number);
+          filterStart = new Date(y, m - 1, 1);
+          filterEnd = new Date(y, m, 0, 23, 59, 59);
+        } else if (params.year) {
+          hasCustomFilter = true;
+          const y = parseInt(params.year, 10);
+          filterStart = new Date(y, 0, 1);
+          filterEnd = new Date(y, 11, 31, 23, 59, 59);
+        }
 
-      if (params.date) {
-        hasCustomFilter = true;
-        const d = new Date(params.date);
-        const s = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
-        const e = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
-        filteredWhere.created_at = { gte: s, lte: e };
-      } else if (params.startDate && params.endDate) {
-        hasCustomFilter = true;
-        const s = new Date(params.startDate);
-        const e = new Date(params.endDate);
-        e.setHours(23, 59, 59, 999);
-        filteredWhere.created_at = { gte: s, lte: e };
-      } else if (params.month) {
-        hasCustomFilter = true;
-        const [y, m] = params.month.split('-').map(Number);
-        const s = new Date(y, m - 1, 1);
-        const e = new Date(y, m, 0, 23, 59, 59);
-        filteredWhere.created_at = { gte: s, lte: e };
-      } else if (params.year) {
-        hasCustomFilter = true;
-        const y = parseInt(params.year, 10);
-        const s = new Date(y, 0, 1);
-        const e = new Date(y, 11, 31, 23, 59, 59);
-        filteredWhere.created_at = { gte: s, lte: e };
-      }
+        const [allPayments, allBills, totalTenants, activeTenants, properties] = await Promise.all([
+          rentalPrisma.rentalPayment.findMany({
+            where: { status: 'SUCCESS' },
+            select: { amount: true, created_at: true },
+          }),
+          rentalPrisma.rentalBill.findMany({
+            select: {
+              rent_amount: true,
+              gst_amount: true,
+              adjustment_amount: true,
+              total_amount_due: true,
+              amount_paid: true,
+              balance_due: true,
+              status: true,
+            },
+          }),
+          rentalPrisma.rentalUser.count(),
+          rentalPrisma.propertyAssignment.count({ where: { is_active: true } }),
+          rentalPrisma.rentalProperty.findMany({
+            select: { status: true },
+          }),
+        ]);
 
-      const [
-        allPayments,
-        todayPayments,
-        monthPayments,
-        fyPayments,
-        allBills,
-        totalTenants,
-        activeTenants,
-        totalProperties,
-        allottedProperties,
-        vacantProperties,
-        customPayments,
-      ] = await Promise.all([
-        rentalPrisma.rentalPayment.findMany({
-          where: { status: 'SUCCESS' },
-          select: { amount: true },
-        }),
-        rentalPrisma.rentalPayment.findMany({
-          where: {
-            status: 'SUCCESS',
-            created_at: { gte: startOfToday, lte: endOfToday },
-          },
-          select: { amount: true },
-        }),
-        rentalPrisma.rentalPayment.findMany({
-          where: {
-            status: 'SUCCESS',
-            created_at: { gte: startOfMonth, lte: endOfMonth },
-          },
-          select: { amount: true },
-        }),
-        rentalPrisma.rentalPayment.findMany({
-          where: {
-            status: 'SUCCESS',
-            created_at: { gte: startOfFY, lte: endOfFY },
-          },
-          select: { amount: true },
-        }),
-        rentalPrisma.rentalBill.findMany({
-          select: { total_amount_due: true, amount_paid: true, balance_due: true, status: true },
-        }),
-        rentalPrisma.rentalUser.count(),
-        rentalPrisma.propertyAssignment.count({ where: { is_active: true } }),
-        rentalPrisma.rentalProperty.count(),
-        rentalPrisma.rentalProperty.count({ where: { status: 'ALLOTTED' } }),
-        rentalPrisma.rentalProperty.count({ where: { status: 'VACANT' } }),
-        hasCustomFilter
-          ? rentalPrisma.rentalPayment.findMany({
-              where: filteredWhere,
-              select: { amount: true },
-            })
-          : Promise.resolve([]),
-      ]);
+        const totalProperties = properties.length;
+        const allottedProperties = properties.filter((p) => p.status === 'ALLOTTED').length;
+        const vacantProperties = properties.filter((p) => p.status === 'VACANT').length;
 
-      const totalRentCollectedAllTime = allPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-      const todayCollection = todayPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-      const monthlyCollection = monthPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-      const yearlyCollection = fyPayments.reduce((acc, p) => acc + Number(p.amount), 0);
+        let totalRentCollectedAllTime = 0;
+        let todayCollection = 0;
+        let monthlyCollection = 0;
+        let yearlyCollection = 0;
+        let periodCollectionSum = 0;
+        let periodCountVal = 0;
 
-      const totalBilledAllTime = allBills.reduce((acc, b) => acc + Number(b.total_amount_due), 0);
-      const totalRentDue = allBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
+        for (const p of allPayments) {
+          const amt = Number(p.amount);
+          const dt = p.created_at;
+          totalRentCollectedAllTime += amt;
+          if (dt >= startOfToday && dt <= endOfToday) todayCollection += amt;
+          if (dt >= startOfMonth && dt <= endOfMonth) monthlyCollection += amt;
+          if (dt >= startOfFY && dt <= endOfFY) yearlyCollection += amt;
+          if (hasCustomFilter && filterStart && filterEnd && dt >= filterStart && dt <= filterEnd) {
+            periodCollectionSum += amt;
+            periodCountVal++;
+          }
+        }
 
-      const periodCollection = hasCustomFilter
-        ? customPayments.reduce((acc, p) => acc + Number(p.amount), 0)
-        : null;
-      const periodCount = hasCustomFilter ? customPayments.length : null;
+        const totalBilledAllTime = allBills.reduce((acc, b) => acc + resolveBillAmounts(b).totalAmountDue, 0);
+        const totalRentDue = allBills.reduce((acc, b) => acc + resolveBillAmounts(b).balanceDue, 0);
 
-      return {
-        fiscalYear: `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`,
-        currentMonth: currentMonthStr,
-        totalRentCollectedAllTime,
-        todayCollection,
-        monthlyCollection,
-        yearlyCollection,
-        totalBilledAllTime,
-        totalRentDue,
-        totalTenants,
-        activeTenants,
-        totalProperties,
-        allottedProperties,
-        vacantProperties,
-        hasCustomFilter,
-        periodCollection,
-        periodCount,
-      };
-    });
+        const periodCollection = hasCustomFilter ? periodCollectionSum : null;
+        const periodCount = hasCustomFilter ? periodCountVal : null;
+
+        return {
+          fiscalYear: `${fyStartYear}-${(fyStartYear + 1).toString().slice(2)}`,
+          currentMonth: currentMonthStr,
+          totalRentCollectedAllTime,
+          todayCollection,
+          monthlyCollection,
+          yearlyCollection,
+          totalBilledAllTime,
+          totalRentDue,
+          totalTenants,
+          activeTenants,
+          totalProperties,
+          allottedProperties,
+          vacantProperties,
+          hasCustomFilter,
+          periodCollection,
+          periodCount,
+        };
+      })
+    );
   }
 
   /**
@@ -354,10 +337,11 @@ export class RentalLedgerService {
       // Active or latest assignment
       const activeAssignment = user.assignments.find((a) => a.is_active) || user.assignments[0];
 
-      // Calculate totals
-      const totalBilled = user.bills.reduce((sum, b) => sum + Number(b.total_amount_due), 0);
+      // Calculate totals (including 18% GST on unpaid/new bills while keeping paid pre-GST bills intact)
+      const resolvedBills = user.bills.map((b) => ({ raw: b, resolved: resolveBillAmounts(b) }));
+      const totalBilled = resolvedBills.reduce((sum, item) => sum + item.resolved.totalAmountDue, 0);
       const totalPaid = user.payments.reduce((sum, p) => sum + Number(p.amount), 0);
-      const totalOutstanding = user.bills.reduce((sum, b) => sum + Number(b.balance_due), 0);
+      const totalOutstanding = resolvedBills.reduce((sum, item) => sum + item.resolved.balanceDue, 0);
 
       // Build unified chronological ledger book
       const rows: LedgerRow[] = [];
@@ -392,14 +376,17 @@ export class RentalLedgerService {
       events.forEach((ev) => {
         if (ev.kind === 'BILL') {
           const b = ev.data;
-          const due = Number(b.total_amount_due);
+          const resolved = resolveBillAmounts(b);
+          const due = resolved.totalAmountDue;
           runningBal += due;
           rows.push({
             id: b.id,
             date: b.created_at,
             type: 'BILL',
             documentNumber: b.bill_number,
-            description: `मासिक किराया देय — बिल माह ${b.billing_month} (Monthly Rent Demand)`,
+            description: resolved.gstAmount > 0
+              ? `मासिक किराया + 18% GST — बिल माह ${b.billing_month} (Rent ₹${resolved.rentAmount} + GST ₹${resolved.gstAmount})`
+              : `मासिक किराया देय — बिल माह ${b.billing_month} (Monthly Rent Demand)`,
             shopNumber: b.property?.property_number || activeAssignment?.property?.property_number || 'SHOP',
             billingPeriod: b.billing_month,
             debit: due,
@@ -478,15 +465,16 @@ export class RentalLedgerService {
           lastPaymentAmount: user.payments.length > 0 ? Number(user.payments[user.payments.length - 1].amount) : 0,
         },
         ledgerHistory: rows.reverse(), // Newest first for visual display, but retains calculations
-        rawBills: user.bills.map((b) => ({
+        rawBills: resolvedBills.map(({ raw: b, resolved }) => ({
           id: b.id,
           billNumber: b.bill_number,
           billingMonth: b.billing_month,
-          rentAmount: Number(b.rent_amount),
+          rentAmount: resolved.rentAmount,
+          gstAmount: resolved.gstAmount,
           arrearsAmount: Number(b.adjustment_amount),
-          totalAmountDue: Number(b.total_amount_due),
-          amountPaid: Number(b.amount_paid),
-          balanceDue: Number(b.balance_due),
+          totalAmountDue: resolved.totalAmountDue,
+          amountPaid: resolved.amountPaid,
+          balanceDue: resolved.balanceDue,
           dueDate: b.due_date,
           status: b.status,
           createdAt: b.created_at,
@@ -510,65 +498,73 @@ export class RentalLedgerService {
   }
 
   /**
-   * 4. Lightweight list of tenants for quick search & selector
+   * 4. Lightweight list of tenants for quick search & selector (flattened, fast)
    */
   async getTenantsList(search?: string) {
-    return withRentalDbRetry(async () => {
-      const where: any = {};
-      if (search && search.trim()) {
-        const q = search.trim();
-        where.OR = [
-          { full_name: { contains: q, mode: 'insensitive' } },
-          { user_id: { contains: q, mode: 'insensitive' } },
-          { mobile: { contains: q } },
-        ];
-      }
+    const searchKey = (search || '').trim().toLowerCase();
+    return rentalCache.getOrSet(`ledger:tenants:${searchKey}`, 15_000, () =>
+      withRentalDbRetry(async () => {
+        const where: any = {};
+        if (search && search.trim()) {
+          const q = search.trim();
+          where.OR = [
+            { full_name: { contains: q, mode: 'insensitive' } },
+            { user_id: { contains: q, mode: 'insensitive' } },
+            { mobile: { contains: q } },
+          ];
+        }
 
-      const tenants = await rentalPrisma.rentalUser.findMany({
-        where,
-        select: {
-          id: true,
-          user_id: true,
-          full_name: true,
-          mobile: true,
-          status: true,
-          created_at: true,
-          assignments: {
-            where: { is_active: true },
-            select: {
-              monthly_rent: true,
-              lease_start_date: true,
-              lease_end_date: true,
-              property: {
-                select: {
-                  property_number: true,
-                  location: true,
+        const tenants = await rentalPrisma.rentalUser.findMany({
+          where,
+          select: {
+            id: true,
+            user_id: true,
+            full_name: true,
+            mobile: true,
+            status: true,
+            created_at: true,
+          },
+          orderBy: { full_name: 'asc' },
+          take: 100,
+        });
+
+        const tenantIds = tenants.map((t) => t.id);
+        const activeAssignments = tenantIds.length > 0
+          ? await rentalPrisma.propertyAssignment.findMany({
+              where: { user_id: { in: tenantIds }, is_active: true },
+              select: {
+                user_id: true,
+                monthly_rent: true,
+                lease_end_date: true,
+                property: {
+                  select: {
+                    property_number: true,
+                    location: true,
+                  },
                 },
               },
-            },
-            take: 1,
-          },
-        },
-        orderBy: { full_name: 'asc' },
-        take: 100,
-      });
+            })
+          : [];
 
-      return tenants.map((t) => {
-        const assignment = t.assignments[0];
-        return {
-          id: t.id,
-          tenantCode: t.user_id,
-          fullName: t.full_name,
-          mobile: t.mobile,
-          status: t.status,
-          registeredAt: t.created_at,
-          shopNumber: assignment?.property?.property_number || 'N/A',
-          location: assignment?.property?.location || 'N/A',
-          monthlyRent: assignment ? Number(assignment.monthly_rent) : 0,
-          leaseEndDate: assignment?.lease_end_date || null,
-        };
-      });
-    });
+        const assignByUser = new Map(activeAssignments.map((a) => [a.user_id, a]));
+
+        return tenants.map((t) => {
+          const assignment = assignByUser.get(t.id);
+          return {
+            id: t.id,
+            tenantCode: t.user_id,
+            fullName: t.full_name,
+            mobile: t.mobile,
+            status: t.status,
+            registeredAt: t.created_at,
+            shopNumber: assignment?.property?.property_number || 'N/A',
+            location: assignment?.property?.location || 'N/A',
+            monthlyRent: assignment ? Number(assignment.monthly_rent) : 0,
+            leaseEndDate: assignment?.lease_end_date || null,
+          };
+        });
+      })
+    );
   }
 }
 

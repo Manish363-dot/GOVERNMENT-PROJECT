@@ -98,6 +98,29 @@ export class RentalBillingController {
   }
 
   /**
+   * GET /api/rental/bills/rent-management
+   * Tenant-centric Rent Management overview with year-wise monthly ledger & payment history
+   */
+  async getRentManagementOverview(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Administrator or Sub-Admin authentication required', 401);
+      }
+      const { search, status, year, tenantId } = req.query;
+      const parsedYear = year ? parseInt(year as string, 10) : undefined;
+      const data = await rentalBillingService.getRentManagementOverview({
+        search: search as string,
+        status: status as string,
+        year: parsedYear && !isNaN(parsedYear) ? parsedYear : undefined,
+        tenantId: tenantId as string,
+      });
+      return sendSuccess(res, data, 'Rent management overview retrieved successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to load rent management overview', 500);
+    }
+  }
+
+  /**
    * GET /api/rental/bills/analytics
    * Admin Executive Dashboard Analytics & Trends
    */

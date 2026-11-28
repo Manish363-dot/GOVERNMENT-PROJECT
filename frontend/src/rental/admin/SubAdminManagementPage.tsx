@@ -4,6 +4,7 @@ import { AdminLayout } from './AdminLayout';
 import { AdminConfirmModal } from './AdminConfirmModal';
 import { useLanguage } from '../context/LanguageContext';
 import { useAuth } from '../context/AuthContext';
+import { api } from '@/services/api';
 import { rentalAuthApi } from '../services/rentalAuth.service';
 import {
   Shield,
@@ -42,12 +43,13 @@ export const SubAdminManagementPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [subAdmins, setSubAdmins] = useState<SubAdmin[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialAdminsCache = api.peekCache<{ data: SubAdmin[] }>('/rental/auth/admin/subadmins')?.data;
+  const [subAdmins, setSubAdmins] = useState<SubAdmin[]>(Array.isArray(initialAdminsCache) ? initialAdminsCache : []);
+  const [loading, setLoading] = useState(!initialAdminsCache);
   const [search, setSearch] = useState('');
 
   const fetchSubAdmins = async () => {
-    setLoading(true);
+    if (subAdmins.length === 0) setLoading(true);
     try {
       const res = await rentalAuthApi.listSubAdmins();
       if (res && Array.isArray(res.data)) {

@@ -1,11 +1,12 @@
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
 import { transliterateToHindi } from '../../../shared/utils/transliterate.util';
+import { rentalCache } from '../utils/rentalCache.util';
 
 export interface CreatePropertyDTO {
-  propertyName: string;
+  propertyName?: string;
   propertyType?: 'COMMERCIAL_SHOP' | 'ROADSIDE_STALL' | 'WAREHOUSE_GODOWN' | 'LAND_PARCEL' | 'OFFICE_SPACE' | 'OTHER';
   propertyNumber: string;
-  location: string;
+  location?: string;
   address: string;
   dimensionsSqft?: number;
   baseMonthlyRent: number;
@@ -20,36 +21,42 @@ export class RentalPropertyService {
       // Generate unique Property ID: SHOP-MKT-XXXX or PROP-YYYY-XXXX
       const count = await rentalPrisma.rentalProperty.count();
       const prefix = dto.propertyType === 'ROADSIDE_STALL' ? 'STALL' : dto.propertyType === 'COMMERCIAL_SHOP' ? 'SHOP' : 'PROP';
-      const cleanNum = dto.propertyNumber.replace(/\s+/g, '-').toUpperCase();
+      const cleanNum = dto.propertyNumber.trim().replace(/\s+/g, '-').toUpperCase();
       const propertyId = `${prefix}-${cleanNum}-${(count + 1).toString().padStart(3, '0')}`;
 
-      // Check duplicate property number in the same location
+      // Check duplicate shop code
       const existing = await rentalPrisma.rentalProperty.findFirst({
         where: {
           property_number: dto.propertyNumber.trim(),
-          location: dto.location.trim(),
         },
       });
 
       if (existing) {
-        throw new Error(`Property ${dto.propertyNumber} already exists in ${dto.location}.`);
+        throw new Error(`Shop code ${dto.propertyNumber.trim()} is already registered.`);
       }
 
-      // Auto-transliterate English property name, location, and address to Hindi
-      const [hindiName, hindiLocation, hindiAddress] = await Promise.all([
-        transliterateToHindi(dto.propertyName),
-        transliterateToHindi(dto.location),
-        transliterateToHindi(dto.address),
+      // Auto-transliterate address (and optional name/location if provided) to Hindi
+      const hasCustomName = Boolean(dto.propertyName && dto.propertyName.trim());
+      const hasCustomLocation = Boolean(dto.location && dto.location.trim());
+
+      const [hindiAddress, hindiName, hindiLocation] = await Promise.all([
+        transliterateToHindi(dto.address.trim()),
+        hasCustomName ? transliterateToHindi(dto.propertyName!.trim()) : Promise.resolve(dto.propertyNumber.trim()),
+        hasCustomLocation ? transliterateToHindi(dto.location!.trim()) : Promise.resolve(''),
       ]);
+
+      const finalAddress = (hindiAddress || dto.address).trim();
+      const finalName = hasCustomName ? (hindiName || dto.propertyName!).trim() : dto.propertyNumber.trim();
+      const finalLocation = hasCustomLocation ? (hindiLocation || dto.location!).trim() : finalAddress;
 
       const property = await rentalPrisma.rentalProperty.create({
         data: {
           property_id: propertyId,
-          property_name: (hindiName || dto.propertyName).trim(),
+          property_name: finalName,
           property_type: dto.propertyType || 'COMMERCIAL_SHOP',
           property_number: dto.propertyNumber.trim(),
-          location: (hindiLocation || dto.location).trim(),
-          address: (hindiAddress || dto.address).trim(),
+          location: finalLocation,
+          address: finalAddress,
           dimensions_sqft: dto.dimensionsSqft ? Number(dto.dimensionsSqft) : null,
           base_monthly_rent: Number(dto.baseMonthlyRent),
           status: 'VACANT',
@@ -73,12 +80,13 @@ export class RentalPropertyService {
         },
       });
 
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
       return property;
     });
   }
 
   /**
-   * List properties with search, type, and status filtering
+   * List properties with search, type, and status filtering (flat queries + short cache)
    */
   async listProperties(params: {
     search?: string;
@@ -87,37 +95,65 @@ export class RentalPropertyService {
     page?: number;
     limit?: number;
   }) {
-    return withRentalDbRetry(async () => {
-      const page = Math.max(1, params.page || 1);
-      const limit = Math.min(100, Math.max(1, params.limit || 20));
-      const skip = (page - 1) * limit;
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.min(100, Math.max(1, params.limit || 20));
+    const statusKey = params.status || 'ALL';
+    const typeKey = params.type || 'ALL';
+    const searchKey = (params.search || '').trim().toLowerCase();
+    const cacheKey = `properties:${page}:${limit}:${statusKey}:${typeKey}:${searchKey}`;
 
-      const where: any = {};
-      if (params.status && params.status !== 'ALL') {
-        where.status = params.status;
-      }
-      if (params.type && params.type !== 'ALL') {
-        where.property_type = params.type;
-      }
+    return rentalCache.getOrSet(cacheKey, 15_000, () =>
+      withRentalDbRetry(async () => {
+        const skip = (page - 1) * limit;
 
-      if (params.search && params.search.trim()) {
-        const s = params.search.trim();
-        where.OR = [
-          { property_name: { contains: s, mode: 'insensitive' } },
-          { property_number: { contains: s, mode: 'insensitive' } },
-          { property_id: { contains: s, mode: 'insensitive' } },
-          { location: { contains: s, mode: 'insensitive' } },
-        ];
-      }
+        const where: any = {};
+        if (params.status && params.status !== 'ALL') {
+          where.status = params.status;
+        }
+        if (params.type && params.type !== 'ALL') {
+          where.property_type = params.type;
+        }
 
-      const [total, properties] = await Promise.all([
-        rentalPrisma.rentalProperty.count({ where }),
-        rentalPrisma.rentalProperty.findMany({
-          where,
-          include: {
-            assignments: {
-              where: { is_active: true },
-              include: {
+        if (params.search && params.search.trim()) {
+          const s = params.search.trim();
+          where.OR = [
+            { property_name: { contains: s, mode: 'insensitive' } },
+            { property_number: { contains: s, mode: 'insensitive' } },
+            { property_id: { contains: s, mode: 'insensitive' } },
+            { location: { contains: s, mode: 'insensitive' } },
+          ];
+        }
+
+        const [total, properties] = await Promise.all([
+          rentalPrisma.rentalProperty.count({ where }),
+          rentalPrisma.rentalProperty.findMany({
+            where,
+            select: {
+              id: true,
+              property_id: true,
+              property_name: true,
+              property_type: true,
+              property_number: true,
+              location: true,
+              address: true,
+              dimensions_sqft: true,
+              base_monthly_rent: true,
+              status: true,
+            },
+            orderBy: { created_at: 'desc' },
+            skip,
+            take: limit,
+          }),
+        ]);
+
+        const propIds = properties.map((p) => p.id);
+        const activeAssignments = propIds.length > 0
+          ? await rentalPrisma.propertyAssignment.findMany({
+              where: { property_id: { in: propIds }, is_active: true },
+              select: {
+                property_id: true,
+                monthly_rent: true,
+                lease_start_date: true,
                 user: {
                   select: {
                     id: true,
@@ -128,49 +164,47 @@ export class RentalPropertyService {
                   },
                 },
               },
-            },
-          },
-          orderBy: { created_at: 'desc' },
-          skip,
-          take: limit,
-        }),
-      ]);
+            })
+          : [];
 
-      const formatted = properties.map((p) => {
-        const currentAssignment = p.assignments[0];
+        const assignByProp = new Map(activeAssignments.map((a) => [a.property_id, a]));
+
+        const formatted = properties.map((p) => {
+          const currentAssignment = assignByProp.get(p.id);
+          return {
+            id: p.id,
+            propertyId: p.property_id,
+            propertyName: p.property_name,
+            propertyType: p.property_type,
+            propertyNumber: p.property_number,
+            location: p.location,
+            address: p.address,
+            dimensionsSqft: p.dimensions_sqft,
+            baseMonthlyRent: Number(p.base_monthly_rent),
+            status: p.status,
+            currentTenant: currentAssignment
+              ? {
+                  userId: currentAssignment.user.id,
+                  userCode: currentAssignment.user.user_id,
+                  fullName: currentAssignment.user.full_name,
+                  mobile: currentAssignment.user.mobile,
+                  profilePhotoUrl: currentAssignment.user.profile_photo_url,
+                  activeRent: Number(currentAssignment.monthly_rent),
+                  leaseStartDate: currentAssignment.lease_start_date,
+                }
+              : null,
+          };
+        });
+
         return {
-          id: p.id,
-          propertyId: p.property_id,
-          propertyName: p.property_name,
-          propertyType: p.property_type,
-          propertyNumber: p.property_number,
-          location: p.location,
-          address: p.address,
-          dimensionsSqft: p.dimensions_sqft,
-          baseMonthlyRent: Number(p.base_monthly_rent),
-          status: p.status,
-          currentTenant: currentAssignment
-            ? {
-                userId: currentAssignment.user.id,
-                userCode: currentAssignment.user.user_id,
-                fullName: currentAssignment.user.full_name,
-                mobile: currentAssignment.user.mobile,
-                profilePhotoUrl: currentAssignment.user.profile_photo_url,
-                activeRent: Number(currentAssignment.monthly_rent),
-                leaseStartDate: currentAssignment.lease_start_date,
-              }
-            : null,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          data: formatted,
         };
-      });
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data: formatted,
-      };
-    });
+      })
+    );
   }
 
   /**
@@ -297,6 +331,9 @@ export class RentalPropertyService {
 
         return assignment;
       });
+    }).then((res) => {
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
+      return res;
     });
   }
 
@@ -341,6 +378,9 @@ export class RentalPropertyService {
 
         return { success: true, message: 'Property vacated successfully and marked VACANT.' };
       });
+    }).then((res) => {
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
+      return res;
     });
   }
 
@@ -432,6 +472,9 @@ export class RentalPropertyService {
           reason,
         };
       });
+    }).then((res) => {
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
+      return res;
     });
   }
 
@@ -442,71 +485,55 @@ export class RentalPropertyService {
     return withRentalDbRetry(async () => {
       const property = await rentalPrisma.rentalProperty.findUnique({
         where: { id: propertyId },
-        include: {
-          assignments: true,
-          rentChangeHistory: true,
-        },
+        select: { id: true, property_number: true, property_name: true, location: true },
       });
 
       if (!property) {
         throw new Error('Property not found');
       }
 
-      return rentalPrisma.$transaction(async (tx) => {
-        // 1. Delete all related records for this property
-        await tx.propertyAssignment.deleteMany({
-          where: { property_id: propertyId },
-        });
+      return rentalPrisma.$transaction(
+        async (tx) => {
+          await Promise.all([
+            tx.propertyAssignment.deleteMany({ where: { property_id: propertyId } }),
+            tx.rentChangeHistory.deleteMany({ where: { property_id: propertyId } }),
+            tx.rentalReceipt.deleteMany({ where: { property_id: propertyId } }),
+            tx.paymentAuditTrail.deleteMany({ where: { property_id: propertyId } }),
+            tx.rentalLedgerEntry.deleteMany({ where: { property_id: propertyId } }),
+          ]);
 
-        await tx.rentChangeHistory.deleteMany({
-          where: { property_id: propertyId },
-        });
+          await Promise.all([
+            tx.rentalPayment.deleteMany({ where: { property_id: propertyId } }),
+            tx.rentalBill.deleteMany({ where: { property_id: propertyId } }),
+          ]);
 
-        await tx.rentalReceipt.deleteMany({
-          where: { property_id: propertyId },
-        });
-
-        await tx.paymentAuditTrail.deleteMany({
-          where: { property_id: propertyId },
-        });
-
-        await tx.rentalLedgerEntry.deleteMany({
-          where: { property_id: propertyId },
-        });
-
-        await tx.rentalPayment.deleteMany({
-          where: { property_id: propertyId },
-        });
-
-        await tx.rentalBill.deleteMany({
-          where: { property_id: propertyId },
-        });
-
-        // 2. Delete the property itself
-        await tx.rentalProperty.delete({
-          where: { id: propertyId },
-        });
-
-        // 3. Write admin audit log
-        await tx.rentalAdminAuditLog.create({
-          data: {
-            admin_id: adminId,
-            action: 'PROPERTY_DELETED',
-            target_entity: 'RentalProperty',
-            target_id: propertyId,
-            reason: `Property ${property.property_number} (${property.property_name}) deleted by admin`,
-            before_state: JSON.stringify({
-              propertyNumber: property.property_number,
-              propertyName: property.property_name,
-              location: property.location,
+          await Promise.all([
+            tx.rentalProperty.delete({ where: { id: propertyId } }),
+            tx.rentalAdminAuditLog.create({
+              data: {
+                admin_id: adminId,
+                action: 'PROPERTY_DELETED',
+                target_entity: 'RentalProperty',
+                target_id: propertyId,
+                reason: `Property ${property.property_number} (${property.property_name}) deleted by admin`,
+                before_state: JSON.stringify({
+                  propertyNumber: property.property_number,
+                  propertyName: property.property_name,
+                  location: property.location,
+                }),
+                after_state: JSON.stringify({ deleted: true }),
+                ip_address: clientIp || 'Unknown',
+              },
             }),
-            after_state: JSON.stringify({ deleted: true }),
-            ip_address: clientIp || 'Unknown',
-          },
-        });
+          ]);
 
-        return { success: true, message: 'Property deleted successfully' };
-      });
+          return { success: true, message: 'Property deleted successfully' };
+        },
+        { maxWait: 10000, timeout: 30000 }
+      );
+    }).then((res) => {
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
+      return res;
     });
   }
 

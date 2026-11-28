@@ -6,6 +6,7 @@ export interface BillListItem {
   billingMonth: string;
   billingYear: number;
   rentAmount: number;
+  gstAmount?: number;
   arrearsAmount: number;
   totalAmountDue: number;
   amountPaid: number;
@@ -60,6 +61,7 @@ export interface DuesSearchResult {
     billNumber: string;
     billingMonth: string;
     rentAmount: number;
+    gstAmount?: number;
     totalAmountDue: number;
     amountPaid: number;
     balanceDue: number;
@@ -75,6 +77,8 @@ export interface DuesSearchResult {
     id: string;
     billNumber: string;
     billingMonth: string;
+    rentAmount?: number;
+    gstAmount?: number;
     totalAmountDue: number;
     amountPaid: number;
     balanceDue: number;
@@ -90,6 +94,7 @@ export interface DuesSearchResult {
     billNumber: string;
     billingMonth: string;
     rentAmount: number;
+    gstAmount?: number;
     totalAmountDue: number;
     amountPaid: number;
     balanceDue: number;
@@ -100,6 +105,8 @@ export interface DuesSearchResult {
   receipts?: Array<{
     receiptNumber: string;
     amountPaid: number;
+    baseRentAmount?: number;
+    gstAmount?: number;
     issuedAt: string;
     billingMonth: string;
     propertyNumber: string;
@@ -140,6 +147,97 @@ export interface DashboardAnalytics {
   }>;
 }
 
+export interface RentManagementReceiptRef {
+  receiptId: string;
+  receiptNumber: string;
+  amountPaid: number;
+  baseRentAmount?: number;
+  gstAmount?: number;
+  billingPeriod: string;
+  billNumber: string;
+  issuedAt: string;
+  paymentMethod: string;
+  collectorName?: string;
+}
+
+export interface RentManagementMonthlyRecord {
+  billingMonth: string; // YYYY-MM
+  year: number;
+  month: number; // 1-12
+  billId: string | null;
+  billNumber: string | null;
+  rentAmount: number;
+  gstAmount?: number;
+  totalAmountDue: number;
+  amountPaid: number;
+  balanceDue: number;
+  dueDate: string;
+  status: 'PAID' | 'OVERDUE' | 'UNPAID' | 'PARTIALLY_PAID' | 'UPCOMING' | 'NOT_ALLOTTED';
+  receipt: RentManagementReceiptRef | null;
+}
+
+export interface RentManagementPaymentHistoryItem {
+  paymentId: string;
+  paymentReference: string;
+  receiptId: string;
+  receiptNumber: string;
+  amountPaid: number;
+  baseRentAmount?: number;
+  gstAmount?: number;
+  paymentMethod: string;
+  referenceNumber: string;
+  billingPeriod: string;
+  paidMonths: string[];
+  billNumber: string;
+  paidAt: string;
+  collectorName?: string;
+}
+
+export interface RentManagementTenantCard {
+  tenantId: string;
+  tenantCode: string;
+  fullName: string;
+  mobile: string;
+  email: string | null;
+  profilePhotoUrl: string | null;
+  shop: {
+    propertyId: string;
+    propertyCode: string;
+    shopName: string;
+    shopCode: string;
+    address: string;
+    location: string;
+    allotmentDate: string;
+    leaseEndDate: string | null;
+    monthlyRent: number;
+  } | null;
+  summary: {
+    totalRent: number;
+    totalPaid: number;
+    outstandingAmount: number;
+    overdueMonthsCount: number;
+    overdueMonths: string[];
+    unpaidMonthsCount: number;
+    paymentStatus: 'PAID' | 'OVERDUE' | 'UNPAID' | 'PARTIALLY_PAID';
+  };
+  availableYears: number[];
+  monthlyRecords: RentManagementMonthlyRecord[];
+  paymentHistory: RentManagementPaymentHistoryItem[];
+}
+
+export interface RentManagementOverviewResponse {
+  currentMonth: string;
+  currentYear: number;
+  summary: {
+    totalTenants: number;
+    totalRent: number;
+    totalPaid: number;
+    totalOutstanding: number;
+    overdueTenantsCount: number;
+  };
+  tenants: RentManagementTenantCard[];
+}
+
 export const rentalBillingApi = {
   generateMonthlyBills: (billingMonth: string) =>
     api.post<{ success: boolean; data: any; message: string }>('/rental/bills/generate', {
@@ -148,6 +246,18 @@ export const rentalBillingApi = {
 
   getAnalytics: () =>
     api.get<{ success: boolean; data: DashboardAnalytics }>('/rental/bills/analytics'),
+
+  getRentManagementOverview: (params?: { search?: string; status?: string; year?: number; tenantId?: string }) => {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.status && params.status !== 'ALL') query.set('status', params.status);
+    if (params?.year) query.set('year', String(params.year));
+    if (params?.tenantId) query.set('tenantId', params.tenantId);
+    const qs = query.toString();
+    return api.get<{ success: boolean; data: RentManagementOverviewResponse }>(
+      `/rental/bills/rent-management${qs ? `?${qs}` : ''}`
+    );
+  },
 
   listBills: (params: {
     search?: string;

@@ -18,9 +18,21 @@ const verifyPaymentSchema = z.object({
 const counterPaymentSchema = z.object({
   billId: z.string().uuid('Valid bill ID is required'),
   amount: z.coerce.number().positive('Payment amount must be greater than zero'),
-  paymentMethod: z.enum(['CASH', 'CHEQUE_DD', 'POS_MACHINE', 'NEFT_RTGS']),
+  paymentMethod: z.enum(['CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE_DD', 'POS_MACHINE', 'NEFT_RTGS']),
   referenceNumber: z.string().optional(),
   remarks: z.string().optional(),
+});
+
+const collectMultiMonthSchema = z.object({
+  userId: z.string().uuid('Valid tenant ID is required'),
+  propertyId: z.string().uuid('Valid shop ID is required'),
+  months: z
+    .array(z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Month must be YYYY-MM'))
+    .min(1, 'Select at least one month to collect rent'),
+  paymentMethod: z.enum(['CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE_DD', 'POS_MACHINE', 'NEFT_RTGS']),
+  referenceNumber: z.string().optional(),
+  remarks: z.string().optional(),
+  idempotencyKey: z.string().optional(),
 });
 
 export class RentalPaymentController {
@@ -106,6 +118,33 @@ export class RentalPaymentController {
       return sendSuccess(res, result, result.message, 201);
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to record counter payment', 400);
+    }
+  }
+
+  /**
+   * POST /api/rental/payments/collect-multi
+   * Multi-month rent collection by authorized Admin or Sub-Admin
+   */
+  async collectMultiMonthPayment(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Admin or Sub-Admin authentication required', 401);
+      }
+
+      const parsed = collectMultiMonthSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return sendError(res, parsed.error.issues[0]?.message || 'Invalid multi-month payment payload', 400);
+      }
+
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const result = await rentalPaymentService.collectMultiMonthPayment(req.rentalAdmin.adminId, {
+        ...parsed.data,
+        clientIp,
+      });
+
+      return sendSuccess(res, result, result.message, 201);
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to collect multi-month rent', 400);
     }
   }
 

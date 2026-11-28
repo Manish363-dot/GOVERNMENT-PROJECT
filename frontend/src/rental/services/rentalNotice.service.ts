@@ -15,7 +15,38 @@ export interface NoticeItem {
     userCode: string;
     fullName: string;
     mobile: string;
+    shopNumber?: string | null;
   } | null;
+  whatsappUrl?: string | null;
+}
+
+export interface NoticeCreateResponse extends NoticeItem {
+  whatsapp?: {
+    sent: boolean;
+    messageId?: string;
+    errorCode?: number;
+    mobile: string;
+    whatsappUrl: string;
+    error?: string;
+  } | null;
+}
+
+export interface WhatsAppApiStatus {
+  configured: boolean;
+  apiVersion: string;
+  phoneNumberIdMasked: string | null;
+  rentalTemplate: string | null;
+}
+
+export interface WhatsAppSendResult {
+  noticeId: string;
+  noticeNumber: string;
+  sent: boolean;
+  messageId?: string;
+  errorCode?: number;
+  mobile: string;
+  whatsappUrl: string;
+  error?: string;
 }
 
 export interface NoticeListResponse {
@@ -38,7 +69,7 @@ export interface CreateNoticeInput {
 
 export const rentalNoticeApi = {
   createNotice: (data: CreateNoticeInput) =>
-    api.post<{ success: boolean; data: NoticeItem; message: string }>('/rental/notices', data),
+    api.post<{ success: boolean; data: NoticeCreateResponse; message: string }>('/rental/notices', data),
 
   listNotices: (params: { category?: string; search?: string; page?: number; limit?: number }) => {
     const query = new URLSearchParams();
@@ -51,4 +82,15 @@ export const rentalNoticeApi = {
 
   deleteNotice: (id: string) =>
     api.delete<{ success: boolean; message: string }>(`/rental/notices/${id}`),
+
+  getWhatsAppStatus: () =>
+    api.get<{ success: boolean; data: WhatsAppApiStatus }>('/rental/notices/whatsapp-status', {
+      force: true,
+    }),
+
+  sendWhatsAppNotice: (id: string) =>
+    api.post<{ success: boolean; data: WhatsAppSendResult; message: string }>(
+      `/rental/notices/${id}/send-whatsapp`,
+      {}
+    ),
 };

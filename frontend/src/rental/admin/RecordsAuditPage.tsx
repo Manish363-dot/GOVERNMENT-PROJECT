@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AdminLayout } from './AdminLayout';
 import { useLanguage } from '../context/LanguageContext';
-import { rentalPaymentApi, AuditRecord } from '../services/rentalPayment.service';
+import { api } from '@/services/api';
+import { rentalPaymentApi, AuditLedgerResponse, AuditRecord } from '../services/rentalPayment.service';
 import {
   BarChart3,
   Search,
@@ -32,15 +33,19 @@ export const RecordsAuditPage: React.FC = () => {
   const [dateFilter, setDateFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const [loading, setLoading] = useState(true);
-  const [records, setRecords] = useState<AuditRecord[]>([]);
-  const [totalAmount, setTotalAmount] = useState(0);
-  const [totalCount, setTotalCount] = useState(0);
+  const initialAuditCache = api.peekCache<{ data: AuditLedgerResponse }>(
+    `/rental/payments/audit?month=${currentMonth}&year=${currentYear}&limit=100`
+  )?.data;
+  const [loading, setLoading] = useState(!initialAuditCache);
+  const [records, setRecords] = useState<AuditRecord[]>(initialAuditCache?.records || []);
+  const [totalAmount, setTotalAmount] = useState(initialAuditCache?.totalAmount || 0);
+  const [totalCount, setTotalCount] = useState(initialAuditCache?.total || 0);
 
   const [selectedReceipt, setSelectedReceipt] = useState<AuditRecord | null>(null);
 
-  const fetchRecords = async () => {
-    setLoading(true);
+  const fetchRecords = async (force = false) => {
+    if (force) api.invalidateCache('/rental/payments/audit');
+    if (force || records.length === 0) setLoading(true);
     try {
       const res = await rentalPaymentApi.getAuditLedger({
         year: dateFilter ? undefined : yearFilter !== 'ALL' ? yearFilter : undefined,

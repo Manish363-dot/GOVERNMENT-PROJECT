@@ -30,7 +30,7 @@ export interface VerifyPaymentResponse {
 export interface CounterPaymentInput {
   billId: string;
   amount: number;
-  paymentMethod: 'CASH' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS';
+  paymentMethod: 'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS';
   referenceNumber?: string;
   remarks?: string;
 }
@@ -100,4 +100,36 @@ export const rentalPaymentApi = {
       `/rental/payments/audit?${query.toString()}`
     );
   },
+
+  collectMultiMonthPayment: (data: {
+    userId: string;
+    propertyId: string;
+    months: string[];
+    paymentMethod: 'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS';
+    referenceNumber?: string;
+    remarks?: string;
+    idempotencyKey?: string;
+  }) =>
+    api.post<{
+      success: boolean;
+      data: {
+        paymentId: string;
+        receiptId: string;
+        receiptNumber: string;
+        amountPaid: number;
+        baseRentAmount?: number;
+        gstAmount?: number;
+        billingPeriod: string;
+        paidMonths: string[];
+        billNumber: string;
+        tenantName: string;
+        tenantCode: string;
+        shopNumber: string;
+        location: string;
+        paymentMethod: string;
+        issuedAt: string;
+        collectorName?: string;
+      };
+      message: string;
+    }>('/rental/payments/collect-multi', data),
 };

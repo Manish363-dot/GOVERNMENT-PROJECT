@@ -24,9 +24,20 @@ export interface AuthenticatedRentalRequest extends Request {
   rentalUser?: RentalUserPayload;
 }
 
+const ADMIN_AUTH_CACHE_TTL_MS = 60_000;
+const adminAuthCache = new Map<string, { payload: RentalAdminPayload; expiresAt: number }>();
+
+export function invalidateRentalAdminCache(adminId?: string): void {
+  if (adminId) {
+    adminAuthCache.delete(adminId);
+  } else {
+    adminAuthCache.clear();
+  }
+}
+
 /**
  * Middleware: Authenticate Rental Admin (Super Admin or Sub Admin)
- * Verifies JWT token from Authorization header or cookie, then confirms active status in Database A.
+ * Verifies JWT token from Authorization header or cookie, then confirms active status (60s in-memory cache).
  */
 export async function rentalAdminAuth(
   req: AuthenticatedRentalRequest,
@@ -55,6 +66,13 @@ export async function rentalAdminAuth(
       return;
     }
 
+    const cached = adminAuthCache.get(decoded.adminId);
+    if (cached && cached.expiresAt > Date.now()) {
+      req.rentalAdmin = cached.payload;
+      next();
+      return;
+    }
+
     // Verify active status directly in Rental Management Database (Database A)
     const adminRecord = await withRentalDbRetry(() =>
       rentalPrisma.rentalAdmin.findUnique({
@@ -64,17 +82,25 @@ export async function rentalAdminAuth(
     );
 
     if (!adminRecord || adminRecord.status !== 'ACTIVE') {
+      adminAuthCache.delete(decoded.adminId);
       res.status(403).json({ success: false, error: 'Administrator account is deactivated or suspended.' });
       return;
     }
 
-    req.rentalAdmin = {
+    const payload: RentalAdminPayload = {
       adminId: adminRecord.id,
       username: adminRecord.username,
       role: adminRecord.role,
       mobile: adminRecord.mobile,
       permissions: adminRecord.permissions,
     };
+
+    adminAuthCache.set(decoded.adminId, {
+      payload,
+      expiresAt: Date.now() + ADMIN_AUTH_CACHE_TTL_MS,
+    });
+
+    req.rentalAdmin = payload;
 
     next();
   } catch (err: any) {

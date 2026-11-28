@@ -14,6 +14,13 @@ router.post(
   (req: any, res: any) => rentalBillingController.generateMonthlyBills(req, res)
 );
 
+// ── Admin & SubAdmin: Rent Management Overview (Cards + Year-wise Ledger) ─────
+router.get(
+  '/rent-management',
+  rentalAdminAuth,
+  (req: any, res: any) => rentalBillingController.getRentManagementOverview(req, res)
+);
+
 // ── Admin: Dashboard Analytics & Revenue KPI ─────────────────────────────────
 router.get(
   '/analytics',

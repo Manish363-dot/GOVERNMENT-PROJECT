@@ -31,10 +31,10 @@ export interface PropertyListResponse {
 }
 
 export interface CreatePropertyInput {
-  propertyName: string;
+  propertyName?: string;
   propertyType: 'COMMERCIAL_SHOP' | 'ROADSIDE_STALL' | 'WAREHOUSE_GODOWN' | 'LAND_PARCEL' | 'OFFICE_SPACE' | 'OTHER';
   propertyNumber: string;
-  location: string;
+  location?: string;
   address: string;
   dimensionsSqft?: number;
   baseMonthlyRent: number;

@@ -1,13 +1,169 @@
+import { randomUUID } from 'crypto';
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
+import { calculateRentWithGst, resolveBillAmounts, RENTAL_GST_RATE } from '../utils/gst.util';
+import { rentalCache } from '../utils/rentalCache.util';
+
+const toMonthKey = (year: number, monthNum: number) =>
+  `${year}-${String(monthNum).padStart(2, '0')}`;
+
+const computeDueDate = (year: number, monthNum: number, startDate: Date): Date => {
+  const startY = startDate.getFullYear();
+  const startM = startDate.getMonth() + 1;
+  // If allotted after the 20th of its very first month, due date is end of that first month
+  if (year === startY && monthNum === startM && startDate.getDate() > 20) {
+    return new Date(year, monthNum, 0, 23, 59, 59);
+  }
+  return new Date(year, monthNum - 1, 20, 23, 59, 59);
+};
 
 export class RentalBillingService {
   /**
+   * Automatically generates separate monthly RentalBill records from each active
+   * tenant's allotment/registration date through the current month (capped by lease_end_date if past).
+   * Updates overdue status on past-due unpaid bills without double-counting arrears.
+   */
+  async ensureAccruedMonthlyBills(targetUserId?: string) {
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonthNum = now.getMonth() + 1;
+
+    const activeAssignments = await rentalPrisma.propertyAssignment.findMany({
+      where: {
+        is_active: true,
+        ...(targetUserId ? { user_id: targetUserId } : {}),
+      },
+      include: {
+        property: true,
+        user: { select: { id: true, created_at: true } },
+        bills: {
+          select: {
+            id: true,
+            billing_month: true,
+            status: true,
+            balance_due: true,
+            due_date: true,
+          },
+        },
+      },
+    });
+
+    for (const assign of activeAssignments) {
+      const startDate = new Date(
+        assign.allotment_date || assign.lease_start_date || assign.user.created_at || now
+      );
+      let startYear = startDate.getFullYear();
+      let startMonth = startDate.getMonth() + 1;
+
+      if (isNaN(startYear) || isNaN(startMonth)) {
+        startYear = curYear;
+        startMonth = curMonthNum;
+      }
+
+      // Cap automatic accrued demand at current month (or lease_end_date if lease ended earlier)
+      let capYear = curYear;
+      let capMonth = curMonthNum;
+      if (assign.lease_end_date) {
+        const endDt = new Date(assign.lease_end_date);
+        if (!isNaN(endDt.getTime())) {
+          const endY = endDt.getFullYear();
+          const endM = endDt.getMonth() + 1;
+          if (endY < capYear || (endY === capYear && endM < capMonth)) {
+            capYear = endY;
+            capMonth = endM;
+          }
+        }
+      }
+
+      // Guard: if allotment date is in a future month beyond current month, still allow tracking without backfill
+      if (startYear > capYear || (startYear === capYear && startMonth > capMonth)) {
+        continue;
+      }
+
+      const existingMap = new Map(assign.bills.map((b) => [b.billing_month, b]));
+      const rentAmt = Number(assign.monthly_rent || assign.property.base_monthly_rent || 0);
+      const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(rentAmt);
+
+      let y = startYear;
+      let m = startMonth;
+      let safetyGuard = 0;
+
+      while ((y < capYear || (y === capYear && m <= capMonth)) && safetyGuard < 120) {
+        safetyGuard++;
+        const mStr = toMonthKey(y, m);
+        const dueDate = computeDueDate(y, m, startDate);
+        const isPastMonth = y < curYear || (y === curYear && m < curMonthNum);
+        const isOverdue = isPastMonth || now > dueDate;
+
+        const existing = existingMap.get(mStr);
+        if (!existing) {
+          const billNo = `BL-${assign.property.property_number}-${mStr}-${assign.id.slice(0, 4).toUpperCase()}`;
+          try {
+            const bill = await rentalPrisma.rentalBill.create({
+              data: {
+                bill_number: billNo,
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                assignment_id: assign.id,
+                billing_month: mStr,
+                billing_year: y,
+                rent_amount: rentAmt,
+                gst_rate: gstRate,
+                gst_amount: gstAmount,
+                adjustment_amount: 0.0,
+                total_amount_due: totalWithGst,
+                amount_paid: 0.0,
+                balance_due: totalWithGst,
+                due_date: dueDate,
+                status: isOverdue ? 'OVERDUE' : 'PENDING',
+              },
+            });
+
+            await rentalPrisma.rentalLedgerEntry.create({
+              data: {
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                bill_id: bill.id,
+                entry_type: 'RENT_CHARGE',
+                debit: totalWithGst,
+                credit: 0.0,
+                running_balance: totalWithGst,
+                description: `Monthly Commercial Rent + 18% GST Demand for ${mStr} (${assign.property.property_number})`,
+                transaction_reference: billNo,
+              },
+            });
+          } catch {
+            // Ignore unique constraint collision across concurrent requests
+          }
+        } else if (
+          existing.status === 'PENDING' &&
+          Number(existing.balance_due) > 0 &&
+          (isPastMonth || now > new Date(existing.due_date))
+        ) {
+          try {
+            await rentalPrisma.rentalBill.update({
+              where: { id: existing.id },
+              data: { status: 'OVERDUE' },
+            });
+          } catch {
+            // Non-blocking status refresh
+          }
+        }
+
+        m++;
+        if (m > 12) {
+          m = 1;
+          y++;
+        }
+      }
+    }
+  }
+
+  /**
    * Bulk Monthly Bill Generation for All Active Leased Properties
-   * Calculates current rent, adds past unsettled arrears, and records ledger entries atomically.
+   * Creates separate monthly rent records (no compounding arrears roll-forward).
    */
   async generateMonthlyBills(adminId: string, billingMonth: string, clientIp?: string) {
     return withRentalDbRetry(async () => {
-      // Validate billing month format: YYYY-MM
       if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(billingMonth)) {
         throw new Error('Billing month must be in YYYY-MM format (e.g. 2026-10).');
       }
@@ -15,11 +171,10 @@ export class RentalBillingService {
       const [yearStr, monthStr] = billingMonth.split('-');
       const billingYear = parseInt(yearStr, 10);
       const billingMonthNum = parseInt(monthStr, 10);
-
-      // Due date is set to the 20th of the billing month
+      const now = new Date();
       const dueDate = new Date(billingYear, billingMonthNum - 1, 20, 23, 59, 59);
+      const isOverdue = now > dueDate;
 
-      // 1. Fetch all active property assignments
       const activeAssignments = await rentalPrisma.propertyAssignment.findMany({
         where: { is_active: true },
         include: {
@@ -39,13 +194,11 @@ export class RentalBillingService {
       let generatedCount = 0;
       let skippedCount = 0;
 
-      // Current bill sequence count for unique numbers
       const existingBillsCount = await rentalPrisma.rentalBill.count();
 
       for (let i = 0; i < activeAssignments.length; i++) {
         const assignment = activeAssignments[i];
 
-        // Check if bill already exists for this tenant, property and month
         const existingBill = await rentalPrisma.rentalBill.findUnique({
           where: {
             user_id_property_id_billing_month: {
@@ -61,26 +214,12 @@ export class RentalBillingService {
           continue;
         }
 
-        // Calculate past arrears for this tenant and property
-        const unpaidBills = await rentalPrisma.rentalBill.findMany({
-          where: {
-            user_id: assignment.user_id,
-            property_id: assignment.property_id,
-            status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
-            billing_month: { lt: billingMonth },
-          },
-          select: { balance_due: true },
-        });
-
-        const totalArrears = unpaidBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
         const monthlyRent = Number(assignment.monthly_rent);
-        const totalDue = monthlyRent + totalArrears;
-
+        const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(monthlyRent);
         const billNumber = `BILL-${billingMonth.replace('-', '')}-${(existingBillsCount + generatedCount + 1)
           .toString()
           .padStart(4, '0')}`;
 
-        // Atomic bill creation and ledger entry
         await rentalPrisma.$transaction(async (tx) => {
           const bill = await tx.rentalBill.create({
             data: {
@@ -91,26 +230,27 @@ export class RentalBillingService {
               billing_month: billingMonth,
               billing_year: billingYear,
               rent_amount: monthlyRent,
-              adjustment_amount: totalArrears,
-              total_amount_due: totalDue,
+              gst_rate: gstRate,
+              gst_amount: gstAmount,
+              adjustment_amount: 0.0,
+              total_amount_due: totalWithGst,
               amount_paid: 0.0,
-              balance_due: totalDue,
+              balance_due: totalWithGst,
               due_date: dueDate,
-              status: 'PENDING',
+              status: isOverdue ? 'OVERDUE' : 'PENDING',
             },
           });
 
-          // Ledger entry: RENT_CHARGE
           await tx.rentalLedgerEntry.create({
             data: {
               user_id: assignment.user_id,
               property_id: assignment.property_id,
               bill_id: bill.id,
               entry_type: 'RENT_CHARGE',
-              debit: monthlyRent,
+              debit: totalWithGst,
               credit: 0.0,
-              running_balance: totalDue,
-              description: `Monthly Commercial Rent Charge for ${billingMonth} (${assignment.property.property_number})`,
+              running_balance: totalWithGst,
+              description: `Monthly Commercial Rent + 18% GST Charge for ${billingMonth} (${assignment.property.property_number})`,
               transaction_reference: billNumber,
             },
           });
@@ -119,7 +259,6 @@ export class RentalBillingService {
         generatedCount++;
       }
 
-      // Record Admin Audit Log
       await rentalPrisma.rentalAdminAuditLog.create({
         data: {
           admin_id: adminId,
@@ -135,6 +274,8 @@ export class RentalBillingService {
         },
       });
 
+      rentalCache.invalidate('analytics', 'overview:', 'tenants:', 'properties:', 'ledger:', 'audit:');
+
       return {
         billingMonth,
         generatedCount,
@@ -142,6 +283,792 @@ export class RentalBillingService {
         message: `Successfully generated ${generatedCount} bills for month ${billingMonth} (${skippedCount} already existed).`,
       };
     });
+  }
+
+  /**
+   * Rent Management Overview (Tenant-Centric Cards, Year-Wise Monthly Ledger, Payment History & Receipts)
+   */
+  async getRentManagementOverview(params: {
+    search?: string;
+    status?: string;
+    year?: number;
+    tenantId?: string;
+  }) {
+    const overviewKey = `overview:${params.year || 'cur'}:${params.tenantId || 'all'}`;
+    const baseData = await rentalCache.getOrSet(overviewKey, 15_000, () =>
+      withRentalDbRetry(async () => {
+        const now = new Date();
+        const curYear = now.getFullYear();
+        const curMonthNum = now.getMonth() + 1;
+        const curMonthStr = toMonthKey(curYear, curMonthNum);
+
+        const userFilter = params.tenantId
+          ? { id: params.tenantId }
+          : {
+              OR: [
+                { assignments: { some: { is_active: true } } },
+                { bills: { some: {} } },
+                { payments: { some: { status: 'SUCCESS' as const } } },
+              ],
+            };
+        const scopedFilter = params.tenantId ? { user_id: params.tenantId } : {};
+
+        // Execute flat, lean queries concurrently (1 parallel RTT instead of multi-level sequential Prisma includes)
+        const [
+          users,
+          assignments,
+          bills,
+          payments,
+          receipts,
+          paymentLedgerLinks,
+          auditTrails,
+          admins,
+        ] = await Promise.all([
+          rentalPrisma.rentalUser.findMany({
+            where: userFilter,
+            select: {
+              id: true,
+              user_id: true,
+              full_name: true,
+              mobile: true,
+              email: true,
+              profile_photo_url: true,
+              created_at: true,
+            },
+            orderBy: { created_at: 'desc' },
+          }),
+        rentalPrisma.propertyAssignment.findMany({
+          where: scopedFilter,
+          select: {
+            id: true,
+            user_id: true,
+            property_id: true,
+            monthly_rent: true,
+            allotment_date: true,
+            lease_start_date: true,
+            lease_end_date: true,
+            is_active: true,
+            created_at: true,
+            property: {
+              select: {
+                id: true,
+                property_id: true,
+                property_name: true,
+                property_number: true,
+                address: true,
+                location: true,
+                base_monthly_rent: true,
+              },
+            },
+          },
+          orderBy: [{ is_active: 'desc' }, { created_at: 'desc' }],
+        }),
+        rentalPrisma.rentalBill.findMany({
+          where: scopedFilter,
+          select: {
+            id: true,
+            bill_number: true,
+            user_id: true,
+            property_id: true,
+            assignment_id: true,
+            billing_month: true,
+            billing_year: true,
+            rent_amount: true,
+            gst_rate: true,
+            gst_amount: true,
+            adjustment_amount: true,
+            total_amount_due: true,
+            amount_paid: true,
+            balance_due: true,
+            due_date: true,
+            status: true,
+          },
+          orderBy: { billing_month: 'asc' },
+        }),
+        rentalPrisma.rentalPayment.findMany({
+          where: { ...scopedFilter, status: 'SUCCESS' },
+          select: {
+            id: true,
+            user_id: true,
+            property_id: true,
+            bill_id: true,
+            payment_reference: true,
+            gateway_payment_id: true,
+            amount: true,
+            payment_method: true,
+            created_at: true,
+          },
+          orderBy: { created_at: 'desc' },
+        }),
+        rentalPrisma.rentalReceipt.findMany({
+          where: scopedFilter,
+          select: {
+            id: true,
+            receipt_number: true,
+            payment_id: true,
+            bill_id: true,
+            user_id: true,
+            amount_paid: true,
+            billing_period: true,
+            issued_at: true,
+          },
+          orderBy: { issued_at: 'desc' },
+        }),
+        rentalPrisma.rentalLedgerEntry.findMany({
+          where: { ...scopedFilter, payment_id: { not: null } },
+          select: {
+            bill_id: true,
+            payment_id: true,
+            created_at: true,
+          },
+          orderBy: { created_at: 'desc' },
+        }),
+        rentalPrisma.paymentAuditTrail.findMany({
+          where: params.tenantId
+            ? { user_id: params.tenantId, payment_id: { not: null } }
+            : { payment_id: { not: null } },
+          select: {
+            payment_id: true,
+            actor_id: true,
+            created_at: true,
+          },
+          orderBy: { created_at: 'desc' },
+        }),
+        rentalPrisma.rentalAdmin.findMany({
+          select: { id: true, username: true, full_name: true },
+        }),
+      ]);
+
+      // Build fast in-memory lookup maps
+      const adminMap = new Map(admins.map((a) => [a.id, a.full_name || a.username]));
+      const userCreatedMap = new Map(users.map((u) => [u.id, u.created_at]));
+
+      const assignsByUser = new Map<string, (typeof assignments)>();
+      for (const a of assignments) {
+        const list = assignsByUser.get(a.user_id) || [];
+        list.push(a);
+        assignsByUser.set(a.user_id, list);
+      }
+
+      const propMap = new Map<string, (typeof assignments)[number]['property']>();
+      for (const a of assignments) {
+        if (a.property) propMap.set(a.property.id, a.property);
+      }
+
+      const billsByUser = new Map<string, typeof bills>();
+      const billById = new Map<string, (typeof bills)[number]>();
+      const billKeySet = new Set<string>();
+      for (const b of bills) {
+        billById.set(b.id, b);
+        billKeySet.add(`${b.user_id}::${b.property_id}::${b.billing_month}`);
+        const list = billsByUser.get(b.user_id) || [];
+        list.push(b);
+        billsByUser.set(b.user_id, list);
+      }
+
+      // Inline accrual & overdue detection — writes ONLY if any bill is actually missing or stale
+      if (!params.year) {
+        const missingBills: Array<{
+          id: string;
+          bill_number: string;
+          user_id: string;
+          property_id: string;
+          assignment_id: string;
+          billing_month: string;
+          billing_year: number;
+          rent_amount: number;
+          gst_rate: number;
+          gst_amount: number;
+          adjustment_amount: number;
+          total_amount_due: number;
+          amount_paid: number;
+          balance_due: number;
+          due_date: Date;
+          status: 'PENDING' | 'OVERDUE';
+        }> = [];
+        const missingLedgerEntries: Array<{
+          user_id: string;
+          property_id: string;
+          bill_id: string;
+          entry_type: 'RENT_CHARGE';
+          debit: number;
+          credit: number;
+          running_balance: number;
+          description: string;
+          transaction_reference: string;
+        }> = [];
+        const overdueIdsToMark: string[] = [];
+
+        for (const assign of assignments) {
+          if (!assign.is_active) continue;
+          const startDate = new Date(
+            assign.allotment_date || assign.lease_start_date || userCreatedMap.get(assign.user_id) || now
+          );
+          let startYear = startDate.getFullYear();
+          let startMonth = startDate.getMonth() + 1;
+          if (isNaN(startYear) || isNaN(startMonth)) {
+            startYear = curYear;
+            startMonth = curMonthNum;
+          }
+
+          let capYear = curYear;
+          let capMonth = curMonthNum;
+          if (assign.lease_end_date) {
+            const endDt = new Date(assign.lease_end_date);
+            if (!isNaN(endDt.getTime())) {
+              const endY = endDt.getFullYear();
+              const endM = endDt.getMonth() + 1;
+              if (endY < capYear || (endY === capYear && endM < capMonth)) {
+                capYear = endY;
+                capMonth = endM;
+              }
+            }
+          }
+
+          if (startYear > capYear || (startYear === capYear && startMonth > capMonth)) continue;
+
+          const rentAmt = Number(assign.monthly_rent || assign.property?.base_monthly_rent || 0);
+          const { gstRate: accruedGstRate, gstAmount: accruedGst, totalWithGst: accruedTotal } = calculateRentWithGst(rentAmt);
+          const propNum = assign.property?.property_number || 'SHOP';
+          const userBillsMap = new Map(
+            (billsByUser.get(assign.user_id) || []).map((b) => [b.billing_month, b])
+          );
+
+          let y = startYear;
+          let m = startMonth;
+          let guard = 0;
+          while ((y < capYear || (y === capYear && m <= capMonth)) && guard < 120) {
+            guard++;
+            const mStr = toMonthKey(y, m);
+            const dueDate = computeDueDate(y, m, startDate);
+            const isPastMonth = y < curYear || (y === curYear && m < curMonthNum);
+            const isOverdue = isPastMonth || now > dueDate;
+
+            const existing = userBillsMap.get(mStr);
+            const uniqueKey = `${assign.user_id}::${assign.property_id}::${mStr}`;
+            if (!existing && !billKeySet.has(uniqueKey)) {
+              const id = randomUUID();
+              const billNo = `BL-${propNum}-${mStr}-${assign.id.slice(0, 4).toUpperCase()}`;
+              const status: 'PENDING' | 'OVERDUE' = isOverdue ? 'OVERDUE' : 'PENDING';
+              missingBills.push({
+                id,
+                bill_number: billNo,
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                assignment_id: assign.id,
+                billing_month: mStr,
+                billing_year: y,
+                rent_amount: rentAmt,
+                gst_rate: accruedGstRate,
+                gst_amount: accruedGst,
+                adjustment_amount: 0.0,
+                total_amount_due: accruedTotal,
+                amount_paid: 0.0,
+                balance_due: accruedTotal,
+                due_date: dueDate,
+                status,
+              });
+              missingLedgerEntries.push({
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                bill_id: id,
+                entry_type: 'RENT_CHARGE',
+                debit: accruedTotal,
+                credit: 0.0,
+                running_balance: accruedTotal,
+                description: `Monthly Commercial Rent + 18% GST Demand for ${mStr} (${propNum})`,
+                transaction_reference: billNo,
+              });
+              billKeySet.add(uniqueKey);
+
+              const syntheticBill = {
+                id,
+                bill_number: billNo,
+                user_id: assign.user_id,
+                property_id: assign.property_id,
+                assignment_id: assign.id,
+                billing_month: mStr,
+                billing_year: y,
+                rent_amount: rentAmt as any,
+                gst_rate: accruedGstRate as any,
+                gst_amount: accruedGst as any,
+                adjustment_amount: 0 as any,
+                total_amount_due: accruedTotal as any,
+                amount_paid: 0 as any,
+                balance_due: accruedTotal as any,
+                due_date: dueDate,
+                status: status as any,
+              };
+              const list = billsByUser.get(assign.user_id) || [];
+              list.push(syntheticBill);
+              billsByUser.set(assign.user_id, list);
+              billById.set(id, syntheticBill);
+            } else if (
+              existing &&
+              existing.status === 'PENDING' &&
+              Number(existing.balance_due) > 0 &&
+              isOverdue
+            ) {
+              overdueIdsToMark.push(existing.id);
+              existing.status = 'OVERDUE' as any;
+            }
+
+            m++;
+            if (m > 12) {
+              m = 1;
+              y++;
+            }
+          }
+        }
+
+        if (missingBills.length > 0 || overdueIdsToMark.length > 0) {
+          const ops: Promise<any>[] = [];
+          if (missingBills.length > 0) {
+            ops.push(
+              rentalPrisma.rentalBill
+                .createMany({ data: missingBills, skipDuplicates: true })
+                .then(() =>
+                  rentalPrisma.rentalLedgerEntry.createMany({
+                    data: missingLedgerEntries,
+                    skipDuplicates: true,
+                  })
+                )
+            );
+          }
+          if (overdueIdsToMark.length > 0) {
+            ops.push(
+              rentalPrisma.rentalBill.updateMany({
+                where: { id: { in: overdueIdsToMark } },
+                data: { status: 'OVERDUE' },
+              })
+            );
+          }
+          await Promise.all(ops).catch(() => {
+            // Non-fatal if concurrent request already created them
+          });
+        }
+      }
+
+      const paymentById = new Map(payments.map((p) => [p.id, p]));
+      const paymentsByUser = new Map<string, typeof payments>();
+      for (const p of payments) {
+        const list = paymentsByUser.get(p.user_id) || [];
+        list.push(p);
+        paymentsByUser.set(p.user_id, list);
+      }
+
+      const receiptByPaymentId = new Map<string, (typeof receipts)[number]>();
+      const receiptsByBillId = new Map<string, typeof receipts>();
+      for (const r of receipts) {
+        if (r.payment_id && !receiptByPaymentId.has(r.payment_id)) {
+          receiptByPaymentId.set(r.payment_id, r);
+        }
+        if (r.bill_id) {
+          const list = receiptsByBillId.get(r.bill_id) || [];
+          list.push(r);
+          receiptsByBillId.set(r.bill_id, list);
+        }
+      }
+
+      const ledgerPaymentByBillId = new Map<string, string>();
+      for (const l of paymentLedgerLinks) {
+        if (l.bill_id && l.payment_id && !ledgerPaymentByBillId.has(l.bill_id)) {
+          ledgerPaymentByBillId.set(l.bill_id, l.payment_id);
+        }
+      }
+
+      const actorByPaymentId = new Map<string, string>();
+      for (const a of auditTrails) {
+        if (a.payment_id && a.actor_id && !actorByPaymentId.has(a.payment_id)) {
+          actorByPaymentId.set(a.payment_id, a.actor_id);
+        }
+      }
+
+      const billsToSyncGst: Array<{
+        id: string;
+        gstAmount: number;
+        totalAmountDue: number;
+        balanceDue: number;
+      }> = [];
+
+      let tenantCards = users.map((u) => {
+        const userAssigns = assignsByUser.get(u.id) || [];
+        const userBills = billsByUser.get(u.id) || [];
+        const userPayments = paymentsByUser.get(u.id) || [];
+
+        const activeAssign = userAssigns.find((a) => a.is_active) || userAssigns[0] || null;
+        const prop =
+          activeAssign?.property ||
+          (userBills[0]?.property_id ? propMap.get(userBills[0].property_id) : null) ||
+          null;
+        const allotmentDate =
+          activeAssign?.allotment_date || activeAssign?.lease_start_date || u.created_at;
+        const monthlyRent = Number(activeAssign?.monthly_rent || prop?.base_monthly_rent || 0);
+
+        const allotDt = new Date(allotmentDate);
+        const allotYear = isNaN(allotDt.getTime()) ? curYear : allotDt.getFullYear();
+        const allotMonth = isNaN(allotDt.getTime()) ? curMonthNum : allotDt.getMonth() + 1;
+        const allotMonthStr = toMonthKey(allotYear, allotMonth);
+
+        const billByMonth = new Map<string, (typeof userBills)[number]>();
+        for (const b of userBills) {
+          if (!billByMonth.has(b.billing_month)) {
+            billByMonth.set(b.billing_month, b);
+          }
+        }
+
+        const minYear = Math.min(allotYear, curYear);
+        let maxDropdownYear = curYear + 1;
+        let maxLoadedYear = curYear;
+        for (const b of userBills) {
+          if (b.billing_year > maxDropdownYear) maxDropdownYear = b.billing_year;
+          if (b.billing_year > maxLoadedYear) maxLoadedYear = b.billing_year;
+        }
+        const availableYears: number[] = [];
+        for (let y = minYear; y <= maxDropdownYear; y++) {
+          availableYears.push(y);
+        }
+
+        const yearsToBuildSet = new Set<number>();
+        for (let y = minYear; y <= maxLoadedYear; y++) {
+          yearsToBuildSet.add(y);
+        }
+        if (
+          params.year &&
+          Number.isFinite(params.year) &&
+          params.year >= minYear &&
+          params.year <= maxDropdownYear + 2
+        ) {
+          yearsToBuildSet.add(params.year);
+          if (!availableYears.includes(params.year)) {
+            availableYears.push(params.year);
+            availableYears.sort((a, b) => a - b);
+          }
+        }
+        const yearsToBuild = Array.from(yearsToBuildSet).sort((a, b) => a - b);
+
+        const monthlyRecords: Array<{
+          billingMonth: string;
+          year: number;
+          month: number;
+          billId: string | null;
+          billNumber: string | null;
+          rentAmount: number;
+          gstAmount: number;
+          totalAmountDue: number;
+          amountPaid: number;
+          balanceDue: number;
+          dueDate: string | null;
+          status: 'PAID' | 'OVERDUE' | 'UNPAID' | 'PARTIALLY_PAID' | 'UPCOMING' | 'NOT_ALLOTTED';
+          receipt: {
+            receiptId: string;
+            receiptNumber: string;
+            amountPaid: number;
+            baseRentAmount?: number;
+            gstAmount?: number;
+            billingPeriod: string;
+            billNumber: string;
+            issuedAt: string;
+            paymentMethod: string;
+            collectorName?: string;
+          } | null;
+        }> = [];
+
+        for (const y of yearsToBuild) {
+          for (let m = 1; m <= 12; m++) {
+            const mStr = toMonthKey(y, m);
+            const existingBill = billByMonth.get(mStr);
+
+            if (existingBill) {
+              const resolved = resolveBillAmounts(existingBill);
+              const singleRent = resolved.rentAmount;
+              const singleGst = resolved.gstAmount;
+              const singleTotal = resolved.totalAmountDue;
+              const paidAmt = resolved.amountPaid;
+              const balAmt = resolved.balanceDue;
+
+              if (resolved.needsGstSync) {
+                billsToSyncGst.push({
+                  id: existingBill.id,
+                  gstAmount: singleGst,
+                  totalAmountDue: singleTotal,
+                  balanceDue: balAmt,
+                });
+              }
+
+              let resolvedReceipt: any = null;
+              const directReceipts = receiptsByBillId.get(existingBill.id) || [];
+              if (directReceipts.length > 0) {
+                const r = directReceipts[0];
+                const pay = r.payment_id ? paymentById.get(r.payment_id) : undefined;
+                const actorId = r.payment_id ? actorByPaymentId.get(r.payment_id) : undefined;
+                resolvedReceipt = {
+                  receiptId: r.id,
+                  receiptNumber: r.receipt_number,
+                  amountPaid: Number(r.amount_paid),
+                  ...(singleGst > 0 ? { baseRentAmount: singleRent, gstAmount: singleGst } : {}),
+                  billingPeriod: r.billing_period,
+                  billNumber: existingBill.bill_number,
+                  issuedAt: r.issued_at.toISOString(),
+                  paymentMethod: pay?.payment_method || 'CASH',
+                  collectorName: actorId ? adminMap.get(actorId) : undefined,
+                };
+              } else {
+                const linkedPayId = ledgerPaymentByBillId.get(existingBill.id);
+                const r = linkedPayId ? receiptByPaymentId.get(linkedPayId) : undefined;
+                if (r && linkedPayId) {
+                  const pay = paymentById.get(linkedPayId);
+                  const actorId = actorByPaymentId.get(linkedPayId);
+                  resolvedReceipt = {
+                    receiptId: r.id,
+                    receiptNumber: r.receipt_number,
+                    amountPaid: Number(r.amount_paid),
+                    ...(singleGst > 0 ? { baseRentAmount: singleRent, gstAmount: singleGst } : {}),
+                    billingPeriod: r.billing_period,
+                    billNumber: existingBill.bill_number,
+                    issuedAt: r.issued_at.toISOString(),
+                    paymentMethod: pay?.payment_method || 'CASH',
+                    collectorName: actorId ? adminMap.get(actorId) : undefined,
+                  };
+                }
+              }
+
+              let monthStatus: 'PAID' | 'OVERDUE' | 'UNPAID' | 'PARTIALLY_PAID' = 'UNPAID';
+              if (existingBill.status === 'PAID' || balAmt <= 0) {
+                monthStatus = 'PAID';
+              } else if (existingBill.status === 'PARTIALLY_PAID') {
+                monthStatus =
+                  mStr < curMonthStr || now > new Date(existingBill.due_date)
+                    ? 'OVERDUE'
+                    : 'PARTIALLY_PAID';
+              } else if (
+                existingBill.status === 'OVERDUE' ||
+                mStr < curMonthStr ||
+                now > new Date(existingBill.due_date)
+              ) {
+                monthStatus = 'OVERDUE';
+              }
+
+              monthlyRecords.push({
+                billingMonth: mStr,
+                year: y,
+                month: m,
+                billId: existingBill.id,
+                billNumber: existingBill.bill_number,
+                rentAmount: singleRent,
+                gstAmount: singleGst,
+                totalAmountDue: singleTotal,
+                amountPaid: paidAmt,
+                balanceDue: balAmt,
+                dueDate: new Date(existingBill.due_date).toISOString(),
+                status: monthStatus,
+                receipt: resolvedReceipt,
+              });
+            } else if (mStr < allotMonthStr) {
+              monthlyRecords.push({
+                billingMonth: mStr,
+                year: y,
+                month: m,
+                billId: null,
+                billNumber: null,
+                rentAmount: 0,
+                gstAmount: 0,
+                totalAmountDue: 0,
+                amountPaid: 0,
+                balanceDue: 0,
+                dueDate: null,
+                status: 'NOT_ALLOTTED',
+                receipt: null,
+              });
+            } else {
+              const isPastOrCurrent = mStr <= curMonthStr;
+              const dueDt = computeDueDate(y, m, allotDt);
+              const derivedStatus = isPastOrCurrent
+                ? mStr < curMonthStr || now > dueDt
+                  ? 'OVERDUE'
+                  : 'UNPAID'
+                : 'UPCOMING';
+              const { gstAmount: virtGst, totalWithGst: virtTotal } = calculateRentWithGst(monthlyRent);
+
+              monthlyRecords.push({
+                billingMonth: mStr,
+                year: y,
+                month: m,
+                billId: null,
+                billNumber: null,
+                rentAmount: monthlyRent,
+                gstAmount: virtGst,
+                totalAmountDue: virtTotal,
+                amountPaid: 0,
+                balanceDue: virtTotal,
+                dueDate: dueDt.toISOString(),
+                status: derivedStatus,
+                receipt: null,
+              });
+            }
+          }
+        }
+
+        const accountableRecords = monthlyRecords.filter(
+          (r) =>
+            r.status === 'PAID' ||
+            r.status === 'OVERDUE' ||
+            r.status === 'UNPAID' ||
+            r.status === 'PARTIALLY_PAID'
+        );
+
+        const totalRent = accountableRecords.reduce((sum, r) => sum + r.totalAmountDue, 0);
+        const totalPaidFromPayments = userPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+        const totalPaidFromBills = accountableRecords.reduce((sum, r) => sum + r.amountPaid, 0);
+        const totalPaid = totalPaidFromPayments > 0 ? totalPaidFromPayments : totalPaidFromBills;
+        const outstandingAmount = accountableRecords.reduce((sum, r) => sum + r.balanceDue, 0);
+        const overdueList = accountableRecords
+          .filter((r) => r.status === 'OVERDUE')
+          .map((r) => r.billingMonth);
+        const unpaidCount = accountableRecords.filter((r) => r.balanceDue > 0).length;
+
+        let paymentStatus: 'PAID' | 'OVERDUE' | 'UNPAID' | 'PARTIALLY_PAID' = 'PAID';
+        if (overdueList.length > 0) {
+          paymentStatus = 'OVERDUE';
+        } else if (outstandingAmount > 0) {
+          const hasPartial = accountableRecords.some((r) => r.status === 'PARTIALLY_PAID');
+          paymentStatus = hasPartial ? 'PARTIALLY_PAID' : 'UNPAID';
+        }
+
+        const paymentHistory = userPayments.map((p) => {
+          const r = receiptByPaymentId.get(p.id);
+          const bill = p.bill_id ? billById.get(p.bill_id) : undefined;
+          const period = r?.billing_period || bill?.billing_month || '';
+          const paidMonths = period
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean);
+          const actorId = actorByPaymentId.get(p.id);
+          const paidNum = Number(p.amount);
+          const matchedRecs = monthlyRecords.filter((mRec) => paidMonths.includes(mRec.billingMonth));
+          const matchedGstSum = matchedRecs.reduce((s, mRec) => s + mRec.gstAmount, 0);
+          const matchedRentSum = matchedRecs.reduce((s, mRec) => s + mRec.rentAmount, 0);
+          const hasGstBreakdown =
+            matchedGstSum > 0 && Math.abs(matchedRentSum + matchedGstSum - paidNum) <= 0.5;
+
+          return {
+            paymentId: p.id,
+            paymentReference: p.payment_reference,
+            receiptId: r?.id || p.id,
+            receiptNumber: r?.receipt_number || `REC-${p.id.slice(0, 8)}`,
+            amountPaid: paidNum,
+            ...(hasGstBreakdown ? { baseRentAmount: matchedRentSum, gstAmount: matchedGstSum } : {}),
+            paymentMethod: p.payment_method,
+            referenceNumber: p.gateway_payment_id || p.payment_reference,
+            billingPeriod: period,
+            paidMonths,
+            billNumber: bill?.bill_number || `BL-${prop?.property_number || 'SHOP'}`,
+            paidAt: (r?.issued_at || p.created_at).toISOString(),
+            collectorName: actorId ? adminMap.get(actorId) : undefined,
+          };
+        });
+
+        return {
+          tenantId: u.id,
+          tenantCode: u.user_id,
+          fullName: u.full_name,
+          mobile: u.mobile,
+          email: u.email,
+          profilePhotoUrl: u.profile_photo_url,
+          shop: prop
+            ? {
+                propertyId: prop.id,
+                propertyCode: prop.property_id,
+                shopName: prop.property_name,
+                shopCode: prop.property_number,
+                address: prop.address || prop.location,
+                location: prop.location,
+                allotmentDate: new Date(allotmentDate).toISOString(),
+                leaseEndDate: activeAssign?.lease_end_date
+                  ? new Date(activeAssign.lease_end_date).toISOString()
+                  : null,
+                monthlyRent,
+              }
+            : null,
+          summary: {
+            totalRent,
+            totalPaid,
+            outstandingAmount,
+            overdueMonthsCount: overdueList.length,
+            overdueMonths: overdueList,
+            unpaidMonthsCount: unpaidCount,
+            paymentStatus,
+          },
+          availableYears,
+          monthlyRecords,
+          paymentHistory,
+        };
+      });
+
+      if (billsToSyncGst.length > 0) {
+        await Promise.all(
+          billsToSyncGst.map((b) =>
+            rentalPrisma.rentalBill.update({
+              where: { id: b.id },
+              data: {
+                gst_rate: RENTAL_GST_RATE,
+                gst_amount: b.gstAmount,
+                adjustment_amount: 0.0,
+                total_amount_due: b.totalAmountDue,
+                balance_due: b.balanceDue,
+              },
+            })
+          )
+        ).catch(() => {
+          // Non-fatal background sync
+        });
+      }
+
+      return {
+        currentMonth: curMonthStr,
+        currentYear: curYear,
+        tenants: tenantCards,
+      };
+    })
+    );
+
+    let filteredTenants = baseData.tenants;
+    if (params.search && params.search.trim()) {
+      const q = params.search.trim().toLowerCase();
+      filteredTenants = filteredTenants.filter(
+        (t) =>
+          t.fullName.toLowerCase().includes(q) ||
+          t.mobile.toLowerCase().includes(q) ||
+          t.tenantCode.toLowerCase().includes(q) ||
+          (t.shop?.shopCode || '').toLowerCase().includes(q) ||
+          (t.shop?.shopName || '').toLowerCase().includes(q) ||
+          (t.shop?.address || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (params.status && params.status !== 'ALL') {
+      filteredTenants = filteredTenants.filter((t) => {
+        if (params.status === 'UNPAID') {
+          return ['UNPAID', 'OVERDUE', 'PARTIALLY_PAID'].includes(t.summary.paymentStatus);
+        }
+        return t.summary.paymentStatus === params.status;
+      });
+    }
+
+    const globalSummary = {
+      totalTenants: filteredTenants.length,
+      totalRent: filteredTenants.reduce((s, t) => s + t.summary.totalRent, 0),
+      totalPaid: filteredTenants.reduce((s, t) => s + t.summary.totalPaid, 0),
+      totalOutstanding: filteredTenants.reduce((s, t) => s + t.summary.outstandingAmount, 0),
+      overdueTenantsCount: filteredTenants.filter((t) => t.summary.overdueMonthsCount > 0).length,
+    };
+
+    return {
+      currentMonth: baseData.currentMonth,
+      currentYear: baseData.currentYear,
+      summary: globalSummary,
+      tenants: filteredTenants,
+    };
   }
 
   /**
@@ -176,6 +1103,7 @@ export class RentalBillingService {
 
         for (const assign of unbilledAssignments) {
           const rentAmt = Number(assign.monthly_rent || assign.property.base_monthly_rent || 0);
+          const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(rentAmt);
           const autoBillNo = `BL-${assign.property.property_number}-${curMonthStr}`;
           try {
             const bill = await rentalPrisma.rentalBill.create({
@@ -187,10 +1115,12 @@ export class RentalBillingService {
                 billing_month: curMonthStr,
                 billing_year: curYear,
                 rent_amount: rentAmt,
+                gst_rate: gstRate,
+                gst_amount: gstAmount,
                 adjustment_amount: 0.0,
-                total_amount_due: rentAmt,
+                total_amount_due: totalWithGst,
                 amount_paid: 0.0,
-                balance_due: rentAmt,
+                balance_due: totalWithGst,
                 due_date: curDueDate,
                 status: 'PENDING',
               },
@@ -201,10 +1131,10 @@ export class RentalBillingService {
                 property_id: assign.property_id,
                 bill_id: bill.id,
                 entry_type: 'RENT_CHARGE',
-                debit: rentAmt,
+                debit: totalWithGst,
                 credit: 0.0,
-                running_balance: rentAmt,
-                description: `Initial Monthly Commercial Rent Demand for ${curMonthStr} (${assign.property.property_number})`,
+                running_balance: totalWithGst,
+                description: `Initial Monthly Commercial Rent + 18% GST Demand for ${curMonthStr} (${assign.property.property_number})`,
                 transaction_reference: autoBillNo,
               },
             });
@@ -284,40 +1214,44 @@ export class RentalBillingService {
         }),
       ]);
 
-      const formatted = bills.map((b) => ({
-        id: b.id,
-        billNumber: b.bill_number,
-        billingMonth: b.billing_month,
-        billingYear: b.billing_year,
-        rentAmount: Number(b.rent_amount),
-        arrearsAmount: Number(b.adjustment_amount),
-        totalAmountDue: Number(b.total_amount_due),
-        amountPaid: Number(b.amount_paid),
-        balanceDue: Number(b.balance_due),
-        dueDate: b.due_date,
-        status: b.status,
-        createdAt: b.created_at,
-        tenant: {
-          id: b.user.id,
-          userCode: b.user.user_id,
-          fullName: b.user.full_name,
-          mobile: b.user.mobile,
-          profilePhotoUrl: b.user.profile_photo_url,
-        },
-        property: {
-          id: b.property.id,
-          propertyCode: b.property.property_id,
-          propertyNumber: b.property.property_number,
-          propertyName: b.property.property_name,
-          location: b.property.location,
-        },
-        receipts: b.receipts.map((r) => ({
-          id: r.id,
-          receiptNumber: r.receipt_number,
-          amountPaid: Number(r.amount_paid),
-          issuedAt: r.issued_at,
-        })),
-      }));
+      const formatted = bills.map((b) => {
+        const resolved = resolveBillAmounts(b);
+        return {
+          id: b.id,
+          billNumber: b.bill_number,
+          billingMonth: b.billing_month,
+          billingYear: b.billing_year,
+          rentAmount: resolved.rentAmount,
+          gstAmount: resolved.gstAmount,
+          arrearsAmount: Number(b.adjustment_amount),
+          totalAmountDue: resolved.totalAmountDue,
+          amountPaid: resolved.amountPaid,
+          balanceDue: resolved.balanceDue,
+          dueDate: b.due_date,
+          status: b.status,
+          createdAt: b.created_at,
+          tenant: {
+            id: b.user.id,
+            userCode: b.user.user_id,
+            fullName: b.user.full_name,
+            mobile: b.user.mobile,
+            profilePhotoUrl: b.user.profile_photo_url,
+          },
+          property: {
+            id: b.property.id,
+            propertyCode: b.property.property_id,
+            propertyNumber: b.property.property_number,
+            propertyName: b.property.property_name,
+            location: b.property.location,
+          },
+          receipts: b.receipts.map((r) => ({
+            id: r.id,
+            receiptNumber: r.receipt_number,
+            amountPaid: Number(r.amount_paid),
+            issuedAt: r.issued_at,
+          })),
+        };
+      });
 
       return {
         total,
@@ -372,16 +1306,33 @@ export class RentalBillingService {
         throw new Error('Access denied: You are not authorized to view this bill.');
       }
 
+      const resolved = resolveBillAmounts(bill);
+      if (resolved.needsGstSync) {
+        await rentalPrisma.rentalBill
+          .update({
+            where: { id: bill.id },
+            data: {
+              gst_rate: RENTAL_GST_RATE,
+              gst_amount: resolved.gstAmount,
+              adjustment_amount: 0.0,
+              total_amount_due: resolved.totalAmountDue,
+              balance_due: resolved.balanceDue,
+            },
+          })
+          .catch(() => {});
+      }
+
       return {
         id: bill.id,
         billNumber: bill.bill_number,
         billingMonth: bill.billing_month,
         billingYear: bill.billing_year,
-        rentAmount: Number(bill.rent_amount),
+        rentAmount: resolved.rentAmount,
+        gstAmount: resolved.gstAmount,
         arrearsAmount: Number(bill.adjustment_amount),
-        totalAmountDue: Number(bill.total_amount_due),
-        amountPaid: Number(bill.amount_paid),
-        balanceDue: Number(bill.balance_due),
+        totalAmountDue: resolved.totalAmountDue,
+        amountPaid: resolved.amountPaid,
+        balanceDue: resolved.balanceDue,
         dueDate: bill.due_date,
         status: bill.status,
         createdAt: bill.created_at,
@@ -506,6 +1457,7 @@ export class RentalBillingService {
       const activeAssignment = tenants[0]?.assignments?.[0] || properties[0]?.assignments?.[0];
       if (allBills.length === 0 && primaryTenant && primaryProperty && activeAssignment) {
         const rentAmt = Number(activeAssignment.monthly_rent || primaryProperty.base_monthly_rent || 0);
+        const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(rentAmt);
         const dueDate = new Date(now.getFullYear(), now.getMonth(), 20, 23, 59, 59);
         const autoBillNo = `BL-${primaryProperty.property_number}-${currentMonthStr}`;
         try {
@@ -518,10 +1470,12 @@ export class RentalBillingService {
               billing_month: currentMonthStr,
               billing_year: now.getFullYear(),
               rent_amount: rentAmt,
+              gst_rate: gstRate,
+              gst_amount: gstAmount,
               adjustment_amount: 0.0,
-              total_amount_due: rentAmt,
+              total_amount_due: totalWithGst,
               amount_paid: 0.0,
-              balance_due: rentAmt,
+              balance_due: totalWithGst,
               due_date: dueDate,
               status: 'PENDING',
             },
@@ -543,28 +1497,51 @@ export class RentalBillingService {
         }
       }
 
-      const pendingBills = allBills.filter((b) =>
-        ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(b.status)
-      );
-      const paidBills = allBills.filter((b) => b.status === 'PAID');
-      const totalOutstanding = pendingBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
+      const resolvedAllBills = allBills.map((b) => ({
+        raw: b,
+        resolved: resolveBillAmounts(b),
+      }));
 
-      const currentMonthBill =
+      const unpaidSyncBills = resolvedAllBills.filter((item) => item.resolved.needsGstSync);
+      if (unpaidSyncBills.length > 0) {
+        await Promise.all(
+          unpaidSyncBills.map((item) =>
+            rentalPrisma.rentalBill.update({
+              where: { id: item.raw.id },
+              data: {
+                gst_rate: RENTAL_GST_RATE,
+                gst_amount: item.resolved.gstAmount,
+                adjustment_amount: 0.0,
+                total_amount_due: item.resolved.totalAmountDue,
+                balance_due: item.resolved.balanceDue,
+              },
+            })
+          )
+        ).catch(() => {});
+      }
+
+      const pendingBills = resolvedAllBills.filter((item) =>
+        ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(item.raw.status)
+      );
+      const totalOutstanding = pendingBills.reduce((acc, item) => acc + item.resolved.balanceDue, 0);
+
+      const currentMonthItem =
         pendingBills[0] ||
-        allBills.find((b) => b.billing_month === currentMonthStr) ||
-        allBills[0];
+        resolvedAllBills.find((item) => item.raw.billing_month === currentMonthStr) ||
+        resolvedAllBills[0];
       // Status is ONLY complete (PAID) when ALL bills up to the current month are paid (0 pending bills)
       const isThisMonthComplete = Boolean(
-        allBills.length > 0 &&
+        resolvedAllBills.length > 0 &&
         pendingBills.length === 0 &&
         totalOutstanding <= 0
       );
 
       // Extract all receipts for download
-      const allReceipts = allBills.flatMap((b) =>
+      const allReceipts = resolvedAllBills.flatMap(({ raw: b, resolved }) =>
         b.receipts.map((r) => ({
           receiptNumber: r.receipt_number,
           amountPaid: Number(r.amount_paid),
+          ...(resolved.gstAmount > 0 ? { baseRentAmount: resolved.rentAmount, gstAmount: resolved.gstAmount } : {}),
           issuedAt: r.issued_at,
           billingMonth: b.billing_month,
           propertyNumber: b.property.property_number,
@@ -584,26 +1561,29 @@ export class RentalBillingService {
           shopNo: primaryProperty?.property_number || allBills[0]?.property?.property_number || '—',
           location: primaryProperty?.location || allBills[0]?.property?.location || 'अल्मोड़ा',
         },
-        currentMonthBill: currentMonthBill
+        currentMonthBill: currentMonthItem
           ? {
-              billNumber: currentMonthBill.bill_number,
-              billingMonth: currentMonthBill.billing_month,
-              rentAmount: Number(currentMonthBill.rent_amount),
-              totalAmountDue: Number(currentMonthBill.total_amount_due),
-              amountPaid: Number(currentMonthBill.amount_paid),
-              balanceDue: Number(currentMonthBill.balance_due),
-              status: currentMonthBill.status,
-              dueDate: currentMonthBill.due_date,
-              receipt: currentMonthBill.receipts[0] || null,
+              billNumber: currentMonthItem.raw.bill_number,
+              billingMonth: currentMonthItem.raw.billing_month,
+              rentAmount: currentMonthItem.resolved.rentAmount,
+              gstAmount: currentMonthItem.resolved.gstAmount,
+              totalAmountDue: currentMonthItem.resolved.totalAmountDue,
+              amountPaid: currentMonthItem.resolved.amountPaid,
+              balanceDue: currentMonthItem.resolved.balanceDue,
+              status: currentMonthItem.raw.status,
+              dueDate: currentMonthItem.raw.due_date,
+              receipt: currentMonthItem.raw.receipts[0] || null,
             }
           : null,
-        pendingBills: pendingBills.map((b) => ({
+        pendingBills: pendingBills.map(({ raw: b, resolved }) => ({
           id: b.id,
           billNumber: b.bill_number,
           billingMonth: b.billing_month,
-          totalAmountDue: Number(b.total_amount_due),
-          amountPaid: Number(b.amount_paid),
-          balanceDue: Number(b.balance_due),
+          rentAmount: resolved.rentAmount,
+          gstAmount: resolved.gstAmount,
+          totalAmountDue: resolved.totalAmountDue,
+          amountPaid: resolved.amountPaid,
+          balanceDue: resolved.balanceDue,
           dueDate: b.due_date,
           status: b.status,
           tenantName: b.user.full_name,
@@ -611,14 +1591,15 @@ export class RentalBillingService {
           propertyNumber: b.property.property_number,
           location: b.property.location,
         })),
-        allBills: allBills.map((b) => ({
+        allBills: resolvedAllBills.map(({ raw: b, resolved }) => ({
           id: b.id,
           billNumber: b.bill_number,
           billingMonth: b.billing_month,
-          rentAmount: Number(b.rent_amount),
-          totalAmountDue: Number(b.total_amount_due),
-          amountPaid: Number(b.amount_paid),
-          balanceDue: Number(b.balance_due),
+          rentAmount: resolved.rentAmount,
+          gstAmount: resolved.gstAmount,
+          totalAmountDue: resolved.totalAmountDue,
+          amountPaid: resolved.amountPaid,
+          balanceDue: resolved.balanceDue,
           dueDate: b.due_date,
           status: b.status,
           receiptNumber: b.receipts[0]?.receipt_number || null,
@@ -634,141 +1615,160 @@ export class RentalBillingService {
    * Total users, Total shops & occupancy, Expected Monthly Rent, Collected This Month, Overdue & trends.
    */
   async getDashboardAnalytics() {
-    return withRentalDbRetry(async () => {
-      const now = new Date();
-      const currentYear = now.getFullYear();
-      const currentMonthNum = now.getMonth() + 1;
-      const currentMonthStr = `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
-      
-      const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-      const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-      const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1);
+    return rentalCache.getOrSet('analytics:dashboard', 15_000, () =>
+      withRentalDbRetry(async () => {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonthNum = now.getMonth() + 1;
+        const currentMonthStr = `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
 
-      const [
-        totalUsers,
-        totalProperties,
-        allottedProperties,
-        vacantProperties,
-        activeAssignments,
-        allBills,
-        monthPayments,
-        todayPayments,
-      ] = await Promise.all([
-        rentalPrisma.rentalUser.count(),
-        rentalPrisma.rentalProperty.count(),
-        rentalPrisma.rentalProperty.count({ where: { status: 'ALLOTTED' } }),
-        rentalPrisma.rentalProperty.count({ where: { status: 'VACANT' } }),
-        rentalPrisma.propertyAssignment.findMany({
-          where: { is_active: true },
-          select: { monthly_rent: true, property: { select: { base_monthly_rent: true } } },
-        }),
-        rentalPrisma.rentalBill.findMany({
-          select: {
-            billing_month: true,
-            total_amount_due: true,
-            amount_paid: true,
-            balance_due: true,
-            status: true,
-          },
-        }),
-        rentalPrisma.rentalPayment.findMany({
-          where: {
-            status: 'SUCCESS',
-            created_at: { gte: startOfMonth },
-          },
-          select: { amount: true },
-        }),
-        rentalPrisma.rentalPayment.findMany({
-          where: {
-            status: 'SUCCESS',
-            created_at: { gte: startOfToday, lte: endOfToday },
-          },
-          include: {
-            user: { select: { full_name: true, mobile: true, user_id: true } },
-            property: { select: { property_number: true, location: true } },
-            receipt: { select: { receipt_number: true } },
-            bill: { select: { billing_month: true } },
-          },
-          orderBy: { created_at: 'desc' },
-          take: 20,
-        }),
-      ]);
+        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1);
 
-      // Expected Monthly Rent Calculation
-      let expectedMonthlyRent = activeAssignments.reduce(
-        (sum, a) => sum + Number(a.monthly_rent || a.property.base_monthly_rent || 0),
-        0
-      );
+        const [
+          totalUsers,
+          properties,
+          activeAssignments,
+          allBills,
+          monthPayments,
+        ] = await Promise.all([
+          rentalPrisma.rentalUser.count(),
+          rentalPrisma.rentalProperty.findMany({
+            select: { status: true },
+          }),
+          rentalPrisma.propertyAssignment.findMany({
+            where: { is_active: true },
+            select: { monthly_rent: true, property: { select: { base_monthly_rent: true } } },
+          }),
+          rentalPrisma.rentalBill.findMany({
+            select: {
+              billing_month: true,
+              rent_amount: true,
+              gst_amount: true,
+              adjustment_amount: true,
+              total_amount_due: true,
+              amount_paid: true,
+              balance_due: true,
+              status: true,
+            },
+          }),
+          rentalPrisma.rentalPayment.findMany({
+            where: {
+              status: 'SUCCESS',
+              created_at: { gte: startOfMonth },
+            },
+            select: {
+              id: true,
+              amount: true,
+              created_at: true,
+            },
+            orderBy: { created_at: 'desc' },
+          }),
+        ]);
 
-      const currentMonthBills = allBills.filter((b) => b.billing_month === currentMonthStr);
-      if (currentMonthBills.length > 0) {
-        const sumDue = currentMonthBills.reduce((acc, b) => acc + Number(b.total_amount_due), 0);
-        if (sumDue > expectedMonthlyRent) expectedMonthlyRent = sumDue;
-      }
+        const totalProperties = properties.length;
+        const allottedProperties = properties.filter((p) => p.status === 'ALLOTTED').length;
+        const vacantProperties = properties.filter((p) => p.status === 'VACANT').length;
 
-      // If database is new/empty, provide realistic defaults based on properties
-      if (expectedMonthlyRent === 0 && totalProperties > 0) {
-        expectedMonthlyRent = totalProperties * 3500;
-      }
+        const todayBasePayments = monthPayments
+          .filter((p) => p.created_at >= startOfToday && p.created_at <= endOfToday)
+          .slice(0, 20);
 
-      const collectedThisMonth = monthPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-      const totalOverdue = allBills
-        .filter((b) => ['OVERDUE', 'PENDING', 'PARTIALLY_PAID'].includes(b.status))
-        .reduce((acc, b) => acc + Number(b.balance_due), 0);
+        const todayPayments =
+          todayBasePayments.length > 0
+            ? await rentalPrisma.rentalPayment.findMany({
+                where: { id: { in: todayBasePayments.map((p) => p.id) } },
+                select: {
+                  id: true,
+                  amount: true,
+                  payment_method: true,
+                  created_at: true,
+                  user: { select: { full_name: true, mobile: true, user_id: true } },
+                  property: { select: { property_number: true, location: true } },
+                  receipt: { select: { receipt_number: true } },
+                  bill: { select: { billing_month: true } },
+                },
+                orderBy: { created_at: 'desc' },
+              })
+            : [];
 
-      const todayCollected = todayPayments.reduce((acc, p) => acc + Number(p.amount), 0);
+        // Expected Monthly Rent Calculation (inclusive of 18% GST)
+        let expectedMonthlyRent = activeAssignments.reduce(
+          (sum, a) =>
+            sum + calculateRentWithGst(Number(a.monthly_rent || a.property.base_monthly_rent || 0)).totalWithGst,
+          0
+        );
 
-      // Past 6 months collection trend
-      const monthsBack = 6;
-      const monthlyTrends = [];
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      
-      for (let i = monthsBack - 1; i >= 0; i--) {
-        const d = new Date(currentYear, currentMonthNum - 1 - i, 1);
-        const mStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-        const label = `${monthNames[d.getMonth()]} '${d.getFullYear().toString().slice(2)}`;
-        
-        const mBills = allBills.filter((b) => b.billing_month === mStr);
-        const totalBilled = mBills.reduce((acc, b) => acc + Number(b.total_amount_due), 0);
-        const mPaid = mBills.reduce((acc, b) => acc + Number(b.amount_paid), 0);
-        const mPending = mBills.reduce((acc, b) => acc + Number(b.balance_due), 0);
+        const currentMonthBills = allBills.filter((b) => b.billing_month === currentMonthStr);
+        if (currentMonthBills.length > 0) {
+          const sumDue = currentMonthBills.reduce((acc, b) => acc + resolveBillAmounts(b).totalAmountDue, 0);
+          if (sumDue > expectedMonthlyRent) expectedMonthlyRent = sumDue;
+        }
 
-        monthlyTrends.push({
-          month: mStr,
-          label,
-          billed: totalBilled || (expectedMonthlyRent > 0 ? expectedMonthlyRent : 45000),
-          collected: mPaid || Math.round((totalBilled || 45000) * 0.8),
-          overdue: mPending || Math.round((totalBilled || 45000) * 0.2),
-        });
-      }
+        if (expectedMonthlyRent === 0 && totalProperties > 0) {
+          expectedMonthlyRent = totalProperties * 3500;
+        }
 
-      return {
-        totalUsers,
-        totalProperties,
-        allottedProperties,
-        vacantProperties,
-        occupancyRate: totalProperties > 0 ? Math.round((allottedProperties / totalProperties) * 100) : 0,
-        expectedMonthlyRent,
-        collectedThisMonth,
-        totalOverdue,
-        todayCollected,
-        todayTransactionsCount: todayPayments.length,
-        todayAudit: todayPayments.map((p) => ({
-          id: p.id,
-          receiptNumber: p.receipt?.receipt_number || `REC-${p.id.slice(0, 8)}`,
-          tenantName: p.user?.full_name || 'Almora Resident',
-          tenantMobile: p.user?.mobile || 'N/A',
-          tenantCode: p.user?.user_id || 'TENANT',
-          shopNumber: p.property?.property_number || 'SHOP',
-          location: p.property?.location || 'Almora Market',
-          amount: Number(p.amount),
-          paymentMethod: p.payment_method,
-          createdAt: p.created_at,
-          billingMonth: p.bill?.billing_month || currentMonthStr,
-        })),
-        monthlyTrends,
-      };
-    });
+        const collectedThisMonth = monthPayments.reduce((acc, p) => acc + Number(p.amount), 0);
+        const totalOverdue = allBills
+          .filter((b) => ['OVERDUE', 'PENDING', 'PARTIALLY_PAID'].includes(b.status))
+          .reduce((acc, b) => acc + resolveBillAmounts(b).balanceDue, 0);
+
+        const todayCollected = todayPayments.reduce((acc, p) => acc + Number(p.amount), 0);
+
+        // Past 6 months collection trend
+        const monthsBack = 6;
+        const monthlyTrends = [];
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        for (let i = monthsBack - 1; i >= 0; i--) {
+          const d = new Date(currentYear, currentMonthNum - 1 - i, 1);
+          const mStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
+          const label = `${monthNames[d.getMonth()]} '${d.getFullYear().toString().slice(2)}`;
+
+          const mBills = allBills.filter((b) => b.billing_month === mStr);
+          const totalBilled = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).totalAmountDue, 0);
+          const mPaid = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).amountPaid, 0);
+          const mPending = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).balanceDue, 0);
+
+          monthlyTrends.push({
+            month: mStr,
+            label,
+            billed: totalBilled || (expectedMonthlyRent > 0 ? expectedMonthlyRent : 45000),
+            collected: mPaid || Math.round((totalBilled || 45000) * 0.8),
+            overdue: mPending || Math.round((totalBilled || 45000) * 0.2),
+          });
+        }
+
+        return {
+          totalUsers,
+          totalProperties,
+          allottedProperties,
+          vacantProperties,
+          occupancyRate: totalProperties > 0 ? Math.round((allottedProperties / totalProperties) * 100) : 0,
+          expectedMonthlyRent,
+          collectedThisMonth,
+          totalOverdue,
+          todayCollected,
+          todayTransactionsCount: todayPayments.length,
+          todayAudit: todayPayments.map((p) => ({
+            id: p.id,
+            receiptNumber: p.receipt?.receipt_number || `REC-${p.id.slice(0, 8)}`,
+            tenantName: p.user?.full_name || 'Almora Resident',
+            tenantMobile: p.user?.mobile || 'N/A',
+            tenantCode: p.user?.user_id || 'TENANT',
+            shopNumber: p.property?.property_number || 'SHOP',
+            location: p.property?.location || 'Almora Market',
+            amount: Number(p.amount),
+            paymentMethod: p.payment_method,
+            createdAt: p.created_at,
+            billingMonth: p.bill?.billing_month || currentMonthStr,
+          })),
+          monthlyTrends,
+        };
+      })
+    );
   }
 }
 

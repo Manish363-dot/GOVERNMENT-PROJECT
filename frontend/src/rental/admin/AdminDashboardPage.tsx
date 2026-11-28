@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { AdminLayout } from "./AdminLayout";
 import { useLanguage } from "../context/LanguageContext";
 import { useAuth } from "../context/AuthContext";
+import { api } from "@/services/api";
 import { rentalBillingApi, DashboardAnalytics } from "../services/rentalBilling.service";
 import {
   Revenue3DBarChart,
@@ -17,12 +18,18 @@ export const AdminDashboardPage: React.FC = () => {
   const isHi = language === "hi";
   const { user } = useAuth();
 
-  const [loading, setLoading] = useState(true);
-  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const initialAnalytics = api.peekCache<{ data: DashboardAnalytics }>("/rental/bills/analytics")?.data ?? null;
+  const [loading, setLoading] = useState(!initialAnalytics);
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(initialAnalytics);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
 
-  const fetchDashboardData = async () => {
-    setLoading(true);
+  const fetchDashboardData = async (force = false) => {
+    if (force) {
+      api.invalidateCache("/rental/bills/analytics");
+      setLoading(true);
+    } else if (!analytics) {
+      setLoading(true);
+    }
     try {
       const res = await rentalBillingApi.getAnalytics();
       if (res && res.data) setAnalytics(res.data);
@@ -33,7 +40,7 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
-  useEffect(() => { fetchDashboardData(); }, []);
+  useEffect(() => { fetchDashboardData(false); }, []);
 
   const formatCurrency = (amount: number) =>
     "₹" + Number(amount || 0).toLocaleString("en-IN");
@@ -92,7 +99,7 @@ export const AdminDashboardPage: React.FC = () => {
             साफ प्रशासन &nbsp;|&nbsp; डिजिटल सेवा &nbsp;|&nbsp; समृद्ध अल्मोड़ा
           </span>
           <button
-            onClick={fetchDashboardData}
+            onClick={() => fetchDashboardData(true)}
             disabled={loading}
             className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition"
             title="Refresh"

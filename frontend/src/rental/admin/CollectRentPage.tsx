@@ -20,8 +20,7 @@ export const CollectRentPage: React.FC = () => {
 
   // Payment Form State
   const [paymentAmount, setPaymentAmount] = useState<number>(0);
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS'>('CASH');
-  const [referenceNumber, setReferenceNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'UPI' | 'BANK_TRANSFER' | 'CHEQUE_DD' | 'POS_MACHINE' | 'NEFT_RTGS'>('CASH');
   const [isVerified, setIsVerified] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +32,8 @@ export const CollectRentPage: React.FC = () => {
     billingMonth: string;
     billNumber: string;
     amountPaid: number;
+    baseRentAmount?: number;
+    gstAmount?: number;
     remainingBalance: number;
   } | null>(null);
 
@@ -126,16 +127,6 @@ export const CollectRentPage: React.FC = () => {
       return;
     }
 
-    if (paymentMethod === 'CHEQUE_DD' && !referenceNumber.trim()) {
-      setError(isHi ? 'कृपया चेक / ड्राफ्ट संख्या दर्ज करें।' : 'Please enter cheque / draft number.');
-      return;
-    }
-
-    if (paymentMethod === 'NEFT_RTGS' && !referenceNumber.trim()) {
-      setError(isHi ? 'कृपया बैंक लेन-देन संदर्भ संख्या दर्ज करें।' : 'Please enter bank transaction UTR/reference number.');
-      return;
-    }
-
     setSubmitting(true);
     setError('');
     try {
@@ -143,7 +134,6 @@ export const CollectRentPage: React.FC = () => {
         billId: bill.id,
         amount: Number(paymentAmount),
         paymentMethod,
-        referenceNumber: referenceNumber.trim() || undefined,
       });
 
       const receiptNo = res.data?.receiptNumber || 'RCP-' + Date.now().toString().slice(-6);
@@ -155,6 +145,8 @@ export const CollectRentPage: React.FC = () => {
         billingMonth: formatMonthDisplay(bill.billingMonth || bill.billing_month, isHi),
         billNumber: bill.billNumber || bill.bill_number,
         amountPaid: Number(paymentAmount),
+        baseRentAmount: res.data?.baseRentAmount ?? (Number(bill.gstAmount || 0) > 0 ? Number(bill.rentAmount || 0) : undefined),
+        gstAmount: res.data?.gstAmount ?? (Number(bill.gstAmount || 0) > 0 ? Number(bill.gstAmount || 0) : undefined),
         remainingBalance: newRemaining,
       });
       setPaymentStage('celebrating');
@@ -195,12 +187,6 @@ export const CollectRentPage: React.FC = () => {
             <span>←</span>
             <span>{isHi ? 'किराया प्रबंधन पर वापस लौटें' : 'Back to Rent Management'}</span>
           </button>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono font-bold px-2.5 py-1 bg-slate-100 text-slate-700 border border-slate-300 rounded-md">
-              {isHi ? 'प्रारूप: जि.पं.अ. / राजस्व-०१' : 'FORM: ZPA / REV-01'}
-            </span>
-          </div>
         </div>
 
         {/* Error Alert */}
@@ -276,6 +262,8 @@ export const CollectRentPage: React.FC = () => {
                   shopNumber: property?.property_number || property?.propertyNumber,
                   location: property?.location,
                   amount: recordedResult.amountPaid,
+                  baseRentAmount: recordedResult.baseRentAmount,
+                  gstAmount: recordedResult.gstAmount,
                   isFullPayment: recordedResult.remainingBalance <= 0,
                   billNumber: recordedResult.billNumber,
                   billingMonth: recordedResult.billingMonth,
@@ -467,6 +455,7 @@ export const CollectRentPage: React.FC = () => {
                     <thead>
                       <tr className="bg-slate-100/80 border-b border-slate-300 text-slate-700">
                         <th className="p-3 font-semibold">{isHi ? 'मासिक किराया' : 'Monthly Rent'}</th>
+                        <th className="p-3 font-semibold">{isHi ? '18% GST' : '18% GST'}</th>
                         <th className="p-3 font-semibold">{isHi ? 'पूर्व अवशेष बकाया' : 'Past Arrears'}</th>
                         <th className="p-3 font-semibold">{isHi ? 'कुल मांग राशि' : 'Total Demand'}</th>
                         <th className="p-3 font-semibold">{isHi ? 'पूर्व जमा' : 'Paid'}</th>
@@ -476,6 +465,7 @@ export const CollectRentPage: React.FC = () => {
                     <tbody className="font-mono divide-y divide-slate-200">
                       <tr>
                         <td className="p-3 font-medium">₹{Number(bill.rentAmount || 0).toLocaleString('en-IN')}</td>
+                        <td className="p-3 font-medium text-slate-700">₹{Number(bill.gstAmount || 0).toLocaleString('en-IN')}</td>
                         <td className="p-3 font-medium text-amber-800">₹{Number(bill.arrearsAmount || 0).toLocaleString('en-IN')}</td>
                         <td className="p-3 font-bold text-slate-900">₹{Number(bill.totalAmountDue || 0).toLocaleString('en-IN')}</td>
                         <td className="p-3 font-medium text-emerald-800">₹{Number(bill.amountPaid || 0).toLocaleString('en-IN')}</td>
@@ -584,32 +574,14 @@ export const CollectRentPage: React.FC = () => {
                         onChange={(e) => setPaymentMethod(e.target.value as any)}
                         className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition shadow-2xs cursor-pointer disabled:bg-slate-100"
                       >
-                        <option value="CASH">{isHi ? 'नकद काउंटर' : 'Cash Counter'}</option>
+                        <option value="CASH">{isHi ? 'नकद (Cash)' : 'Cash Counter'}</option>
+                        <option value="UPI">{isHi ? 'यूपीआई (UPI / QR)' : 'UPI / QR'}</option>
+                        <option value="BANK_TRANSFER">{isHi ? 'बैंक ट्रांसफर (Bank Transfer)' : 'Bank Transfer'}</option>
                         <option value="CHEQUE_DD">{isHi ? 'चेक / डिमांड ड्राफ्ट' : 'Cheque / DD'}</option>
-                        <option value="NEFT_RTGS">{isHi ? 'बैंक अंतरण (एनईएफटी / आरटीजीएस)' : 'Bank Transfer (NEFT / RTGS)'}</option>
-                        <option value="POS_MACHINE">{isHi ? 'पीओएस मशीन / कार्ड स्वाइप' : 'POS Card Swipe'}</option>
+                        <option value="POS_MACHINE">{isHi ? 'पीओएस मशीन / कार्ड' : 'POS Card Swipe'}</option>
                       </select>
                     </div>
                   </div>
-
-                  {/* Reference Number Field (Shown ONLY when payment method is NOT CASH) */}
-                  {paymentMethod !== 'CASH' && currentBalance > 0 && (
-                    <div className="pt-2 animate-in fade-in duration-150">
-                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                        {paymentMethod === 'CHEQUE_DD'
-                          ? isHi ? 'चेक / ड्राफ्ट संख्या *' : 'Cheque / DD Number *'
-                          : isHi ? 'बैंक लेन-देन संदर्भ संख्या *' : 'Bank Reference Number (UTR) *'}
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={referenceNumber}
-                        onChange={(e) => setReferenceNumber(e.target.value)}
-                        placeholder={paymentMethod === 'CHEQUE_DD' ? 'उदा. CHQ-928312' : 'उदा. UTR-1029482749'}
-                        className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition font-mono shadow-2xs"
-                      />
-                    </div>
-                  )}
                 </div>
 
                 {/* भाग ४: अनिवार्य विभागीय प्रमाणीकरण चेकबॉक्स */}

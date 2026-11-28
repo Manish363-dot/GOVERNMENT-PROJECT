@@ -1,7 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
-import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { S3Client, GetObjectCommand, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { calculateRentWithGst, resolveBillAmounts } from '../utils/gst.util';
+import { rentalCache } from '../utils/rentalCache.util';
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION || 'ap-south-1',
@@ -10,6 +12,54 @@ const s3 = new S3Client({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   },
 });
+
+const extractS3Key = (directKey?: string | null, url?: string | null): string | null => {
+  if (directKey && directKey.trim()) {
+    return directKey.trim().replace(/^\/+/, '');
+  }
+  if (url && url.includes('.amazonaws.com/')) {
+    try {
+      const parsed = new URL(url);
+      const pathname = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+      return pathname || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+};
+
+const deleteS3Objects = async (keys: string[]): Promise<number> => {
+  const uniqueKeys = Array.from(new Set(keys.filter(Boolean)));
+  if (uniqueKeys.length === 0) return 0;
+
+  const bucket = process.env.AWS_S3_BUCKET_NAME || 'zila-panchayat-images';
+  let deletedCount = 0;
+
+  // S3 DeleteObjects supports up to 1000 keys per request
+  for (let i = 0; i < uniqueKeys.length; i += 1000) {
+    const batch = uniqueKeys.slice(i, i + 1000);
+    try {
+      const res = await s3.send(
+        new DeleteObjectsCommand({
+          Bucket: bucket,
+          Delete: {
+            Objects: batch.map((Key) => ({ Key })),
+            Quiet: false,
+          },
+        })
+      );
+      deletedCount += res.Deleted?.length ?? batch.length;
+      if (res.Errors && res.Errors.length > 0) {
+        console.error('[Rental S3 Cleanup Partial Errors]:', res.Errors);
+      }
+    } catch (err) {
+      console.error('[Rental S3 Cleanup Error]:', err);
+    }
+  }
+
+  return deletedCount;
+};
 
 export interface RegisterUserDTO {
   fullName: string;
@@ -23,6 +73,8 @@ export interface RegisterUserDTO {
   propertyId?: string;
   monthlyRent?: number;
   rentEffectiveDate?: string;
+  allotmentDate?: string;
+  leaseEndDate?: string;
   initialPassword?: string;
 }
 
@@ -210,14 +262,22 @@ export class RentalUserService {
         }
 
         const rent = dto.monthlyRent ? Number(dto.monthlyRent) : Number(property.base_monthly_rent);
-        const leaseStart = dto.rentEffectiveDate ? new Date(dto.rentEffectiveDate) : new Date();
+        const startRaw = dto.allotmentDate?.trim() || dto.rentEffectiveDate?.trim();
+        const leaseStart = startRaw ? new Date(startRaw) : new Date();
+        const leaseEnd = dto.leaseEndDate?.trim() ? new Date(dto.leaseEndDate.trim()) : null;
+
+        if (leaseEnd && !isNaN(leaseEnd.getTime()) && !isNaN(leaseStart.getTime()) && leaseEnd < leaseStart) {
+          throw new Error('दुकान आवंटन समाप्ति तिथि, आवंटन तिथि से पहले नहीं हो सकती। (Allotment end date cannot be before allotment date.)');
+        }
 
         const createdAssignment = await tx.propertyAssignment.create({
           data: {
             property_id: property.id,
             user_id: user.id,
             monthly_rent: rent,
+            allotment_date: leaseStart,
             lease_start_date: leaseStart,
+            lease_end_date: leaseEnd && !isNaN(leaseEnd.getTime()) ? leaseEnd : null,
             is_active: true,
             assigned_by: adminId,
           },
@@ -236,6 +296,7 @@ export class RentalUserService {
         const billingMonthStr = `${billYear}-${String(billMonthNum).padStart(2, '0')}`;
         const dueDate = new Date(billYear, billMonthNum - 1, 20, 23, 59, 59);
         const billNumber = `BL-${property.property_number}-${billingMonthStr}`;
+        const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(rent);
 
         const initialBill = await tx.rentalBill.create({
           data: {
@@ -246,10 +307,12 @@ export class RentalUserService {
             billing_month: billingMonthStr,
             billing_year: billYear,
             rent_amount: rent,
+            gst_rate: gstRate,
+            gst_amount: gstAmount,
             adjustment_amount: 0.0,
-            total_amount_due: rent,
+            total_amount_due: totalWithGst,
             amount_paid: 0.0,
-            balance_due: rent,
+            balance_due: totalWithGst,
             due_date: dueDate,
             status: 'PENDING',
           },
@@ -261,7 +324,7 @@ export class RentalUserService {
             property_id: property.id,
             bill_id: initialBill.id,
             entry_type: 'RENT_CHARGE',
-            debit: rent,
+            debit: totalWithGst,
             credit: 0.0,
             running_balance: rent,
             description: `Initial Monthly Commercial Rent Demand for ${billingMonthStr} (${property.property_number})`,
@@ -289,6 +352,8 @@ export class RentalUserService {
         return user;
       });
 
+      rentalCache.invalidate('tenants:', 'overview:', 'analytics:', 'properties:', 'ledger:');
+
       return {
         id: createdUser.id,
         userCode: createdUser.user_id,
@@ -301,187 +366,215 @@ export class RentalUserService {
   }
 
   /**
-   * Search and list tenants with pagination and filters
+   * Search and list tenants with pagination and filters (flattened queries + 15s cache)
    */
   async listTenants(params: {
     search?: string;
-    status?: string;
     page?: number;
     limit?: number;
   }) {
-    return withRentalDbRetry(async () => {
-      const page = Math.max(1, params.page || 1);
-      const limit = Math.min(100, Math.max(1, params.limit || 20));
-      const skip = (page - 1) * limit;
+    const page = Math.max(1, params.page || 1);
+    const limit = Math.min(100, Math.max(1, params.limit || 20));
+    const searchKey = (params.search || '').trim().toLowerCase();
+    const cacheKey = `tenants:${page}:${limit}:${searchKey}`;
 
-      const where: any = {};
-      if (params.status && params.status !== 'ALL') {
-        where.status = params.status;
-      }
+    return rentalCache.getOrSet(cacheKey, 15_000, () =>
+      withRentalDbRetry(async () => {
+        const skip = (page - 1) * limit;
 
-      if (params.search && params.search.trim()) {
-        const s = params.search.trim();
-        where.OR = [
-          { full_name: { contains: s, mode: 'insensitive' } },
-          { mobile: { contains: s } },
-          { user_id: { contains: s, mode: 'insensitive' } },
-        ];
-      }
+        const where: any = {};
+        if (params.search && params.search.trim()) {
+          const s = params.search.trim();
+          where.OR = [
+            { full_name: { contains: s, mode: 'insensitive' } },
+            { mobile: { contains: s } },
+            { user_id: { contains: s, mode: 'insensitive' } },
+          ];
+        }
 
-      const [total, users] = await Promise.all([
-        rentalPrisma.rentalUser.count({ where }),
-        rentalPrisma.rentalUser.findMany({
-          where,
-          select: {
-            id: true,
-            user_id: true,
-            full_name: true,
-            mobile: true,
-            email: true,
-            profile_photo_url: true,
-            permanent_address: true,
-            current_address: true,
-            status: true,
-            created_at: true,
-            assignments: {
-              where: { is_active: true },
-              select: {
-                id: true,
-                property_id: true,
-                monthly_rent: true,
-                property: {
-                  select: {
-                    id: true,
-                    property_id: true,
-                    property_name: true,
-                    property_number: true,
-                    location: true,
-                    address: true,
+        const [total, users] = await Promise.all([
+          rentalPrisma.rentalUser.count({ where }),
+          rentalPrisma.rentalUser.findMany({
+            where,
+            select: {
+              id: true,
+              user_id: true,
+              full_name: true,
+              mobile: true,
+              email: true,
+              profile_photo_url: true,
+              permanent_address: true,
+              current_address: true,
+              status: true,
+              created_at: true,
+            },
+            orderBy: { created_at: 'desc' },
+            skip,
+            take: limit,
+          }),
+        ]);
+
+        const userIds = users.map((u) => u.id);
+        const [assignments, unpaidBills, billedUserIds] = userIds.length > 0
+          ? await Promise.all([
+              rentalPrisma.propertyAssignment.findMany({
+                where: { user_id: { in: userIds }, is_active: true },
+                select: {
+                  id: true,
+                  user_id: true,
+                  property_id: true,
+                  monthly_rent: true,
+                  property: {
+                    select: {
+                      id: true,
+                      property_id: true,
+                      property_name: true,
+                      property_number: true,
+                      location: true,
+                      address: true,
+                    },
                   },
                 },
-              },
-            },
-            bills: {
-              select: { id: true, status: true, balance_due: true },
-            },
-          },
-          orderBy: { created_at: 'desc' },
-          skip,
-          take: limit,
-        }),
-      ]);
+              }),
+              rentalPrisma.rentalBill.findMany({
+                where: {
+                  user_id: { in: userIds },
+                  status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
+                },
+                select: {
+                  user_id: true,
+                  rent_amount: true,
+                  gst_amount: true,
+                  adjustment_amount: true,
+                  total_amount_due: true,
+                  amount_paid: true,
+                  balance_due: true,
+                  status: true,
+                },
+              }),
+              rentalPrisma.rentalBill.groupBy({
+                by: ['user_id'],
+                where: { user_id: { in: userIds } },
+              }),
+            ])
+          : [[], [], []];
 
-      // Auto-provision initial PENDING bill for any active tenant who has 0 bills in DB
-      const now = new Date();
-      const curYear = now.getFullYear();
-      const curMonthNum = now.getMonth() + 1;
-      const curMonthStr = `${curYear}-${String(curMonthNum).padStart(2, '0')}`;
-      const curDueDate = new Date(curYear, curMonthNum - 1, 20, 23, 59, 59);
+        const assignByUser = new Map(assignments.map((a) => [a.user_id, a]));
+        const hasAnyBillSet = new Set(billedUserIds.map((b) => b.user_id));
 
-      for (const u of users) {
-        const activeAssign = u.assignments[0];
-        if (activeAssign && u.bills.length === 0) {
-          const rentAmt = Number(activeAssign.monthly_rent);
-          const autoBillNo = `BL-${activeAssign.property.property_number}-${curMonthStr}`;
-          try {
-            const createdBill = await rentalPrisma.rentalBill.create({
-              data: {
-                bill_number: autoBillNo,
-                user_id: u.id,
-                property_id: activeAssign.property.id,
-                assignment_id: activeAssign.id,
-                billing_month: curMonthStr,
-                billing_year: curYear,
-                rent_amount: rentAmt,
-                adjustment_amount: 0.0,
-                total_amount_due: rentAmt,
-                amount_paid: 0.0,
-                balance_due: rentAmt,
-                due_date: curDueDate,
-                status: 'PENDING',
-              },
+        const unpaidSumByUser = new Map<string, number>();
+        for (const b of unpaidBills) {
+          const bal = resolveBillAmounts(b).balanceDue;
+          unpaidSumByUser.set(b.user_id, (unpaidSumByUser.get(b.user_id) || 0) + bal);
+        }
+
+        // Batch auto-provision missing initial bills (if any) without sequential loops
+        const now = new Date();
+        const curYear = now.getFullYear();
+        const curMonthNum = now.getMonth() + 1;
+        const curMonthStr = `${curYear}-${String(curMonthNum).padStart(2, '0')}`;
+        const curDueDate = new Date(curYear, curMonthNum - 1, 20, 23, 59, 59);
+        const missingInitialBills: any[] = [];
+
+        for (const u of users) {
+          const activeAssign = assignByUser.get(u.id);
+          if (activeAssign && !hasAnyBillSet.has(u.id)) {
+            const rentAmt = Number(activeAssign.monthly_rent);
+            const { gstRate, gstAmount, totalWithGst } = calculateRentWithGst(rentAmt);
+            missingInitialBills.push({
+              bill_number: `BL-${activeAssign.property.property_number}-${curMonthStr}`,
+              user_id: u.id,
+              property_id: activeAssign.property.id,
+              assignment_id: activeAssign.id,
+              billing_month: curMonthStr,
+              billing_year: curYear,
+              rent_amount: rentAmt,
+              gst_rate: gstRate,
+              gst_amount: gstAmount,
+              adjustment_amount: 0.0,
+              total_amount_due: totalWithGst,
+              amount_paid: 0.0,
+              balance_due: totalWithGst,
+              due_date: curDueDate,
+              status: 'PENDING' as const,
             });
-            u.bills.push({
-              id: createdBill.id,
-              status: 'PENDING',
-              balance_due: createdBill.balance_due,
-            });
-          } catch {
-            // Ignore duplicate collision if concurrently created
+            unpaidSumByUser.set(u.id, totalWithGst);
           }
         }
-      }
 
-      const formatted = users.map((u) => {
-        const activeAssignment = u.assignments[0];
-        const unpaidBills = u.bills.filter((b) =>
-          ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'].includes(b.status)
-        );
-        const outstandingBalance =
-          u.bills.length === 0 && activeAssignment
-            ? Number(activeAssignment.monthly_rent)
-            : unpaidBills.reduce((sum, b) => sum + Number(b.balance_due), 0);
+        if (missingInitialBills.length > 0) {
+          await rentalPrisma.rentalBill
+            .createMany({ data: missingInitialBills, skipDuplicates: true })
+            .catch(() => {});
+        }
+
+        const formatted = users.map((u) => {
+          const activeAssignment = assignByUser.get(u.id);
+          const outstandingBalance = unpaidSumByUser.get(u.id) || 0;
+
+          return {
+            id: u.id,
+            userCode: u.user_id,
+            fullName: u.full_name,
+            mobile: u.mobile,
+            email: u.email,
+            profilePhotoUrl: u.profile_photo_url,
+            permanentAddress: u.permanent_address,
+            currentAddress: u.current_address,
+            status: u.status,
+            createdAt: u.created_at,
+            assignedProperty: activeAssignment
+              ? {
+                  propertyId: activeAssignment.property.property_id,
+                  propertyName: activeAssignment.property.property_name,
+                  propertyNumber: activeAssignment.property.property_number,
+                  location: activeAssignment.property.location,
+                  address: activeAssignment.property.address,
+                  monthlyRent: Number(activeAssignment.monthly_rent),
+                }
+              : null,
+            outstandingBalance,
+          };
+        });
 
         return {
-          id: u.id,
-          userCode: u.user_id,
-          fullName: u.full_name,
-          mobile: u.mobile,
-          email: u.email,
-          profilePhotoUrl: u.profile_photo_url,
-          permanentAddress: u.permanent_address,
-          currentAddress: u.current_address,
-          status: u.status,
-          createdAt: u.created_at,
-          assignedProperty: activeAssignment
-            ? {
-                propertyId: activeAssignment.property.property_id,
-                propertyName: activeAssignment.property.property_name,
-                propertyNumber: activeAssignment.property.property_number,
-                location: activeAssignment.property.location,
-                address: activeAssignment.property.address,
-                monthlyRent: Number(activeAssignment.monthly_rent),
-              }
-            : null,
-          outstandingBalance,
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+          data: formatted,
         };
-      });
-
-      return {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-        data: formatted,
-      };
-    });
+      })
+    );
   }
 
   /**
-   * Get single tenant details with documents & assignment history
+   * Get single tenant details with documents & assignment history (flattened parallel queries)
    */
   async getTenantDetails(userId: string) {
     return withRentalDbRetry(async () => {
-      const user = await rentalPrisma.rentalUser.findUnique({
-        where: { id: userId },
-        include: {
-          assignments: {
-            include: { property: true },
-            orderBy: { created_at: 'desc' },
-          },
-          documents: {
-            orderBy: { created_at: 'desc' },
-          },
-          rentChangeHistory: {
-            include: { property: true },
-            orderBy: { effective_date: 'desc' },
-          },
-          bills: {
-            orderBy: { created_at: 'desc' },
-            take: 12,
-          },
-        },
-      });
+      const [user, assignments, documents, rentChangeHistory, bills] = await Promise.all([
+        rentalPrisma.rentalUser.findUnique({ where: { id: userId } }),
+        rentalPrisma.propertyAssignment.findMany({
+          where: { user_id: userId },
+          include: { property: true },
+          orderBy: { created_at: 'desc' },
+        }),
+        rentalPrisma.rentalUserDocument.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: 'desc' },
+        }),
+        rentalPrisma.rentChangeHistory.findMany({
+          where: { user_id: userId },
+          include: { property: true },
+          orderBy: { effective_date: 'desc' },
+        }),
+        rentalPrisma.rentalBill.findMany({
+          where: { user_id: userId },
+          orderBy: { created_at: 'desc' },
+          take: 12,
+        }),
+      ]);
 
       if (!user) {
         throw new Error('Tenant record not found.');
@@ -502,7 +595,7 @@ export class RentalUserService {
       }
 
       const enrichedDocs = await Promise.all(
-        user.documents.map(async (doc) => {
+        documents.map(async (doc) => {
           let presignedUrl = doc.file_url;
           if (doc.s3_key) {
             try {
@@ -525,47 +618,12 @@ export class RentalUserService {
 
       return {
         ...user,
+        assignments,
+        rentChangeHistory,
+        bills,
         profile_photo_url: profilePhotoPresigned,
         documents: enrichedDocs,
       };
-    });
-  }
-
-  /**
-   * Update Tenant Account Status (ACTIVE, INACTIVE, SUSPENDED)
-   */
-  async updateTenantStatus(adminId: string, userId: string, status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED', reason?: string, clientIp?: string) {
-    return withRentalDbRetry(async () => {
-      const user = await rentalPrisma.rentalUser.findUnique({
-        where: { id: userId },
-      });
-
-      if (!user) {
-        throw new Error('Tenant record not found.');
-      }
-
-      const updated = await rentalPrisma.rentalUser.update({
-        where: { id: userId },
-        data: {
-          status,
-          deactivation_reason: reason || null,
-        },
-      });
-
-      await rentalPrisma.rentalAdminAuditLog.create({
-        data: {
-          admin_id: adminId,
-          action: 'TENANT_STATUS_UPDATED',
-          target_entity: 'RentalUser',
-          target_id: userId,
-          reason: reason || undefined,
-          before_state: JSON.stringify({ status: user.status }),
-          after_state: JSON.stringify({ status }),
-          ip_address: clientIp || 'Unknown',
-        },
-      });
-
-      return updated;
     });
   }
 
@@ -584,10 +642,11 @@ export class RentalUserService {
       aadhaarNumber?: string;
       panNumber?: string;
       gstNumber?: string;
-      status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
       password?: string;
       propertyId?: string;
       monthlyRent?: number;
+      allotmentDate?: string;
+      leaseEndDate?: string;
     },
     files?: {
       profilePhoto?: { location: string; key: string; size: number; mimetype: string };
@@ -662,7 +721,6 @@ export class RentalUserService {
             aadhaar_masked: aadhaarMasked,
             pan_masked: panMasked,
             gst_number: dto.gstNumber !== undefined ? (dto.gstNumber.trim().toUpperCase() || null) : existingUser.gst_number,
-            status: (dto.status as any) || existingUser.status,
             ...(passwordHash ? { passwordHash } : {}),
             ...(files?.profilePhoto ? {
               profile_photo_url: files.profilePhoto.location,
@@ -740,8 +798,35 @@ export class RentalUserService {
           });
         }
 
-        // Handle Property & Rent changes
+        // Handle Property, Allotment Dates & Rent changes
         const currentActiveAssignment = existingUser.assignments[0];
+
+        const parsedAllotmentDate =
+          dto.allotmentDate && dto.allotmentDate.trim() ? new Date(dto.allotmentDate.trim()) : undefined;
+        const hasValidAllotmentDate = parsedAllotmentDate && !isNaN(parsedAllotmentDate.getTime());
+
+        let parsedLeaseEndDate: Date | null | undefined = undefined;
+        if (dto.leaseEndDate !== undefined) {
+          if (dto.leaseEndDate.trim() === '') {
+            parsedLeaseEndDate = null;
+          } else {
+            const dt = new Date(dto.leaseEndDate.trim());
+            if (!isNaN(dt.getTime())) parsedLeaseEndDate = dt;
+          }
+        }
+
+        const effectiveStartForValidation = hasValidAllotmentDate
+          ? parsedAllotmentDate
+          : currentActiveAssignment?.allotment_date || currentActiveAssignment?.lease_start_date;
+
+        if (
+          parsedLeaseEndDate &&
+          effectiveStartForValidation &&
+          parsedLeaseEndDate < new Date(effectiveStartForValidation)
+        ) {
+          throw new Error('दुकान आवंटन समाप्ति तिथि, आवंटन तिथि से पहले नहीं हो सकती। (Allotment end date cannot be before allotment date.)');
+        }
+
         if (dto.propertyId) {
           const targetProperty = await tx.rentalProperty.findFirst({
             where: {
@@ -763,12 +848,27 @@ export class RentalUserService {
 
           if (currentActiveAssignment) {
             if (currentActiveAssignment.property_id === targetProperty.id) {
-              // Same property, check if rent changed
+              // Same property: check rent & allotment dates changes
+              const assignmentUpdateData: any = {};
               if (Number(currentActiveAssignment.monthly_rent) !== rentAmount) {
+                assignmentUpdateData.monthly_rent = rentAmount;
+              }
+              if (hasValidAllotmentDate) {
+                assignmentUpdateData.allotment_date = parsedAllotmentDate;
+                assignmentUpdateData.lease_start_date = parsedAllotmentDate;
+              }
+              if (parsedLeaseEndDate !== undefined) {
+                assignmentUpdateData.lease_end_date = parsedLeaseEndDate;
+              }
+
+              if (Object.keys(assignmentUpdateData).length > 0) {
                 await tx.propertyAssignment.update({
                   where: { id: currentActiveAssignment.id },
-                  data: { monthly_rent: rentAmount },
+                  data: assignmentUpdateData,
                 });
+              }
+
+              if (Number(currentActiveAssignment.monthly_rent) !== rentAmount) {
                 await tx.rentChangeHistory.create({
                   data: {
                     user_id: userId,
@@ -801,12 +901,15 @@ export class RentalUserService {
                 data: { status: 'VACANT' },
               });
               // Create new assignment
+              const newStart = hasValidAllotmentDate ? parsedAllotmentDate : new Date();
               await tx.propertyAssignment.create({
                 data: {
                   property_id: targetProperty.id,
                   user_id: userId,
                   monthly_rent: rentAmount,
-                  lease_start_date: new Date(),
+                  allotment_date: newStart,
+                  lease_start_date: newStart,
+                  lease_end_date: parsedLeaseEndDate ?? null,
                   is_active: true,
                   assigned_by: adminId,
                 },
@@ -822,12 +925,15 @@ export class RentalUserService {
             if (targetProperty.status === 'ALLOTTED') {
               throw new Error(`Shop ${targetProperty.property_number} is already allotted to another tenant.`);
             }
+            const firstStart = hasValidAllotmentDate ? parsedAllotmentDate : new Date();
             await tx.propertyAssignment.create({
               data: {
                 property_id: targetProperty.id,
                 user_id: userId,
                 monthly_rent: rentAmount,
-                lease_start_date: new Date(),
+                allotment_date: firstStart,
+                lease_start_date: firstStart,
+                lease_end_date: parsedLeaseEndDate ?? null,
                 is_active: true,
                 assigned_by: adminId,
               },
@@ -837,13 +943,28 @@ export class RentalUserService {
               data: { status: 'ALLOTTED' },
             });
           }
-        } else if (dto.monthlyRent !== undefined && currentActiveAssignment && Number(dto.monthlyRent) > 0) {
-          // Property didn't change, only monthly rent updated
-          if (Number(currentActiveAssignment.monthly_rent) !== Number(dto.monthlyRent)) {
+        } else if (currentActiveAssignment) {
+          // Property didn't change, update monthly rent and/or allotment dates if provided
+          const assignmentUpdateData: any = {};
+          if (dto.monthlyRent !== undefined && Number(dto.monthlyRent) > 0 && Number(currentActiveAssignment.monthly_rent) !== Number(dto.monthlyRent)) {
+            assignmentUpdateData.monthly_rent = Number(dto.monthlyRent);
+          }
+          if (hasValidAllotmentDate) {
+            assignmentUpdateData.allotment_date = parsedAllotmentDate;
+            assignmentUpdateData.lease_start_date = parsedAllotmentDate;
+          }
+          if (parsedLeaseEndDate !== undefined) {
+            assignmentUpdateData.lease_end_date = parsedLeaseEndDate;
+          }
+
+          if (Object.keys(assignmentUpdateData).length > 0) {
             await tx.propertyAssignment.update({
               where: { id: currentActiveAssignment.id },
-              data: { monthly_rent: Number(dto.monthlyRent) },
+              data: assignmentUpdateData,
             });
+          }
+
+          if (dto.monthlyRent !== undefined && Number(dto.monthlyRent) > 0 && Number(currentActiveAssignment.monthly_rent) !== Number(dto.monthlyRent)) {
             await tx.rentChangeHistory.create({
               data: {
                 user_id: userId,
@@ -878,6 +999,7 @@ export class RentalUserService {
         return user;
       });
 
+      rentalCache.invalidate('tenants:', 'overview:', 'analytics:', 'properties:', 'ledger:');
       return updatedUser;
     });
   }
@@ -923,7 +1045,8 @@ export class RentalUserService {
   }
 
   /**
-   * Permanently delete a tenant from Database A and reset assigned property to VACANT
+   * Permanently delete a tenant from Database A, reset assigned property to VACANT,
+   * and delete all associated S3 files (profile image, KYC docs, and shop photo).
    */
   async deleteTenant(tenantId: string, adminId: string, clientIp?: string) {
     return withRentalDbRetry(async () => {
@@ -933,6 +1056,17 @@ export class RentalUserService {
           assignments: {
             where: { is_active: true },
           },
+          documents: {
+            select: {
+              s3_key: true,
+              file_url: true,
+            },
+          },
+          receipts: {
+            select: {
+              receipt_pdf_url: true,
+            },
+          },
         },
       });
 
@@ -940,52 +1074,81 @@ export class RentalUserService {
         throw new Error('किरायेदार रिकॉर्ड नहीं मिला (Tenant not found).');
       }
 
-      await rentalPrisma.$transaction(async (tx) => {
-        // 1. Reset any active allotted properties to VACANT
-        for (const assign of user.assignments) {
-          await tx.rentalProperty.update({
-            where: { id: assign.property_id },
-            data: { status: 'VACANT' },
-          });
-        }
+      // Collect all S3 keys (profile photo, KYC documents, shop photo, receipt PDFs) prior to DB removal
+      const s3KeysToDelete: string[] = [];
+      const profileKey = extractS3Key(user.profile_photo_key, user.profile_photo_url);
+      if (profileKey) s3KeysToDelete.push(profileKey);
 
-        // 2. Delete related child records in order
-        await tx.rentalReceipt.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentalPayment.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentalLedgerEntry.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentalBill.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentChangeHistory.deleteMany({ where: { user_id: tenantId } });
-        await tx.propertyAssignment.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentalUserDocument.deleteMany({ where: { user_id: tenantId } });
-        await tx.paymentAuditTrail.deleteMany({ where: { user_id: tenantId } });
-        await tx.rentalNotice.deleteMany({ where: { recipient_user_id: tenantId } });
+      for (const doc of user.documents) {
+        const docKey = extractS3Key(doc.s3_key, doc.file_url);
+        if (docKey) s3KeysToDelete.push(docKey);
+      }
 
-        // 3. Delete the tenant user record
-        await tx.rentalUser.delete({
-          where: { id: tenantId },
-        });
+      for (const rec of user.receipts) {
+        const recKey = extractS3Key(null, rec.receipt_pdf_url);
+        if (recKey) s3KeysToDelete.push(recKey);
+      }
 
-        // 4. Audit Log
-        await tx.rentalAdminAuditLog.create({
-          data: {
-            admin_id: adminId,
-            action: 'TENANT_DELETED',
-            target_entity: 'RentalUser',
-            target_id: tenantId,
-            reason: `Admin deleted tenant ${user.full_name} (${user.user_id})`,
-            before_state: JSON.stringify({
-              userId: user.user_id,
-              name: user.full_name,
-              mobile: user.mobile,
+      await rentalPrisma.$transaction(
+        async (tx) => {
+          // Stage 1: Reset active properties & delete deepest child tables concurrently
+          await Promise.all([
+            ...user.assignments.map((assign) =>
+              tx.rentalProperty.update({
+                where: { id: assign.property_id },
+                data: { status: 'VACANT' },
+              })
+            ),
+            tx.rentalReceipt.deleteMany({ where: { user_id: tenantId } }),
+            tx.paymentAuditTrail.deleteMany({ where: { user_id: tenantId } }),
+            tx.rentalLedgerEntry.deleteMany({ where: { user_id: tenantId } }),
+            tx.rentalUserDocument.deleteMany({ where: { user_id: tenantId } }),
+            tx.rentalNotice.deleteMany({ where: { recipient_user_id: tenantId } }),
+            tx.rentChangeHistory.deleteMany({ where: { user_id: tenantId } }),
+          ]);
+
+          // Stage 2: Delete payments & bills concurrently (after receipts/ledger/audit links are gone)
+          await Promise.all([
+            tx.rentalPayment.deleteMany({ where: { user_id: tenantId } }),
+            tx.rentalBill.deleteMany({ where: { user_id: tenantId } }),
+          ]);
+
+          // Stage 3: Delete assignments, then tenant user + admin audit log
+          await tx.propertyAssignment.deleteMany({ where: { user_id: tenantId } });
+
+          await Promise.all([
+            tx.rentalUser.delete({
+              where: { id: tenantId },
             }),
-            ip_address: clientIp || null,
-          },
-        });
-      });
+            tx.rentalAdminAuditLog.create({
+              data: {
+                admin_id: adminId,
+                action: 'TENANT_DELETED',
+                target_entity: 'RentalUser',
+                target_id: tenantId,
+                reason: `Admin deleted tenant ${user.full_name} (${user.user_id})`,
+                before_state: JSON.stringify({
+                  userId: user.user_id,
+                  name: user.full_name,
+                  mobile: user.mobile,
+                  s3ObjectsQueuedForDeletion: s3KeysToDelete.length,
+                }),
+                ip_address: clientIp || null,
+              },
+            }),
+          ]);
+        },
+        { maxWait: 10000, timeout: 30000 }
+      );
+
+      // Clean up all tenant S3 files after DB commit so failed transactions never orphan live records
+      const s3DeletedCount = await deleteS3Objects(s3KeysToDelete);
+      rentalCache.invalidate('tenants:', 'overview:', 'analytics:', 'properties:', 'ledger:', 'notices:', 'audit:');
 
       return {
         success: true,
-        message: `Tenant ${user.full_name} (${user.user_id}) deleted successfully.`,
+        s3DeletedCount,
+        message: `Tenant ${user.full_name} (${user.user_id}) and ${s3DeletedCount} S3 file(s) deleted successfully.`,
       };
     });
   }
