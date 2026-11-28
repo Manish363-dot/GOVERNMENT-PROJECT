@@ -24,6 +24,8 @@ import {
   UserCheck,
   UserX,
   Trash2,
+  ImagePlus,
+  X,
 } from 'lucide-react';
 
 export const PropertyManagementPage: React.FC = () => {
@@ -78,6 +80,61 @@ export const PropertyManagementPage: React.FC = () => {
   // History state
   const [rentHistory, setRentHistory] = useState<RentHistoryEntry[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+
+  // Shop Photos Management Modal State (up to 3 photos)
+  const [photoModalProp, setPhotoModalProp] = useState<PropertyListItem | null>(null);
+  const [keptPhotoUrls, setKeptPhotoUrls] = useState<string[]>([]);
+  const [newPhotoItems, setNewPhotoItems] = useState<Array<{ file: File; previewUrl: string }>>([]);
+  const [savingPhotos, setSavingPhotos] = useState(false);
+
+  const handleOpenPhotoModal = (prop: PropertyListItem) => {
+    newPhotoItems.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+    setNewPhotoItems([]);
+    setKeptPhotoUrls(prop.photoUrls ? [...prop.photoUrls] : []);
+    setPhotoModalProp(prop);
+  };
+
+  const handlePickModalPhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith('image/'));
+    if (files.length === 0) return;
+    const slots = 3 - (keptPhotoUrls.length + newPhotoItems.length);
+    if (slots <= 0) {
+      e.target.value = '';
+      return;
+    }
+    const added = files.slice(0, slots).map((file) => ({
+      file,
+      previewUrl: URL.createObjectURL(file),
+    }));
+    setNewPhotoItems((prev) => [...prev, ...added]);
+    e.target.value = '';
+  };
+
+  const handleSaveShopPhotos = async () => {
+    if (!photoModalProp) return;
+    setSavingPhotos(true);
+    setError('');
+    try {
+      await rentalPropertyApi.updatePropertyPhotos(
+        photoModalProp.id,
+        keptPhotoUrls,
+        newPhotoItems.map((p) => p.file)
+      );
+      newPhotoItems.forEach((p) => URL.revokeObjectURL(p.previewUrl));
+      setNewPhotoItems([]);
+      setPhotoModalProp(null);
+      setSuccessMsg(
+        isHi
+          ? 'दुकान की फोटो सफलतापूर्वक अपडेट कर दी गई हैं।'
+          : 'Shop photos updated successfully.'
+      );
+      fetchProperties(true);
+    } catch (err: any) {
+      setError(err.message || (isHi ? 'फोटो अपडेट करने में त्रुटि हुई।' : 'Failed to update shop photos.'));
+    } finally {
+      setSavingPhotos(false);
+    }
+  };
 
   const fetchProperties = async (force = false) => {
     if (force) {
@@ -568,6 +625,19 @@ export const PropertyManagementPage: React.FC = () => {
 
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <div className="flex items-center justify-end gap-2">
+                          {/* Shop Photos (1–3) */}
+                          <button
+                            type="button"
+                            onClick={() => handleOpenPhotoModal(prop)}
+                            className="inline-flex items-center gap-1 px-2 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold transition cursor-pointer"
+                            title={isHi ? 'दुकान की फोटो जोड़ें / बदलें' : 'Manage Shop Photos (Max 3)'}
+                          >
+                            <ImagePlus className="w-3.5 h-3.5" />
+                            <span>
+                              {isHi ? 'फोटो' : 'Photos'} ({prop.photoUrls?.length || 0}/3)
+                            </span>
+                          </button>
+
                           {/* Audit / History */}
                           <button
                             onClick={() => handleOpenHistoryModal(prop)}
@@ -1275,11 +1345,138 @@ export const PropertyManagementPage: React.FC = () => {
           variant="danger"
           iconType="trash"
           confirmText={isHi ? 'हां, संपत्ति हटाएं' : 'Delete Property'}
-          denyText={isHi ? 'रद्द करें (Cancel)' : 'Cancel'}
+          denyText={isHi ? 'रद्द करें' : 'Cancel'}
           loading={deleteModal.loading}
           onConfirm={handleConfirmDeleteProperty}
           onDeny={() => setDeleteModal({ isOpen: false, property: null, loading: false })}
         />
+
+        {/* Manage Shop Photos Modal (1–3 Photos) */}
+        {photoModalProp && (
+          <div
+            className="fixed inset-0 z-50 bg-slate-950/65 flex items-center justify-center p-4"
+            onClick={() => !savingPhotos && setPhotoModalProp(null)}
+          >
+            <div
+              className="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-lg w-full overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="px-5 py-4 bg-[#0B3B60] text-white flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-extrabold">
+                    {isHi
+                      ? `दुकान फोटो प्रबंधन — ${photoModalProp.propertyNumber}`
+                      : `Manage Shop Photos — ${photoModalProp.propertyNumber}`}
+                  </h3>
+                  <p className="text-[11px] text-slate-200 mt-0.5">
+                    {isHi
+                      ? 'अधिकतम 3 फोटो जोड़ें (रिक्त दुकान की फोटो रेंटल पोर्टल पर प्रदर्शित होती हैं)'
+                      : 'Add up to 3 photos (displayed on Rental Landing Page while shop is vacant)'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => !savingPhotos && setPhotoModalProp(null)}
+                  className="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 flex items-center justify-center text-white cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-5 space-y-4">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+                  <span>{isHi ? 'चयनित फोटो:' : 'Selected Photos:'}</span>
+                  <span className="font-mono bg-slate-100 border border-slate-300 px-2 py-0.5 rounded">
+                    {keptPhotoUrls.length + newPhotoItems.length} / 3
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {keptPhotoUrls.map((url, idx) => (
+                    <div
+                      key={`kept-${idx}`}
+                      className="relative h-28 rounded-xl overflow-hidden border border-slate-300 bg-slate-100"
+                    >
+                      <img src={url} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setKeptPhotoUrls((prev) => prev.filter((_, i) => i !== idx))
+                        }
+                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/85 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {newPhotoItems.map((item, idx) => (
+                    <div
+                      key={`new-${idx}`}
+                      className="relative h-28 rounded-xl overflow-hidden border border-slate-300 bg-slate-100"
+                    >
+                      <img src={item.previewUrl} alt="" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setNewPhotoItems((prev) => {
+                            const t = prev[idx];
+                            if (t) URL.revokeObjectURL(t.previewUrl);
+                            return prev.filter((_, i) => i !== idx);
+                          })
+                        }
+                        className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/85 hover:bg-red-600 text-white flex items-center justify-center cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {keptPhotoUrls.length + newPhotoItems.length < 3 && (
+                    <label className="h-28 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#0B3B60] bg-slate-50 hover:bg-slate-100 flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-[#0B3B60] transition cursor-pointer p-2 text-center">
+                      <ImagePlus className="w-5 h-5" />
+                      <span className="text-[11px] font-bold">
+                        {isHi ? '+ फोटो जोड़ें' : '+ Add Photo'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp,image/jpg"
+                        multiple
+                        onChange={handlePickModalPhotos}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t border-slate-200 flex items-center justify-end gap-2.5">
+                  <button
+                    type="button"
+                    disabled={savingPhotos}
+                    onClick={() => setPhotoModalProp(null)}
+                    className="px-4 py-2 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  >
+                    {isHi ? 'रद्द करें' : 'Cancel'}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={savingPhotos}
+                    onClick={handleSaveShopPhotos}
+                    className="px-5 py-2 rounded-lg bg-[#0B3B60] hover:bg-slate-900 text-white text-xs font-bold cursor-pointer disabled:opacity-60"
+                  >
+                    {savingPhotos
+                      ? isHi
+                        ? 'सहेजा जा रहा है...'
+                        : 'Saving...'
+                      : isHi
+                        ? 'फोटो सहेजें'
+                        : 'Save Photos'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

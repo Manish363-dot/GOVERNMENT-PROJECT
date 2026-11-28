@@ -111,7 +111,7 @@ export const api = {
         }
       }
       const error = await response.json().catch(() => ({ error: 'Upload failed' }));
-      throw new Error(error.error || `Upload failed: ${response.status}`);
+      throw new Error(error.message || error.error || `Upload failed: ${response.status}`);
     }
     return response.json();
   },

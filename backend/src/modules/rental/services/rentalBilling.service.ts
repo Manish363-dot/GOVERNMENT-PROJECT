@@ -1611,38 +1611,74 @@ export class RentalBillingService {
 
   /**
    * Executive Dashboard Analytics
-   * Computes live stats for Super Admin and Sub Admins:
-   * Total users, Total shops & occupancy, Expected Monthly Rent, Collected This Month, Overdue & trends.
+   * Computes 100% live database metrics (zero dummy fallbacks) for Super Admin and Sub Admins:
+   * Users, shops & occupancy, base rent + GST demand, monthly/FY/today collections,
+   * top defaulters, lease expiry alerts, market-wise summary, payment mode split, and 12-month trends.
    */
   async getDashboardAnalytics() {
     return rentalCache.getOrSet('analytics:dashboard', 15_000, () =>
       withRentalDbRetry(async () => {
+        // Ensure monthly bills are accrued before computing dashboard figures
+        await this.ensureAccruedMonthlyBills().catch(() => {});
+
         const now = new Date();
         const currentYear = now.getFullYear();
         const currentMonthNum = now.getMonth() + 1;
         const currentMonthStr = `${currentYear}-${currentMonthNum.toString().padStart(2, '0')}`;
 
-        const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-        const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-        const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1);
+        // Indian Financial Year (1 April – 31 March)
+        const fyStartYear = currentMonthNum >= 4 ? currentYear : currentYear - 1;
+        const fyEndYearShort = String((fyStartYear + 1) % 100).padStart(2, '0');
+        const fiscalYearLabel = `${fyStartYear}-${fyEndYearShort}`;
+        const startOfFiscalYear = new Date(fyStartYear, 3, 1, 0, 0, 0);
+
+        const startOfToday = new Date(currentYear, currentMonthNum - 1, now.getDate(), 0, 0, 0);
+        const endOfToday = new Date(currentYear, currentMonthNum - 1, now.getDate(), 23, 59, 59);
+        const startOfMonth = new Date(currentYear, currentMonthNum - 1, 1, 0, 0, 0);
 
         const [
-          totalUsers,
+          users,
           properties,
           activeAssignments,
           allBills,
-          monthPayments,
+          allSuccessPayments,
+          recentRawPayments,
+          pendingDocsCount,
         ] = await Promise.all([
-          rentalPrisma.rentalUser.count(),
+          rentalPrisma.rentalUser.findMany({
+            select: { id: true, user_id: true, full_name: true, mobile: true, status: true },
+          }),
           rentalPrisma.rentalProperty.findMany({
-            select: { status: true },
+            select: {
+              id: true,
+              property_number: true,
+              property_name: true,
+              property_type: true,
+              location: true,
+              status: true,
+              base_monthly_rent: true,
+            },
           }),
           rentalPrisma.propertyAssignment.findMany({
             where: { is_active: true },
-            select: { monthly_rent: true, property: { select: { base_monthly_rent: true } } },
+            select: {
+              id: true,
+              user_id: true,
+              property_id: true,
+              monthly_rent: true,
+              lease_start_date: true,
+              lease_end_date: true,
+              user: { select: { id: true, user_id: true, full_name: true, mobile: true } },
+              property: { select: { id: true, property_number: true, location: true, base_monthly_rent: true } },
+            },
           }),
           rentalPrisma.rentalBill.findMany({
+            where: { status: { not: 'CANCELLED' } },
             select: {
+              id: true,
+              bill_number: true,
+              user_id: true,
+              property_id: true,
               billing_month: true,
               rent_amount: true,
               gst_amount: true,
@@ -1650,122 +1686,517 @@ export class RentalBillingService {
               total_amount_due: true,
               amount_paid: true,
               balance_due: true,
+              due_date: true,
               status: true,
             },
           }),
           rentalPrisma.rentalPayment.findMany({
-            where: {
-              status: 'SUCCESS',
-              created_at: { gte: startOfMonth },
-            },
+            where: { status: 'SUCCESS' },
             select: {
               id: true,
               amount: true,
+              payment_method: true,
+              property_id: true,
               created_at: true,
             },
             orderBy: { created_at: 'desc' },
           }),
+          rentalPrisma.rentalPayment.findMany({
+            where: { status: 'SUCCESS' },
+            select: {
+              id: true,
+              amount: true,
+              payment_method: true,
+              payment_reference: true,
+              created_at: true,
+              user: { select: { id: true, full_name: true, mobile: true, user_id: true } },
+              property: { select: { property_number: true, location: true } },
+              receipt: { select: { receipt_number: true, billing_period: true } },
+              bill: {
+                select: {
+                  id: true,
+                  bill_number: true,
+                  billing_month: true,
+                  rent_amount: true,
+                  gst_amount: true,
+                  balance_due: true,
+                  status: true,
+                },
+              },
+            },
+            orderBy: { created_at: 'desc' },
+            take: 25,
+          }),
+          rentalPrisma.rentalUserDocument.count({
+            where: { verification_status: 'PENDING' },
+          }),
         ]);
+
+        // 1. User & Property Counts
+        const totalUsers = users.length;
+        const activeUsers = users.filter((u) => u.status === 'ACTIVE').length;
+        const inactiveUsers = totalUsers - activeUsers;
 
         const totalProperties = properties.length;
         const allottedProperties = properties.filter((p) => p.status === 'ALLOTTED').length;
         const vacantProperties = properties.filter((p) => p.status === 'VACANT').length;
+        const maintenanceProperties = properties.filter(
+          (p) => p.status === 'MAINTENANCE' || p.status === 'INACTIVE'
+        ).length;
+        const occupancyRate =
+          totalProperties > 0 ? Math.round((allottedProperties / totalProperties) * 100) : 0;
 
-        const todayBasePayments = monthPayments
-          .filter((p) => p.created_at >= startOfToday && p.created_at <= endOfToday)
-          .slice(0, 20);
+        // Real Property Category Counts
+        const typeCountsMap: Record<string, number> = {
+          COMMERCIAL_SHOP: 0,
+          ROADSIDE_STALL: 0,
+          WAREHOUSE_GODOWN: 0,
+          OFFICE_SPACE: 0,
+          LAND_PARCEL: 0,
+          OTHER: 0,
+        };
+        for (const p of properties) {
+          const t = p.property_type || 'OTHER';
+          typeCountsMap[t] = (typeCountsMap[t] || 0) + 1;
+        }
+        const propertyByType = Object.entries(typeCountsMap).map(([type, count]) => ({
+          type,
+          count,
+        }));
 
-        const todayPayments =
-          todayBasePayments.length > 0
-            ? await rentalPrisma.rentalPayment.findMany({
-                where: { id: { in: todayBasePayments.map((p) => p.id) } },
-                select: {
-                  id: true,
-                  amount: true,
-                  payment_method: true,
-                  created_at: true,
-                  user: { select: { full_name: true, mobile: true, user_id: true } },
-                  property: { select: { property_number: true, location: true } },
-                  receipt: { select: { receipt_number: true } },
-                  bill: { select: { billing_month: true } },
-                },
-                orderBy: { created_at: 'desc' },
-              })
-            : [];
+        // 2. Expected Monthly Rent (Base + 18% GST) — 100% Real
+        let expectedMonthlyBaseRent = 0;
+        let expectedMonthlyGst = 0;
+        let expectedMonthlyRent = 0;
 
-        // Expected Monthly Rent Calculation (inclusive of 18% GST)
-        let expectedMonthlyRent = activeAssignments.reduce(
-          (sum, a) =>
-            sum + calculateRentWithGst(Number(a.monthly_rent || a.property.base_monthly_rent || 0)).totalWithGst,
-          0
-        );
+        for (const a of activeAssignments) {
+          const base = Number(a.monthly_rent || a.property.base_monthly_rent || 0);
+          const calc = calculateRentWithGst(base);
+          expectedMonthlyBaseRent += calc.rentAmount;
+          expectedMonthlyGst += calc.gstAmount;
+          expectedMonthlyRent += calc.totalWithGst;
+        }
 
         const currentMonthBills = allBills.filter((b) => b.billing_month === currentMonthStr);
         if (currentMonthBills.length > 0) {
-          const sumDue = currentMonthBills.reduce((acc, b) => acc + resolveBillAmounts(b).totalAmountDue, 0);
-          if (sumDue > expectedMonthlyRent) expectedMonthlyRent = sumDue;
+          let billBaseSum = 0;
+          let billGstSum = 0;
+          let billTotalSum = 0;
+          for (const b of currentMonthBills) {
+            const res = resolveBillAmounts(b);
+            billBaseSum += res.rentAmount;
+            billGstSum += res.gstAmount;
+            billTotalSum += res.totalAmountDue;
+          }
+          if (billTotalSum > expectedMonthlyRent) {
+            expectedMonthlyBaseRent = Math.round(billBaseSum * 100) / 100;
+            expectedMonthlyGst = Math.round(billGstSum * 100) / 100;
+            expectedMonthlyRent = Math.round(billTotalSum * 100) / 100;
+          }
         }
 
-        if (expectedMonthlyRent === 0 && totalProperties > 0) {
-          expectedMonthlyRent = totalProperties * 3500;
+        // 3. Collections (Today, Current Month, Fiscal Year, All-Time) & Payment Mode Split
+        let todayCollected = 0;
+        let todayTransactionsCount = 0;
+        let collectedThisMonth = 0;
+        let monthTransactionsCount = 0;
+        let fiscalYearCollected = 0;
+        let totalAllTimeCollected = 0;
+
+        const modeAccumulator: Record<string, { amount: number; count: number }> = {};
+
+        for (const p of allSuccessPayments) {
+          const amt = Number(p.amount || 0);
+          totalAllTimeCollected += amt;
+
+          if (p.created_at >= startOfFiscalYear) {
+            fiscalYearCollected += amt;
+          }
+          if (p.created_at >= startOfMonth) {
+            collectedThisMonth += amt;
+            monthTransactionsCount++;
+          }
+          if (p.created_at >= startOfToday && p.created_at <= endOfToday) {
+            todayCollected += amt;
+            todayTransactionsCount++;
+          }
+
+          const rawMode = (p.payment_method || 'CASH').toUpperCase();
+          const normMode =
+            rawMode === 'CASH'
+              ? 'CASH'
+              : rawMode.includes('CHEQUE') || rawMode.includes('DD')
+                ? 'CHEQUE_DD'
+                : rawMode.includes('UPI') || rawMode === 'ONLINE'
+                  ? 'UPI_ONLINE'
+                  : rawMode.includes('NEFT') || rawMode.includes('RTGS') || rawMode.includes('BANK')
+                    ? 'BANK_TRANSFER'
+                    : 'POS_CARD';
+
+          if (!modeAccumulator[normMode]) {
+            modeAccumulator[normMode] = { amount: 0, count: 0 };
+          }
+          modeAccumulator[normMode].amount += amt;
+          modeAccumulator[normMode].count += 1;
         }
 
-        const collectedThisMonth = monthPayments.reduce((acc, p) => acc + Number(p.amount), 0);
-        const totalOverdue = allBills
-          .filter((b) => ['OVERDUE', 'PENDING', 'PARTIALLY_PAID'].includes(b.status))
-          .reduce((acc, b) => acc + resolveBillAmounts(b).balanceDue, 0);
+        const paymentModeBreakdown = Object.entries(modeAccumulator)
+          .map(([mode, stats]) => ({
+            mode,
+            amount: Math.round(stats.amount * 100) / 100,
+            count: stats.count,
+          }))
+          .sort((a, b) => b.amount - a.amount);
 
-        const todayCollected = todayPayments.reduce((acc, p) => acc + Number(p.amount), 0);
+        // 4. Overdue / Pending Totals & Top Defaulters Watchlist
+        const userMap = new Map(users.map((u) => [u.id, u]));
+        const propMap = new Map(properties.map((p) => [p.id, p]));
 
-        // Past 6 months collection trend
-        const monthsBack = 6;
+        let totalOverdue = 0;
+        let overdueBillsCount = 0;
+        let paidBillsCount = 0;
+
+        const defaulterMap = new Map<
+          string,
+          {
+            tenantId: string;
+            tenantCode: string;
+            tenantName: string;
+            mobile: string;
+            shopNumber: string;
+            location: string;
+            unpaidMonthsCount: number;
+            outstandingAmount: number;
+            oldestPendingBillId: string;
+            oldestBillingMonth: string;
+          }
+        >();
+
+        const pendingByProp = new Map<string, number>();
+
+        for (const b of allBills) {
+          const resolved = resolveBillAmounts(b);
+          if (b.status === 'PAID' || resolved.balanceDue <= 0) {
+            paidBillsCount++;
+            continue;
+          }
+          if (['OVERDUE', 'PENDING', 'PARTIALLY_PAID'].includes(b.status) && resolved.balanceDue > 0) {
+            totalOverdue += resolved.balanceDue;
+            overdueBillsCount++;
+            pendingByProp.set(b.property_id, (pendingByProp.get(b.property_id) || 0) + resolved.balanceDue);
+
+            const u = userMap.get(b.user_id);
+            const prop = propMap.get(b.property_id);
+            const existing = defaulterMap.get(b.user_id);
+            if (!existing) {
+              defaulterMap.set(b.user_id, {
+                tenantId: b.user_id,
+                tenantCode: u?.user_id || '—',
+                tenantName: u?.full_name || '—',
+                mobile: u?.mobile || '—',
+                shopNumber: prop?.property_number || '—',
+                location: prop?.location || '—',
+                unpaidMonthsCount: 1,
+                outstandingAmount: resolved.balanceDue,
+                oldestPendingBillId: b.id,
+                oldestBillingMonth: b.billing_month,
+              });
+            } else {
+              existing.unpaidMonthsCount += 1;
+              existing.outstandingAmount = Math.round((existing.outstandingAmount + resolved.balanceDue) * 100) / 100;
+              if (b.billing_month < existing.oldestBillingMonth) {
+                existing.oldestBillingMonth = b.billing_month;
+                existing.oldestPendingBillId = b.id;
+              }
+            }
+          }
+        }
+
+        const overdueTenantsCount = defaulterMap.size;
+        const topDefaulters = Array.from(defaulterMap.values())
+          .sort((a, b) => b.outstandingAmount - a.outstandingAmount)
+          .slice(0, 8);
+
+        const complianceRate =
+          allBills.length > 0 ? Math.round((paidBillsCount / allBills.length) * 100) : 0;
+
+        // 5. Lease Expiry Alerts (Expired or Expiring within 60 days)
+        const msPerDay = 24 * 60 * 60 * 1000;
+        const leaseAlerts: Array<{
+          tenantId: string;
+          tenantName: string;
+          mobile: string;
+          shopNumber: string;
+          location: string;
+          leaseEndDate: string;
+          daysRemaining: number;
+        }> = [];
+
+        for (const a of activeAssignments) {
+          if (!a.lease_end_date) continue;
+          const endDt = new Date(a.lease_end_date);
+          if (isNaN(endDt.getTime())) continue;
+          const daysRemaining = Math.ceil((endDt.getTime() - startOfToday.getTime()) / msPerDay);
+          if (daysRemaining <= 60) {
+            leaseAlerts.push({
+              tenantId: a.user_id,
+              tenantName: a.user.full_name,
+              mobile: a.user.mobile,
+              shopNumber: a.property.property_number,
+              location: a.property.location,
+              leaseEndDate: endDt.toISOString(),
+              daysRemaining,
+            });
+          }
+        }
+        leaseAlerts.sort((a, b) => a.daysRemaining - b.daysRemaining);
+
+        // 6. Market / Location-wise Summary
+        const collectedByProp = new Map<string, number>();
+        for (const p of allSuccessPayments) {
+          collectedByProp.set(p.property_id, (collectedByProp.get(p.property_id) || 0) + Number(p.amount || 0));
+        }
+
+        const marketMap = new Map<
+          string,
+          {
+            location: string;
+            totalShops: number;
+            allottedShops: number;
+            vacantShops: number;
+            collectedAmount: number;
+            pendingAmount: number;
+          }
+        >();
+
+        for (const prop of properties) {
+          const loc = (prop.location || 'अन्य क्षेत्र').trim();
+          const entry = marketMap.get(loc) || {
+            location: loc,
+            totalShops: 0,
+            allottedShops: 0,
+            vacantShops: 0,
+            collectedAmount: 0,
+            pendingAmount: 0,
+          };
+          entry.totalShops += 1;
+          if (prop.status === 'ALLOTTED') entry.allottedShops += 1;
+          if (prop.status === 'VACANT') entry.vacantShops += 1;
+          entry.collectedAmount += collectedByProp.get(prop.id) || 0;
+          entry.pendingAmount += pendingByProp.get(prop.id) || 0;
+          marketMap.set(loc, entry);
+        }
+
+        const marketBreakdown = Array.from(marketMap.values())
+          .map((m) => ({
+            ...m,
+            collectedAmount: Math.round(m.collectedAmount * 100) / 100,
+            pendingAmount: Math.round(m.pendingAmount * 100) / 100,
+          }))
+          .sort((a, b) => b.totalShops - a.totalShops || b.pendingAmount - a.pendingAmount);
+
+        // 7. Past 12 Months Real Trend + Year-wise (Jan–Dec) Target vs Achieved Breakdown
+        const monthsBack = 12;
         const monthlyTrends = [];
-        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const enMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const hiMonths = ['जन', 'फ़र', 'मार्च', 'अप्रैल', 'मई', 'जून', 'जुल', 'अग', 'सित', 'अक्टू', 'नवं', 'दिसं'];
+        const enFullMonths = [
+          'January', 'February', 'March', 'April', 'May', 'June',
+          'July', 'August', 'September', 'October', 'November', 'December',
+        ];
+        const hiFullMonths = [
+          'जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
+          'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर',
+        ];
+
+        // Group bills by YYYY-MM once for fast lookup
+        const monthAggMap = new Map<
+          string,
+          {
+            baseBilled: number;
+            gstBilled: number;
+            totalBilled: number;
+            paid: number;
+            pending: number;
+            pendingCurrent: number;
+            overdueAmount: number;
+          }
+        >();
+
+        const yearSet = new Set<number>([currentYear, currentYear - 1, currentYear - 2]);
+
+        for (const b of allBills) {
+          const mKey = b.billing_month;
+          if (!mKey) continue;
+          const yrNum = parseInt(mKey.slice(0, 4), 10);
+          if (!isNaN(yrNum) && yrNum >= 2000 && yrNum <= 2100) {
+            yearSet.add(yrNum);
+          }
+          const res = resolveBillAmounts(b);
+          const cur = monthAggMap.get(mKey) || {
+            baseBilled: 0,
+            gstBilled: 0,
+            totalBilled: 0,
+            paid: 0,
+            pending: 0,
+            pendingCurrent: 0,
+            overdueAmount: 0,
+          };
+          cur.baseBilled += res.rentAmount;
+          cur.gstBilled += res.gstAmount;
+          cur.totalBilled += res.totalAmountDue;
+          cur.paid += res.amountPaid;
+          cur.pending += res.balanceDue;
+
+          if (res.balanceDue > 0) {
+            const isPastMonthOverdue = mKey < currentMonthStr;
+            if (isPastMonthOverdue) {
+              cur.overdueAmount += res.balanceDue;
+            } else {
+              cur.pendingCurrent += res.balanceDue;
+            }
+          }
+
+          monthAggMap.set(mKey, cur);
+        }
 
         for (let i = monthsBack - 1; i >= 0; i--) {
           const d = new Date(currentYear, currentMonthNum - 1 - i, 1);
-          const mStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}`;
-          const label = `${monthNames[d.getMonth()]} '${d.getFullYear().toString().slice(2)}`;
-
-          const mBills = allBills.filter((b) => b.billing_month === mStr);
-          const totalBilled = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).totalAmountDue, 0);
-          const mPaid = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).amountPaid, 0);
-          const mPending = mBills.reduce((acc, b) => acc + resolveBillAmounts(b).balanceDue, 0);
+          const y = d.getFullYear();
+          const mIdx = d.getMonth();
+          const mStr = `${y}-${String(mIdx + 1).padStart(2, '0')}`;
+          const shortYr = String(y).slice(2);
+          const agg = monthAggMap.get(mStr);
 
           monthlyTrends.push({
             month: mStr,
-            label,
-            billed: totalBilled || (expectedMonthlyRent > 0 ? expectedMonthlyRent : 45000),
-            collected: mPaid || Math.round((totalBilled || 45000) * 0.8),
-            overdue: mPending || Math.round((totalBilled || 45000) * 0.2),
+            year: y,
+            monthNum: mIdx + 1,
+            label: `${enMonths[mIdx]} '${shortYr}`,
+            labelHi: `${hiMonths[mIdx]} '${shortYr}`,
+            baseBilled: Math.round((agg?.baseBilled || 0) * 100) / 100,
+            gstBilled: Math.round((agg?.gstBilled || 0) * 100) / 100,
+            billed: Math.round((agg?.totalBilled || 0) * 100) / 100,
+            collected: Math.round((agg?.paid || 0) * 100) / 100,
+            overdue: Math.round((agg?.pending || 0) * 100) / 100,
           });
         }
 
+        const availableYears = Array.from(yearSet).sort((a, b) => b - a);
+        const yearlyTrends: Record<
+          string,
+          Array<{
+            month: string;
+            monthNum: number;
+            label: string;
+            labelHi: string;
+            fullLabel: string;
+            fullLabelHi: string;
+            target: number;
+            achieved: number;
+            remaining: number;
+            overdue: number;
+            achievedPct: number;
+          }>
+        > = {};
+
+        for (const yr of availableYears) {
+          const points = [];
+          for (let mIdx = 0; mIdx < 12; mIdx++) {
+            const mStr = `${yr}-${String(mIdx + 1).padStart(2, '0')}`;
+            const agg = monthAggMap.get(mStr);
+            const target = Math.round((agg?.totalBilled || 0) * 100) / 100;
+            const achieved = Math.round((agg?.paid || 0) * 100) / 100;
+            const remaining = Math.round((agg?.pendingCurrent || 0) * 100) / 100;
+            const overdue = Math.round((agg?.overdueAmount || 0) * 100) / 100;
+            const achievedPct = target > 0 ? Math.min(100, Math.round((achieved / target) * 100)) : 0;
+
+            points.push({
+              month: mStr,
+              monthNum: mIdx + 1,
+              label: enMonths[mIdx],
+              labelHi: hiMonths[mIdx],
+              fullLabel: `${enFullMonths[mIdx]} ${yr}`,
+              fullLabelHi: `${hiFullMonths[mIdx]} ${yr}`,
+              target,
+              achieved,
+              remaining,
+              overdue,
+              achievedPct,
+            });
+          }
+          yearlyTrends[String(yr)] = points;
+        }
+
+        // 8. Format Audit Payment Items (for Today & Recent tabs + Official Form 5 Receipt)
+        const mapPaymentRecord = (p: (typeof recentRawPayments)[number]) => {
+          const paidAmt = Number(p.amount || 0);
+          const billBase = p.bill ? Number(p.bill.rent_amount || 0) : 0;
+          const billGst = p.bill ? Number(p.bill.gst_amount || 0) : 0;
+          const isFull = p.bill ? Number(p.bill.balance_due || 0) <= 0 || p.bill.status === 'PAID' : true;
+          const billingMonth = p.receipt?.billing_period || p.bill?.billing_month || currentMonthStr;
+
+          return {
+            id: p.id,
+            receiptNumber: p.receipt?.receipt_number || p.payment_reference || `REC-${p.id.slice(0, 6)}`,
+            billId: p.bill?.id || null,
+            billNumber: p.bill?.bill_number || `BL-${p.property?.property_number || '01'}-${billingMonth}`,
+            tenantId: p.user?.id || null,
+            tenantName: p.user?.full_name || '—',
+            tenantMobile: p.user?.mobile || '—',
+            tenantCode: p.user?.user_id || '—',
+            shopNumber: p.property?.property_number || '—',
+            location: p.property?.location || 'अल्मोड़ा',
+            amount: paidAmt,
+            baseRentAmount: billBase > 0 ? billBase : undefined,
+            gstAmount: billGst > 0 ? billGst : undefined,
+            isFullPayment: isFull,
+            paymentMethod: p.payment_method || 'CASH',
+            createdAt: p.created_at,
+            billingMonth,
+          };
+        };
+
+        const recentPayments = recentRawPayments.map(mapPaymentRecord);
+        const todayAudit = recentRawPayments
+          .filter((p) => p.created_at >= startOfToday && p.created_at <= endOfToday)
+          .map(mapPaymentRecord);
+
         return {
+          currentMonth: currentMonthStr,
+          fiscalYearLabel,
           totalUsers,
+          activeUsers,
+          inactiveUsers,
           totalProperties,
           allottedProperties,
           vacantProperties,
-          occupancyRate: totalProperties > 0 ? Math.round((allottedProperties / totalProperties) * 100) : 0,
-          expectedMonthlyRent,
-          collectedThisMonth,
-          totalOverdue,
-          todayCollected,
-          todayTransactionsCount: todayPayments.length,
-          todayAudit: todayPayments.map((p) => ({
-            id: p.id,
-            receiptNumber: p.receipt?.receipt_number || `REC-${p.id.slice(0, 8)}`,
-            tenantName: p.user?.full_name || 'Almora Resident',
-            tenantMobile: p.user?.mobile || 'N/A',
-            tenantCode: p.user?.user_id || 'TENANT',
-            shopNumber: p.property?.property_number || 'SHOP',
-            location: p.property?.location || 'Almora Market',
-            amount: Number(p.amount),
-            paymentMethod: p.payment_method,
-            createdAt: p.created_at,
-            billingMonth: p.bill?.billing_month || currentMonthStr,
-          })),
+          maintenanceProperties,
+          occupancyRate,
+          complianceRate,
+          pendingDocsCount,
+          expectedMonthlyBaseRent: Math.round(expectedMonthlyBaseRent * 100) / 100,
+          expectedMonthlyGst: Math.round(expectedMonthlyGst * 100) / 100,
+          expectedMonthlyRent: Math.round(expectedMonthlyRent * 100) / 100,
+          collectedThisMonth: Math.round(collectedThisMonth * 100) / 100,
+          monthTransactionsCount,
+          fiscalYearCollected: Math.round(fiscalYearCollected * 100) / 100,
+          totalAllTimeCollected: Math.round(totalAllTimeCollected * 100) / 100,
+          totalOverdue: Math.round(totalOverdue * 100) / 100,
+          overdueTenantsCount,
+          overdueBillsCount,
+          todayCollected: Math.round(todayCollected * 100) / 100,
+          todayTransactionsCount,
+          propertyByType,
+          paymentModeBreakdown,
+          topDefaulters,
+          leaseAlerts: leaseAlerts.slice(0, 8),
+          marketBreakdown,
+          todayAudit,
+          recentPayments,
           monthlyTrends,
+          availableYears,
+          yearlyTrends,
         };
       })
     );

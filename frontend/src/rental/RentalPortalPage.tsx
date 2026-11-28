@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { RentalNavbar } from './components/RentalNavbar';
 import { HeroSimple } from './components/HeroSection';
+import { AvailableShopsSection } from './components/AvailableShopsSection';
 import { AboutSection } from './components/AboutSection';
 import { NoticesSection } from './components/NoticesSection';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
@@ -37,7 +38,10 @@ const RentalLandingContent: React.FC = () => {
         {/* 2. About Zila Panchayat Almora Commercial Assets */}
         <AboutSection />
 
-        {/* 3. Public Notices & Orders */}
+        {/* 3. Currently Available (Vacant) Shops for Allotment */}
+        <AvailableShopsSection />
+
+        {/* 4. Public Notices & Orders */}
         <NoticesSection />
       </main>
 

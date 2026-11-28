@@ -1,6 +1,34 @@
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
 import { transliterateToHindi } from '../../../shared/utils/transliterate.util';
 import { rentalCache } from '../utils/rentalCache.util';
+import { S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION || 'ap-south-1',
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  },
+});
+
+const deleteShopS3Keys = async (keys: string[]) => {
+  const valid = Array.from(new Set((keys || []).filter(Boolean)));
+  if (valid.length === 0) return;
+  const bucket = process.env.AWS_S3_BUCKET_NAME || 'zila-panchayat-images';
+  try {
+    await s3.send(
+      new DeleteObjectsCommand({
+        Bucket: bucket,
+        Delete: {
+          Objects: valid.map((Key) => ({ Key })),
+          Quiet: true,
+        },
+      })
+    );
+  } catch (err) {
+    console.warn('[RentalProperty S3 Cleanup Warning]:', err);
+  }
+};
 
 export interface CreatePropertyDTO {
   propertyName?: string;
@@ -10,6 +38,7 @@ export interface CreatePropertyDTO {
   address: string;
   dimensionsSqft?: number;
   baseMonthlyRent: number;
+  uploadedPhotos?: Array<{ url: string; key: string }>;
 }
 
 export class RentalPropertyService {
@@ -49,6 +78,10 @@ export class RentalPropertyService {
       const finalName = hasCustomName ? (hindiName || dto.propertyName!).trim() : dto.propertyNumber.trim();
       const finalLocation = hasCustomLocation ? (hindiLocation || dto.location!).trim() : finalAddress;
 
+      const photos = (dto.uploadedPhotos || []).slice(0, 3);
+      const photoUrls = photos.map((p) => p.url);
+      const photoKeys = photos.map((p) => p.key);
+
       const property = await rentalPrisma.rentalProperty.create({
         data: {
           property_id: propertyId,
@@ -59,6 +92,8 @@ export class RentalPropertyService {
           address: finalAddress,
           dimensions_sqft: dto.dimensionsSqft ? Number(dto.dimensionsSqft) : null,
           base_monthly_rent: Number(dto.baseMonthlyRent),
+          photo_urls: photoUrls,
+          photo_keys: photoKeys,
           status: 'VACANT',
         },
       });
@@ -138,6 +173,7 @@ export class RentalPropertyService {
               address: true,
               dimensions_sqft: true,
               base_monthly_rent: true,
+              photo_urls: true,
               status: true,
             },
             orderBy: { created_at: 'desc' },
@@ -181,6 +217,7 @@ export class RentalPropertyService {
             address: p.address,
             dimensionsSqft: p.dimensions_sqft,
             baseMonthlyRent: Number(p.base_monthly_rent),
+            photoUrls: p.photo_urls || [],
             status: p.status,
             currentTenant: currentAssignment
               ? {
@@ -479,13 +516,145 @@ export class RentalPropertyService {
   }
 
   /**
+   * Public endpoint: returns ONLY currently VACANT (available, unallotted) shops for the Landing Page.
+   * Automatically excludes any shop the moment it is allotted to a tenant.
+   */
+  async listPublicAvailableProperties() {
+    return rentalCache.getOrSet('properties:public:available', 10_000, () =>
+      withRentalDbRetry(async () => {
+        const vacantProps = await rentalPrisma.rentalProperty.findMany({
+          where: {
+            status: 'VACANT',
+            assignments: {
+              none: { is_active: true },
+            },
+          },
+          select: {
+            id: true,
+            property_id: true,
+            property_name: true,
+            property_type: true,
+            property_number: true,
+            location: true,
+            address: true,
+            dimensions_sqft: true,
+            base_monthly_rent: true,
+            photo_urls: true,
+            created_at: true,
+          },
+          orderBy: { created_at: 'desc' },
+        });
+
+        return vacantProps.map((p) => ({
+          id: p.id,
+          propertyId: p.property_id,
+          propertyName: p.property_name,
+          propertyType: p.property_type,
+          propertyNumber: p.property_number,
+          location: p.location,
+          address: p.address,
+          dimensionsSqft: p.dimensions_sqft,
+          baseMonthlyRent: Number(p.base_monthly_rent),
+          photoUrls: p.photo_urls || [],
+          createdAt: p.created_at,
+        }));
+      })
+    );
+  }
+
+  /**
+   * Update up to 3 photos on an existing property (adds new S3 photos & deletes removed S3 keys)
+   */
+  async updatePropertyPhotos(
+    adminId: string,
+    propertyId: string,
+    keepUrls: string[],
+    newPhotos: Array<{ url: string; key: string }>,
+    clientIp?: string
+  ) {
+    return withRentalDbRetry(async () => {
+      const property = await rentalPrisma.rentalProperty.findUnique({
+        where: { id: propertyId },
+        select: {
+          id: true,
+          property_number: true,
+          photo_urls: true,
+          photo_keys: true,
+        },
+      });
+
+      if (!property) {
+        throw new Error('Property not found.');
+      }
+
+      const existingUrls = property.photo_urls || [];
+      const existingKeys = property.photo_keys || [];
+
+      const keptUrls: string[] = [];
+      const keptKeys: string[] = [];
+      const keysToDelete: string[] = [];
+
+      existingUrls.forEach((url, idx) => {
+        const key = existingKeys[idx] || '';
+        if (keepUrls.includes(url)) {
+          keptUrls.push(url);
+          keptKeys.push(key);
+        } else if (key) {
+          keysToDelete.push(key);
+        }
+      });
+
+      const finalUrls = [...keptUrls, ...newPhotos.map((p) => p.url)].slice(0, 3);
+      const finalKeys = [...keptKeys, ...newPhotos.map((p) => p.key)].slice(0, 3);
+
+      const updated = await rentalPrisma.rentalProperty.update({
+        where: { id: propertyId },
+        data: {
+          photo_urls: finalUrls,
+          photo_keys: finalKeys,
+        },
+      });
+
+      if (keysToDelete.length > 0) {
+        await deleteShopS3Keys(keysToDelete);
+      }
+
+      await rentalPrisma.rentalAdminAuditLog.create({
+        data: {
+          admin_id: adminId,
+          action: 'PROPERTY_PHOTOS_UPDATED',
+          target_entity: 'RentalProperty',
+          target_id: propertyId,
+          after_state: JSON.stringify({
+            propertyNumber: property.property_number,
+            photoCount: finalUrls.length,
+          }),
+          ip_address: clientIp || 'Unknown',
+        },
+      });
+
+      rentalCache.invalidate('properties:', 'overview:', 'analytics:');
+      return {
+        id: updated.id,
+        photoUrls: updated.photo_urls,
+      };
+    });
+  }
+
+  /**
    * Delete a commercial property asset permanently
    */
   async deleteProperty(adminId: string, propertyId: string, clientIp?: string) {
     return withRentalDbRetry(async () => {
       const property = await rentalPrisma.rentalProperty.findUnique({
         where: { id: propertyId },
-        select: { id: true, property_number: true, property_name: true, location: true },
+        select: {
+          id: true,
+          property_number: true,
+          property_name: true,
+          location: true,
+          photo_keys: true,
+        },
       });
 
       if (!property) {
@@ -527,13 +696,16 @@ export class RentalPropertyService {
             }),
           ]);
 
-          return { success: true, message: 'Property deleted successfully' };
+          return { success: true, message: 'Property deleted successfully', photoKeys: property.photo_keys || [] };
         },
         { maxWait: 10000, timeout: 30000 }
       );
-    }).then((res) => {
+    }).then(async (res) => {
+      if (res.photoKeys && res.photoKeys.length > 0) {
+        await deleteShopS3Keys(res.photoKeys);
+      }
       rentalCache.invalidate('properties:', 'overview:', 'analytics:', 'tenants:', 'ledger:');
-      return res;
+      return { success: res.success, message: res.message };
     });
   }
 

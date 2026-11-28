@@ -54,16 +54,87 @@ export class RentalPropertyController {
         return sendError(res, parsed.error.issues[0]?.message || 'Invalid property parameters', 400);
       }
 
+      const rawFiles = ((req as any).files?.shop_photos as Array<{ location: string; key: string }>) || [];
+      const uploadedPhotos = rawFiles
+        .filter((f) => f && f.location)
+        .slice(0, 3)
+        .map((f) => ({ url: f.location, key: f.key }));
+
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
       const property = await rentalPropertyService.createProperty(
         req.rentalAdmin.adminId,
-        parsed.data,
+        {
+          ...parsed.data,
+          uploadedPhotos,
+        },
         clientIp
       );
 
       return sendSuccess(res, property, 'Commercial property added successfully', 201);
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to create commercial property', 400);
+    }
+  }
+
+  /**
+   * GET /api/rental/properties/public/available
+   * Public endpoint returning strictly VACANT (unallotted) shops with photos & details
+   */
+  async listPublicAvailableProperties(_req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      const items = await rentalPropertyService.listPublicAvailableProperties();
+      return sendSuccess(res, items, 'Available properties retrieved successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to retrieve available properties', 400);
+    }
+  }
+
+  /**
+   * PUT /api/rental/properties/:id/photos
+   * Update up to 3 photos on an existing shop/property
+   */
+  async updatePropertyPhotos(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin) {
+        return sendError(res, 'Administrator authentication required', 401);
+      }
+
+      const { id } = req.params;
+      let keepUrls: string[] = [];
+      if (req.body?.keepUrls) {
+        if (Array.isArray(req.body.keepUrls)) {
+          keepUrls = req.body.keepUrls.map(String);
+        } else if (typeof req.body.keepUrls === 'string') {
+          try {
+            const parsed = JSON.parse(req.body.keepUrls);
+            if (Array.isArray(parsed)) keepUrls = parsed.map(String);
+          } catch {
+            keepUrls = [req.body.keepUrls];
+          }
+        }
+      }
+
+      const rawFiles = ((req as any).files?.shop_photos as Array<{ location: string; key: string }>) || [];
+      const newPhotos = rawFiles
+        .filter((f) => f && f.location)
+        .map((f) => ({ url: f.location, key: f.key }));
+
+      if (keepUrls.length + newPhotos.length > 3) {
+        return sendError(res, 'अधिकतम 3 फोटो ही जोड़ी जा सकती हैं। (Maximum 3 photos allowed)', 400);
+      }
+
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const updated = await rentalPropertyService.updatePropertyPhotos(
+        req.rentalAdmin.adminId,
+        id,
+        keepUrls,
+        newPhotos,
+        clientIp
+      );
+
+      return sendSuccess(res, updated, 'Shop photos updated successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to update shop photos', 400);
     }
   }
 

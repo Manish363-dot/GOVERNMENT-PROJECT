@@ -1,311 +1,700 @@
-import React, { useState, useEffect } from "react";
-import { NavLink } from "react-router-dom";
-import { AdminLayout } from "./AdminLayout";
-import { useLanguage } from "../context/LanguageContext";
-import { useAuth } from "../context/AuthContext";
-import { api } from "@/services/api";
-import { rentalBillingApi, DashboardAnalytics } from "../services/rentalBilling.service";
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import * as XLSX from 'xlsx';
+import { AdminLayout } from './AdminLayout';
+import { useLanguage } from '../context/LanguageContext';
+import { useAuth } from '../context/AuthContext';
+import { api } from '@/services/api';
 import {
-  Revenue3DBarChart,
-  RevenuePatternAreaChart,
-  PropertyPatternDonutChart,
-  MunicipalRadialScoresChart,
-} from "./components/RentalCharts";
-import { Landmark, Download, Printer, ArrowRight, RefreshCw } from "lucide-react";
+  rentalBillingApi,
+  DashboardAnalytics,
+  DashboardAuditPaymentItem,
+} from '../services/rentalBilling.service';
+import { YearlyTargetGraphChart, Yearly3DBarChart } from './components/RentalCharts';
+import { OfficialStatutoryReceipt } from '../components/OfficialStatutoryReceipt';
+import { RefreshCw, Download, ArrowRight } from 'lucide-react';
 
 export const AdminDashboardPage: React.FC = () => {
   const { language } = useLanguage();
-  const isHi = language === "hi";
+  const isHi = language === 'hi';
   const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const initialAnalytics = api.peekCache<{ data: DashboardAnalytics }>("/rental/bills/analytics")?.data ?? null;
+  const initialAnalytics =
+    api.peekCache<{ data: DashboardAnalytics }>('/rental/bills/analytics')?.data ?? null;
   const [loading, setLoading] = useState(!initialAnalytics);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(initialAnalytics);
-  const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [collectionTab, setCollectionTab] = useState<'TODAY' | 'RECENT'>('TODAY');
+  const [selectedReceipt, setSelectedReceipt] = useState<DashboardAuditPaymentItem | null>(null);
 
   const fetchDashboardData = async (force = false) => {
     if (force) {
-      api.invalidateCache("/rental/bills/analytics");
+      api.invalidateCache('/rental/bills/analytics');
       setLoading(true);
     } else if (!analytics) {
       setLoading(true);
     }
     try {
       const res = await rentalBillingApi.getAnalytics();
-      if (res && res.data) setAnalytics(res.data);
+      if (res && res.data) {
+        setAnalytics(res.data);
+        if (
+          (!res.data.todayAudit || res.data.todayAudit.length === 0) &&
+          res.data.recentPayments &&
+          res.data.recentPayments.length > 0
+        ) {
+          setCollectionTab('RECENT');
+        }
+      }
     } catch (err) {
-      console.error("Failed to load dashboard analytics", err);
+      console.error('Failed to load dashboard analytics', err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchDashboardData(false); }, []);
+  useEffect(() => {
+    fetchDashboardData(false);
+  }, []);
 
-  const formatCurrency = (amount: number) =>
-    "₹" + Number(amount || 0).toLocaleString("en-IN");
+  const formatCurrency = (amount: number | undefined | null) =>
+    '₹' + Number(amount || 0).toLocaleString('en-IN');
 
-  const downloadTodayAuditCSV = () => {
-    if (!analytics?.todayAudit || analytics.todayAudit.length === 0) {
-      alert(isHi ? "आज का कोई भुगतान रिकॉर्ड उपलब्ध नहीं है।" : "No payment records available for today.");
-      return;
+  const formatMonthLabel = (monthStr: string) => {
+    if (!monthStr) return '—';
+    const parts = monthStr.split('-');
+    if (parts.length < 2) return monthStr;
+    const year = parts[0];
+    const m = parseInt(parts[1], 10);
+    const hiMonths = [
+      'जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
+      'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर',
+    ];
+    const enMonths = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+    if (m >= 1 && m <= 12) {
+      return isHi ? `${hiMonths[m - 1]} ${year}` : `${enMonths[m - 1]} ${year}`;
     }
-    const headers = ["Receipt No","Tenant Name","Mobile","Tenant Code","Shop No","Location","Amount (INR)","Payment Mode","Date Time","Billing Month"];
-    const rows = analytics.todayAudit.map((item) => [
-      item.receiptNumber, `"${item.tenantName}"`, item.tenantMobile,
-      item.tenantCode, `"${item.shopNumber}"`, `"${item.location}"`,
-      item.amount, item.paymentMethod,
-      new Date(item.createdAt).toLocaleString("en-IN"), item.billingMonth,
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
-    const link = document.createElement("a");
-    link.setAttribute("href", encodeURI(csvContent));
-    link.setAttribute("download", `ZPA_Today_Collections_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    return monthStr;
   };
 
-  const collectionPct =
-    analytics?.expectedMonthlyRent && analytics.expectedMonthlyRent > 0
-      ? Math.round(((analytics.collectedThisMonth || 0) / analytics.expectedMonthlyRent) * 100)
-      : 0;
+  const formatModeLabel = (mode: string) => {
+    const m = (mode || 'CASH').toUpperCase();
+    if (m === 'CASH') return isHi ? 'नकद काउंटर' : 'Cash Counter';
+    if (m === 'CHEQUE_DD' || m.includes('CHEQUE')) return isHi ? 'चेक / डिमांड ड्राफ्ट' : 'Cheque / DD';
+    if (m === 'UPI_ONLINE' || m.includes('UPI') || m === 'ONLINE')
+      return isHi ? 'यूपीआई / ऑनलाइन' : 'UPI / Online';
+    if (m === 'BANK_TRANSFER' || m.includes('NEFT') || m.includes('BANK'))
+      return isHi ? 'बैंक अंतरण' : 'Bank Transfer';
+    return isHi ? 'पीओएस / कार्ड' : 'POS / Card';
+  };
+
+  const activeCollectionRows: DashboardAuditPaymentItem[] =
+    collectionTab === 'TODAY'
+      ? analytics?.todayAudit || []
+      : analytics?.recentPayments || analytics?.todayAudit || [];
+
+  const handleExportExcel = () => {
+    if (!activeCollectionRows || activeCollectionRows.length === 0) {
+      alert(
+        isHi
+          ? 'निर्यात करने के लिए कोई भुगतान अभिलेख उपलब्ध नहीं है।'
+          : 'No payment records available to export.'
+      );
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+    const sheetData: any[][] = [
+      [
+        isHi
+          ? 'कार्यालय जिला पंचायत अल्मोड़ा (उत्तराखण्ड शासन)'
+          : 'OFFICE OF ZILA PANCHAYAT ALMORA (GOVT. OF UTTARAKHAND)',
+      ],
+      [
+        isHi
+          ? collectionTab === 'TODAY'
+            ? 'दैनिक किराया वसूली ऑडिट विवरण'
+            : 'हाल के किराया भुगतान अभिलेख'
+          : collectionTab === 'TODAY'
+            ? "Today's Rent Collection Audit Report"
+            : 'Recent Rent Payment Audit Report',
+      ],
+      [
+        isHi ? 'रिपोर्ट दिनांक:' : 'Generated On:',
+        new Date().toLocaleString('en-IN'),
+      ],
+      [],
+      isHi
+        ? [
+          'क्र.सं.',
+          'रसीद संख्या',
+          'बिल संख्या',
+          'किरायेदार का नाम',
+          'मोबाइल नंबर',
+          'किरायेदार कोड',
+          'दुकान संख्या',
+          'बाजार / स्थान',
+          'बिल माह',
+          'जमा राशि (₹)',
+          'भुगतान माध्यम',
+          'दिनांक एवं समय',
+        ]
+        : [
+          'S.No.',
+          'Receipt No.',
+          'Bill No.',
+          'Tenant Name',
+          'Mobile',
+          'Tenant Code',
+          'Shop No.',
+          'Market / Location',
+          'Billing Month',
+          'Amount Paid (INR)',
+          'Payment Mode',
+          'Date & Time',
+        ],
+      ...activeCollectionRows.map((item, idx) => [
+        idx + 1,
+        item.receiptNumber,
+        item.billNumber || '—',
+        item.tenantName,
+        item.tenantMobile,
+        item.tenantCode,
+        item.shopNumber,
+        item.location,
+        item.billingMonth,
+        Number(item.amount || 0),
+        formatModeLabel(item.paymentMethod),
+        new Date(item.createdAt).toLocaleString('en-IN'),
+      ]),
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols'] = [
+      { wch: 8 },
+      { wch: 18 },
+      { wch: 24 },
+      { wch: 24 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 14 },
+      { wch: 20 },
+      { wch: 14 },
+      { wch: 16 },
+      { wch: 18 },
+      { wch: 22 },
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, 'Rent_Collections');
+    const dateTag = new Date().toISOString().slice(0, 10);
+    XLSX.writeFile(
+      wb,
+      `ZPA_${collectionTab === 'TODAY' ? 'Today' : 'Recent'}_Collections_${dateTag}.xlsx`
+    );
+  };
 
   const trendData = analytics?.monthlyTrends || [];
+  const defaulters = analytics?.topDefaulters || [];
+  const leaseAlerts = analytics?.leaseAlerts || [];
+  const paymentModes = analytics?.paymentModeBreakdown || [];
+  const totalModeSum = paymentModes.reduce((s, m) => s + m.amount, 0);
+
+  const resolvedAdminName =
+    user?.name || (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator');
 
   return (
     <AdminLayout
-      title={isHi ? "मुख्य डैशबोर्ड" : "Admin Dashboard"}
-      breadcrumbs={[{ label: isHi ? "डैशबोर्ड" : "Dashboard" }]}
+      title={isHi ? 'मुख्य प्रशासनिक डैशबोर्ड' : 'Executive Admin Dashboard'}
+      breadcrumbs={[{ label: isHi ? 'डैशबोर्ड' : 'Dashboard' }]}
     >
+      {/* Print media rules for isolated Form 5 Receipt OR Yearly Graph Report */}
+      <style>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #official-statutory-receipt-print,
+          #official-statutory-receipt-print *,
+          #official-yearly-graph-report-print,
+          #official-yearly-graph-report-print *,
+          #official-yearly-3dbar-report-print,
+          #official-yearly-3dbar-report-print * {
+            visibility: visible !important;
+          }
+          #official-statutory-receipt-print,
+          #official-yearly-graph-report-print,
+          #official-yearly-3dbar-report-print {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 8mm 10mm !important;
+            background: #ffffff !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+        }
+      `}</style>
 
-      {/* Welcome Banner */}
-      <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-full bg-blue-50 flex items-center justify-center shrink-0 border border-blue-100">
-            <Landmark className="w-5 h-5 text-blue-700" />
+      <div className="space-y-5">
+        {/* ── 1. OFFICIAL GOVERNMENT HEADER STRIP & QUICK ACTIONS ── */}
+        <div className="bg-white border border-slate-300 rounded-xl overflow-hidden shadow-2xs">
+          <div className="bg-[#0B3B60] text-white px-5 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-bold uppercase tracking-widest text-slate-200">
+                {isHi
+                  ? 'उत्तराखण्ड शासन • कार्यालय जिला पंचायत अल्मोड़ा'
+                  : 'Govt. of Uttarakhand • Office of Zila Panchayat Almora'}
+              </div>
+              <h2 className="text-base sm:text-lg font-extrabold text-white mt-0.5">
+                {isHi
+                  ? `स्वागत है, ${resolvedAdminName}`
+                  : `Welcome, ${resolvedAdminName}`}
+              </h2>
+
+            </div>
+
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <div className="px-3 py-1.5 rounded-md bg-white/10 border border-white/20 text-xs font-mono font-semibold text-white">
+                {isHi
+                  ? `वित्तीय वर्ष: ${analytics?.fiscalYearLabel || '2026-27'}`
+                  : `FY: ${analytics?.fiscalYearLabel || '2026-27'}`}
+              </div>
+
+            </div>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-slate-800">
-              {isHi ? `स्वागत है, ${user?.name || "Super Admin"}` : `Welcome, ${user?.name || "Super Admin"}`}
-            </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {isHi ? "किराया प्रबंधन प्रणाली — जिला पंचायत अल्मोड़ा" : "Rental Management System — Zila Panchayat Almora"}
-            </p>
-          </div>
+
+
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-slate-500 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100">
-            साफ प्रशासन &nbsp;|&nbsp; डिजिटल सेवा &nbsp;|&nbsp; समृद्ध अल्मोड़ा
-          </span>
-          <button
-            onClick={() => fetchDashboardData(true)}
-            disabled={loading}
-            className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-500 transition"
-            title="Refresh"
+
+        {/* ── 2. FIVE DISTINCT MONOCHROME KPI CARDS (Zero Duplicate Numbers, Zero Extra Colors) ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5">
+          {/* Card 1: Total Tenants */}
+          <div
+            onClick={() => navigate('/rental/admin/tenants')}
+            className="bg-white rounded-xl p-4 border border-slate-300 hover:border-slate-500 shadow-2xs cursor-pointer transition"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-          </button>
-        </div>
-      </div>
-
-      {/* 5 Metric Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div className="bg-white rounded-xl p-4 border border-slate-200">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">{isHi ? "कुल किरायेदार" : "Total Tenants"}</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1.5 font-mono">{loading ? "—" : analytics?.totalUsers ?? 0}</p>
-          <p className="text-[11px] text-slate-400 mt-1">{isHi ? "पंजीकृत" : "Registered"}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">{isHi ? "दुकानें" : "Shops"}</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1.5 font-mono">{loading ? "—" : analytics?.totalProperties ?? 0}</p>
-          <p className="text-[11px] text-slate-400 mt-1">
-            {analytics?.allottedProperties ?? 0} {isHi ? "आवंटित" : "allotted"} · {analytics?.vacantProperties ?? 0} {isHi ? "रिक्त" : "vacant"}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">{isHi ? "मासिक मांग" : "Monthly Demand"}</p>
-          <p className="text-2xl font-bold text-slate-800 mt-1.5 font-mono">{loading ? "—" : formatCurrency(analytics?.expectedMonthlyRent ?? 0)}</p>
-          <p className="text-[11px] text-slate-400 mt-1">{isHi ? "देय राशि" : "Expected"}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">{isHi ? "इस माह वसूली" : "Collected"}</p>
-          <p className="text-2xl font-bold text-emerald-700 mt-1.5 font-mono">{loading ? "—" : formatCurrency(analytics?.collectedThisMonth ?? 0)}</p>
-          <p className="text-[11px] text-emerald-500 mt-1">{collectionPct}% {isHi ? "लक्ष्य" : "of target"}</p>
-        </div>
-        <div className="bg-white rounded-xl p-4 border border-slate-200">
-          <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide">{isHi ? "कुल बकाया" : "Overdue"}</p>
-          <p className="text-2xl font-bold text-rose-600 mt-1.5 font-mono">{loading ? "—" : formatCurrency(analytics?.totalOverdue ?? 0)}</p>
-          <p className="text-[11px] text-rose-400 mt-1">{isHi ? "लंबित" : "Pending clearance"}</p>
-        </div>
-      </div>
-
-      {/* Charts Row 1: Bar + Donut */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <Revenue3DBarChart data={trendData} isHi={isHi} />
-        </div>
-        <div className="lg:col-span-1">
-          <PropertyPatternDonutChart
-            allotted={analytics?.allottedProperties ?? 0}
-            vacant={analytics?.vacantProperties ?? 0}
-            total={analytics?.totalProperties ?? 0}
-            isHi={isHi}
-          />
-        </div>
-      </div>
-
-      {/* Charts Row 2: Area + Radial */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <RevenuePatternAreaChart data={trendData} isHi={isHi} />
-        </div>
-        <div className="lg:col-span-1">
-          <MunicipalRadialScoresChart
-            occupancyScore={analytics?.occupancyRate || 82}
-            collectionScore={Math.min(100, collectionPct)}
-            complianceScore={88}
-            isHi={isHi}
-          />
-        </div>
-      </div>
-
-      {/* Today Audit Table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />
-              <h3 className="text-sm font-semibold text-slate-800">
-                {isHi ? "आज का भुगतान ऑडिट" : "Today's Collections"}
-              </h3>
-            </div>
-            <p className="text-xs text-slate-400 mt-0.5">
-              {isHi
-                ? `आज: ${formatCurrency(analytics?.todayCollected ?? 0)} (${analytics?.todayTransactionsCount ?? 0} भुगतान)`
-                : `${formatCurrency(analytics?.todayCollected ?? 0)} · ${analytics?.todayTransactionsCount ?? 0} transactions`}
+            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+              {isHi ? 'कुल किरायेदार' : 'Total Tenants'}
             </p>
+            <p className="text-2xl font-black text-slate-900 mt-1.5 font-mono">
+              {loading ? '—' : analytics?.totalUsers ?? 0}
+            </p>
+
           </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={downloadTodayAuditCSV}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-medium transition"
-            >
-              <Download className="w-3.5 h-3.5" />
-              {isHi ? "CSV" : "Export CSV"}
-            </button>
-            <NavLink
-              to="/rental/admin/records"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition"
-            >
-              {isHi ? "सभी रिकॉर्ड" : "All Records"}
-              <ArrowRight className="w-3.5 h-3.5" />
-            </NavLink>
+
+          {/* Card 2: Total Shops & Properties */}
+          <div
+            onClick={() => navigate('/rental/admin/properties')}
+            className="bg-white rounded-xl p-4 border border-slate-300 hover:border-slate-500 shadow-2xs cursor-pointer transition"
+          >
+            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+              {isHi ? 'कुल दुकानें व संपत्ति' : 'Total Properties'}
+            </p>
+            <p className="text-2xl font-black text-slate-900 mt-1.5 font-mono">
+              {loading ? '—' : analytics?.totalProperties ?? 0}
+            </p>
+
+          </div>
+
+          {/* Card 3: Monthly Rent Target */}
+          <div
+            onClick={() => navigate('/rental/admin/billing')}
+            className="bg-white rounded-xl p-4 border border-slate-300 hover:border-slate-500 shadow-2xs cursor-pointer transition"
+          >
+            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+              {isHi ? 'मासिक किराया लक्ष्य' : 'Monthly Rent Target'}
+            </p>
+            <p className="text-2xl font-black text-slate-900 mt-1.5 font-mono">
+              {loading ? '—' : formatCurrency(analytics?.expectedMonthlyRent)}
+            </p>
+
+          </div>
+
+          {/* Card 4: Total Collected Revenue */}
+          <div
+            onClick={() => navigate('/rental/admin/ledger')}
+            className="bg-white rounded-xl p-4 border border-slate-300 hover:border-slate-500 shadow-2xs cursor-pointer transition"
+          >
+            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+              {isHi ? 'कुल प्राप्त वसूली' : 'Total Collected'}
+            </p>
+            <p className="text-2xl font-black text-slate-900 mt-1.5 font-mono">
+              {loading ? '—' : formatCurrency(analytics?.fiscalYearCollected)}
+            </p>
+
+          </div>
+
+          {/* Card 5: Total Outstanding Dues */}
+          <div
+            onClick={() => navigate('/rental/admin/billing')}
+            className="bg-white rounded-xl p-4 border border-slate-300 hover:border-slate-500 shadow-2xs cursor-pointer transition"
+          >
+            <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+              {isHi ? 'कुल लंबित बकाया' : 'Total Pending Dues'}
+            </p>
+            <p className="text-2xl font-black text-slate-900 mt-1.5 font-mono">
+              {loading ? '—' : formatCurrency(analytics?.totalOverdue)}
+            </p>
+
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          {analytics?.todayAudit && analytics.todayAudit.length > 0 ? (
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-500 font-semibold uppercase tracking-wide">
-                  <th className="py-3 px-4">{isHi ? "रसीद संख्या" : "Receipt No"}</th>
-                  <th className="py-3 px-4">{isHi ? "किरायेदार" : "Tenant"}</th>
-                  <th className="py-3 px-4">{isHi ? "दुकान" : "Shop"}</th>
-                  <th className="py-3 px-4">{isHi ? "माह" : "Month"}</th>
-                  <th className="py-3 px-4">{isHi ? "राशि" : "Amount"}</th>
-                  <th className="py-3 px-4">{isHi ? "माध्यम" : "Mode"}</th>
-                  <th className="py-3 px-4">{isHi ? "समय" : "Time"}</th>
-                  <th className="py-3 px-4 text-right">{isHi ? "रसीद" : "Receipt"}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {analytics.todayAudit.map((p) => (
-                  <tr key={p.id} className="hover:bg-slate-50/60 transition">
-                    <td className="py-3 px-4 font-mono font-semibold text-blue-600">{p.receiptNumber}</td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-slate-800">{p.tenantName}</div>
-                      <div className="text-[10px] text-slate-400">{p.tenantMobile}</div>
-                    </td>
-                    <td className="py-3 px-4">
-                      <div className="font-medium text-slate-700">{p.shopNumber}</div>
-                      <div className="text-[10px] text-slate-400">{p.location}</div>
-                    </td>
-                    <td className="py-3 px-4 text-slate-500 font-mono">{p.billingMonth}</td>
-                    <td className="py-3 px-4 font-bold text-emerald-700">{formatCurrency(p.amount)}</td>
-                    <td className="py-3 px-4">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">{p.paymentMethod}</span>
-                    </td>
-                    <td className="py-3 px-4 text-slate-400">
-                      {new Date(p.createdAt).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <button
-                        onClick={() => setSelectedReceipt(p)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 hover:bg-slate-800 hover:text-white hover:border-slate-800 text-slate-600 text-xs font-medium transition"
-                      >
-                        <Printer className="w-3 h-3" />
-                        {isHi ? "देखें" : "View"}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="py-10 text-center">
-              <p className="text-sm text-slate-400">
-                {isHi ? "आज का कोई भुगतान रिकॉर्ड उपलब्ध नहीं है।" : "No payment records for today yet."}
-              </p>
+        {/* ── 3. OFFICIAL CHARTS ROW: YEARLY TARGET GRAPH + 3D YEARLY BAR CHART ── */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <YearlyTargetGraphChart
+            monthlyTarget={analytics?.expectedMonthlyRent ?? 0}
+            currentMonth={analytics?.currentMonth}
+            availableYears={analytics?.availableYears}
+            yearlyTrends={analytics?.yearlyTrends}
+            fallbackTrends={trendData}
+            isHi={isHi}
+          />
+          <Yearly3DBarChart
+            currentMonth={analytics?.currentMonth}
+            availableYears={analytics?.availableYears}
+            yearlyTrends={analytics?.yearlyTrends}
+            fallbackTrends={trendData}
+            isHi={isHi}
+          />
+        </div>
+
+        {/* ── 4. PENDING RENT LIST + PAYMENT MODES (Zero Repeated Shop Counts, Pure Black Data) ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+          {/* Pending Rent Tenants List (8 columns) */}
+          <div className="lg:col-span-8 bg-white border border-slate-300 rounded-xl shadow-2xs overflow-hidden flex flex-col">
+            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  {isHi ? 'बकाया किराया सूची' : 'Pending Rent List'}
+                </h3>
+
+              </div>
+              <NavLink
+                to="/rental/admin/billing"
+                className="text-xs font-bold text-slate-900 hover:underline inline-flex items-center gap-1 shrink-0"
+              >
+                <span>{isHi ? 'सभी बिल देखें' : 'All Bills'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </NavLink>
             </div>
-          )}
+
+            {defaulters.length === 0 ? (
+              <div className="p-8 text-center flex-1 flex flex-col items-center justify-center">
+                <p className="text-xs font-semibold text-slate-700 bg-slate-50 border border-slate-200 px-3.5 py-2 rounded-md">
+                  {isHi
+                    ? 'सभी किरायेदारों का किराया जमा है। कोई बकाया शेष नहीं है।'
+                    : 'All tenants are settled up to date. Zero pending dues.'}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-800 font-bold uppercase text-[11px]">
+                      <th className="py-2.5 px-4">{isHi ? 'किरायेदार व मोबाइल' : 'Tenant & Mobile'}</th>
+                      <th className="py-2.5 px-3">{isHi ? 'दुकान व बाजार' : 'Shop & Market'}</th>
+                      <th className="py-2.5 px-3 text-center">{isHi ? 'बाकी माह' : 'Months Due'}</th>
+                      <th className="py-2.5 px-3 text-right">{isHi ? 'बकाया राशि' : 'Pending Amount'}</th>
+                      <th className="py-2.5 px-4 text-right">{isHi ? 'कार्यवाही' : 'Action'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200">
+                    {defaulters.map((d) => (
+                      <tr key={d.tenantId} className="hover:bg-slate-50/80 transition">
+                        <td className="py-2.5 px-4">
+                          <div className="font-bold text-slate-900">{d.tenantName}</div>
+                          <div className="text-[11px] font-mono text-slate-600">{d.mobile}</div>
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <div className="font-mono font-bold text-slate-900">{d.shopNumber}</div>
+                          <div className="text-[11px] text-slate-600 truncate max-w-[160px]">
+                            {d.location}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="inline-block font-mono font-bold text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-900 border border-slate-300">
+                            {d.unpaidMonthsCount} {isHi ? 'माह' : 'mo'}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900">
+                          {formatCurrency(d.outstandingAmount)}
+                        </td>
+                        <td className="py-2.5 px-4 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5">
+                            <NavLink
+                              to={`/rental/admin/ledger?tenantId=${d.tenantId}`}
+                              className="px-2.5 py-1 rounded bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-[11px] font-semibold transition"
+                            >
+                              {isHi ? 'बहीखाता' : 'Ledger'}
+                            </NavLink>
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/rental/admin/collect-multi/${d.tenantId}`)}
+                              className="px-2.5 py-1 rounded bg-[#0B3B60] hover:bg-slate-900 text-white text-[11px] font-bold transition cursor-pointer"
+                            >
+                              {isHi ? 'वसूली करें' : 'Collect'}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Payment Mode Summary (4 columns — Non-duplicated, Pure Black) */}
+          <div className="lg:col-span-4 bg-white border border-slate-300 rounded-xl shadow-2xs overflow-hidden flex flex-col justify-between">
+            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  {isHi ? 'भुगतान माध्यम विवरण' : 'Payment Mode Summary'}
+                </h3>
+
+              </div>
+            </div>
+
+            <div className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+              <div className="space-y-2">
+                {paymentModes.length === 0 ? (
+                  <p className="text-xs text-slate-500 py-4 text-center">
+                    {isHi ? 'अभी कोई भुगतान दर्ज नहीं हुआ है।' : 'No payments recorded yet.'}
+                  </p>
+                ) : (
+                  paymentModes.map((pm) => {
+                    const share =
+                      totalModeSum > 0 ? Math.round((pm.amount / totalModeSum) * 100) : 0;
+                    return (
+                      <div
+                        key={pm.mode}
+                        className="flex items-center justify-between text-xs py-2 px-3 rounded bg-slate-50 border border-slate-200"
+                      >
+                        <div>
+                          <span className="font-bold text-slate-900">
+                            {formatModeLabel(pm.mode)}
+                          </span>
+                          <span className="text-[11px] text-slate-500 ml-1.5 font-mono">
+                            ({pm.count})
+                          </span>
+                        </div>
+                        <span className="font-mono font-black text-slate-900">
+                          {formatCurrency(pm.amount)}{' '}
+                          <span className="text-[10.5px] font-normal text-slate-600">
+                            ({share}%)
+                          </span>
+                        </span>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+              {leaseAlerts.length > 0 && (
+                <div className="pt-3 border-t border-slate-200 space-y-1.5">
+                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-800">
+                    {isHi ? 'पट्टा समाप्ति सूचना:' : 'Lease Expiry Alert:'}
+                  </div>
+                  {leaseAlerts.slice(0, 3).map((la, idx) => {
+                    const isExpired = la.daysRemaining < 0;
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => navigate(`/rental/admin/tenants/${la.tenantId}`)}
+                        className="py-1.5 px-2.5 rounded bg-slate-50 border border-slate-300 flex items-center justify-between text-xs cursor-pointer hover:bg-slate-100 transition"
+                      >
+                        <span className="font-semibold text-slate-900 truncate">
+                          {la.tenantName} ({la.shopNumber})
+                        </span>
+                        <span className="font-mono text-[10.5px] font-bold text-slate-900 shrink-0 ml-2">
+                          {isExpired
+                            ? isHi
+                              ? 'अवधि समाप्त'
+                              : 'Expired'
+                            : isHi
+                              ? `${la.daysRemaining} दिन शेष`
+                              : `${la.daysRemaining}d left`}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* ── 5. TODAY'S & RECENT COLLECTIONS AUDIT TABLE + OFFICIAL FORM 5 RECEIPT ── */}
+        <div className="bg-white rounded-xl border border-slate-300 shadow-2xs overflow-hidden">
+          <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="inline-flex rounded-md border border-slate-300 bg-white p-0.5 text-xs font-bold self-start">
+              <button
+                type="button"
+                onClick={() => setCollectionTab('TODAY')}
+                className={`px-3 py-1.5 rounded transition cursor-pointer ${collectionTab === 'TODAY'
+                  ? 'bg-[#0B3B60] text-white'
+                  : 'text-slate-700 hover:text-slate-900'
+                  }`}
+              >
+                {isHi
+                  ? `आज की वसूली (${analytics?.todayAudit?.length ?? 0})`
+                  : `Today's Collections (${analytics?.todayAudit?.length ?? 0})`}
+              </button>
+              <button
+                type="button"
+                onClick={() => setCollectionTab('RECENT')}
+                className={`px-3 py-1.5 rounded transition cursor-pointer ${collectionTab === 'RECENT'
+                  ? 'bg-[#0B3B60] text-white'
+                  : 'text-slate-700 hover:text-slate-900'
+                  }`}
+              >
+                {isHi
+                  ? `हाल के भुगतान (${analytics?.recentPayments?.length ?? 0})`
+                  : `Recent Payments (${analytics?.recentPayments?.length ?? 0})`}
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={handleExportExcel}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white border border-slate-300 hover:bg-slate-100 text-slate-900 text-xs font-bold transition cursor-pointer"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{isHi ? 'एक्सेल डाउनलोड करें' : 'Export Excel (.xlsx)'}</span>
+              </button>
+              <NavLink
+                to="/rental/admin/records"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+              >
+                <span>{isHi ? 'सभी ऑडिट रिकॉर्ड' : 'All Audit Records'}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </NavLink>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            {activeCollectionRows.length > 0 ? (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100/80 border-b border-slate-200 text-slate-800 font-bold uppercase text-[11px]">
+                    <th className="py-2.5 px-4">{isHi ? 'रसीद संख्या' : 'Receipt No.'}</th>
+                    <th className="py-2.5 px-3">{isHi ? 'किरायेदार' : 'Tenant'}</th>
+                    <th className="py-2.5 px-3">{isHi ? 'दुकान व स्थान' : 'Shop & Market'}</th>
+                    <th className="py-2.5 px-3">{isHi ? 'बिल माह' : 'Billing Month'}</th>
+                    <th className="py-2.5 px-3">{isHi ? 'भुगतान माध्यम' : 'Mode'}</th>
+                    <th className="py-2.5 px-3 text-right">{isHi ? 'जमा राशि' : 'Amount'}</th>
+                    <th className="py-2.5 px-3">{isHi ? 'दिनांक व समय' : 'Date & Time'}</th>
+                    <th className="py-2.5 px-4 text-right">{isHi ? 'रसीद प्रपत्र' : 'Receipt'}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {activeCollectionRows.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50/70 transition">
+                      <td className="py-2.5 px-4 font-mono font-bold text-slate-900">
+                        {p.receiptNumber}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <div className="font-bold text-slate-900">{p.tenantName}</div>
+                        <div className="text-[11px] font-mono text-slate-600">{p.tenantMobile}</div>
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <div className="font-mono font-bold text-slate-900">{p.shopNumber}</div>
+                        <div className="text-[11px] text-slate-600">{p.location}</div>
+                      </td>
+                      <td className="py-2.5 px-3 font-semibold text-slate-900">
+                        {formatMonthLabel(p.billingMonth)}
+                      </td>
+                      <td className="py-2.5 px-3">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-100 text-slate-900 border border-slate-300">
+                          {formatModeLabel(p.paymentMethod)}
+                        </span>
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono font-black text-slate-900">
+                        {formatCurrency(p.amount)}
+                      </td>
+                      <td className="py-2.5 px-3 font-mono text-[11px] text-slate-700 whitespace-nowrap">
+                        {new Date(p.createdAt).toLocaleString('en-IN', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                      <td className="py-2.5 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedReceipt(p)}
+                          className="px-3 py-1 rounded-md bg-white hover:bg-slate-900 hover:text-white text-slate-900 border border-slate-300 text-xs font-bold transition cursor-pointer"
+                        >
+                          {isHi ? 'रसीद देखें' : 'View Receipt'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="py-10 text-center">
+                <p className="text-xs font-semibold text-slate-600">
+                  {collectionTab === 'TODAY'
+                    ? isHi
+                      ? 'आज की तिथि में अभी तक कोई किराया भुगतान दर्ज नहीं हुआ है।'
+                      : 'No rent payments have been recorded today yet.'
+                    : isHi
+                      ? 'अभी तक कोई भुगतान अभिलेख उपलब्ध नहीं है।'
+                      : 'No payment records available yet.'}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Receipt Modal */}
+      {/* ── OFFICIAL STATUTORY FORM 5 RECEIPT MODAL ── */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="bg-white rounded-xl max-w-md w-full p-5 shadow-xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b pb-3">
-              <div>
-                <h4 className="font-bold text-slate-800 text-sm">{isHi ? "सरकारी किराया रसीद" : "Official Rent Receipt"}</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5">Zila Panchayat Almora · Govt. of Uttarakhand</p>
-              </div>
-              <button onClick={() => setSelectedReceipt(null)} className="text-slate-400 hover:text-slate-700 text-lg leading-none">✕</button>
-            </div>
-            <div className="space-y-2 text-xs font-mono bg-slate-50 rounded-lg p-4 border border-slate-100">
-              {([
-                ["Receipt No", selectedReceipt.receiptNumber],
-                ["Tenant", selectedReceipt.tenantName],
-                ["Shop / Location", `${selectedReceipt.shopNumber} (${selectedReceipt.location})`],
-                ["Period", selectedReceipt.billingMonth],
-                ["Payment Mode", selectedReceipt.paymentMethod],
-              ] as [string, string][]).map(([label, val]) => (
-                <div key={label} className="flex justify-between">
-                  <span className="text-slate-400">{label}:</span>
-                  <span className="font-semibold text-slate-700">{val}</span>
-                </div>
-              ))}
-              <div className="flex justify-between border-t pt-2 text-sm mt-1">
-                <span className="font-semibold text-slate-600">{isHi ? "कुल राशि" : "Amount Paid"}:</span>
-                <span className="font-bold text-emerald-700">{formatCurrency(selectedReceipt.amount)}</span>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-medium hover:bg-slate-700"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                {isHi ? "प्रिंट" : "Print"}
-              </button>
-              <button
-                onClick={() => setSelectedReceipt(null)}
-                className="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200"
-              >
-                {isHi ? "बंद करें" : "Close"}
-              </button>
-            </div>
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:p-6 bg-slate-950/65 backdrop-blur-xs"
+          onClick={() => setSelectedReceipt(null)}
+        >
+          <div
+            className="bg-slate-100 rounded-xl max-w-3xl w-full p-4 sm:p-6 shadow-2xl border border-slate-300 my-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <OfficialStatutoryReceipt
+              data={{
+                receiptNumber: selectedReceipt.receiptNumber,
+                bookNumber: `B-${new Date(selectedReceipt.createdAt).getFullYear()}/${selectedReceipt.shopNumber || '01'}`,
+                demandRegisterNumber: selectedReceipt.tenantCode,
+                tenantName: selectedReceipt.tenantName,
+                shopNumber: selectedReceipt.shopNumber,
+                location: selectedReceipt.location,
+                amount: selectedReceipt.amount,
+                baseRentAmount: selectedReceipt.baseRentAmount,
+                gstAmount: selectedReceipt.gstAmount,
+                isFullPayment: selectedReceipt.isFullPayment !== false,
+                billNumber:
+                  selectedReceipt.billNumber ||
+                  `BL-${selectedReceipt.shopNumber}-${selectedReceipt.billingMonth}`,
+                billingMonth: formatMonthLabel(selectedReceipt.billingMonth),
+                place: 'अल्मोड़ा',
+                dateStr: new Date(selectedReceipt.createdAt).toLocaleDateString('en-IN', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                }),
+              }}
+              onClose={() => setSelectedReceipt(null)}
+            />
           </div>
         </div>
       )}

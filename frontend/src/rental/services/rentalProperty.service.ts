@@ -10,6 +10,7 @@ export interface PropertyListItem {
   address: string;
   dimensionsSqft?: number | null;
   baseMonthlyRent: number;
+  photoUrls?: string[];
   status: 'VACANT' | 'ALLOTTED' | 'MAINTENANCE' | 'DISPUTED';
   currentTenant?: {
     userId: string;
@@ -20,6 +21,20 @@ export interface PropertyListItem {
     activeRent: number;
     leaseStartDate: string;
   } | null;
+}
+
+export interface PublicAvailableShopItem {
+  id: string;
+  propertyId: string;
+  propertyName: string;
+  propertyType: string;
+  propertyNumber: string;
+  location: string;
+  address: string;
+  dimensionsSqft?: number | null;
+  baseMonthlyRent: number;
+  photoUrls: string[];
+  createdAt: string;
 }
 
 export interface PropertyListResponse {
@@ -38,6 +53,7 @@ export interface CreatePropertyInput {
   address: string;
   dimensionsSqft?: number;
   baseMonthlyRent: number;
+  photos?: File[];
 }
 
 export interface RentHistoryEntry {
@@ -66,8 +82,45 @@ export interface RentHistoryEntry {
 }
 
 export const rentalPropertyApi = {
-  createProperty: (data: CreatePropertyInput) =>
-    api.post<{ success: boolean; data: any; message: string }>('/rental/properties', data),
+  createProperty: (data: CreatePropertyInput) => {
+    if (data.photos && data.photos.length > 0) {
+      const fd = new FormData();
+      if (data.propertyName) fd.append('propertyName', data.propertyName);
+      fd.append('propertyType', data.propertyType);
+      fd.append('propertyNumber', data.propertyNumber);
+      if (data.location) fd.append('location', data.location);
+      fd.append('address', data.address);
+      if (data.dimensionsSqft !== undefined && data.dimensionsSqft !== null) {
+        fd.append('dimensionsSqft', String(data.dimensionsSqft));
+      }
+      fd.append('baseMonthlyRent', String(data.baseMonthlyRent));
+      data.photos.slice(0, 3).forEach((file) => {
+        fd.append('shop_photos', file);
+      });
+      return api.upload<{ success: boolean; data: any; message: string }>('/rental/properties', fd, 'POST');
+    }
+    const { photos, ...jsonPayload } = data;
+    return api.post<{ success: boolean; data: any; message: string }>('/rental/properties', jsonPayload);
+  },
+
+  updatePropertyPhotos: (id: string, keepUrls: string[], newFiles: File[]) => {
+    const fd = new FormData();
+    fd.append('keepUrls', JSON.stringify(keepUrls));
+    newFiles.slice(0, 3).forEach((file) => {
+      fd.append('shop_photos', file);
+    });
+    return api.upload<{ success: boolean; data: { id: string; photoUrls: string[] }; message: string }>(
+      `/rental/properties/${id}/photos`,
+      fd,
+      'PUT'
+    );
+  },
+
+  listPublicAvailableProperties: (force = false) =>
+    api.get<{ success: boolean; data: PublicAvailableShopItem[] }>(
+      '/rental/properties/public/available',
+      { force, freshMs: 5_000 }
+    ),
 
   listProperties: (params: {
     search?: string;

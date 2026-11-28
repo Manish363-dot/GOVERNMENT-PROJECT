@@ -1,14 +1,34 @@
 import { Router } from 'express';
 import { rentalPropertyController } from '../controllers/rentalProperty.controller';
 import { rentalAdminAuth } from '../middleware/rentalAuth.middleware';
+import { uploadRentalShopPhotos } from '../../../shared/middleware/upload';
 
 const router = Router();
 
-// ── Admin: Create Commercial Property Asset ──────────────────────────────────
+const shopPhotosUpload = uploadRentalShopPhotos.fields([
+  { name: 'shop_photos', maxCount: 3 },
+]);
+
+// ── Public: List Available (VACANT) Shops for Citizen Landing Page ───────────
+router.get(
+  '/public/available',
+  (req: any, res: any) => rentalPropertyController.listPublicAvailableProperties(req, res)
+);
+
+// ── Admin: Create Commercial Property Asset (with optional 1–3 photos) ───────
 router.post(
   '/',
   rentalAdminAuth,
+  ...shopPhotosUpload,
   (req: any, res: any) => rentalPropertyController.createProperty(req, res)
+);
+
+// ── Admin: Update / Manage Photos (1–3 photos) on Existing Property ──────────
+router.put(
+  '/:id/photos',
+  rentalAdminAuth,
+  ...shopPhotosUpload,
+  (req: any, res: any) => rentalPropertyController.updatePropertyPhotos(req, res)
 );
 
 // ── Admin/Public: List All Properties with Filters ───────────────────────────

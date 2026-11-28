@@ -114,33 +114,116 @@ export interface DuesSearchResult {
   }>;
 }
 
+export interface DashboardAuditPaymentItem {
+  id: string;
+  receiptNumber: string;
+  billId?: string | null;
+  billNumber?: string;
+  tenantId?: string | null;
+  tenantName: string;
+  tenantMobile: string;
+  tenantCode: string;
+  shopNumber: string;
+  location: string;
+  amount: number;
+  baseRentAmount?: number;
+  gstAmount?: number;
+  isFullPayment?: boolean;
+  paymentMethod: string;
+  createdAt: string;
+  billingMonth: string;
+}
+
 export interface DashboardAnalytics {
+  currentMonth?: string;
+  fiscalYearLabel?: string;
   totalUsers: number;
+  activeUsers?: number;
+  inactiveUsers?: number;
   totalProperties: number;
   allottedProperties: number;
   vacantProperties: number;
+  maintenanceProperties?: number;
   occupancyRate: number;
+  complianceRate?: number;
+  pendingDocsCount?: number;
+  expectedMonthlyBaseRent?: number;
+  expectedMonthlyGst?: number;
   expectedMonthlyRent: number;
   collectedThisMonth: number;
+  monthTransactionsCount?: number;
+  fiscalYearCollected?: number;
+  totalAllTimeCollected?: number;
   totalOverdue: number;
+  overdueTenantsCount?: number;
+  overdueBillsCount?: number;
   todayCollected: number;
   todayTransactionsCount: number;
-  todayAudit: Array<{
-    id: string;
-    receiptNumber: string;
-    tenantName: string;
-    tenantMobile: string;
+  propertyByType?: Array<{
+    type: string;
+    count: number;
+  }>;
+  paymentModeBreakdown?: Array<{
+    mode: string;
+    amount: number;
+    count: number;
+  }>;
+  topDefaulters?: Array<{
+    tenantId: string;
     tenantCode: string;
+    tenantName: string;
+    mobile: string;
     shopNumber: string;
     location: string;
-    amount: number;
-    paymentMethod: string;
-    createdAt: string;
-    billingMonth: string;
+    unpaidMonthsCount: number;
+    outstandingAmount: number;
+    oldestPendingBillId: string;
+    oldestBillingMonth: string;
   }>;
+  leaseAlerts?: Array<{
+    tenantId: string;
+    tenantName: string;
+    mobile: string;
+    shopNumber: string;
+    location: string;
+    leaseEndDate: string;
+    daysRemaining: number;
+  }>;
+  marketBreakdown?: Array<{
+    location: string;
+    totalShops: number;
+    allottedShops: number;
+    vacantShops: number;
+    collectedAmount: number;
+    pendingAmount: number;
+  }>;
+  todayAudit: DashboardAuditPaymentItem[];
+  recentPayments?: DashboardAuditPaymentItem[];
+  availableYears?: number[];
+  yearlyTrends?: Record<
+    string,
+    Array<{
+      month: string;
+      monthNum: number;
+      label: string;
+      labelHi: string;
+      fullLabel: string;
+      fullLabelHi: string;
+      target: number;
+      achieved: number;
+      remaining: number;
+      overdue?: number;
+      achievedPct: number;
+    }>
+  >;
   monthlyTrends: Array<{
     month: string;
+    year?: number;
+    monthNum?: number;
     label: string;
+    labelHi?: string;
+    baseBilled?: number;
+    gstBilled?: number;
     billed: number;
     collected: number;
     overdue: number;

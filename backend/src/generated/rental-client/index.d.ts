@@ -6366,6 +6366,8 @@ export namespace Prisma {
     address: number
     dimensions_sqft: number
     base_monthly_rent: number
+    photo_urls: number
+    photo_keys: number
     status: number
     created_at: number
     updated_at: number
@@ -6423,6 +6425,8 @@ export namespace Prisma {
     address?: true
     dimensions_sqft?: true
     base_monthly_rent?: true
+    photo_urls?: true
+    photo_keys?: true
     status?: true
     created_at?: true
     updated_at?: true
@@ -6525,6 +6529,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft: number | null
     base_monthly_rent: Decimal
+    photo_urls: string[]
+    photo_keys: string[]
     status: $Enums.PropertyStatus
     created_at: Date
     updated_at: Date
@@ -6559,6 +6565,8 @@ export namespace Prisma {
     address?: boolean
     dimensions_sqft?: boolean
     base_monthly_rent?: boolean
+    photo_urls?: boolean
+    photo_keys?: boolean
     status?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -6582,6 +6590,8 @@ export namespace Prisma {
     address?: boolean
     dimensions_sqft?: boolean
     base_monthly_rent?: boolean
+    photo_urls?: boolean
+    photo_keys?: boolean
     status?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -6597,6 +6607,8 @@ export namespace Prisma {
     address?: boolean
     dimensions_sqft?: boolean
     base_monthly_rent?: boolean
+    photo_urls?: boolean
+    photo_keys?: boolean
     status?: boolean
     created_at?: boolean
     updated_at?: boolean
@@ -6612,12 +6624,14 @@ export namespace Prisma {
     address?: boolean
     dimensions_sqft?: boolean
     base_monthly_rent?: boolean
+    photo_urls?: boolean
+    photo_keys?: boolean
     status?: boolean
     created_at?: boolean
     updated_at?: boolean
   }
 
-  export type RentalPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "property_id" | "property_name" | "property_type" | "property_number" | "location" | "address" | "dimensions_sqft" | "base_monthly_rent" | "status" | "created_at" | "updated_at", ExtArgs["result"]["rentalProperty"]>
+  export type RentalPropertyOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "property_id" | "property_name" | "property_type" | "property_number" | "location" | "address" | "dimensions_sqft" | "base_monthly_rent" | "photo_urls" | "photo_keys" | "status" | "created_at" | "updated_at", ExtArgs["result"]["rentalProperty"]>
   export type RentalPropertyInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     assignments?: boolean | RentalProperty$assignmentsArgs<ExtArgs>
     rentChangeHistory?: boolean | RentalProperty$rentChangeHistoryArgs<ExtArgs>
@@ -6652,6 +6666,8 @@ export namespace Prisma {
       address: string
       dimensions_sqft: number | null
       base_monthly_rent: Prisma.Decimal
+      photo_urls: string[]
+      photo_keys: string[]
       status: $Enums.PropertyStatus
       created_at: Date
       updated_at: Date
@@ -7094,6 +7110,8 @@ export namespace Prisma {
     readonly address: FieldRef<"RentalProperty", 'String'>
     readonly dimensions_sqft: FieldRef<"RentalProperty", 'Float'>
     readonly base_monthly_rent: FieldRef<"RentalProperty", 'Decimal'>
+    readonly photo_urls: FieldRef<"RentalProperty", 'String[]'>
+    readonly photo_keys: FieldRef<"RentalProperty", 'String[]'>
     readonly status: FieldRef<"RentalProperty", 'PropertyStatus'>
     readonly created_at: FieldRef<"RentalProperty", 'DateTime'>
     readonly updated_at: FieldRef<"RentalProperty", 'DateTime'>
@@ -19014,6 +19032,8 @@ export namespace Prisma {
     address: 'address',
     dimensions_sqft: 'dimensions_sqft',
     base_monthly_rent: 'base_monthly_rent',
+    photo_urls: 'photo_urls',
+    photo_keys: 'photo_keys',
     status: 'status',
     created_at: 'created_at',
     updated_at: 'updated_at'
@@ -19822,6 +19842,8 @@ export namespace Prisma {
     address?: StringFilter<"RentalProperty"> | string
     dimensions_sqft?: FloatNullableFilter<"RentalProperty"> | number | null
     base_monthly_rent?: DecimalFilter<"RentalProperty"> | Decimal | DecimalJsLike | number | string
+    photo_urls?: StringNullableListFilter<"RentalProperty">
+    photo_keys?: StringNullableListFilter<"RentalProperty">
     status?: EnumPropertyStatusFilter<"RentalProperty"> | $Enums.PropertyStatus
     created_at?: DateTimeFilter<"RentalProperty"> | Date | string
     updated_at?: DateTimeFilter<"RentalProperty"> | Date | string
@@ -19844,6 +19866,8 @@ export namespace Prisma {
     address?: SortOrder
     dimensions_sqft?: SortOrderInput | SortOrder
     base_monthly_rent?: SortOrder
+    photo_urls?: SortOrder
+    photo_keys?: SortOrder
     status?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -19869,6 +19893,8 @@ export namespace Prisma {
     address?: StringFilter<"RentalProperty"> | string
     dimensions_sqft?: FloatNullableFilter<"RentalProperty"> | number | null
     base_monthly_rent?: DecimalFilter<"RentalProperty"> | Decimal | DecimalJsLike | number | string
+    photo_urls?: StringNullableListFilter<"RentalProperty">
+    photo_keys?: StringNullableListFilter<"RentalProperty">
     status?: EnumPropertyStatusFilter<"RentalProperty"> | $Enums.PropertyStatus
     created_at?: DateTimeFilter<"RentalProperty"> | Date | string
     updated_at?: DateTimeFilter<"RentalProperty"> | Date | string
@@ -19891,6 +19917,8 @@ export namespace Prisma {
     address?: SortOrder
     dimensions_sqft?: SortOrderInput | SortOrder
     base_monthly_rent?: SortOrder
+    photo_urls?: SortOrder
+    photo_keys?: SortOrder
     status?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -19914,6 +19942,8 @@ export namespace Prisma {
     address?: StringWithAggregatesFilter<"RentalProperty"> | string
     dimensions_sqft?: FloatNullableWithAggregatesFilter<"RentalProperty"> | number | null
     base_monthly_rent?: DecimalWithAggregatesFilter<"RentalProperty"> | Decimal | DecimalJsLike | number | string
+    photo_urls?: StringNullableListFilter<"RentalProperty">
+    photo_keys?: StringNullableListFilter<"RentalProperty">
     status?: EnumPropertyStatusWithAggregatesFilter<"RentalProperty"> | $Enums.PropertyStatus
     created_at?: DateTimeWithAggregatesFilter<"RentalProperty"> | Date | string
     updated_at?: DateTimeWithAggregatesFilter<"RentalProperty"> | Date | string
@@ -21291,6 +21321,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -21313,6 +21345,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -21335,6 +21369,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21357,6 +21393,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21379,6 +21417,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -21394,6 +21434,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -21409,6 +21451,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -23021,6 +23065,8 @@ export namespace Prisma {
     address?: SortOrder
     dimensions_sqft?: SortOrder
     base_monthly_rent?: SortOrder
+    photo_urls?: SortOrder
+    photo_keys?: SortOrder
     status?: SortOrder
     created_at?: SortOrder
     updated_at?: SortOrder
@@ -24281,6 +24327,14 @@ export namespace Prisma {
     update?: XOR<XOR<RentalUserUpdateToOneWithWhereWithoutDocumentsInput, RentalUserUpdateWithoutDocumentsInput>, RentalUserUncheckedUpdateWithoutDocumentsInput>
   }
 
+  export type RentalPropertyCreatephoto_urlsInput = {
+    set: string[]
+  }
+
+  export type RentalPropertyCreatephoto_keysInput = {
+    set: string[]
+  }
+
   export type PropertyAssignmentCreateNestedManyWithoutPropertyInput = {
     create?: XOR<PropertyAssignmentCreateWithoutPropertyInput, PropertyAssignmentUncheckedCreateWithoutPropertyInput> | PropertyAssignmentCreateWithoutPropertyInput[] | PropertyAssignmentUncheckedCreateWithoutPropertyInput[]
     connectOrCreate?: PropertyAssignmentCreateOrConnectWithoutPropertyInput | PropertyAssignmentCreateOrConnectWithoutPropertyInput[]
@@ -24397,6 +24451,16 @@ export namespace Prisma {
     decrement?: Decimal | DecimalJsLike | number | string
     multiply?: Decimal | DecimalJsLike | number | string
     divide?: Decimal | DecimalJsLike | number | string
+  }
+
+  export type RentalPropertyUpdatephoto_urlsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type RentalPropertyUpdatephoto_keysInput = {
+    set?: string[]
+    push?: string | string[]
   }
 
   export type EnumPropertyStatusFieldUpdateOperationsInput = {
@@ -27086,6 +27150,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -27107,6 +27173,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -27263,6 +27331,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27284,6 +27354,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27449,6 +27521,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -27470,6 +27544,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -27574,6 +27650,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27595,6 +27673,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -27677,6 +27757,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -27698,6 +27780,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -28011,6 +28095,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28032,6 +28118,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28221,6 +28309,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -28242,6 +28332,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -28514,6 +28606,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28535,6 +28629,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28743,6 +28839,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -28764,6 +28862,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -28968,6 +29068,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -28989,6 +29091,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29283,6 +29387,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -29304,6 +29410,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -29520,6 +29628,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29541,6 +29651,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29670,6 +29782,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -29691,6 +29805,8 @@ export namespace Prisma {
     address: string
     dimensions_sqft?: number | null
     base_monthly_rent: Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyCreatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyCreatephoto_keysInput | string[]
     status?: $Enums.PropertyStatus
     created_at?: Date | string
     updated_at?: Date | string
@@ -29901,6 +30017,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -29922,6 +30040,8 @@ export namespace Prisma {
     address?: StringFieldUpdateOperationsInput | string
     dimensions_sqft?: NullableFloatFieldUpdateOperationsInput | number | null
     base_monthly_rent?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    photo_urls?: RentalPropertyUpdatephoto_urlsInput | string[]
+    photo_keys?: RentalPropertyUpdatephoto_keysInput | string[]
     status?: EnumPropertyStatusFieldUpdateOperationsInput | $Enums.PropertyStatus
     created_at?: DateTimeFieldUpdateOperationsInput | Date | string
     updated_at?: DateTimeFieldUpdateOperationsInput | Date | string

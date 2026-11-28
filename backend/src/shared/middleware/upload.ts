@@ -125,7 +125,8 @@ function createOptimizedS3Uploader(
       (file.mimetype && file.mimetype.startsWith('image/')) ||
       /\.(jpe?g|png|webp|gif|bmp|tiff?|heic|heif|avif|jfif)$/i.test(file.originalname) ||
       fieldName === 'profile_photo' ||
-      fieldName === 'shop_photo';
+      fieldName === 'shop_photo' ||
+      fieldName === 'shop_photos';
 
     if (isImage) {
       try {
@@ -147,7 +148,7 @@ function createOptimizedS3Uploader(
         const baseName = path.basename(file.originalname, path.extname(file.originalname)).replace(/\.[^/.]+$/, '');
         file.originalname = `${baseName}.webp`;
       } catch (sharpErr) {
-        if (fieldName === 'profile_photo' || fieldName === 'shop_photo') {
+        if (fieldName === 'profile_photo' || fieldName === 'shop_photo' || fieldName === 'shop_photos') {
           console.error('[Sharp] Mandatory WebP conversion failed for photo:', sharpErr);
           throw new Error('इमेज को WebP में प्रोसेस करने में त्रुटि हुई। कृपया मान्य इमेज फ़ाइल चुनें।');
         }
@@ -201,7 +202,7 @@ function createOptimizedS3Uploader(
                 const subFolder =
                   fieldName === 'profile_photo'
                     ? 'rental/profiles'
-                    : fieldName === 'shop_photo'
+                    : fieldName === 'shop_photo' || fieldName === 'shop_photos'
                     ? 'rental/shops'
                     : folder;
                 await processAndUploadFile(file, subFolder, fieldName);
@@ -224,5 +225,6 @@ export const uploadComplaintAttachment = createOptimizedS3Uploader('complaints',
 
 // ── Rental Management Uploaders (S3) ──────────────────────────────────────────
 export const uploadRentalProfilePhoto = createOptimizedS3Uploader('rental/profiles', profilePhotoFileFilter, 5 * 1024 * 1024);
+export const uploadRentalShopPhotos = createOptimizedS3Uploader('rental/shops', profilePhotoFileFilter, 10 * 1024 * 1024);
 export const uploadRentalDocument = createOptimizedS3Uploader('rental/documents', rentalDocFileFilter, 15 * 1024 * 1024);
 export const uploadRentalRegistrationDocs = createOptimizedS3Uploader('rental/documents', rentalDocFileFilter, 20 * 1024 * 1024);

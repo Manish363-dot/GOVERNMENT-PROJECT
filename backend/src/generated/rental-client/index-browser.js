@@ -184,6 +184,8 @@ exports.Prisma.RentalPropertyScalarFieldEnum = {
   address: 'address',
   dimensions_sqft: 'dimensions_sqft',
   base_monthly_rent: 'base_monthly_rent',
+  photo_urls: 'photo_urls',
+  photo_keys: 'photo_keys',
   status: 'status',
   created_at: 'created_at',
   updated_at: 'updated_at'
