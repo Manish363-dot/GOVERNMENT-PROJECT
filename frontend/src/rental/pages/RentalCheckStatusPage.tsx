@@ -695,17 +695,6 @@ export const RentalCheckStatusPage: React.FC = () => {
 
       <main className="flex-1 w-full py-6 sm:py-10 md:py-12">
         <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
-          {/* Breadcrumb / Back Navigation */}
-          <div className="mb-4 sm:mb-6 flex items-center justify-between">
-            <Link
-              to="/rental"
-              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 transition-colors shadow-2xs"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>{isHi ? 'किराया पोर्टल मुख्य पृष्ठ' : 'Back to Rental Portal'}</span>
-            </Link>
-          </div>
-
           {/* Page Header Banner */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 md:p-8 shadow-sm mb-6 sm:mb-8 text-center relative overflow-hidden">
             <div className="uk-tricolor-line absolute top-0 left-0 right-0" />

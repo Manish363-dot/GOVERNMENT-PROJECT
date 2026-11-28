@@ -257,32 +257,23 @@ export const NoticesSection: React.FC = () => {
   };
 
   return (
-    <section id="notices" className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs sm:text-sm font-semibold mb-3">
-            <FileText className="w-4 h-4 text-emerald-700" />
-            <span>{t.notices.tag}</span>
-          </div>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 tracking-tight font-poppins">
+    <section id="notices" className="py-14 sm:py-20 bg-white border-b border-slate-200 scroll-mt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="pt-2 sm:pt-4 mb-8 sm:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight font-poppins">
             {t.notices.title}
           </h2>
-          <div className="w-20 h-1 bg-gradient-to-r from-emerald-600 via-blue-600 to-amber-500 mx-auto rounded-full mt-3 mb-4" />
-          <p className="text-slate-600 text-sm sm:text-base leading-relaxed font-inter max-w-2xl mx-auto">
-            {t.notices.subtitle}
-          </p>
+          <div className="h-1 w-20 bg-emerald-400 rounded-full mt-3 mb-4" />
         </div>
 
         {/* Live Published Public Notices */}
-        <div className="space-y-3 max-w-5xl mx-auto">
+        <div className="space-y-3">
           {loading ? (
             <div className="py-10 text-center text-slate-500 flex items-center justify-center gap-2 text-xs font-semibold">
-              <RefreshCw className="w-4 h-4 animate-spin text-slate-600" />
               <span>{isHi ? 'सार्वजनिक सूचनाएं लोड हो रही हैं...' : 'Loading official notices...'}</span>
             </div>
           ) : notices.length === 0 ? (
             <div className="bg-slate-50 rounded-xl border border-slate-200 p-8 text-center">
-              <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
               <p className="text-sm font-bold text-slate-700">
                 {isHi
                   ? 'वर्तमान में कोई सार्वजनिक सूचना / प्रशासनिक आदेश प्रकाशित नहीं है।'

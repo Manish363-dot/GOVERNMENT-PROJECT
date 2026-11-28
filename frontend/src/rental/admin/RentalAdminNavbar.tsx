@@ -3,18 +3,22 @@ import { Link } from 'react-router-dom';
 import { TopBarLogos } from '@/components/TopBarLogos';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { useTranslation } from 'react-i18next';
-import { Menu, LogOut, ArrowLeft } from 'lucide-react';
+import { Menu, LogOut, ArrowLeft, PanelLeftOpen } from 'lucide-react';
 
 interface RentalAdminNavbarProps {
   onMobileMenuToggle?: () => void;
   showMobileToggle?: boolean;
   onLogout?: () => void;
+  desktopSidebarClosed?: boolean;
+  onDesktopSidebarExpand?: () => void;
 }
 
 export const RentalAdminNavbar: React.FC<RentalAdminNavbarProps> = ({
   onMobileMenuToggle,
   showMobileToggle = true,
   onLogout,
+  desktopSidebarClosed = false,
+  onDesktopSidebarExpand,
 }) => {
   const { t, i18n } = useTranslation();
   const isHi = i18n.language === 'hi' || Boolean(i18n.language?.startsWith('hi'));
@@ -31,7 +35,7 @@ export const RentalAdminNavbar: React.FC<RentalAdminNavbarProps> = ({
       {/* ───────────────────────────────────────────────────────────────────────
           Sticky Header - Official Government Strip
       ──────────────────────────────────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 w-full select-none flex flex-col shadow-xs">
+      <header className="sticky top-0 z-30 w-full select-none flex flex-col shadow-xs">
         <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800 shadow-sm">
           <div className="max-w-[1700px] mx-auto flex items-center justify-between">
             {/* Left: State Badge & Department (Mobile-only drawer toggle) */}
@@ -44,6 +48,17 @@ export const RentalAdminNavbar: React.FC<RentalAdminNavbarProps> = ({
                   title={isHi ? 'मेनू' : 'Menu'}
                 >
                   <Menu className="w-4 h-4 text-amber-400" />
+                </button>
+              )}
+              {desktopSidebarClosed && onDesktopSidebarExpand && (
+                <button
+                  type="button"
+                  onClick={onDesktopSidebarExpand}
+                  className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-navy-800 hover:bg-navy-700 text-amber-300 border border-amber-400/40 text-[11px] font-bold transition cursor-pointer mr-1"
+                  title={isHi ? 'साइडबार खोलें' : 'Open Menu'}
+                >
+                  <PanelLeftOpen className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{isHi ? 'मेनू खोलें' : 'Open Menu'}</span>
                 </button>
               )}
               <span className="inline-flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-ukgreen-900/60 text-emerald-300 text-[10px] font-semibold tracking-wide uppercase border border-emerald-700/40">

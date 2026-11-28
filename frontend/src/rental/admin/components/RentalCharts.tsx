@@ -910,17 +910,16 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
     <>
       <div className="bg-white border border-slate-300 rounded-xl shadow-2xs overflow-hidden flex flex-col justify-between">
         {/* Official Header with Year Selector + Present + PDF Download */}
-        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
           <div>
             <h3 className="text-sm font-bold text-slate-900">
               {isHi
                 ? 'मासिक किराया लक्ष्य बनाम वसूली ग्राफ'
                 : 'Monthly Rent Target vs Collection Graph'}
             </h3>
-
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <div className="inline-flex items-center gap-1.5">
               <label className="text-xs font-bold text-slate-800">
                 {isHi ? 'वर्ष:' : 'Year:'}
@@ -941,7 +940,7 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
             <button
               type="button"
               onClick={() => setIsPresenting(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold transition cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span>{isHi ? 'प्रस्तुत करें' : 'Present'}</span>
@@ -951,16 +950,16 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
               type="button"
               onClick={handleDownloadYearlyPdf}
               disabled={downloadingPdf}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#0B3B60] hover:bg-slate-900 text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-[#0B3B60] hover:bg-slate-900 text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 shrink-0" />
               <span>
                 {downloadingPdf
                   ? isHi
                     ? 'तैयार हो रहा है...'
                     : 'Generating...'
                   : isHi
-                    ? 'वार्षिक रिपोर्ट डाउनलोड करें'
+                    ? 'वार्षिक रिपोर्ट डाउनलोड'
                     : 'Download PDF Report'}
               </span>
             </button>
@@ -968,9 +967,9 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
         </div>
 
         {/* Clean 2-Line Graph Body (Zero Duplicate Stat Boxes) */}
-        <div className="p-5">
+        <div className="p-3.5 sm:p-5">
           <div className="flex items-center justify-between gap-4 text-xs pb-3 flex-wrap">
-            <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-4 sm:gap-6 flex-wrap">
               <div className="flex items-center gap-2">
                 <span className="w-5 border-t-2 border-dashed border-[#0B3B60] inline-block" />
                 <span className="text-slate-900 font-bold">
@@ -984,16 +983,10 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
                 </span>
               </div>
             </div>
-
-            <span className="text-xs font-semibold text-slate-700">
-              {isHi
-                ? `लक्ष्य पूर्ण माह (${selectedYear}): ${summary.achievedMonthsCount} / ${summary.elapsedMonthsCount} माह`
-                : `Target Achieved (${selectedYear}): ${summary.achievedMonthsCount} / ${summary.elapsedMonthsCount} months`}
-            </span>
           </div>
 
           {!hasData ? (
-            <div className="h-64 flex items-center justify-center border border-dashed border-slate-300 rounded-lg bg-slate-50 px-4 text-center">
+            <div className="h-56 sm:h-64 flex items-center justify-center border border-dashed border-slate-300 rounded-lg bg-slate-50 px-4 text-center">
               <p className="text-xs font-semibold text-slate-600">
                 {isHi
                   ? `वर्ष ${selectedYear} के लिए कोई किराया वसूली डेटा उपलब्ध नहीं है।`
@@ -1001,7 +994,7 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
               </p>
             </div>
           ) : (
-            renderGraphSvg('h-64', 'card')
+            renderGraphSvg('h-56 sm:h-64', 'card')
           )}
         </div>
       </div>
@@ -1009,7 +1002,7 @@ export const YearlyTargetGraphChart: React.FC<YearlyTargetGraphProps> = ({
       {/* ── FULL-SCREEN OFFICIAL PRESENTATION & REPORT MODAL ── */}
       {isPresenting && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/75 overflow-y-auto p-3 sm:p-6 flex flex-col items-center"
+          className="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm overflow-y-auto p-3 sm:p-6 flex flex-col items-center"
           onClick={() => setIsPresenting(false)}
         >
           {/* Top Action Bar (Hidden in Print) */}
@@ -2143,17 +2136,16 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
     <>
       <div className="bg-white border border-slate-300 rounded-xl shadow-2xs overflow-hidden flex flex-col justify-between">
         {/* Official Header with Year Selector + Present + PDF Download */}
-        <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
           <div>
             <h3 className="text-sm font-bold text-slate-900">
               {isHi
                 ? 'माहवार वसूली, शेष एवं ओवरड्यू (3D चार्ट)'
                 : 'Monthly Collected, Remaining & Overdue'}
             </h3>
-
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <div className="inline-flex items-center gap-1.5">
               <label className="text-xs font-bold text-slate-800">
                 {isHi ? 'वर्ष:' : 'Year:'}
@@ -2174,7 +2166,7 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
             <button
               type="button"
               onClick={() => setIsPresenting(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-white hover:bg-slate-100 text-slate-900 border border-slate-300 text-xs font-bold transition cursor-pointer"
             >
               <Maximize2 className="w-3.5 h-3.5" />
               <span>{isHi ? 'प्रस्तुत करें' : 'Present'}</span>
@@ -2184,16 +2176,16 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
               type="button"
               onClick={handleDownload3DPdf}
               disabled={downloadingPdf}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#0B3B60] hover:bg-slate-900 text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-md bg-[#0B3B60] hover:bg-slate-900 text-white text-xs font-bold transition cursor-pointer disabled:opacity-60"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 shrink-0" />
               <span>
                 {downloadingPdf
                   ? isHi
                     ? 'तैयार हो रहा है...'
                     : 'Generating...'
                   : isHi
-                    ? 'वार्षिक रिपोर्ट डाउनलोड करें'
+                    ? 'वार्षिक रिपोर्ट डाउनलोड'
                     : 'Download PDF Report'}
               </span>
             </button>
@@ -2201,9 +2193,9 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
         </div>
 
         {/* 3D Stacked Isometric Column Chart Body */}
-        <div className="p-5 flex-1 flex flex-col justify-between">
+        <div className="p-3.5 sm:p-5 flex-1 flex flex-col justify-between">
           <div className="flex items-center justify-between gap-4 text-xs pb-3 flex-wrap">
-            <div className="flex items-center gap-5 flex-wrap">
+            <div className="flex items-center gap-4 sm:gap-5 flex-wrap">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-[#10b981] border border-[#065f46] inline-block" />
                 <span className="text-slate-900 font-bold">
@@ -2226,7 +2218,7 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
           </div>
 
           {!hasAnyValue ? (
-            <div className="h-64 flex items-center justify-center border border-dashed border-slate-300 rounded-lg bg-slate-50 px-4 text-center">
+            <div className="h-56 sm:h-64 flex items-center justify-center border border-dashed border-slate-300 rounded-lg bg-slate-50 px-4 text-center">
               <p className="text-xs font-semibold text-slate-600">
                 {isHi
                   ? `वर्ष ${selectedYear} के लिए कोई बिल या वसूली रिकॉर्ड उपलब्ध नहीं है।`
@@ -2234,7 +2226,7 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
               </p>
             </div>
           ) : (
-            render3DBarChartSvg('h-64', 'card', 22)
+            render3DBarChartSvg('h-56 sm:h-64', 'card', 22)
           )}
         </div>
       </div>
@@ -2242,7 +2234,7 @@ export const Yearly3DBarChart: React.FC<Yearly3DBarChartProps> = ({
       {/* ── FULL-SCREEN OFFICIAL PRESENTATION & REPORT MODAL FOR 3D BAR CHART ── */}
       {isPresenting && (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/75 overflow-y-auto p-3 sm:p-6 flex flex-col items-center"
+          className="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm overflow-y-auto p-3 sm:p-6 flex flex-col items-center"
           onClick={() => setIsPresenting(false)}
         >
           <div

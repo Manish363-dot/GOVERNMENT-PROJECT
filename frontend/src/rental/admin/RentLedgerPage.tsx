@@ -13,6 +13,7 @@ import {
   OfficialLedgerData,
   OfficialRentLedgerDocument,
 } from '../components/OfficialRentLedgerDocument';
+import { toAsciiDigits, transliterateToHindiManual } from '../utils/transliterate';
 
 const formatINR = (amount: number): string =>
   `₹${Math.round(amount || 0).toLocaleString('en-IN')}`;
@@ -31,7 +32,19 @@ export const RentLedgerPage: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [translatingSearch, setTranslatingSearch] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<RentManagementTenantCard | null>(null);
+
+  const handleTransliterateSearch = async () => {
+    if (!searchTerm.trim()) return;
+    setTranslatingSearch(true);
+    try {
+      const converted = await transliterateToHindiManual(searchTerm);
+      setSearchTerm(converted);
+    } finally {
+      setTranslatingSearch(false);
+    }
+  };
 
   const loadTenants = useCallback(async (silent = false) => {
     if (silent) {
@@ -72,14 +85,14 @@ export const RentLedgerPage: React.FC = () => {
   }, [searchParams, tenants, selectedTenant]);
 
   const filteredTenants = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
+    const q = toAsciiDigits(searchTerm.trim()).toLowerCase();
     if (!q) return tenants;
     return tenants.filter(
       (t) =>
-        t.fullName.toLowerCase().includes(q) ||
+        toAsciiDigits(t.fullName).toLowerCase().includes(q) ||
         t.mobile.toLowerCase().includes(q) ||
-        (t.shop?.shopName || '').toLowerCase().includes(q) ||
-        (t.shop?.shopCode || '').toLowerCase().includes(q)
+        toAsciiDigits(t.shop?.shopName || '').toLowerCase().includes(q) ||
+        toAsciiDigits(t.shop?.shopCode || '').toLowerCase().includes(q)
     );
   }, [tenants, searchTerm]);
 
@@ -151,17 +164,33 @@ export const RentLedgerPage: React.FC = () => {
                   ? 'किरायेदार का नाम, मोबाइल नंबर या दुकान संख्या से खोजें...'
                   : 'Search by tenant name, phone number or shop code...'
               }
-              className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-9 py-2 text-sm text-slate-800 focus:border-[#0B1B36] focus:bg-white focus:outline-none"
+              className="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-20 py-2 text-sm text-slate-800 focus:border-[#0B1B36] focus:bg-white focus:outline-none"
             />
-            {searchTerm && (
+            <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
               <button
                 type="button"
-                onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 cursor-pointer"
+                onClick={handleTransliterateSearch}
+                disabled={translatingSearch || !searchTerm.trim()}
+                title={isHi ? 'English शब्द को हिंदी में बदलें' : 'Convert English search text to Hindi'}
+                className="text-xs text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 disabled:opacity-45 px-2 py-1 rounded font-semibold transition cursor-pointer"
               >
-                <X className="w-4 h-4" />
+                {translatingSearch ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                ) : (
+                  '🌐'
+                )}
               </button>
-            )}
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="text-slate-400 hover:text-slate-700 cursor-pointer p-0.5"
+                  title={isHi ? 'साफ़ करें' : 'Clear'}
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -216,7 +245,7 @@ export const RentLedgerPage: React.FC = () => {
 
                   <div className="min-w-0">
                     <h2 className="text-base font-bold text-[#0B1B36] truncate">
-                      {tenant.fullName}
+                      {toAsciiDigits(tenant.fullName)}
                     </h2>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-xs text-slate-600 mt-0.5">
                       <span className="inline-flex items-center gap-1">
@@ -226,7 +255,7 @@ export const RentLedgerPage: React.FC = () => {
                       {tenant.shop && (
                         <span className="inline-flex items-center gap-1 font-medium text-slate-700">
                           <Store className="w-3.5 h-3.5 text-slate-400" />
-                          {tenant.shop.shopName} ({tenant.shop.shopCode})
+                          {toAsciiDigits(tenant.shop.shopName)} ({toAsciiDigits(tenant.shop.shopCode)})
                         </span>
                       )}
                     </div>
@@ -250,7 +279,7 @@ export const RentLedgerPage: React.FC = () => {
 
       {/* Official Ledger Preview & Download Modal */}
       {selectedTenant && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-xs p-3 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[70] flex items-start justify-center bg-slate-950/80 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto">
           <div className="w-full max-w-4xl my-auto">
             <OfficialRentLedgerDocument
               data={toOfficialLedgerData(selectedTenant)}

@@ -109,13 +109,13 @@ export const AdminConfirmModal: React.FC<AdminConfirmModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={() => {
         if (!loading) onDeny();
       }}
     >
       <div
-        className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full shadow-2xl border border-slate-200/90 overflow-hidden relative animate-in zoom-in-95 duration-150"
+        className="bg-white rounded-2xl sm:rounded-3xl max-w-md w-full shadow-2xl border border-slate-200/90 overflow-hidden relative animate-in zoom-in-95 duration-150 my-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. Top Colored Accent Strip (Exact design from user reference) */}

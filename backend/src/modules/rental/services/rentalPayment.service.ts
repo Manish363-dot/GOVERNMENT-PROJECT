@@ -517,7 +517,7 @@ export class RentalPaymentService {
               : Promise.resolve(null),
             tx.rentalAdmin.findUnique({
               where: { id: adminId },
-              select: { id: true, username: true, full_name: true, role: true },
+              select: { id: true, mobile: true, full_name: true, role: true },
             }),
             tx.rentalUser.findUnique({ where: { id: userId } }),
             tx.rentalProperty.findUnique({ where: { id: propertyId } }),
@@ -815,7 +815,7 @@ export class RentalPaymentService {
                   remarks,
                   receiptNumber,
                   amountPaid: totalPaidAmount,
-                  collector: adminRecord.full_name || adminRecord.username,
+                  collector: adminRecord.full_name || adminRecord.mobile,
                 }),
               },
             }),
@@ -860,7 +860,7 @@ export class RentalPaymentService {
             location: (property as any).address || property.location,
             paymentMethod,
             issuedAt: receipt.issued_at.toISOString(),
-            collectorName: adminRecord.full_name || adminRecord.username,
+            collectorName: adminRecord.full_name || adminRecord.mobile,
             message: `भुगतान सफलतापूर्वक दर्ज किया गया (रसीद संख्या: ${receiptNumber})।`,
           };
         },

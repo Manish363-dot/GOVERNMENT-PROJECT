@@ -435,12 +435,12 @@ export class RentalBillingService {
           orderBy: { created_at: 'desc' },
         }),
         rentalPrisma.rentalAdmin.findMany({
-          select: { id: true, username: true, full_name: true },
+          select: { id: true, full_name: true, mobile: true },
         }),
       ]);
 
       // Build fast in-memory lookup maps
-      const adminMap = new Map(admins.map((a) => [a.id, a.full_name || a.username]));
+      const adminMap = new Map(admins.map((a) => [a.id, a.full_name || a.mobile]));
       const userCreatedMap = new Map(users.map((u) => [u.id, u.created_at]));
 
       const assignsByUser = new Map<string, (typeof assignments)>();

@@ -23,8 +23,7 @@ export class RentalAuthService {
 
         const superAdmin = await rentalPrisma.rentalAdmin.create({
           data: {
-            username: 'almora_superadmin',
-            full_name: 'मुख्य प्रशासनिक अधिकारी (जिला पंचायत अल्मोड़ा)',
+            full_name: 'मुख्य प्रशासनिक अधिकारी',
             mobile: '9412000001',
             email: 'admin.rental@almora.uk.gov.in',
             passwordHash,
@@ -34,7 +33,7 @@ export class RentalAuthService {
           },
         });
 
-        console.log('🏛️ [Rental DB] Root Super Admin provisioned:', superAdmin.username);
+        console.log('🏛️ [Rental DB] Root Super Admin provisioned:', superAdmin.mobile);
         return superAdmin;
       }
       return existingSuperAdmin;
@@ -46,13 +45,12 @@ export class RentalAuthService {
    */
   async adminLogin(identifier: string, plainPass: string, ipAddress?: string) {
     return withRentalDbRetry(async () => {
-      // Ensure root super admin is provisioned
       await this.ensureSuperAdminProvisioned();
 
       const trimmed = identifier.trim();
       const admin = await rentalPrisma.rentalAdmin.findFirst({
         where: {
-          OR: [{ username: trimmed }, { mobile: trimmed }, { email: trimmed }],
+          OR: [{ mobile: trimmed }, { email: trimmed.toLowerCase() }],
         },
       });
 
@@ -78,13 +76,11 @@ export class RentalAuthService {
         });
       }
 
-      // Update last login timestamp
       await rentalPrisma.rentalAdmin.update({
         where: { id: admin.id },
         data: { last_login_at: new Date() },
       });
 
-      // Record administrative audit log
       await rentalPrisma.rentalAdminAuditLog.create({
         data: {
           admin_id: admin.id,
@@ -95,11 +91,9 @@ export class RentalAuthService {
         },
       });
 
-      // Sign JWT token valid for 8 hours
       const token = jwt.sign(
         {
           adminId: admin.id,
-          username: admin.username,
           role: admin.role,
           mobile: admin.mobile,
           permissions: admin.permissions,
@@ -112,7 +106,6 @@ export class RentalAuthService {
         token,
         admin: {
           id: admin.id,
-          username: admin.username,
           fullName: admin.full_name,
           role: admin.role,
           mobile: admin.mobile,
@@ -129,7 +122,6 @@ export class RentalAuthService {
   async createSubAdmin(
     creatorAdminId: string,
     data: {
-      username: string;
       fullName: string;
       mobile: string;
       email?: string;
@@ -139,19 +131,20 @@ export class RentalAuthService {
     ipAddress?: string
   ) {
     return withRentalDbRetry(async () => {
-      // Check for existing duplicates
+      const cleanMobile = data.mobile.trim();
+      const cleanEmail = data.email?.trim().toLowerCase() || null;
+
       const existing = await rentalPrisma.rentalAdmin.findFirst({
         where: {
           OR: [
-            { username: data.username.trim() },
-            { mobile: data.mobile.trim() },
-            ...(data.email ? [{ email: data.email.trim() }] : []),
+            { mobile: cleanMobile },
+            ...(cleanEmail ? [{ email: cleanEmail }] : []),
           ],
         },
       });
 
       if (existing) {
-        throw new Error('An administrator with this username, mobile, or email already exists.');
+        throw new Error('An administrator with this mobile number or email already exists.');
       }
 
       const salt = await bcrypt.genSalt(12);
@@ -159,10 +152,9 @@ export class RentalAuthService {
 
       const subAdmin = await rentalPrisma.rentalAdmin.create({
         data: {
-          username: data.username.trim(),
           full_name: data.fullName.trim(),
-          mobile: data.mobile.trim(),
-          email: data.email?.trim() || null,
+          mobile: cleanMobile,
+          email: cleanEmail,
           passwordHash,
           role: 'SUB_ADMIN',
           status: 'ACTIVE',
@@ -170,14 +162,17 @@ export class RentalAuthService {
         },
       });
 
-      // Audit log
       await rentalPrisma.rentalAdminAuditLog.create({
         data: {
           admin_id: creatorAdminId,
           action: 'SUB_ADMIN_CREATED',
           target_entity: 'RentalAdmin',
           target_id: subAdmin.id,
-          after_state: JSON.stringify({ username: subAdmin.username, role: subAdmin.role }),
+          after_state: JSON.stringify({
+            fullName: subAdmin.full_name,
+            mobile: subAdmin.mobile,
+            role: subAdmin.role,
+          }),
           ip_address: ipAddress || 'Unknown',
         },
       });
@@ -186,12 +181,130 @@ export class RentalAuthService {
 
       return {
         id: subAdmin.id,
-        username: subAdmin.username,
         fullName: subAdmin.full_name,
         role: subAdmin.role,
         mobile: subAdmin.mobile,
+        email: subAdmin.email,
         status: subAdmin.status,
         permissions: subAdmin.permissions,
+      };
+    });
+  }
+
+  /**
+   * Update Sub Admin Profile (Super Admin only)
+   */
+  async updateSubAdmin(
+    superAdminId: string,
+    subAdminId: string,
+    data: {
+      fullName?: string;
+      mobile?: string;
+      email?: string | null;
+      password?: string;
+      permissions?: string[];
+    },
+    ipAddress?: string
+  ) {
+    return withRentalDbRetry(async () => {
+      const existingAdmin = await rentalPrisma.rentalAdmin.findUnique({
+        where: { id: subAdminId },
+      });
+
+      if (!existingAdmin) {
+        throw new Error('Sub Admin not found.');
+      }
+
+      if (existingAdmin.role === 'SUPER_ADMIN') {
+        throw new Error('Cannot modify Super Admin profile through this route.');
+      }
+
+      const nextMobile = data.mobile !== undefined ? data.mobile.trim() : existingAdmin.mobile;
+      const nextEmail =
+        data.email !== undefined ? (data.email ? data.email.trim().toLowerCase() : null) : existingAdmin.email;
+
+      if (nextMobile !== existingAdmin.mobile || (nextEmail && nextEmail !== existingAdmin.email)) {
+        const duplicate = await rentalPrisma.rentalAdmin.findFirst({
+          where: {
+            id: { not: subAdminId },
+            OR: [
+              { mobile: nextMobile },
+              ...(nextEmail ? [{ email: nextEmail }] : []),
+            ],
+          },
+        });
+
+        if (duplicate) {
+          throw new Error('Another administrator already uses this mobile number or email.');
+        }
+      }
+
+      const updatePayload: any = {};
+      if (data.fullName !== undefined) {
+        updatePayload.full_name = data.fullName.trim();
+      }
+      if (data.mobile !== undefined) {
+        updatePayload.mobile = nextMobile;
+      }
+      if (data.email !== undefined) {
+        updatePayload.email = nextEmail;
+      }
+      if (data.permissions !== undefined) {
+        updatePayload.permissions = data.permissions;
+      }
+      if (data.password && data.password.trim().length >= 8) {
+        const salt = await bcrypt.genSalt(12);
+        updatePayload.passwordHash = await bcrypt.hash(data.password, salt);
+      }
+
+      const updated = await rentalPrisma.rentalAdmin.update({
+        where: { id: subAdminId },
+        data: updatePayload,
+        select: {
+          id: true,
+          full_name: true,
+          mobile: true,
+          email: true,
+          role: true,
+          status: true,
+          permissions: true,
+          last_login_at: true,
+          created_at: true,
+        },
+      });
+
+      await rentalPrisma.rentalAdminAuditLog.create({
+        data: {
+          admin_id: superAdminId,
+          action: 'SUB_ADMIN_UPDATED',
+          target_entity: 'RentalAdmin',
+          target_id: subAdminId,
+          after_state: JSON.stringify({
+            fullName: updated.full_name,
+            mobile: updated.mobile,
+            email: updated.email,
+            permissions: updated.permissions,
+            passwordChanged: Boolean(data.password && data.password.trim().length >= 8),
+          }),
+          ip_address: ipAddress || 'Unknown',
+        },
+      });
+
+      invalidateRentalAdminCache(subAdminId);
+      rentalCache.invalidate('subadmins:');
+
+      return {
+        id: updated.id,
+        fullName: updated.full_name,
+        full_name: updated.full_name,
+        mobile: updated.mobile,
+        email: updated.email,
+        role: updated.role,
+        status: updated.status,
+        permissions: updated.permissions,
+        lastLoginAt: updated.last_login_at,
+        createdAt: updated.created_at,
+        created_at: updated.created_at,
       };
     });
   }
@@ -206,7 +319,6 @@ export class RentalAuthService {
           where: { role: 'SUB_ADMIN' },
           select: {
             id: true,
-            username: true,
             full_name: true,
             mobile: true,
             email: true,
@@ -221,7 +333,6 @@ export class RentalAuthService {
 
         return admins.map((a) => ({
           id: a.id,
-          username: a.username,
           fullName: a.full_name,
           full_name: a.full_name,
           mobile: a.mobile,
@@ -240,7 +351,12 @@ export class RentalAuthService {
   /**
    * Toggle Sub Admin Status (Active / Inactive) (Super Admin only)
    */
-  async toggleSubAdminStatus(superAdminId: string, subAdminId: string, newStatus: 'ACTIVE' | 'INACTIVE', ipAddress?: string) {
+  async toggleSubAdminStatus(
+    superAdminId: string,
+    subAdminId: string,
+    newStatus: 'ACTIVE' | 'INACTIVE',
+    ipAddress?: string
+  ) {
     return withRentalDbRetry(async () => {
       const subAdmin = await rentalPrisma.rentalAdmin.findUnique({
         where: { id: subAdminId },
@@ -273,7 +389,56 @@ export class RentalAuthService {
       invalidateRentalAdminCache(subAdminId);
       rentalCache.invalidate('subadmins:');
 
-      return { id: updated.id, username: updated.username, status: updated.status };
+      return { id: updated.id, mobile: updated.mobile, status: updated.status };
+    });
+  }
+
+  /**
+   * Delete a Sub Admin permanently (Super Admin only)
+   */
+  async deleteSubAdmin(superAdminId: string, subAdminId: string, ipAddress?: string) {
+    return withRentalDbRetry(async () => {
+      const subAdmin = await rentalPrisma.rentalAdmin.findUnique({
+        where: { id: subAdminId },
+      });
+
+      if (!subAdmin) {
+        throw new Error('Sub Admin not found.');
+      }
+
+      if (subAdmin.role === 'SUPER_ADMIN') {
+        throw new Error('Cannot delete a Super Admin account.');
+      }
+
+      await rentalPrisma.$transaction(async (tx) => {
+        await tx.rentalAdminAuditLog.deleteMany({
+          where: { admin_id: subAdminId },
+        });
+
+        await tx.rentalAdmin.delete({
+          where: { id: subAdminId },
+        });
+
+        await tx.rentalAdminAuditLog.create({
+          data: {
+            admin_id: superAdminId,
+            action: 'SUB_ADMIN_DELETED',
+            target_entity: 'RentalAdmin',
+            target_id: subAdminId,
+            after_state: JSON.stringify({
+              fullName: subAdmin.full_name,
+              mobile: subAdmin.mobile,
+              email: subAdmin.email,
+            }),
+            ip_address: ipAddress || 'Unknown',
+          },
+        });
+      });
+
+      invalidateRentalAdminCache(subAdminId);
+      rentalCache.invalidate('subadmins:');
+
+      return { id: subAdminId, mobile: subAdmin.mobile };
     });
   }
 }

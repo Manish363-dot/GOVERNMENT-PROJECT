@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Download, Printer, X } from 'lucide-react';
 
 export interface OfficialLedgerBillRow {
@@ -145,6 +145,13 @@ export const OfficialRentLedgerDocument: React.FC<{
   onClose?: () => void;
 }> = ({ data, onClose }) => {
   const [downloading, setDownloading] = useState(false);
+  const printScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (printScrollRef.current) {
+      printScrollRef.current.scrollTop = 0;
+    }
+  }, [data]);
 
   const billsList = [...data.bills].sort((a, b) =>
     b.billingMonth.localeCompare(a.billingMonth)
@@ -485,7 +492,7 @@ export const OfficialRentLedgerDocument: React.FC<{
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-2xl border border-slate-300 overflow-hidden text-black">
+    <div className="bg-white rounded-xl shadow-2xl border border-slate-300 overflow-hidden text-black flex flex-col max-h-[calc(100vh-2.5rem)]">
       <style>{`
         @media print {
           body * {
@@ -510,7 +517,7 @@ export const OfficialRentLedgerDocument: React.FC<{
         }
       `}</style>
       {/* Toolbar (No Print) */}
-      <div className="no-print bg-[#0B1B36] px-5 py-3 text-white flex flex-wrap items-center justify-between gap-3">
+      <div className="no-print bg-[#0B1B36] px-5 py-3 text-white flex flex-wrap items-center justify-between gap-3 shrink-0">
         <span className="text-xs font-bold">
           आधिकारिक खाता बही विवरण — {data.tenantName} ({resolvedShopNo})
         </span>
@@ -549,7 +556,11 @@ export const OfficialRentLedgerDocument: React.FC<{
       </div>
 
       {/* Paper Document Preview Matching Exact Official PDF */}
-      <div id="official-rent-ledger-print" className="p-6 sm:p-8 bg-white text-black max-h-[82vh] overflow-y-auto">
+      <div
+        ref={printScrollRef}
+        id="official-rent-ledger-print"
+        className="pt-7 px-6 pb-6 sm:pt-8 sm:px-8 sm:pb-8 bg-white text-black flex-1 overflow-y-auto"
+      >
         {/* Header with Both Logos */}
         <div className="flex items-center justify-between gap-4 pb-3">
           <img

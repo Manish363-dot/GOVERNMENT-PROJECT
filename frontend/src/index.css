@@ -504,4 +504,9 @@ html.highlight-links [role="button"]:not([role="toolbar"] *) {
   outline-offset: 2px !important;
 }
 
+/* Prevent parent .space-y-* / .space-x-* utilities from offsetting full-screen modal backdrops */
+.fixed.inset-0 {
+  margin: 0 !important;
+}
+
 

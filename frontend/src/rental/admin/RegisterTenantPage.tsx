@@ -78,21 +78,24 @@ export const RegisterTenantPage: React.FC = () => {
   const [initialPassword, setInitialPassword] = useState('');
   const [transliterating, setTransliterating] = useState<string | null>(null);
 
-  // Auto-transliterates English names and addresses into Hindi
+  // Transliterates English names and addresses into Hindi only when triggered (preserving 123 ASCII digits)
   const handleAutoTransliterate = async (
     field: 'fullName' | 'permanentAddress' | 'currentAddress',
     value: string
   ) => {
-    if (!value || !value.trim() || !/[a-zA-Z]/.test(value)) return;
+    if (!value || !value.trim()) return;
     setTransliterating(field);
     try {
       const res = await api.post<{ success: boolean; hindi: string }>('/rental/transliterate', {
         text: value.trim(),
       });
       if (res && res.hindi && res.hindi.trim()) {
-        if (field === 'fullName') setFullName(res.hindi);
-        else if (field === 'permanentAddress') setPermanentAddress(res.hindi);
-        else if (field === 'currentAddress') setCurrentAddress(res.hindi);
+        const cleanHindi = res.hindi.replace(/[\u0966-\u096F]/g, (c) =>
+          String.fromCharCode(c.charCodeAt(0) - 0x0966 + 48)
+        );
+        if (field === 'fullName') setFullName(cleanHindi);
+        else if (field === 'permanentAddress') setPermanentAddress(cleanHindi);
+        else if (field === 'currentAddress') setCurrentAddress(cleanHindi);
       }
     } catch (err) {
       console.warn('Transliteration failed', err);
@@ -566,7 +569,6 @@ export const RegisterTenantPage: React.FC = () => {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      onBlur={() => handleAutoTransliterate('fullName', fullName)}
                       placeholder={isHi ? 'Ramesh Chandra Joshi' : 'Ramesh Chandra Joshi'}
                       className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white"
                     />
@@ -636,7 +638,6 @@ export const RegisterTenantPage: React.FC = () => {
                       rows={2}
                       value={permanentAddress}
                       onChange={(e) => setPermanentAddress(e.target.value)}
-                      onBlur={() => handleAutoTransliterate('permanentAddress', permanentAddress)}
                       className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white"
                     />
                   </div>
@@ -667,7 +668,6 @@ export const RegisterTenantPage: React.FC = () => {
                       rows={2}
                       value={currentAddress}
                       onChange={(e) => setCurrentAddress(e.target.value)}
-                      onBlur={() => handleAutoTransliterate('currentAddress', currentAddress)}
                       className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 bg-white"
                     />
                   </div>

@@ -75,13 +75,12 @@ export const AdminSignInPage: React.FC<{ initialRole?: string }> = () => {
         const isSuper =
           adminData.role === 'SUPER_ADMIN' ||
           adminData.mobile === '9412000001' ||
-          cleanMobile === '9412000001' ||
-          adminData.username === 'almora_superadmin';
+          cleanMobile === '9412000001';
         const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
         login({
           id: adminData.id,
-          name: adminData.fullName || (adminData as any).full_name || adminData.username,
-          identifier: adminData.username || cleanMobile,
+          name: adminData.fullName || (adminData as any).full_name || cleanMobile,
+          identifier: adminData.mobile || cleanMobile,
           mobile: adminData.mobile || cleanMobile,
           role: resolvedRole,
           adminRole: resolvedRole,

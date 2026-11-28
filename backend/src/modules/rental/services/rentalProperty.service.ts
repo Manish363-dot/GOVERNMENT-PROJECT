@@ -1,5 +1,5 @@
 import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPrisma';
-import { transliterateToHindi } from '../../../shared/utils/transliterate.util';
+import { normalizeDigitsToAscii } from '../../../shared/utils/transliterate.util';
 import { rentalCache } from '../utils/rentalCache.util';
 import { S3Client, DeleteObjectsCommand } from '@aws-sdk/client-s3';
 
@@ -64,19 +64,17 @@ export class RentalPropertyService {
         throw new Error(`Shop code ${dto.propertyNumber.trim()} is already registered.`);
       }
 
-      // Auto-transliterate address (and optional name/location if provided) to Hindi
+      // Preserve user-entered text (translation happens explicitly via the Globe button only) and keep 123 digits
       const hasCustomName = Boolean(dto.propertyName && dto.propertyName.trim());
       const hasCustomLocation = Boolean(dto.location && dto.location.trim());
 
-      const [hindiAddress, hindiName, hindiLocation] = await Promise.all([
-        transliterateToHindi(dto.address.trim()),
-        hasCustomName ? transliterateToHindi(dto.propertyName!.trim()) : Promise.resolve(dto.propertyNumber.trim()),
-        hasCustomLocation ? transliterateToHindi(dto.location!.trim()) : Promise.resolve(''),
-      ]);
-
-      const finalAddress = (hindiAddress || dto.address).trim();
-      const finalName = hasCustomName ? (hindiName || dto.propertyName!).trim() : dto.propertyNumber.trim();
-      const finalLocation = hasCustomLocation ? (hindiLocation || dto.location!).trim() : finalAddress;
+      const finalAddress = normalizeDigitsToAscii(dto.address.trim());
+      const finalName = hasCustomName
+        ? normalizeDigitsToAscii(dto.propertyName!.trim())
+        : normalizeDigitsToAscii(dto.propertyNumber.trim());
+      const finalLocation = hasCustomLocation
+        ? normalizeDigitsToAscii(dto.location!.trim())
+        : finalAddress;
 
       const photos = (dto.uploadedPhotos || []).slice(0, 3);
       const photoUrls = photos.map((p) => p.url);

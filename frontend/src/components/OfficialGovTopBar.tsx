@@ -51,7 +51,7 @@ export const OfficialGovTopBar: React.FC<OfficialGovTopBarProps> = ({ children, 
       {/* ============================================================ */}
       {/* 2. STICKY HEADER (Navy Strip + Portal Specific Navbar)       */}
       {/* ============================================================ */}
-      <header className="sticky top-0 z-50 flex flex-col shadow-xs">
+      <header className="sticky top-0 z-30 flex flex-col shadow-xs">
         {/* Official Government Strip */}
         <div className="bg-navy-900 text-slate-200 text-[11px] py-1.5 px-4 sm:px-6 border-b border-navy-800 shadow-sm">
           <div className="max-w-[1600px] mx-auto flex items-center justify-between">

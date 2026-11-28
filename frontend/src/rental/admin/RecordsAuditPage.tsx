@@ -446,8 +446,8 @@ export const RecordsAuditPage: React.FC = () => {
           RECEIPT PREVIEW & PRINT MODAL
       ──────────────────────────────────────────────────────────────────────── */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-300 space-y-4">
+        <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-300 space-y-4 my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between border-b pb-3">
               <div>
                 <h4 className="font-extrabold text-slate-900 text-sm">

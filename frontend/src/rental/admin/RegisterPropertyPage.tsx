@@ -53,14 +53,17 @@ export const RegisterPropertyPage = () => {
     field: "propertyName" | "address",
     value: string
   ) => {
-    if (!value || !value.trim() || !/[a-zA-Z]/.test(value)) return;
+    if (!value || !value.trim()) return;
     setTransliterating(field);
     try {
       const res = await api.post<{ success: boolean; hindi: string }>("/rental/transliterate", {
         text: value.trim(),
       });
       if (res && res.hindi && res.hindi.trim()) {
-        set(field, res.hindi);
+        const asciiDigits = res.hindi.replace(/[\u0966-\u096F]/g, (c) =>
+          String.fromCharCode(c.charCodeAt(0) - 0x0966 + 48)
+        );
+        set(field, asciiDigits);
       }
     } catch (err) {
       console.warn("Transliteration failed", err);
@@ -276,10 +279,10 @@ export const RegisterPropertyPage = () => {
                   <button
                     type="button"
                     onClick={() => handleAutoTransliterate("propertyName", form.propertyName || "")}
-                    className="text-[10px] text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="हिंदी लिप्यंतरण"
+                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 px-2 py-0.5 rounded font-semibold transition cursor-pointer"
+                    title={isHi ? "English को हिंदी में बदलें" : "Convert English text to Hindi"}
                   >
-                    <span>{isHi ? "हिंदी में बदलें" : "Transliterate"}</span>
+                    🌐
                   </button>
                 )}
               </div>
@@ -288,7 +291,6 @@ export const RegisterPropertyPage = () => {
                 required
                 value={form.propertyName ?? ""}
                 onChange={(e) => set("propertyName", e.target.value)}
-                onBlur={() => handleAutoTransliterate("propertyName", form.propertyName || "")}
                 className={IC}
               />
             </div>
@@ -344,10 +346,10 @@ export const RegisterPropertyPage = () => {
                   <button
                     type="button"
                     onClick={() => handleAutoTransliterate("address", form.address)}
-                    className="text-[10px] text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                    title="हिंदी लिप्यंतरण"
+                    className="text-[10px] text-blue-700 hover:text-blue-900 bg-blue-50 px-2 py-0.5 rounded font-semibold transition cursor-pointer"
+                    title={isHi ? "English पते को हिंदी में बदलें" : "Convert English address to Hindi"}
                   >
-                    <span>{isHi ? "हिंदी में बदलें" : "Transliterate"}</span>
+                    🌐
                   </button>
                 )}
               </div>
@@ -356,7 +358,6 @@ export const RegisterPropertyPage = () => {
                 rows={2}
                 value={form.address}
                 onChange={(e) => set("address", e.target.value)}
-                onBlur={() => handleAutoTransliterate("address", form.address)}
                 placeholder={
                   isHi
                     ? "उदा. गांधी चौक के पास, मॉल रोड, अल्मोड़ा"
@@ -411,14 +412,9 @@ export const RegisterPropertyPage = () => {
                 <div>
                   <label className="block text-xs font-bold text-slate-800">
                     {isHi
-                      ? "दुकान की फोटो जोड़ें (अधिकतम 3 फोटो)"
-                      : "Shop Photos (Optional — Up to 3 Photos)"}
+                      ? "दुकान की फोटो जोड़ें"
+                      : "Shop Photos"}
                   </label>
-                  <p className="text-[11px] text-slate-500 mt-0.5">
-                    {isHi
-                      ? "ये फोटो रेंटल पोर्टल पर उपलब्ध दुकानों की सूची में नागरिकों को दिखेंगी। दुकान आवंटित होते ही सूची से स्वतः हट जाएगी।"
-                      : "Shown on the public Rental Portal while the shop is vacant, and automatically hidden once allotted."}
-                  </p>
                 </div>
                 <span className="text-xs font-mono font-bold text-slate-700 bg-slate-100 border border-slate-300 px-2.5 py-0.5 rounded">
                   {selectedPhotos.length} / 3

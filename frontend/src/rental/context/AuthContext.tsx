@@ -31,7 +31,6 @@ const normalizeUserData = (userData: UserProfile): UserProfile => {
   const isSuper =
     userData.mobile === '9412000001' ||
     userData.identifier === '9412000001' ||
-    userData.identifier === 'almora_superadmin' ||
     userData.role === 'SUPER_ADMIN' ||
     userData.adminRole === 'SUPER_ADMIN';
 
@@ -95,7 +94,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             admin?: {
               id: string;
-              username: string;
               fullName: string;
               role: 'SUPER_ADMIN' | 'SUB_ADMIN';
               mobile: string;
@@ -107,16 +105,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (res && res.data && res.data.admin) {
           const adm = res.data.admin;
-          const isSuper =
-            adm.role === 'SUPER_ADMIN' ||
-            adm.mobile === '9412000001' ||
-            adm.username === 'almora_superadmin';
+          const isSuper = adm.role === 'SUPER_ADMIN' || adm.mobile === '9412000001';
           const resolvedRole: 'SUPER_ADMIN' | 'SUB_ADMIN' = isSuper ? 'SUPER_ADMIN' : 'SUB_ADMIN';
 
           const backendUser: UserProfile = {
             id: adm.id,
-            name: adm.fullName || adm.username,
-            identifier: adm.username || adm.mobile,
+            name: adm.fullName || adm.mobile,
+            identifier: adm.mobile || adm.id,
             mobile: adm.mobile,
             role: resolvedRole,
             adminRole: resolvedRole,

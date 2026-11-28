@@ -5,7 +5,6 @@ import { rentalPrisma, withRentalDbRetry } from '../../../shared/config/rentalPr
 
 export interface RentalAdminPayload {
   adminId: string;
-  username: string;
   role: 'SUPER_ADMIN' | 'SUB_ADMIN';
   mobile: string;
   permissions: string[];
@@ -77,7 +76,7 @@ export async function rentalAdminAuth(
     const adminRecord = await withRentalDbRetry(() =>
       rentalPrisma.rentalAdmin.findUnique({
         where: { id: decoded.adminId },
-        select: { id: true, username: true, role: true, status: true, mobile: true, permissions: true },
+        select: { id: true, role: true, status: true, mobile: true, permissions: true },
       })
     );
 
@@ -89,7 +88,6 @@ export async function rentalAdminAuth(
 
     const payload: RentalAdminPayload = {
       adminId: adminRecord.id,
-      username: adminRecord.username,
       role: adminRecord.role,
       mobile: adminRecord.mobile,
       permissions: adminRecord.permissions,

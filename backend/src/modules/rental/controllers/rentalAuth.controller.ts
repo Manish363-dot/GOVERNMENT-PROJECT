@@ -6,16 +6,23 @@ import { rentalPrisma } from '../../../shared/config/rentalPrisma';
 import { z } from 'zod';
 
 const adminLoginSchema = z.object({
-  identifier: z.string().min(3, 'Username, Mobile or Email is required'),
+  identifier: z.string().min(3, 'Mobile number or Email is required'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
 const subAdminCreateSchema = z.object({
-  username: z.string().min(3, 'Username must be at least 3 characters'),
-  fullName: z.string().min(2, 'Full name is required'),
-  mobile: z.string().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile number required'),
-  email: z.string().email().optional(),
+  fullName: z.string().trim().min(2, 'Full name is required'),
+  mobile: z.string().trim().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile number required'),
+  email: z.string().trim().email('Valid email address required').optional().or(z.literal('')),
   initialPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  permissions: z.array(z.string()).optional(),
+});
+
+const subAdminUpdateSchema = z.object({
+  fullName: z.string().trim().min(2, 'Full name must be at least 2 characters').optional(),
+  mobile: z.string().trim().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile number required').optional(),
+  email: z.string().trim().email('Valid email address required').optional().or(z.literal('')).nullable(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional().or(z.literal('')),
   permissions: z.array(z.string()).optional(),
 });
 
@@ -34,7 +41,6 @@ export class RentalAuthController {
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
       const result = await rentalAuthService.adminLogin(parsed.data.identifier, parsed.data.password, clientIp);
 
-      // Set HTTP-only secure cookie for admin session
       res.cookie('rental_admin_token', result.token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -78,7 +84,6 @@ export class RentalAuthController {
         where: { id: req.rentalAdmin.adminId },
         select: {
           id: true,
-          username: true,
           full_name: true,
           role: true,
           mobile: true,
@@ -96,7 +101,6 @@ export class RentalAuthController {
         {
           admin: {
             id: admin.id,
-            username: admin.username,
             fullName: admin.full_name,
             role: admin.role,
             mobile: admin.mobile,
@@ -127,11 +131,47 @@ export class RentalAuthController {
       }
 
       const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
-      const result = await rentalAuthService.createSubAdmin(req.rentalAdmin.adminId, parsed.data, clientIp);
+      const result = await rentalAuthService.createSubAdmin(
+        req.rentalAdmin.adminId,
+        {
+          ...parsed.data,
+          email: parsed.data.email || undefined,
+        },
+        clientIp
+      );
 
       return sendSuccess(res, result, 'Sub Admin created successfully', 201);
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to create Sub Admin', 400);
+    }
+  }
+
+  /**
+   * PATCH/PUT /api/rental/auth/admin/subadmins/:id
+   * Update Sub Admin Profile (Super Admin only)
+   */
+  async updateSubAdmin(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin || req.rentalAdmin.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'Only Super Admin can update sub administrator profiles', 403);
+      }
+
+      const { id } = req.params;
+      if (!id) {
+        return sendError(res, 'Sub Admin ID is required', 400);
+      }
+
+      const parsed = subAdminUpdateSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return sendError(res, parsed.error.issues[0]?.message || 'Invalid sub-admin profile data', 400);
+      }
+
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const result = await rentalAuthService.updateSubAdmin(req.rentalAdmin.adminId, id, parsed.data, clientIp);
+
+      return sendSuccess(res, result, 'Sub Admin profile updated successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to update Sub Admin profile', 400);
     }
   }
 
@@ -175,6 +215,30 @@ export class RentalAuthController {
       return sendSuccess(res, result, `Sub Admin account ${status.toLowerCase()}d successfully`);
     } catch (err: any) {
       return sendError(res, err.message || 'Failed to update Sub Admin status', 400);
+    }
+  }
+
+  /**
+   * DELETE /api/rental/auth/admin/subadmins/:id
+   * Delete Sub Admin (Super Admin only)
+   */
+  async deleteSubAdmin(req: AuthenticatedRentalRequest, res: Response) {
+    try {
+      if (!req.rentalAdmin || req.rentalAdmin.role !== 'SUPER_ADMIN') {
+        return sendError(res, 'Access restricted to Super Admin', 403);
+      }
+
+      const { id } = req.params;
+      if (!id) {
+        return sendError(res, 'Valid Sub Admin ID is required', 400);
+      }
+
+      const clientIp = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || req.ip || 'Unknown';
+      const result = await rentalAuthService.deleteSubAdmin(req.rentalAdmin.adminId, id, clientIp);
+
+      return sendSuccess(res, result, 'Sub Admin deleted successfully');
+    } catch (err: any) {
+      return sendError(res, err.message || 'Failed to delete Sub Admin', 400);
     }
   }
 }

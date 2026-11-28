@@ -37,6 +37,20 @@ router.get(
 );
 
 router.patch(
+  '/admin/subadmins/:id',
+  rentalAdminAuth,
+  requireRentalSuperAdmin,
+  (req, res) => rentalAuthController.updateSubAdmin(req, res)
+);
+
+router.put(
+  '/admin/subadmins/:id',
+  rentalAdminAuth,
+  requireRentalSuperAdmin,
+  (req, res) => rentalAuthController.updateSubAdmin(req, res)
+);
+
+router.patch(
   '/admin/subadmins/:id/status',
   rentalAdminAuth,
   requireRentalSuperAdmin,
@@ -48,6 +62,13 @@ router.put(
   rentalAdminAuth,
   requireRentalSuperAdmin,
   (req, res) => rentalAuthController.toggleSubAdminStatus(req, res)
+);
+
+router.delete(
+  '/admin/subadmins/:id',
+  rentalAdminAuth,
+  requireRentalSuperAdmin,
+  (req, res) => rentalAuthController.deleteSubAdmin(req, res)
 );
 
 export default router;

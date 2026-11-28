@@ -106,7 +106,6 @@ enum NoticePriority {
 
 model RentalAdmin {
   id            String            @id @default(uuid())
-  username      String            @unique
   full_name     String
   mobile        String            @unique
   email         String?           @unique

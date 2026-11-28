@@ -127,11 +127,11 @@ export class RentalUserService {
       const salt = await bcrypt.genSalt(12);
       const passwordHash = await bcrypt.hash(plainPassword, salt);
 
-      // 4.1 Auto-transliterate English name and addresses to Hindi Devanagari script
-      const { transliterateToHindi } = await import('../../../shared/utils/transliterate.util');
-      const finalFullName = await transliterateToHindi(dto.fullName.trim());
-      const finalPermanentAddress = await transliterateToHindi(dto.permanentAddress.trim());
-      const finalCurrentAddress = dto.currentAddress ? await transliterateToHindi(dto.currentAddress.trim()) : null;
+      // 4.1 Preserve user-entered name and addresses (translation happens explicitly via the Globe button) & keep 123 digits
+      const { normalizeDigitsToAscii } = await import('../../../shared/utils/transliterate.util');
+      const finalFullName = normalizeDigitsToAscii(dto.fullName.trim());
+      const finalPermanentAddress = normalizeDigitsToAscii(dto.permanentAddress.trim());
+      const finalCurrentAddress = dto.currentAddress ? normalizeDigitsToAscii(dto.currentAddress.trim()) : null;
 
       // 5. Atomic database transaction
       const createdUser = await rentalPrisma.$transaction(async (tx) => {

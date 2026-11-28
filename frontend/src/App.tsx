@@ -55,6 +55,7 @@ const MediaDailyWorkPage = lazy(() => import('@/swm/dashboard/MediaDailyWorkPage
 const RentalRootLayout = lazy(() => import('@/rental/RentalRootLayout').then(m => ({ default: m.RentalRootLayout })));
 const RentalPortalPage = lazy(() => import('@/rental/RentalPortalPage').then(m => ({ default: m.RentalPortalPage })));
 const RentalCheckStatusPage = lazy(() => import('@/rental/pages/RentalCheckStatusPage').then(m => ({ default: m.RentalCheckStatusPage })));
+const AvailableShopsPage = lazy(() => import('@/rental/pages/AvailableShopsPage').then(m => ({ default: m.AvailableShopsPage })));
 const RentalAdminSignInPage = lazy(() => import('@/rental/RentalAdminSignInPage').then(m => ({ default: m.RentalAdminSignInPage })));
 const RegisterTenantPage = lazy(() => import('@/rental/admin/RegisterTenantPage').then(m => ({ default: m.RegisterTenantPage })));
 const TenantListPage = lazy(() => import('@/rental/admin/TenantListPage').then(m => ({ default: m.TenantListPage })));
@@ -161,6 +162,7 @@ function App() {
               <Route path="/rental-portal" element={<RentalPortalPage />} />
               <Route path="/rental-system" element={<RentalPortalPage />} />
               <Route path="/rental/check-status" element={<RentalCheckStatusPage />} />
+              <Route path="/rental/available-shops" element={<AvailableShopsPage />} />
               <Route path="/rental/check-rent" element={<RentalCheckStatusPage />} />
               <Route path="/rental/dues" element={<RentalCheckStatusPage />} />
               <Route path="/rental/signin" element={<RentalAdminSignInPage initialRole="admin" />} />

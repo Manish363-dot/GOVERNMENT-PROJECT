@@ -126,14 +126,17 @@ export const TenantProfilePage: React.FC = () => {
     field: 'fullName' | 'permanentAddress' | 'currentAddress',
     value: string
   ) => {
-    if (!value || !value.trim() || !/[a-zA-Z]/.test(value)) return;
+    if (!value || !value.trim()) return;
     setTransliterating(field);
     try {
       const res = await api.post<{ success: boolean; hindi: string }>('/rental/transliterate', {
         text: value.trim(),
       });
       if (res && res.hindi && res.hindi.trim()) {
-        setEditFormData((prev) => ({ ...prev, [field]: res.hindi }));
+        const cleanHindi = res.hindi.replace(/[\u0966-\u096F]/g, (c) =>
+          String.fromCharCode(c.charCodeAt(0) - 0x0966 + 48)
+        );
+        setEditFormData((prev) => ({ ...prev, [field]: cleanHindi }));
       }
     } catch (err) {
       console.warn('Transliteration failed', err);
@@ -727,7 +730,6 @@ export const TenantProfilePage: React.FC = () => {
                     required
                     value={editFormData.fullName}
                     onChange={(e) => setEditFormData({ ...editFormData, fullName: e.target.value })}
-                    onBlur={() => handleAutoTransliterate('fullName', editFormData.fullName)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-semibold text-slate-900"
                     placeholder="e.g. Ramesh Chandra Joshi"
                   />
@@ -806,7 +808,6 @@ export const TenantProfilePage: React.FC = () => {
                     required
                     value={editFormData.permanentAddress}
                     onChange={(e) => setEditFormData({ ...editFormData, permanentAddress: e.target.value })}
-                    onBlur={() => handleAutoTransliterate('permanentAddress', editFormData.permanentAddress)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-medium text-slate-900 resize-none"
                     placeholder="Village/Mohalla, Post, District, State, PIN"
                   />
@@ -837,7 +838,6 @@ export const TenantProfilePage: React.FC = () => {
                     rows={2}
                     value={editFormData.currentAddress}
                     onChange={(e) => setEditFormData({ ...editFormData, currentAddress: e.target.value })}
-                    onBlur={() => handleAutoTransliterate('currentAddress', editFormData.currentAddress)}
                     className="w-full px-3.5 py-2 text-xs sm:text-sm bg-white rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-navy-600/20 focus:border-navy-600 font-medium text-slate-900 resize-none"
                     placeholder="Current shop or local residence address"
                   />

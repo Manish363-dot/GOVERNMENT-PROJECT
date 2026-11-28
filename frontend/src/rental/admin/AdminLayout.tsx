@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { api } from '@/services/api';
 import { RentalAdminNavbar } from './RentalAdminNavbar';
 import { PANCHAYATI_RAJ_LOGO_URL } from '@/components/TopBarLogos';
+import { formatAdminDisplayName } from '../utils/transliterate';
 import {
   Home,
   Building2,
@@ -19,7 +20,6 @@ import {
   X,
   Phone,
   PanelLeftClose,
-  PanelLeftOpen,
 } from 'lucide-react';
 
 interface AdminLayoutProps {
@@ -114,8 +114,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     user?.role === 'SUPER_ADMIN' ||
     user?.adminRole === 'SUPER_ADMIN' ||
     user?.mobile === '9412000001' ||
-    user?.identifier === '9412000001' ||
-    user?.identifier === 'almora_superadmin';
+    user?.identifier === '9412000001';
 
   if (!isAdmin) {
     return (
@@ -187,7 +186,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#eef1f6] flex flex-col font-sans text-slate-800 relative">
+    <div className="min-h-screen w-full overflow-x-clip bg-[#eef1f6] flex flex-col font-sans text-slate-800 relative">
       {/* ───────────────────────────────────────────────────────────────────────
           1. FULL WIDTH OFFICIAL GOVERNMENT TOPBAR & HEADER
           Takes 100% width edge-to-edge across the entire screen
@@ -196,6 +195,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         showMobileToggle={true}
         onLogout={handleLogout}
         onMobileMenuToggle={handleToggleSidebar}
+        desktopSidebarClosed={!desktopSidebarOpen}
+        onDesktopSidebarExpand={handleExpandDesktop}
       />
 
       {/* ───────────────────────────────────────────────────────────────────────
@@ -342,7 +343,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div className="px-2 py-1">
               <div className="flex items-center justify-between gap-2">
                 <div className="text-sm font-bold text-white truncate">
-                  {user?.name || (isSuperAdmin ? (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator') : user?.role === 'SUB_ADMIN' ? (isHi ? 'उप-प्रशासक' : 'Sub Administrator') : (isHi ? 'मुख्य प्रशासनिक अधिकारी' : 'Super Administrator'))}
+                  {formatAdminDisplayName(user?.name, isHi, !isSuperAdmin && user?.role === 'SUB_ADMIN')}
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -373,22 +374,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             MAIN VIEWPORT (Page Content)
         ──────────────────────────────────────────────────────────────────────── */}
         <div className="flex-1 flex flex-col min-w-0 relative">
-          {!desktopSidebarOpen && (
-            <div className="hidden md:block sticky top-3 z-30 self-start ml-4 sm:ml-6 lg:ml-8 mt-4 -mb-3">
-              <button
-                type="button"
-                onClick={handleExpandDesktop}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-[#0B1B36] hover:bg-[#142D57] text-white border border-amber-400/40 px-3 py-2 text-xs font-extrabold shadow-lg transition cursor-pointer"
-                title={isHi ? 'साइडबार खोलें' : 'Open Sidebar'}
-              >
-                <PanelLeftOpen className="w-4 h-4 text-amber-400" />
-                <span>{isHi ? 'मेनू खोलें' : 'Open Menu'}</span>
-              </button>
-            </div>
-          )}
-
           {/* Main Content Area */}
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-6">
+          <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-[1600px] w-full mx-auto space-y-4 sm:space-y-6">
             {children}
           </main>
         </div>

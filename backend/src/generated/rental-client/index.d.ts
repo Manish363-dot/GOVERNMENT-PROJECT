@@ -2487,7 +2487,6 @@ export namespace Prisma {
 
   export type RentalAdminMinAggregateOutputType = {
     id: string | null
-    username: string | null
     full_name: string | null
     mobile: string | null
     email: string | null
@@ -2503,7 +2502,6 @@ export namespace Prisma {
 
   export type RentalAdminMaxAggregateOutputType = {
     id: string | null
-    username: string | null
     full_name: string | null
     mobile: string | null
     email: string | null
@@ -2519,7 +2517,6 @@ export namespace Prisma {
 
   export type RentalAdminCountAggregateOutputType = {
     id: number
-    username: number
     full_name: number
     mobile: number
     email: number
@@ -2538,7 +2535,6 @@ export namespace Prisma {
 
   export type RentalAdminMinAggregateInputType = {
     id?: true
-    username?: true
     full_name?: true
     mobile?: true
     email?: true
@@ -2554,7 +2550,6 @@ export namespace Prisma {
 
   export type RentalAdminMaxAggregateInputType = {
     id?: true
-    username?: true
     full_name?: true
     mobile?: true
     email?: true
@@ -2570,7 +2565,6 @@ export namespace Prisma {
 
   export type RentalAdminCountAggregateInputType = {
     id?: true
-    username?: true
     full_name?: true
     mobile?: true
     email?: true
@@ -2660,7 +2654,6 @@ export namespace Prisma {
 
   export type RentalAdminGroupByOutputType = {
     id: string
-    username: string
     full_name: string
     mobile: string
     email: string | null
@@ -2694,7 +2687,6 @@ export namespace Prisma {
 
   export type RentalAdminSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
     full_name?: boolean
     mobile?: boolean
     email?: boolean
@@ -2713,7 +2705,6 @@ export namespace Prisma {
 
   export type RentalAdminSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
     full_name?: boolean
     mobile?: boolean
     email?: boolean
@@ -2730,7 +2721,6 @@ export namespace Prisma {
 
   export type RentalAdminSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    username?: boolean
     full_name?: boolean
     mobile?: boolean
     email?: boolean
@@ -2747,7 +2737,6 @@ export namespace Prisma {
 
   export type RentalAdminSelectScalar = {
     id?: boolean
-    username?: boolean
     full_name?: boolean
     mobile?: boolean
     email?: boolean
@@ -2762,7 +2751,7 @@ export namespace Prisma {
     updated_at?: boolean
   }
 
-  export type RentalAdminOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "username" | "full_name" | "mobile" | "email" | "passwordHash" | "role" | "status" | "mfa_enabled" | "mfa_secret" | "permissions" | "last_login_at" | "created_at" | "updated_at", ExtArgs["result"]["rentalAdmin"]>
+  export type RentalAdminOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "full_name" | "mobile" | "email" | "passwordHash" | "role" | "status" | "mfa_enabled" | "mfa_secret" | "permissions" | "last_login_at" | "created_at" | "updated_at", ExtArgs["result"]["rentalAdmin"]>
   export type RentalAdminInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     auditLogs?: boolean | RentalAdmin$auditLogsArgs<ExtArgs>
     _count?: boolean | RentalAdminCountOutputTypeDefaultArgs<ExtArgs>
@@ -2777,7 +2766,6 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      username: string
       full_name: string
       mobile: string
       email: string | null
@@ -3215,7 +3203,6 @@ export namespace Prisma {
    */
   interface RentalAdminFieldRefs {
     readonly id: FieldRef<"RentalAdmin", 'String'>
-    readonly username: FieldRef<"RentalAdmin", 'String'>
     readonly full_name: FieldRef<"RentalAdmin", 'String'>
     readonly mobile: FieldRef<"RentalAdmin", 'String'>
     readonly email: FieldRef<"RentalAdmin", 'String'>
@@ -18962,7 +18949,6 @@ export namespace Prisma {
 
   export const RentalAdminScalarFieldEnum: {
     id: 'id',
-    username: 'username',
     full_name: 'full_name',
     mobile: 'mobile',
     email: 'email',
@@ -19498,7 +19484,6 @@ export namespace Prisma {
     OR?: RentalAdminWhereInput[]
     NOT?: RentalAdminWhereInput | RentalAdminWhereInput[]
     id?: StringFilter<"RentalAdmin"> | string
-    username?: StringFilter<"RentalAdmin"> | string
     full_name?: StringFilter<"RentalAdmin"> | string
     mobile?: StringFilter<"RentalAdmin"> | string
     email?: StringNullableFilter<"RentalAdmin"> | string | null
@@ -19516,7 +19501,6 @@ export namespace Prisma {
 
   export type RentalAdminOrderByWithRelationInput = {
     id?: SortOrder
-    username?: SortOrder
     full_name?: SortOrder
     mobile?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -19534,7 +19518,6 @@ export namespace Prisma {
 
   export type RentalAdminWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    username?: string
     mobile?: string
     email?: string
     AND?: RentalAdminWhereInput | RentalAdminWhereInput[]
@@ -19551,11 +19534,10 @@ export namespace Prisma {
     created_at?: DateTimeFilter<"RentalAdmin"> | Date | string
     updated_at?: DateTimeFilter<"RentalAdmin"> | Date | string
     auditLogs?: RentalAdminAuditLogListRelationFilter
-  }, "id" | "username" | "mobile" | "email">
+  }, "id" | "mobile" | "email">
 
   export type RentalAdminOrderByWithAggregationInput = {
     id?: SortOrder
-    username?: SortOrder
     full_name?: SortOrder
     mobile?: SortOrder
     email?: SortOrderInput | SortOrder
@@ -19578,7 +19560,6 @@ export namespace Prisma {
     OR?: RentalAdminScalarWhereWithAggregatesInput[]
     NOT?: RentalAdminScalarWhereWithAggregatesInput | RentalAdminScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"RentalAdmin"> | string
-    username?: StringWithAggregatesFilter<"RentalAdmin"> | string
     full_name?: StringWithAggregatesFilter<"RentalAdmin"> | string
     mobile?: StringWithAggregatesFilter<"RentalAdmin"> | string
     email?: StringNullableWithAggregatesFilter<"RentalAdmin"> | string | null
@@ -20903,7 +20884,6 @@ export namespace Prisma {
 
   export type RentalAdminCreateInput = {
     id?: string
-    username: string
     full_name: string
     mobile: string
     email?: string | null
@@ -20921,7 +20901,6 @@ export namespace Prisma {
 
   export type RentalAdminUncheckedCreateInput = {
     id?: string
-    username: string
     full_name: string
     mobile: string
     email?: string | null
@@ -20939,7 +20918,6 @@ export namespace Prisma {
 
   export type RentalAdminUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20957,7 +20935,6 @@ export namespace Prisma {
 
   export type RentalAdminUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -20975,7 +20952,6 @@ export namespace Prisma {
 
   export type RentalAdminCreateManyInput = {
     id?: string
-    username: string
     full_name: string
     mobile: string
     email?: string | null
@@ -20992,7 +20968,6 @@ export namespace Prisma {
 
   export type RentalAdminUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -21009,7 +20984,6 @@ export namespace Prisma {
 
   export type RentalAdminUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -22591,7 +22565,6 @@ export namespace Prisma {
 
   export type RentalAdminCountOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
     full_name?: SortOrder
     mobile?: SortOrder
     email?: SortOrder
@@ -22608,7 +22581,6 @@ export namespace Prisma {
 
   export type RentalAdminMaxOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
     full_name?: SortOrder
     mobile?: SortOrder
     email?: SortOrder
@@ -22624,7 +22596,6 @@ export namespace Prisma {
 
   export type RentalAdminMinOrderByAggregateInput = {
     id?: SortOrder
-    username?: SortOrder
     full_name?: SortOrder
     mobile?: SortOrder
     email?: SortOrder
@@ -30242,7 +30213,6 @@ export namespace Prisma {
 
   export type RentalAdminCreateWithoutAuditLogsInput = {
     id?: string
-    username: string
     full_name: string
     mobile: string
     email?: string | null
@@ -30259,7 +30229,6 @@ export namespace Prisma {
 
   export type RentalAdminUncheckedCreateWithoutAuditLogsInput = {
     id?: string
-    username: string
     full_name: string
     mobile: string
     email?: string | null
@@ -30292,7 +30261,6 @@ export namespace Prisma {
 
   export type RentalAdminUpdateWithoutAuditLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30309,7 +30277,6 @@ export namespace Prisma {
 
   export type RentalAdminUncheckedUpdateWithoutAuditLogsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    username?: StringFieldUpdateOperationsInput | string
     full_name?: StringFieldUpdateOperationsInput | string
     mobile?: StringFieldUpdateOperationsInput | string
     email?: NullableStringFieldUpdateOperationsInput | string | null

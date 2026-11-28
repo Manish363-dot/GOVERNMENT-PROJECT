@@ -70,12 +70,12 @@ export const RentalNavbar: React.FC = () => {
               >
                 <span>{isHi ? 'किराया स्थिति' : 'Check Rent Status'}</span>
               </Link>
-              <a
-                href="#available-shops"
+              <Link
+                to="/rental/available-shops"
                 className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
               >
                 <span>{isHi ? 'उपलब्ध दुकानें' : 'Available Shops'}</span>
-              </a>
+              </Link>
               <a
                 href="#notices"
                 className="px-2.5 2xl:px-3 py-2 text-sm font-bold text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-md transition-colors whitespace-nowrap"
@@ -164,13 +164,13 @@ export const RentalNavbar: React.FC = () => {
             >
               {isHi ? 'किराया स्थिति' : 'Check Rent Status'}
             </Link>
-            <a
-              href="#available-shops"
+            <Link
+              to="/rental/available-shops"
               onClick={() => setMobileOpen(false)}
               className="block px-3 py-2 text-sm font-bold text-slate-700 hover:text-navy-900 hover:bg-slate-200 rounded-md"
             >
               {isHi ? 'उपलब्ध दुकानें' : 'Available Shops'}
-            </a>
+            </Link>
             <a
               href="#notices"
               onClick={() => setMobileOpen(false)}

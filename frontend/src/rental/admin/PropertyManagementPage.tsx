@@ -19,13 +19,14 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
-  TrendingUp,
   History,
   UserCheck,
-  UserX,
   Trash2,
-  ImagePlus,
   X,
+  Store,
+  Phone,
+  ChevronRight,
+  ArrowLeft,
 } from 'lucide-react';
 
 export const PropertyManagementPage: React.FC = () => {
@@ -41,10 +42,60 @@ export const PropertyManagementPage: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [typeFilter, setTypeFilter] = useState('ALL');
   const [loading, setLoading] = useState(!initialPropsCache);
+  const [translatingSearch, setTranslatingSearch] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Modals state
+  // Keep numbers strictly in 123 (ASCII) format even if stored with Devanagari digits
+  const toAsciiDigits = (val?: string | null) =>
+    (val || '').replace(/[\u0966-\u096F]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0x0966 + 48));
+
+  const getStatusLabel = (status: string) => {
+    if (!isHi) return status;
+    if (status === 'VACANT') return 'रिक्त';
+    if (status === 'ALLOTTED') return 'आवंटित';
+    if (status === 'MAINTENANCE') return 'रखरखाव';
+    return status;
+  };
+
+  const getPropertyTypeLabel = (type: string) => {
+    const map: Record<string, { hi: string; en: string }> = {
+      COMMERCIAL_SHOP: { hi: 'व्यावसायिक दुकान', en: 'Commercial Shop' },
+      ROADSIDE_STALL: { hi: 'सड़क किनारे स्टॉल', en: 'Roadside Stall' },
+      WAREHOUSE_GODOWN: { hi: 'गोदाम / वेयरहाउस', en: 'Warehouse / Godown' },
+      LAND_PARCEL: { hi: 'भूखंड / भूमि', en: 'Land Parcel' },
+      OFFICE_SPACE: { hi: 'कार्यालय', en: 'Office Space' },
+      OTHER: { hi: 'अन्य', en: 'Other' },
+    };
+    const item = map[type];
+    if (item) return isHi ? item.hi : item.en;
+    return type.replace(/_/g, ' ').toLowerCase();
+  };
+
+  // Explicit click-only Hindi transliteration for the upper search filter box
+  const handleTransliterateSearch = async () => {
+    const raw = search.trim();
+    if (!raw) return;
+    setTranslatingSearch(true);
+    try {
+      const res = await api.post<{ success: boolean; hindi: string }>('/rental/transliterate', {
+        text: raw,
+      });
+      if (res && res.hindi && res.hindi.trim()) {
+        setSearch(toAsciiDigits(res.hindi.trim()));
+      } else {
+        setSearch(toAsciiDigits(raw));
+      }
+    } catch (err) {
+      console.warn('Search transliteration failed', err);
+    } finally {
+      setTranslatingSearch(false);
+    }
+  };
+
+  // Modals & Master-Detail Inspector state
+  const [inspectorProp, setInspectorProp] = useState<PropertyListItem | null>(null);
+  const [mobileShowDetail, setMobileShowDetail] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isRentModalOpen, setIsRentModalOpen] = useState(false);
@@ -93,6 +144,21 @@ export const PropertyManagementPage: React.FC = () => {
     setKeptPhotoUrls(prop.photoUrls ? [...prop.photoUrls] : []);
     setPhotoModalProp(prop);
   };
+
+  useEffect(() => {
+    if (properties.length === 0) {
+      setInspectorProp(null);
+      setMobileShowDetail(false);
+      return;
+    }
+    setInspectorProp((prev) => {
+      if (prev) {
+        const match = properties.find((p) => p.id === prev.id);
+        if (match) return match;
+      }
+      return properties[0];
+    });
+  }, [properties]);
 
   const handlePickModalPhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []).filter((f) => f.type.startsWith('image/'));
@@ -358,93 +424,92 @@ export const PropertyManagementPage: React.FC = () => {
     >
       <div className="space-y-6">
         {/* Action Header */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/rental/admin/register-property')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl text-[18px] font-bold shadow-sm transition"
-            >
-              {isHi ? 'नई संपत्ति पंजीकृत करें' : ' Register New Shop'}
-            </button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            onClick={() => navigate('/rental/admin/register-property')}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 rounded-xl text-sm sm:text-base font-bold shadow-sm transition cursor-pointer"
+          >
+            {isHi ? 'नई संपत्ति पंजीकृत करें' : 'Register New Shop'}
+          </button>
+        </div>
 
         {/* Notifications */}
         {error && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
+          <div className="p-3.5 sm:p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-center justify-between gap-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 min-w-0">
               <AlertCircle className="w-5 h-5 flex-shrink-0" />
-              <span>{error}</span>
+              <span className="break-words">{error}</span>
             </div>
-            <button onClick={() => setError('')} className="text-red-500 hover:text-red-800 font-bold">
+            <button onClick={() => setError('')} className="text-red-500 hover:text-red-800 font-bold shrink-0">
               ×
             </button>
           </div>
         )}
         {successMsg && (
-          <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
+          <div className="p-3.5 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-800 flex items-center justify-between gap-2 text-xs sm:text-sm">
+            <div className="flex items-center gap-2 min-w-0">
               <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-              <span>{successMsg}</span>
+              <span className="break-words">{successMsg}</span>
             </div>
-            <button onClick={() => setSuccessMsg('')} className="text-emerald-500 hover:text-emerald-800 font-bold">
+            <button onClick={() => setSuccessMsg('')} className="text-emerald-500 hover:text-emerald-800 font-bold shrink-0">
               ×
             </button>
           </div>
         )}
 
         {/* Top Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between min-w-0">
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase truncate">
                 {isHi ? 'कुल संपत्तियां' : 'Total Assets'}
               </p>
-              <h3 className="text-2xl font-bold text-slate-900 mt-1">{total}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{total}</h3>
             </div>
-
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between min-w-0">
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase truncate">
                 {isHi ? 'रिक्त संपत्तियां' : 'Vacant Assets'}
               </p>
-              <h3 className="text-2xl font-bold text-emerald-600 mt-1">{vacantCount}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">{vacantCount}</h3>
             </div>
-
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between min-w-0">
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase truncate">
                 {isHi ? 'आवंटित दुकानें' : 'Allotted Shops'}
               </p>
-              <h3 className="text-2xl font-bold text-blue-600 mt-1">{allottedCount}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mt-1">{allottedCount}</h3>
             </div>
-
           </div>
 
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold text-slate-400 uppercase">
+          <div className="bg-white p-3.5 sm:p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between min-w-0">
+            <div className="min-w-0">
+              <p className="text-[11px] sm:text-xs font-semibold text-slate-400 uppercase truncate">
                 {isHi ? 'मासिक राजस्व क्षमता' : 'Monthly Potential'}
               </p>
-              <h3 className="text-2xl font-bold text-slate-900 mt-1">₹{totalRentAccrued.toLocaleString('en-IN')}</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1 truncate">
+                ₹{totalRentAccrued.toLocaleString('en-IN')}
+              </h3>
             </div>
           </div>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 justify-between items-center">
+        <div className="bg-white p-3.5 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row gap-3 lg:gap-4 justify-between items-stretch lg:items-center">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               setPage(1);
               fetchProperties();
             }}
-            className="flex-1 w-full flex items-center gap-2"
+            className="flex-1 w-full flex items-center gap-2 min-w-0"
           >
-            <div className="relative flex-1">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+            <div className="relative flex-1 min-w-0">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               <input
                 type="text"
                 value={search}
@@ -454,27 +519,40 @@ export const PropertyManagementPage: React.FC = () => {
                     ? 'दुकान संख्या, नाम या स्थान से खोजें...'
                     : 'Search by shop number, location, or name...'
                 }
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-9 pr-11 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+              <button
+                type="button"
+                onClick={handleTransliterateSearch}
+                disabled={translatingSearch || !search.trim()}
+                title={isHi ? 'English शब्द को हिंदी में बदलें' : 'Convert English search text to Hindi'}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 disabled:opacity-45 px-2 py-1 rounded font-semibold transition cursor-pointer"
+              >
+                {translatingSearch ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin text-indigo-600" />
+                ) : (
+                  '🌐'
+                )}
+              </button>
             </div>
             <button
               type="submit"
-              className="px-4 py-2.5 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-900 transition"
+              className="px-3.5 sm:px-4 py-2 bg-slate-800 text-white text-sm font-medium rounded-lg hover:bg-slate-900 transition shrink-0 cursor-pointer"
             >
               {isHi ? 'खोजें' : 'Search'}
             </button>
           </form>
 
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="flex items-center gap-2">
-              <Filter className="w-4 h-4 text-slate-400" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex items-center gap-2.5 sm:gap-3 w-full lg:w-auto">
+            <div className="flex items-center gap-2 min-w-0">
+              <Filter className="w-4 h-4 text-slate-400 shrink-0 hidden sm:block" />
               <select
                 value={statusFilter}
                 onChange={(e) => {
                   setStatusFilter(e.target.value);
                   setPage(1);
                 }}
-                className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full lg:w-auto min-w-0 bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <option value="ALL">{isHi ? 'सभी स्थितियाँ' : 'All Statuses'}</option>
                 <option value="VACANT">{isHi ? 'रिक्त' : 'Vacant'}</option>
@@ -489,7 +567,7 @@ export const PropertyManagementPage: React.FC = () => {
                 setTypeFilter(e.target.value);
                 setPage(1);
               }}
-              className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full lg:w-auto min-w-0 bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             >
               <option value="ALL">{isHi ? 'सभी प्रकार' : 'All Types'}</option>
               <option value="COMMERCIAL_SHOP">{isHi ? 'दुकान' : 'Commercial Shop'}</option>
@@ -521,306 +599,338 @@ export const PropertyManagementPage: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Desktop Table View */}
-              <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full divide-y divide-slate-200">
-                <thead className="bg-slate-50">
-                  <tr>
-                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
-                      {isHi ? 'दुकान / संपत्ति' : 'Asset & Number'}
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase ">
-                      {isHi ? 'पता एवं विवरण' : 'Address & Dimensions'}
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
-                      {isHi ? 'स्थिति' : 'Status'}
-                    </th>
-                      <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
-                      {isHi ? 'वर्तमान किरायेदार' : 'Current Tenant'}
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-[16px] font-semibold text-slate-600 uppercase">
-                      {isHi ? 'मासिक किराया' : 'Monthly Rent'}
-                    </th>
-                    <th className="px-6 py-3.5 text-right text-[16px] font-semibold text-slate-600 uppercase">
-                      {isHi ? 'कार्यवाही' : 'Actions'}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200 bg-white">
-                  {properties.map((prop) => (
-                    <tr key={prop.id} className="hover:bg-slate-50/80 transition">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2.5">
-                          <span className="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold text-xs font-mono shrink-0">
-                            {prop.propertyNumber}
-                          </span>
-                          <div className="min-w-0">
-                            {prop.propertyName && prop.propertyName !== prop.propertyNumber && (
-                              <div className="text-sm font-bold text-slate-900 truncate">{prop.propertyName}</div>
+              {/* Master–Detail Split View (Gmail / File Explorer Style) */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[580px] bg-white">
+                {/* Left Master List Pane */}
+                <div
+                  className={`lg:col-span-5 xl:col-span-4 border-b lg:border-b-0 lg:border-r border-slate-200 flex flex-col bg-slate-50/40 ${
+                    mobileShowDetail ? 'hidden lg:flex' : 'flex'
+                  }`}
+                >
+                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="text-xs font-extrabold uppercase tracking-wide text-slate-700 truncate">
+                        {isHi ? 'संपत्ति सूची ' :'Properties'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="divide-y divide-slate-100 overflow-y-auto max-h-[680px] flex-1 bg-white">
+                    {properties.map((prop) => {
+                      const effectiveRent = prop.currentTenant?.activeRent || prop.baseMonthlyRent;
+                      const isActive = inspectorProp?.id === prop.id;
+                      const thumbUrl = prop.photoUrls?.[0];
+                      const statusDot =
+                        prop.status === 'VACANT'
+                          ? 'bg-emerald-500'
+                          : prop.status === 'ALLOTTED'
+                            ? 'bg-blue-600'
+                            : 'bg-amber-500';
+
+                      return (
+                        <button
+                          key={prop.id}
+                          type="button"
+                          onClick={() => {
+                            setInspectorProp(prop);
+                            setMobileShowDetail(true);
+                          }}
+                          className={`w-full text-left px-3.5 py-3 border-l-4 transition-colors cursor-pointer flex items-center gap-3 ${
+                            isActive
+                              ? 'border-l-[#0B3B60] bg-indigo-50/70'
+                              : 'border-l-transparent hover:bg-slate-50'
+                          }`}
+                        >
+                          {/* Compact Thumbnail */}
+                          <div className="w-10 h-10 rounded-lg border border-slate-200 bg-slate-100 flex items-center justify-center shrink-0 overflow-hidden">
+                            {thumbUrl ? (
+                              <img src={thumbUrl} alt={prop.propertyNumber} className="w-full h-full object-cover" />
+                            ) : (
+                              <Store className="w-4 h-4 text-slate-500" />
+                            )}
+                          </div>
+
+                          {/* Code + Name + Subline */}
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="font-mono text-[11px] font-extrabold text-indigo-700 bg-indigo-50 border border-indigo-100 px-1.5 py-0.5 rounded shrink-0">
+                                {toAsciiDigits(prop.propertyNumber)}
+                              </span>
+                              <span className="text-xs sm:text-sm font-bold text-slate-900 truncate">
+                                {toAsciiDigits(
+                                  prop.propertyName && prop.propertyName !== prop.propertyNumber
+                                    ? prop.propertyName
+                                    : prop.address || prop.location
+                                )}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-500 truncate mt-1">
+                              {prop.currentTenant
+                                ? `${toAsciiDigits(prop.currentTenant.fullName)} • ${prop.currentTenant.mobile}`
+                                : toAsciiDigits(prop.address || prop.location)}
+                            </div>
+                          </div>
+
+                          {/* Right Rent + Status Dot */}
+                          <div className="text-right shrink-0 flex flex-col items-end gap-1">
+                            <div className="flex items-center gap-1">
+                              <span className={`w-2 h-2 rounded-full ${statusDot}`} title={prop.status} />
+                              <ChevronRight className="w-3.5 h-3.5 text-slate-400 lg:hidden" />
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right Detail Inspector Pane */}
+                <div
+                  className={`lg:col-span-7 xl:col-span-8 flex flex-col justify-between bg-white ${
+                    mobileShowDetail ? 'flex' : 'hidden lg:flex'
+                  }`}
+                >
+                  {inspectorProp ? (
+                    <>
+                      {/* Detail Header */}
+                      <div className="px-5 py-4 bg-gradient-to-r from-[#0B3B60] to-[#134d7a] text-white flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <button
+                            type="button"
+                            onClick={() => setMobileShowDetail(false)}
+                            className="lg:hidden inline-flex items-center gap-1 text-xs font-bold text-amber-300 hover:text-white mb-2 cursor-pointer"
+                          >
+                            <ArrowLeft className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'सभी दुकानों की सूची पर लौटें' : 'Back to Properties'}</span>
+                          </button>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-2.5 py-0.5 rounded-md bg-white/15 border border-white/25 font-mono font-bold text-xs">
+                              {toAsciiDigits(inspectorProp.propertyNumber)}
+                            </span>
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
+                                inspectorProp.status === 'VACANT'
+                                  ? 'bg-emerald-500 text-white'
+                                  : inspectorProp.status === 'ALLOTTED'
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-amber-500 text-slate-950'
+                              }`}
+                            >
+                              {getStatusLabel(inspectorProp.status)}
+                            </span>
+                            <span className="text-xs text-slate-200">
+                              • {getPropertyTypeLabel(inspectorProp.propertyType)}
+                            </span>
+                          </div>
+
+                          <h3 className="text-lg sm:text-xl font-extrabold mt-1.5 leading-snug break-words">
+                            {toAsciiDigits(inspectorProp.propertyName || inspectorProp.propertyNumber)}
+                          </h3>
+                        </div>
+
+                        <div className="hidden sm:flex items-center gap-1.5 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => handleOpenHistoryModal(inspectorProp)}
+                            className="px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-xs font-semibold inline-flex items-center gap-1.5 transition cursor-pointer"
+                          >
+                            <span>{isHi ? 'किराये का इतिहास' : 'Rent History'}</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => requestDeleteProperty(inspectorProp)}
+                            className="p-2 rounded-lg bg-red-500/20 hover:bg-red-600 text-white transition cursor-pointer"
+                            title={isHi ? 'संपत्ति हटाएं' : 'Delete Property'}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Detail Content Body */}
+                      <div className="p-5 sm:p-6 space-y-5 flex-1">
+                        {/* Key Metrics Row */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="p-4 rounded-xl bg-indigo-50/70 border border-indigo-100">
+                            <span className="text-[11px] font-bold uppercase text-indigo-700 block">
+                              {isHi ? 'वर्तमान मासिक किराया' : 'Monthly Rent'}
+                            </span>
+                            <div className="text-xl font-extrabold text-slate-900 font-mono mt-1">
+                              ₹{(inspectorProp.currentTenant?.activeRent || inspectorProp.baseMonthlyRent).toLocaleString('en-IN')}
+                              <span className="text-xs font-sans font-normal text-slate-500"> /mo</span>
+                            </div>
+                            {inspectorProp.currentTenant &&
+                              inspectorProp.currentTenant.activeRent !== inspectorProp.baseMonthlyRent && (
+                                <span className="text-xs text-slate-500 line-through">
+                                  Base: ₹{inspectorProp.baseMonthlyRent.toLocaleString('en-IN')}
+                                </span>
+                              )}
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                            <span className="text-[11px] font-bold uppercase text-slate-500 block">
+                              {isHi ? 'क्षेत्रफल / साइज़' : 'Dimensions'}
+                            </span>
+                            <div className="text-lg font-bold text-slate-900 mt-1 flex items-center gap-1.5">
+                              <span>{inspectorProp.dimensionsSqft ? `${inspectorProp.dimensionsSqft} sq.ft` : 'N/A'}</span>
+                            </div>
+                          </div>
+
+                          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                            <span className="text-[11px] font-bold uppercase text-slate-500 block">
+                              {isHi ? 'संपत्ति श्रेणी' : 'Asset Category'}
+                            </span>
+                            <div className="text-sm font-bold text-slate-900 mt-1.5">
+                              {getPropertyTypeLabel(inspectorProp.propertyType)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Address + Current Tenant Grid */}
+                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5">
+                            <span className="text-[11px] font-bold uppercase text-slate-500 flex items-center gap-1.5">
+                              {isHi ? 'पूरा पता एवं स्थान' : 'Address & Location'}
+                            </span>
+                            <p className="text-sm font-medium text-slate-800 leading-relaxed break-words">
+                              {toAsciiDigits(inspectorProp.address || inspectorProp.location)}
+                            </p>
+                          </div>
+
+                          <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2">
+                            <span className="text-[11px] font-bold uppercase text-slate-500 block">
+                              {isHi ? 'वर्तमान आवंटन / किरायेदार' : 'Current Tenant / Allotment'}
+                            </span>
+                            {inspectorProp.currentTenant ? (
+                              <div className="space-y-1.5">
+                                <div className="text-base font-bold text-slate-900">
+                                  {toAsciiDigits(inspectorProp.currentTenant.fullName)}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2.5 text-xs">
+                                  <span className="inline-flex items-center gap-1 font-mono font-semibold text-blue-700">
+                                    {inspectorProp.currentTenant.mobile}
+                                  </span>
+
+                                </div>
+                                {inspectorProp.currentTenant.leaseStartDate && (
+                                  <p className="text-xs text-slate-500">
+                                    {isHi ? 'आवंटन तिथि:' : 'Lease Start:'}{' '}
+                                    {new Date(inspectorProp.currentTenant.leaseStartDate).toLocaleDateString('en-IN')}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-xs font-semibold text-emerald-800">
+                                {isHi ? 'यह दुकान अभी रिक्त है और आवंटन हेतु उपलब्ध है।' : 'Vacant unit ready for immediate allotment.'}
+                              </div>
                             )}
                           </div>
                         </div>
-                      </td>
 
-                      <td className="px-6 py-4">
-                        <div className="text-sm text-slate-800 flex items-center gap-1.5 font-medium">
-                          {prop.address || prop.location}
-                        </div>
-                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                          {prop.dimensionsSqft ? `${prop.dimensionsSqft} sq.ft` : 'N/A'} •{' '}
-                          <span className="capitalize">{prop.propertyType.replace('_', ' ').toLowerCase()}</span>
-                        </div>
-                      </td>
-
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${prop.status === 'VACANT'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : prop.status === 'ALLOTTED'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-amber-100 text-amber-800'
-                            }`}
-                        >
-                          <span
-                            className={`w-1.5 h-1.5 rounded-full ${prop.status === 'VACANT'
-                              ? 'bg-emerald-600'
-                              : prop.status === 'ALLOTTED'
-                                ? 'bg-blue-600'
-                                : 'bg-amber-600'
-                              }`}
-                          />
-                          {prop.status}
-                        </span>
-                      </td>
-
-                      <td className="px-6 py-4">
-                        {prop.currentTenant ? (
-                          <div>
-                            <div className="text-sm font-semibold text-slate-900">
-                              {prop.currentTenant.fullName}
-                            </div>
-                            <div className="text-xs text-slate-500 font-mono">
-                              {prop.currentTenant.mobile}
-                            </div>
+                        {/* Shop Photo Gallery Section */}
+                        <div className="space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-wide text-slate-500">
+                              {isHi ? 'दुकान की तस्वीरें' : 'Property Gallery'}
+                            </span>
                           </div>
-                        ) : (
-                          <span className="text-xs text-slate-400 italic">
-                            {isHi ? 'कोई किरायेदार नहीं ' : 'No active tenant'}
-                          </span>
-                        )}
-                      </td>
 
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-bold text-slate-900">
-                          ₹
-                          {(prop.currentTenant?.activeRent || prop.baseMonthlyRent).toLocaleString('en-IN')}{' '}
-                          <span className="text-xs font-normal text-slate-500">/mo</span>
+                          {inspectorProp.photoUrls && inspectorProp.photoUrls.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {inspectorProp.photoUrls.map((url, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => handleOpenPhotoModal(inspectorProp)}
+                                  className="h-32 rounded-xl overflow-hidden border border-slate-200 hover:border-indigo-400 shadow-2xs transition cursor-pointer"
+                                >
+                                  <img src={url} alt="" className="w-full h-full object-cover" />
+                                </button>
+                              ))}
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenPhotoModal(inspectorProp)}
+                              className="w-full py-6 rounded-xl border-2 border-dashed border-slate-200 hover:border-indigo-300 bg-slate-50/70 text-slate-500 hover:text-indigo-700 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+                            >
+                              <span>{isHi ? 'दुकान की फोटो अपलोड करें (अधिकतम 3)' : 'Upload Shop Photos (Max 3)'}</span>
+                            </button>
+                          )}
                         </div>
-                        {prop.currentTenant && prop.currentTenant.activeRent !== prop.baseMonthlyRent && (
-                          <div className="text-xs text-slate-400 line-through">
-                            Base: ₹{prop.baseMonthlyRent.toLocaleString('en-IN')}
-                          </div>
-                        )}
-                      </td>
+                      </div>
 
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                        <div className="flex items-center justify-end gap-2">
-                          {/* Shop Photos (1–3) */}
+                      {/* Bottom Primary Action Bar */}
+                      <div className="px-5 py-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5">
+                        <div className="flex flex-wrap items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => handleOpenPhotoModal(prop)}
-                            className="inline-flex items-center gap-1 px-2 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded text-xs font-semibold transition cursor-pointer"
-                            title={isHi ? 'दुकान की फोटो जोड़ें / बदलें' : 'Manage Shop Photos (Max 3)'}
+                            onClick={() => handleOpenPhotoModal(inspectorProp)}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
                           >
-                            <ImagePlus className="w-3.5 h-3.5" />
                             <span>
-                              {isHi ? 'फोटो' : 'Photos'} ({prop.photoUrls?.length || 0}/3)
+                              {isHi ? 'फोटो' : 'Photos'} ({inspectorProp.photoUrls?.length || 0}/3)
                             </span>
                           </button>
-
-                          {/* Audit / History */}
                           <button
-                            onClick={() => handleOpenHistoryModal(prop)}
-                            className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"
-                            title={isHi ? 'किराया संशोधन इतिहास' : 'Rent Audit History'}
+                            type="button"
+                            onClick={() => requestDeleteProperty(inspectorProp)}
+                            className="sm:hidden inline-flex items-center gap-1 px-3 py-2 bg-white hover:bg-red-50 text-red-600 border border-red-200 rounded-xl text-xs font-bold transition cursor-pointer"
                           >
-                            <History className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>{isHi ? 'हटाएं' : 'Delete'}</span>
                           </button>
+                        </div>
 
-                          {prop.status === 'VACANT' ? (
+                        <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                          {inspectorProp.status === 'VACANT' ? (
                             <button
-                              onClick={() => handleOpenAssignModal(prop)}
-                              className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-medium transition cursor-pointer"
+                              type="button"
+                              onClick={() => handleOpenAssignModal(inspectorProp)}
+                              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-sm transition cursor-pointer"
                             >
-                              <UserCheck className="w-3.5 h-3.5" />
-                              {isHi ? 'आवंटित करें' : 'Allot'}
+                              <span>{isHi ? 'किरायेदार को आवंटित करें' : 'Allot Property'}</span>
                             </button>
                           ) : (
                             <>
                               <button
-                                onClick={() => handleOpenRentModal(prop)}
-                                className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded text-xs font-medium transition cursor-pointer"
-                                title={isHi ? 'किराया संशोधित करें' : 'Revise Rent'}
+                                type="button"
+                                onClick={() => handleOpenRentModal(inspectorProp)}
+                                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-sm transition cursor-pointer"
                               >
-                                <TrendingUp className="w-3.5 h-3.5" />
-                                {isHi ? 'किराया बदलें' : 'Revise Rent'}
+                                <span>{isHi ? 'किराया बदलें' : 'Revise Rent'}</span>
                               </button>
                               <button
                                 type="button"
-                                onClick={() => requestVacateProperty(prop)}
-                                className="inline-flex items-center gap-1 px-2 py-1.5 text-red-600 hover:bg-red-50 rounded text-xs font-medium transition cursor-pointer"
-                                title={isHi ? 'दुकान खाली करें' : 'Vacate Property'}
+                                onClick={() => requestVacateProperty(inspectorProp)}
+                                className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 rounded-xl text-xs font-bold transition cursor-pointer"
                               >
-                                <UserX className="w-3.5 h-3.5" />
+                                <span>{isHi ? 'खाली करें' : 'Vacate'}</span>
                               </button>
                             </>
                           )}
-
-                          {/* Delete Property Button */}
-                          <button
-                            type="button"
-                            onClick={() => requestDeleteProperty(prop)}
-                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition cursor-pointer"
-                            title={isHi ? 'संपत्ति हटाएं' : 'Delete Property'}
-                          >
-                            <Trash2 className="w-4 h-4 text-red-500" />
-                          </button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Responsive Cards */}
-            <div className="md:hidden divide-y divide-slate-100">
-              {properties.map((prop) => (
-                <div key={prop.id} className="p-4 space-y-3 bg-white hover:bg-slate-50/50 transition-colors">
-                  {/* Card Header: Property number, Name, Status */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold text-xs font-mono inline-block">
-                          {prop.propertyNumber}
-                        </span>
-                        {prop.propertyName && prop.propertyName !== prop.propertyNumber && (
-                          <h3 className="font-bold text-slate-900 text-sm truncate">{prop.propertyName}</h3>
-                        )}
                       </div>
-                    </div>
-                    <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
-                        prop.status === 'VACANT'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : prop.status === 'ALLOTTED'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${
-                          prop.status === 'VACANT'
-                            ? 'bg-emerald-600'
-                            : prop.status === 'ALLOTTED'
-                              ? 'bg-blue-600'
-                              : 'bg-amber-600'
-                        }`}
-                      />
-                      {prop.status}
-                    </span>
-                  </div>
-
-                  {/* Address & Rent Grid */}
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                    <div>
-                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">
-                        {isHi ? 'पता व प्रकार' : 'Address & Type'}
-                      </span>
-                      <p className="text-slate-800 font-medium truncate">{prop.address || prop.location}</p>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        {prop.dimensionsSqft ? `${prop.dimensionsSqft} sq.ft` : ''} •{' '}
-                        <span className="capitalize">{prop.propertyType.replace('_', ' ').toLowerCase()}</span>
+                    </>
+                  ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-slate-400">
+                      <Store className="w-12 h-12 mb-2 text-slate-300" />
+                      <p className="text-sm font-semibold text-slate-600">
+                        {isHi ? 'विवरण देखने के लिए बाईं ओर से किसी दुकान का चयन करें' : 'Select a property from the left list to inspect details'}
                       </p>
                     </div>
-
-                    <div>
-                      <span className="text-[10px] font-bold uppercase text-slate-400 block mb-0.5">
-                        {isHi ? 'मासिक किराया' : 'Monthly Rent'}
-                      </span>
-                      <p className="text-slate-900 font-bold text-xs font-mono">
-                        ₹{(prop.currentTenant?.activeRent || prop.baseMonthlyRent).toLocaleString('en-IN')}/माह
-                      </p>
-                      {prop.currentTenant ? (
-                        <p className="text-[11px] text-blue-700 font-medium truncate mt-0.5">
-                          👤 {prop.currentTenant.fullName}
-                        </p>
-                      ) : (
-                        <p className="text-[11px] text-slate-400 italic mt-0.5">
-                          {isHi ? 'कोई किरायेदार नहीं' : 'No tenant'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Card Actions: History, Allot / Revise & Vacate, and Delete */}
-                  <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <button
-                      onClick={() => handleOpenHistoryModal(prop)}
-                      className="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 rounded-lg transition text-xs flex items-center justify-center cursor-pointer"
-                      title={isHi ? 'इतिहास' : 'History'}
-                    >
-                      <History className="w-3.5 h-3.5" />
-                    </button>
-
-                    {prop.status === 'VACANT' ? (
-                      <button
-                        onClick={() => handleOpenAssignModal(prop)}
-                        className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition inline-flex items-center justify-center gap-1 cursor-pointer"
-                      >
-                        <UserCheck className="w-3.5 h-3.5" />
-                        <span>{isHi ? 'आवंटित करें' : 'Allot'}</span>
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => handleOpenRentModal(prop)}
-                          className="flex-1 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 rounded-lg text-xs font-semibold transition inline-flex items-center justify-center gap-1 cursor-pointer"
-                        >
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          <span>{isHi ? 'किराया' : 'Rent'}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => requestVacateProperty(prop)}
-                          className="p-2 text-amber-700 hover:bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold transition inline-flex items-center justify-center cursor-pointer"
-                          title={isHi ? 'दुकान खाली करें' : 'Vacate'}
-                        >
-                          <UserX className="w-3.5 h-3.5" />
-                        </button>
-                      </>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => requestDeleteProperty(prop)}
-                      className="p-2 text-red-600 hover:bg-red-50 border border-red-200 rounded-lg text-xs font-semibold transition inline-flex items-center justify-center cursor-pointer"
-                      title={isHi ? 'संपत्ति हटाएं' : 'Delete'}
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  )}
                 </div>
-              ))}
-            </div>
+              </div>
           </>
         )}
         </div>
 
         {/* Modal 1: Add Commercial Asset */}
         {isAddModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <Building className="w-5 h-5 text-indigo-600" />
@@ -964,11 +1074,10 @@ export const PropertyManagementPage: React.FC = () => {
 
         {/* Modal 2: Allot Property to Tenant */}
         {isAssignModalOpen && selectedProperty && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-emerald-600" />
                   {isHi ? 'किरायेदार को दुकान आवंटित करें' : 'Allot Property to Tenant'}
                 </h3>
                 <button
@@ -989,7 +1098,7 @@ export const PropertyManagementPage: React.FC = () => {
               <form onSubmit={handleAssignProperty} className="space-y-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {isHi ? 'सक्रिय पंजीकृत किरायेदार चुनें *' : 'Select Registered Active Tenant *'}
+                    {isHi ? 'सक्रिय पंजीकृत किरायेदार चुनें' : 'Select Registered Active Tenant'}
                   </label>
                   {activeTenants.length === 0 ? (
                     <p className="text-xs text-red-500">
@@ -1015,7 +1124,7 @@ export const PropertyManagementPage: React.FC = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'सहमत मासिक किराया (₹) *' : 'Agreed Monthly Rent (₹) *'}
+                      {isHi ? 'सहमत मासिक किराया (₹)' : 'Agreed Monthly Rent (₹)'}
                     </label>
                     <input
                       type="number"
@@ -1028,7 +1137,7 @@ export const PropertyManagementPage: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isHi ? 'पट्टा प्रारंभ तिथि *' : 'Lease Start Date *'}
+                      {isHi ? 'पट्टा प्रारंभ तिथि' : 'Lease Start Date'}
                     </label>
                     <input
                       type="date"
@@ -1081,12 +1190,11 @@ export const PropertyManagementPage: React.FC = () => {
 
         {/* Modal 3: Revise Rent with Audit Trail */}
         {isRentModalOpen && selectedProperty && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-indigo-600" />
-                  {isHi ? 'मासिक किराया संशोधन' : 'Revise Monthly Rent (Audit Logged)'}
+                  {isHi ? 'मासिक किराया संशोधन' : 'Revise Monthly Rent'}
                 </h3>
                 <button
                   onClick={() => setIsRentModalOpen(false)}
@@ -1206,8 +1314,8 @@ export const PropertyManagementPage: React.FC = () => {
 
         {/* Modal 4: Rent Change Audit History */}
         {isHistoryModalOpen && selectedProperty && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4">
+          <div className="fixed inset-0 z-[70] flex items-start justify-center overflow-y-auto bg-slate-950/80 p-4 backdrop-blur-sm">
+            <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-4 my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
               <div className="flex items-center justify-between border-b pb-3">
                 <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                   <History className="w-5 h-5 text-indigo-600" />
@@ -1354,11 +1462,11 @@ export const PropertyManagementPage: React.FC = () => {
         {/* Manage Shop Photos Modal (1–3 Photos) */}
         {photoModalProp && (
           <div
-            className="fixed inset-0 z-50 bg-slate-950/65 flex items-center justify-center p-4"
+            className="fixed inset-0 z-[70] bg-slate-950/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4"
             onClick={() => !savingPhotos && setPhotoModalProp(null)}
           >
             <div
-              className="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-lg w-full overflow-hidden"
+              className="bg-white rounded-2xl border border-slate-300 shadow-2xl max-w-lg w-full max-h-[calc(100vh-2rem)] overflow-y-auto my-auto"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="px-5 py-4 bg-[#0B3B60] text-white flex items-center justify-between">
@@ -1368,11 +1476,6 @@ export const PropertyManagementPage: React.FC = () => {
                       ? `दुकान फोटो प्रबंधन — ${photoModalProp.propertyNumber}`
                       : `Manage Shop Photos — ${photoModalProp.propertyNumber}`}
                   </h3>
-                  <p className="text-[11px] text-slate-200 mt-0.5">
-                    {isHi
-                      ? 'अधिकतम 3 फोटो जोड़ें (रिक्त दुकान की फोटो रेंटल पोर्टल पर प्रदर्शित होती हैं)'
-                      : 'Add up to 3 photos (displayed on Rental Landing Page while shop is vacant)'}
-                  </p>
                 </div>
                 <button
                   type="button"
@@ -1386,12 +1489,9 @@ export const PropertyManagementPage: React.FC = () => {
               <div className="p-5 space-y-4">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-700">
                   <span>{isHi ? 'चयनित फोटो:' : 'Selected Photos:'}</span>
-                  <span className="font-mono bg-slate-100 border border-slate-300 px-2 py-0.5 rounded">
-                    {keptPhotoUrls.length + newPhotoItems.length} / 3
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {keptPhotoUrls.map((url, idx) => (
                     <div
                       key={`kept-${idx}`}
@@ -1434,7 +1534,6 @@ export const PropertyManagementPage: React.FC = () => {
 
                   {keptPhotoUrls.length + newPhotoItems.length < 3 && (
                     <label className="h-28 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#0B3B60] bg-slate-50 hover:bg-slate-100 flex flex-col items-center justify-center gap-1 text-slate-600 hover:text-[#0B3B60] transition cursor-pointer p-2 text-center">
-                      <ImagePlus className="w-5 h-5" />
                       <span className="text-[11px] font-bold">
                         {isHi ? '+ फोटो जोड़ें' : '+ Add Photo'}
                       </span>
